@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">hcsj</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="title_activity_container">ContainerActivity</string>
+    <string name="action_settings">Settings</string>
+
+</resources>

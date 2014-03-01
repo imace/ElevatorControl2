@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- 电梯调试标签页选项卡 -->
+    <string-array name="TransactionTabTxt">
+        <item>实时监控</item>
+        <item>参数设置</item>
+        <item>测试功能</item>
+        <item>参数拷贝</item>
+    </string-array>
+    <string-array name="TransactionTabLayout">
+        <item>tab_transaction_monitor</item>
+        <item>tab_transaction_settings</item>
+        <item>tab_transaction_test</item>
+        <item>tab_transaction_copy</item>
+    </string-array>
+    <string-array name="TransactionFunc">
+        <item>loadMonitorLV</item>
+        <item>loadSettingsLV</item>
+        <item>loadTestLV</item>
+        <item>loadCopyLV</item>
+    </string-array>
+    <!-- 电梯调试标签页选项卡 -->
+
+</resources>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <issue id="DefaultLocale">
+        <ignore path="src\com\hbluetooth\HSerial.java" />
+        <ignore path="src\com\sz\siiit\hcsj\daos\ErrorHelpDao.java" />
+    </issue>
+</lint>

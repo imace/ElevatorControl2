@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:id="@+id/custom_dialog_switchers"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:layout_margin="15dp"
+             android:background="@drawable/shape_bg_listview">
+
+    <TableRow
+            android:id="@+id/TableRow07"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp">
+
+        <Switch
+                android:id="@+id/X01"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="X01"
+                android:textSize="12sp"/>
+
+        <Switch
+                android:id="@+id/X02"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="X02"
+                android:textSize="12sp"/>
+
+    </TableRow>
+
+    <TableRow
+            android:id="@+id/TableRow06"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp">
+
+        <Switch
+                android:id="@+id/X03"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="X03"
+                android:textSize="12sp"/>
+
+        <Switch
+                android:id="@+id/X04"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="X04"
+                android:textSize="12sp"/>
+    </TableRow>
+
+    <TableRow
+            android:id="@+id/TableRow05"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp">
+
+        <Switch
+                android:id="@+id/X05"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="X05"
+                android:textSize="12sp"/>
+
+        <Switch
+                android:id="@+id/X06"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="X06"
+                android:textSize="12sp"/>
+    </TableRow>
+
+    <TableRow
+            android:id="@+id/TableRow04"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp">
+
+        <Switch
+                android:id="@+id/X07"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="X07"
+                android:textSize="12sp"/>
+
+        <Switch
+                android:id="@+id/X08"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="X08"
+                android:textSize="12sp"/>
+    </TableRow>
+
+    <TableRow
+            android:id="@+id/TableRow03"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp">
+
+        <Switch
+                android:id="@+id/X09"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="X09"
+                android:textSize="12sp"/>
+
+        <Switch
+                android:id="@+id/X10"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="X10"
+                android:textSize="12sp"/>
+    </TableRow>
+
+    <TableRow
+            android:id="@+id/TableRow02"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp">
+
+        <Switch
+                android:id="@+id/X11"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="X11"
+                android:textSize="12sp"/>
+
+        <Switch
+                android:id="@+id/X12"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="X12"
+                android:textSize="12sp"/>
+    </TableRow>
+
+    <TableRow
+            android:id="@+id/TableRow01"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp">
+
+        <Switch
+                android:id="@+id/X13"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="X13"
+                android:textSize="12sp"/>
+
+        <Switch
+                android:id="@+id/X14"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="X14"
+                android:textSize="12sp"/>
+    </TableRow>
+
+    <TableRow
+            android:id="@+id/tableRow1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp">
+
+        <Switch
+                android:id="@+id/X15"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="X15"
+                android:textSize="12sp"/>
+
+        <Switch
+                android:id="@+id/X16"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="X16"
+                android:textSize="12sp"/>
+
+    </TableRow>
+
+</TableLayout>
+
