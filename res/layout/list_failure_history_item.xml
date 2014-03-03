@@ -6,7 +6,7 @@
               android:orientation="vertical">
 
     <LinearLayout
-            android:id="@+id/failurehistoryitem"
+            android:id="@+id/failure_history_item"
             android:layout_width="300dp"
             android:layout_height="wrap_content"
             android:baselineAligned="false"
@@ -16,7 +16,7 @@
             android:padding="10dp">
 
         <TextView
-                android:id="@+id/txtfailurehistory"
+                android:id="@+id/text_failure_history"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -24,7 +24,7 @@
                 android:layout_weight="0.7"/>
 
         <TextView
-                android:id="@+id/timefailurehistory"
+                android:id="@+id/time_failure_history"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.3"/>

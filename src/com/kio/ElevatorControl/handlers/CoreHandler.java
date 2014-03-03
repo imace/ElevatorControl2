@@ -12,8 +12,8 @@ import com.hbluetooth.HBluetooth;
 import com.hbluetooth.HHandler;
 import com.hbluetooth.HJudgeListener;
 import com.kio.ElevatorControl.R;
-import com.kio.ElevatorControl.views.customsinnper.HCustomSinnper;
-import com.kio.ElevatorControl.views.customsinnper.HCustomSinnper.OnItemSeletedListener;
+import com.kio.ElevatorControl.views.customspinner.HCustomSpinner;
+import com.kio.ElevatorControl.views.customspinner.HCustomSpinner.OnItemSeletedListener;
 
 import java.util.Map;
 
@@ -40,7 +40,7 @@ public class CoreHandler extends HHandler {
     @Override
     public void onBeginPreparing(Message msg) {
         Log.v(HTAG, "onBeginPreparing");
-        activity.getActionBar().getCustomView().findViewById(R.id.titleprocessbar).setVisibility(View.VISIBLE);
+        activity.getActionBar().getCustomView().findViewById(R.id.title_process_bar).setVisibility(View.VISIBLE);
     }
 
     /**
@@ -52,20 +52,20 @@ public class CoreHandler extends HHandler {
     @SuppressWarnings("unchecked")
     public void onFoundDevice(Message msg) {
 
-        activity.getActionBar().getCustomView().findViewById(R.id.titleprocessbar).setVisibility(View.VISIBLE);
+        activity.getActionBar().getCustomView().findViewById(R.id.title_process_bar).setVisibility(View.VISIBLE);
 
-        HCustomSinnper spinn = null;
-        spinn = ((HCustomSinnper) activity.getActionBar().getCustomView().findViewById(R.id.custom_sinnper));
+        HCustomSpinner spinn = null;
+        spinn = ((HCustomSpinner) activity.getActionBar().getCustomView().findViewById(R.id.custom_spinner));
         spinn.setAdapter(new ArrayAdapter<String>(activity, android.R.layout.select_dialog_item, ((Map<String, BluetoothDevice>) msg.obj).keySet().toArray(new String[]{})));
         spinn.setOnItemSeletedListener(new OnItemSeletedListener() {
 
             @Override
             public void onItemSeleted(AdapterView<?> parent, View view, int position, long id) {
-                activity.getActionBar().getCustomView().findViewById(R.id.titleprocessbar).setVisibility(View.VISIBLE);
+                activity.getActionBar().getCustomView().findViewById(R.id.title_process_bar).setVisibility(View.VISIBLE);
 
                 // 设置选中
                 final String devName = parent.getItemAtPosition(position).toString();
-                ((HCustomSinnper) activity.getActionBar().getCustomView().findViewById(R.id.custom_sinnper)).setText(devName);
+                ((HCustomSpinner) activity.getActionBar().getCustomView().findViewById(R.id.custom_spinner)).setText(devName);
                 //
                 hbt.setPrepared(false).setDiscoveryMode(false).setJudgement(new HJudgeListener() {
 
@@ -98,7 +98,7 @@ public class CoreHandler extends HHandler {
     @Override
     public void onPrepared(Message msg) {
         // 进度条
-        activity.getActionBar().getCustomView().findViewById(R.id.titleprocessbar).setVisibility(View.INVISIBLE);
+        activity.getActionBar().getCustomView().findViewById(R.id.title_process_bar).setVisibility(View.INVISIBLE);
         Toast.makeText(activity, activity.getResources().getString(R.string.prepbthconn), Toast.LENGTH_SHORT).show();
     }
 
@@ -110,7 +110,7 @@ public class CoreHandler extends HHandler {
     @Override
     public void onPrepError(Message msg) {
         // 进度条
-        activity.getActionBar().getCustomView().findViewById(R.id.titleprocessbar).setVisibility(View.INVISIBLE);
+        activity.getActionBar().getCustomView().findViewById(R.id.title_process_bar).setVisibility(View.INVISIBLE);
         String errmsg = (null == msg.obj) ? activity.getResources().getString(R.string.failbthconn) : msg.obj.toString();
         Toast.makeText(activity, errmsg, Toast.LENGTH_SHORT).show();
     }
@@ -130,7 +130,7 @@ public class CoreHandler extends HHandler {
     @Override
     public void onHandlerChanged(Message msg) {
         // 进度条
-        activity.getActionBar().getCustomView().findViewById(R.id.titleprocessbar).setVisibility(View.INVISIBLE);
+        activity.getActionBar().getCustomView().findViewById(R.id.title_process_bar).setVisibility(View.INVISIBLE);
     }
 
 }

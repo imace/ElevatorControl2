@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-
-    <color name="tabMedium">#2B2B2B</color>
-    <color name="tabDark">#000000</color>
-    <color name="tabTransparent">#10ffffff</color>
-    <color name="shape_bg_listview_color">#aeaeae</color>
-
-
+    <color name="tab_medium">#FF383838</color>
+    <color name="tab_dark">#FF141414</color>
+    <color name="tab_transparent">#00FFFFFF</color>
+    <color name="shape_bg_list_view_color">#aeaeae</color>
 </resources>

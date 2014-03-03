@@ -6,7 +6,7 @@
               android:orientation="vertical">
 
     <LinearLayout
-            android:id="@+id/lltransactionitem"
+            android:id="@+id/linear_transaction_item"
             android:layout_width="300dp"
             android:layout_height="wrap_content"
             android:baselineAligned="false"
@@ -16,7 +16,7 @@
             android:padding="10dp">
 
         <TextView
-                android:id="@+id/txttransaction"
+                android:id="@+id/text_transaction"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -25,14 +25,14 @@
                 android:text="Large Text"/>
 
         <TextView
-                android:id="@+id/valuemonitoritem"
+                android:id="@+id/value_monitor_item"
                 android:layout_width="24dp"
                 android:layout_height="40dp"
                 android:layout_weight="0.04"
                 android:text="Large Text"/>
 
         <TextView
-                android:id="@+id/unitmonitoritem"
+                android:id="@+id/unit_monitor_item"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_weight="0.06"

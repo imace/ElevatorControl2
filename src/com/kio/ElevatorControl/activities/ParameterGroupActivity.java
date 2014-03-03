@@ -26,7 +26,7 @@ public class ParameterGroupActivity extends Activity {
     /**
      * 页面元素注入
      */
-    @InjectView(R.id.parametergroupsettingslist)
+    @InjectView(R.id.parameter_group_settings_list)
     public ListView parametergroupsettingslist;
 
     @Override

@@ -7,10 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.*;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.TabHost;
-import android.widget.TextView;
+import android.widget.*;
 import butterknife.OnClick;
 import butterknife.Views;
 import com.hbluetooth.HBluetooth;
@@ -18,14 +15,14 @@ import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.daos.RestoreFactoryDao;
 import com.kio.ElevatorControl.daos.ValuesDao;
 import com.kio.ElevatorControl.handlers.CoreHandler;
-import com.kio.ElevatorControl.views.customsinnper.HCustomSinnper;
-import com.kio.ElevatorControl.views.customsinnper.HDropListener;
+import com.kio.ElevatorControl.views.customspinner.HCustomSpinner;
+import com.kio.ElevatorControl.views.customspinner.HDropListener;
 import com.kio.ElevatorControl.views.dialogs.CustomDialoger;
 
 @SuppressWarnings("deprecation")
 public class CoreActivity extends TabActivity {
 
-    private HCustomSinnper spinner = null;
+    private HCustomSpinner spinner = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +32,7 @@ public class CoreActivity extends TabActivity {
         Views.inject(this);
         initTabs();
         initTitle();
-        initbluetooth();
+        initBluetooth();
         initDB();
     }
 
@@ -52,13 +49,12 @@ public class CoreActivity extends TabActivity {
                 addTab(CONTENTS[i], ICONS[i], CLAZZ[i]);
                 if (i == 1) {
                     // 虽然调用了addTab,实际只是占用一个位置,并未真正添加这个标签
-                    addTab("index", R.drawable.group_save, IndexActivity.class);
+                    addTab(getResources().getString(R.string.title_activity_index), R.drawable.group_save, IndexActivity.class);
                 }
             }
-            btnMiddle(findViewById(R.id.resetbtn));
+            btnMiddle(findViewById(R.id.reset_btn));
         }
     }
-
 
     /**
      * 新建并添加一个Tab到tabHost
@@ -78,11 +74,10 @@ public class CoreActivity extends TabActivity {
         }
     }
 
-
     /**
      * 为中间特殊按钮设置click事件监听 跳转到indexactivity
      */
-    @OnClick(R.id.resetbtn)
+    @OnClick(R.id.reset_btn)
     public void btnMiddle(View v) {
         try {
             // 模拟一次点击事件
@@ -92,14 +87,12 @@ public class CoreActivity extends TabActivity {
         }
     }
 
-
-    private void initbluetooth() {
+    private void initBluetooth() {
         // 必须用CoreActivity初始化用CoreActivity
         if (!HBluetooth.getInstance(this).isPrepared()) {
             HBluetooth.getInstance(this).setPrepared(false).setDiscoveryMode(true).setHandler(new CoreHandler(this)).HStart();
         }
     }
-
 
     /**
      * 如果如果第一次运行本程序 db在此处初始化
@@ -109,7 +102,6 @@ public class CoreActivity extends TabActivity {
             RestoreFactoryDao.dbInit(this);
         }
     }
-
 
     /**
      * 退出 tabactivity的onKeyDown有bug 改用dispatchKeyEvent
@@ -126,14 +118,10 @@ public class CoreActivity extends TabActivity {
         return super.dispatchKeyEvent(event);
     }
 
-    ;
-
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         return true;
     }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -146,17 +134,21 @@ public class CoreActivity extends TabActivity {
         }
     }
 
-
     @SuppressLint("NewApi")
     private void initTitle() {
         ActionBar actionBar = this.getActionBar();
-        actionBar.setCustomView(R.layout.dropdowntitle);
+        ActionBar.LayoutParams layoutParams = new ActionBar.LayoutParams(ActionBar.LayoutParams.FILL_PARENT,
+                ActionBar.LayoutParams.FILL_PARENT);
+        LayoutInflater layoutInflater = getLayoutInflater();
+        RelativeLayout dropdownSpinnerView = (RelativeLayout) layoutInflater.inflate(R.layout.dropdown_title, null);
+        assert actionBar != null;
+        actionBar.setCustomView(dropdownSpinnerView, layoutParams);
         actionBar.setDisplayShowCustomEnabled(true);
+        actionBar.setDisplayShowTitleEnabled(false);
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayUseLogoEnabled(false);
         actionBar.setDisplayShowHomeEnabled(false);
-
-        spinner = ((HCustomSinnper) actionBar.getCustomView().findViewById(R.id.custom_sinnper));
+        spinner = ((HCustomSpinner) actionBar.getCustomView().findViewById(R.id.custom_spinner));
         spinner.setAdapter(new ArrayAdapter<String>(this, android.R.layout.select_dialog_item, new String[]{}));
         spinner.setOnpop(new HDropListener() {
 

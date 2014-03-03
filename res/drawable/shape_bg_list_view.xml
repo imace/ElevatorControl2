@@ -9,7 +9,7 @@
 
     <stroke
             android:width="0.5dp"
-            android:color="@color/shape_bg_listview_color"/>
+            android:color="@color/shape_bg_list_view_color"/>
 
     <solid android:color="@android:color/white"/>
 

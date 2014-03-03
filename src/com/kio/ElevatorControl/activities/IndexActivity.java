@@ -19,7 +19,6 @@ public class IndexActivity extends Activity {
 
     }
 
-
     /**
      * 恢复出厂设置
      */

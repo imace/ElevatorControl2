@@ -1,9 +1,9 @@
 package com.kio.ElevatorControl.models;
 
 import android.annotation.SuppressLint;
-import com.mobsandgeeks.adapters.InstantText;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.utils.ParseSerialsUtils;
+import com.mobsandgeeks.adapters.InstantText;
 import net.tsz.afinal.annotation.sqlite.Id;
 import net.tsz.afinal.annotation.sqlite.ManyToOne;
 import net.tsz.afinal.annotation.sqlite.OneToMany;
@@ -110,7 +110,7 @@ public class ParameterSettings implements Cloneable {
         this.code = code;
     }
 
-    @InstantText(viewId = R.id.txtparametersetting)
+    @InstantText(viewId = R.id.text_parameter_setting)
     public String getName() {
         return name;
     }
@@ -167,7 +167,7 @@ public class ParameterSettings implements Cloneable {
         this.scale = scale;
     }
 
-    @InstantText(viewId = R.id.unitparametersetting)
+    @InstantText(viewId = R.id.unit_parameter_setting)
     public String getUnit() {
         return (unit == null || unit.length() <= 0 || unit.equalsIgnoreCase("null")) ? "(-)" : "(" + unit + ")";
     }
@@ -252,7 +252,7 @@ public class ParameterSettings implements Cloneable {
     }
 
 
-    @InstantText(viewId = R.id.valueparametersetting)
+    @InstantText(viewId = R.id.value_parameter_setting)
     public String getFinalValue() {
         finalValue = ParseSerialsUtils.getValueTextFromParameterSetting(this);
         return finalValue;

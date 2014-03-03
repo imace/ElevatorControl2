@@ -95,15 +95,15 @@ public class FailureFragment extends Fragment {
     }
 
     public void loadDictionary() {
-        ((Button) getActivity().findViewById(R.id.dictionaryerrorbtn)).setOnClickListener(new OnClickListener() {
+        ((Button) getActivity().findViewById(R.id.dictionary_error_btn)).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View arg0) {
-                EditText edit = (EditText) getActivity().findViewById(R.id.dictionaryedit);
-                TextView display = (TextView) getActivity().findViewById(R.id.dictionaryerrorhelpdisplay);
-                TextView level = (TextView) getActivity().findViewById(R.id.dictionaryerrorhelplevel);
-                TextView name = (TextView) getActivity().findViewById(R.id.dictionaryerrorhelpname);
-                TextView reason = (TextView) getActivity().findViewById(R.id.dictionaryerrorhelpreason);
-                TextView solution = (TextView) getActivity().findViewById(R.id.dictionaryerrorhelpsolution);
+                EditText edit = (EditText) getActivity().findViewById(R.id.dictionary_edit);
+                TextView display = (TextView) getActivity().findViewById(R.id.dictionary_error_help_display);
+                TextView level = (TextView) getActivity().findViewById(R.id.dictionary_error_help_level);
+                TextView name = (TextView) getActivity().findViewById(R.id.dictionary_error_help_name);
+                TextView reason = (TextView) getActivity().findViewById(R.id.dictionary_error_help_reason);
+                TextView solution = (TextView) getActivity().findViewById(R.id.dictionary_error_help_solution);
 
                 ErrorHelp ehp = ErrorHelpDao.findByDisplay(getActivity(), edit.getText().toString().trim().replaceAll("'", ""));
                 if (ehp != null) {

@@ -6,7 +6,7 @@
               android:orientation="vertical">
 
     <LinearLayout
-            android:id="@+id/parametersettingsitem"
+            android:id="@+id/parameter_settings_item"
             android:layout_width="300dp"
             android:layout_height="wrap_content"
             android:baselineAligned="false"
@@ -16,7 +16,7 @@
             android:padding="10dp">
 
         <TextView
-                android:id="@+id/txtparametersetting"
+                android:id="@+id/text_parameter_setting"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -25,14 +25,14 @@
                 android:text="Large Text"/>
 
         <TextView
-                android:id="@+id/valueparametersetting"
+                android:id="@+id/value_parameter_setting"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.12"
                 android:text="Large Text"/>
 
         <TextView
-                android:id="@+id/unitparametersetting"
+                android:id="@+id/unit_parameter_setting"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.08"

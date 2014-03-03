@@ -14,16 +14,15 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
-            android:src="@drawable/imageindex"/>
-
+            android:src="@drawable/image_index"/>
 
     <TextView
-            android:id="@+id/parametersettingcode"
+            android:id="@+id/parameter_setting_code"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignLeft="@+id/imageView1"
             android:layout_below="@+id/imageView1"
-            android:background="@drawable/shape_bg_listview"
+            android:background="@drawable/shape_bg_list_view"
             android:padding="20dp"
             android:text="Large Text"/>
 
@@ -32,20 +31,20 @@
             android:id="@+id/textView1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/parametersettingcode"
-            android:layout_alignRight="@+id/parametersettingcode"
-            android:layout_below="@+id/parametersettingcode"
-            android:background="@drawable/shape_bg_listview"
+            android:layout_alignLeft="@+id/parameter_setting_code"
+            android:layout_alignRight="@+id/parameter_setting_code"
+            android:layout_below="@+id/parameter_setting_code"
+            android:background="@drawable/shape_bg_list_view"
             android:padding="20dp"
             android:text="Large Text"/>
 
     <TextView
-            android:id="@+id/currenterrorhelpsolution"
+            android:id="@+id/current_error_help_solution"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignLeft="@+id/textView1"
             android:layout_below="@+id/textView1"
-            android:background="@drawable/shape_bg_listview"
+            android:background="@drawable/shape_bg_list_view"
             android:padding="20dp"
             android:text="Large Text"/>
 
@@ -53,7 +52,7 @@
             android:id="@+id/indexRestoreFactory"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignRight="@+id/parametersettingcode"
+            android:layout_alignRight="@+id/parameter_setting_code"
             android:layout_alignTop="@+id/imageView1"
             android:text="@string/restore_factory"/>
 

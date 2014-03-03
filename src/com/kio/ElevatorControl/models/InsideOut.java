@@ -1,7 +1,7 @@
 package com.kio.ElevatorControl.models;
 
-import com.mobsandgeeks.adapters.InstantText;
 import com.kio.ElevatorControl.R;
+import com.mobsandgeeks.adapters.InstantText;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ public class InsideOut {
         return iso;
     }
 
-    @InstantText(viewId = R.id.txttransaction)
+    @InstantText(viewId = R.id.text_transaction)
     public String getName() {
         return name;
     }

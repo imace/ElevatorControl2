@@ -18,10 +18,10 @@ public class FailureTabs {
      */
     public static FailureTabs getTabInstance(Context ctx) {
         FailureTabs ft = new FailureTabs();
-        String[] txt = ctx.getResources().getStringArray(R.array.FailureTabTxt);// text
+        String[] txt = ctx.getResources().getStringArray(R.array.failure_tab_text);// text
         String[] lot = ctx.getResources().getStringArray(
-                R.array.FailureTabLayout);// layout
-        String[] fuc = ctx.getResources().getStringArray(R.array.FailureFunc);
+                R.array.failure_tab_layout);// layout
+        String[] fuc = ctx.getResources().getStringArray(R.array.failure_function);
         if (null != txt && null != lot && null != fuc && txt.length > 0
                 && lot.length > 0 && fuc.length > 0 && txt.length == lot.length
                 && lot.length == fuc.length) {

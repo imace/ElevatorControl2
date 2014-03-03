@@ -1,9 +1,9 @@
 package com.kio.ElevatorControl.models;
 
 import android.annotation.SuppressLint;
-import com.mobsandgeeks.adapters.InstantText;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.utils.ParseSerialsUtils;
+import com.mobsandgeeks.adapters.InstantText;
 import net.tsz.afinal.annotation.sqlite.Id;
 import net.tsz.afinal.annotation.sqlite.Transient;
 
@@ -94,7 +94,7 @@ public class RealtimeMonitor implements Cloneable {
      *
      * @return
      */
-    @InstantText(viewId = R.id.valuemonitoritem)
+    @InstantText(viewId = R.id.value_monitor_item)
     public String getListViewItemText() {
         listViewItemText = ParseSerialsUtils.getValueTextFromRealtimeMonitor(this);
         return this.listViewItemText;
@@ -112,7 +112,7 @@ public class RealtimeMonitor implements Cloneable {
         this.code = code;
     }
 
-    @InstantText(viewId = R.id.txttransaction)
+    @InstantText(viewId = R.id.text_transaction)
     public String getName() {
         return name;
     }
@@ -161,7 +161,7 @@ public class RealtimeMonitor implements Cloneable {
         this.scale = scale;
     }
 
-    @InstantText(viewId = R.id.unitmonitoritem)
+    @InstantText(viewId = R.id.unit_monitor_item)
     public String getUnit() {
         return (unit == null || unit.length() <= 0 || unit.equalsIgnoreCase("null")) ? "(-)" : "(" + unit + ")";
     }

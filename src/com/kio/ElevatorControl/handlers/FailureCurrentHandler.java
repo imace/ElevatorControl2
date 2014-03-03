@@ -25,11 +25,11 @@ public class FailureCurrentHandler extends HHandler {
         if (msg.obj != null && (msg.obj instanceof ErrorHelp)) {
             ErrorHelp errorhelp = (ErrorHelp) msg.obj;
 
-            TextView display = (TextView) ((FailureActivity) activity).pager.findViewById(R.id.currenterrorhelpdisplay);
-            TextView level = (TextView) ((FailureActivity) activity).pager.findViewById(R.id.currenterrorhelplevel);
-            TextView name = (TextView) ((FailureActivity) activity).pager.findViewById(R.id.currenterrorhelpname);
-            TextView reason = (TextView) ((FailureActivity) activity).pager.findViewById(R.id.currenterrorhelpreason);
-            TextView solution = (TextView) ((FailureActivity) activity).pager.findViewById(R.id.currenterrorhelpsolution);
+            TextView display = (TextView) ((FailureActivity) activity).pager.findViewById(R.id.current_error_help_display);
+            TextView level = (TextView) ((FailureActivity) activity).pager.findViewById(R.id.current_error_help_level);
+            TextView name = (TextView) ((FailureActivity) activity).pager.findViewById(R.id.current_error_help_name);
+            TextView reason = (TextView) ((FailureActivity) activity).pager.findViewById(R.id.current_error_help_reason);
+            TextView solution = (TextView) ((FailureActivity) activity).pager.findViewById(R.id.current_error_help_solution);
 
             name.setText(errorhelp.getName());
             display.setText(errorhelp.getDisplay());

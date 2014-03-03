@@ -15,11 +15,11 @@ public class TransactionTabs {
     public static TransactionTabs getTabInstance(Context ctx) {
         TransactionTabs ft = new TransactionTabs();
         String[] t = ctx.getResources().getStringArray(
-                R.array.TransactionTabTxt);// 临时存放变量
+                R.array.transaction_tab_text);// 临时存放变量
         String[] ls = ctx.getResources().getStringArray(
-                R.array.TransactionTabLayout);
+                R.array.transaction_tab_layout);
         String[] fs = ctx.getResources().getStringArray(
-                R.array.TransactionFunc);
+                R.array.transaction_function);
         if (null != t && t.length > 0 && null != ls && null != fs
                 && t.length > 0 && ls.length > 0 && fs.length > 0
                 && t.length == ls.length

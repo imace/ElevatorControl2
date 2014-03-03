@@ -1,5 +1,5 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:id="@+id/custom_dialog_parameterform"
+              android:id="@+id/custom_dialog_parameter_form"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:background="#fff"
@@ -17,16 +17,15 @@
                 android:text="@string/label_txt_value"/>
 
         <EditText
-                android:id="@+id/parametersettingvalue"
+                android:id="@+id/parameter_setting_value"
                 android:layout_width="162dp"
                 android:layout_height="wrap_content"
                 android:ems="10">
-
             <requestFocus/>
         </EditText>
 
         <TextView
-                android:id="@+id/parametersettingunit"
+                android:id="@+id/parameter_setting_unit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"/>
@@ -45,7 +44,7 @@
                 android:text="@string/label_txt_name"/>
 
         <TextView
-                android:id="@+id/parametersettingname"
+                android:id="@+id/parameter_setting_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"/>
@@ -58,13 +57,13 @@
             android:layout_margin="10dp">
 
         <TextView
-                android:id="@+id/currenterrorhelpsolution"
+                android:id="@+id/current_error_help_solution"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/label_txt_code"/>
 
         <TextView
-                android:id="@+id/parametersettingcode"
+                android:id="@+id/parameter_setting_code"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"/>
@@ -83,7 +82,7 @@
                 android:text="@string/label_txt_productId"/>
 
         <TextView
-                android:id="@+id/parametersettingid"
+                android:id="@+id/parameter_setting_id"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"/>
@@ -102,7 +101,7 @@
                 android:text="@string/label_txt_type"/>
 
         <TextView
-                android:id="@+id/parametersettingtype"
+                android:id="@+id/parameter_setting_type"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"/>
@@ -121,7 +120,7 @@
                 android:text="@string/label_txt_mode"/>
 
         <TextView
-                android:id="@+id/parametersettingmode"
+                android:id="@+id/parameter_setting_mode"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"/>

@@ -7,10 +7,10 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import com.hbluetooth.HHandler;
-import com.mobsandgeeks.adapters.InstantAdapter;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.models.ErrorHelpLog;
 import com.kio.ElevatorControl.views.dialogs.CustomDialoger;
+import com.mobsandgeeks.adapters.InstantAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +35,7 @@ public class FailureLogHandler extends HHandler {
             ErrorHelpLog ehlog = (ErrorHelpLog) msg.obj;
             loglist.add(ehlog);
             // 我们要操作的列表控件
-            ListView lstv = (ListView) activity.findViewById(R.id.failurehistorylist);
+            ListView lstv = (ListView) activity.findViewById(R.id.failure_history_list);
             InstantAdapter<ErrorHelpLog> itadp = new InstantAdapter<ErrorHelpLog>(activity.getApplicationContext(), R.layout.list_failure_history_item, ErrorHelpLog.class,
                     loglist);
             lstv.setAdapter(itadp);

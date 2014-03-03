@@ -1,7 +1,7 @@
 package com.kio.ElevatorControl.models;
 
-import com.mobsandgeeks.adapters.InstantText;
 import com.kio.ElevatorControl.R;
+import com.mobsandgeeks.adapters.InstantText;
 import net.tsz.afinal.annotation.sqlite.Id;
 import net.tsz.afinal.annotation.sqlite.OneToMany;
 import net.tsz.afinal.db.sqlite.OneToManyLazyLoader;
@@ -76,7 +76,7 @@ public class ParameterGroupSettings {
     }
 
 
-    @InstantText(viewId = R.id.txttransaction)
+    @InstantText(viewId = R.id.text_transaction)
     public String getGroupText() {
         return groupText;
     }

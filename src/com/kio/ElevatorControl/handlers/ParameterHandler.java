@@ -8,11 +8,11 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.Toast;
 import com.hbluetooth.HHandler;
-import com.mobsandgeeks.adapters.InstantAdapter;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.activities.ParameterGroupActivity;
 import com.kio.ElevatorControl.models.ParameterSettings;
 import com.kio.ElevatorControl.views.dialogs.CustomDialoger;
+import com.mobsandgeeks.adapters.InstantAdapter;
 
 import java.util.ArrayList;
 import java.util.List;

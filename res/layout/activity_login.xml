@@ -7,33 +7,35 @@
                 android:paddingRight="@dimen/activity_horizontal_margin"
                 android:paddingTop="@dimen/activity_vertical_margin"
                 tools:context=".LoginActivity">
-
     <EditText
-            android:id="@+id/editxtlogin"
-            android:layout_width="wrap_content"
+            android:id="@+id/edit_text_login"
+            android:layout_width="match_parent"
+            android:layout_marginRight="60dp"
+            android:layout_marginLeft="60dp"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="64dp"
+            android:layout_marginTop="70dp"
             android:ems="10"/>
 
     <Button
-            android:id="@+id/btnregist"
+            android:id="@+id/btn_sign_up"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBaseline="@+id/btnlogin"
-            android:layout_alignBottom="@+id/btnlogin"
-            android:layout_alignRight="@+id/editxtlogin"
-            android:layout_marginRight="38dp"
-            android:text="注册"/>
+            android:layout_marginTop="30dp"
+            android:layout_below="@+id/edit_text_login"
+            android:layout_marginLeft="60dp"
+            android:layout_alignParentLeft="true"
+            android:text="@string/sign_up_text"/>
 
     <Button
-            android:id="@+id/btnlogin"
+            android:id="@+id/btn_login"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/editxtlogin"
-            android:layout_below="@+id/editxtlogin"
-            android:layout_marginTop="17dp"
-            android:text="登陆"/>
+            android:layout_marginTop="30dp"
+            android:layout_below="@+id/edit_text_login"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="60dp"
+            android:text="@string/login_text"/>
 
 </RelativeLayout>

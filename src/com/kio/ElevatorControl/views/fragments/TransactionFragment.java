@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
-import com.mobsandgeeks.adapters.InstantAdapter;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.activities.LoginActivity;
 import com.kio.ElevatorControl.activities.ParameterGroupActivity;
@@ -20,6 +19,7 @@ import com.kio.ElevatorControl.daos.ValuesDao;
 import com.kio.ElevatorControl.models.InsideOut;
 import com.kio.ElevatorControl.models.ParameterCopy;
 import com.kio.ElevatorControl.models.ParameterGroupSettings;
+import com.mobsandgeeks.adapters.InstantAdapter;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -107,7 +107,7 @@ public class TransactionFragment extends Fragment {
         settingslist = ParameterGroupSettingsDao.findAll(context);
         // 我们要操作的列表控件
         ListView lstv = (ListView) getActivity()
-                .findViewById(R.id.settingslist);
+                .findViewById(R.id.settings_list);
         InstantAdapter<ParameterGroupSettings> itadp = new InstantAdapter<ParameterGroupSettings>(
                 getActivity().getApplicationContext(),
                 R.layout.list_transaction_settings_item,
@@ -134,7 +134,7 @@ public class TransactionFragment extends Fragment {
         final List<InsideOut> iiout = InsideOut.INSIDEOUT();
         // 我们要操作的列表控件
         ListView lstv = (ListView) this.getActivity().findViewById(
-                R.id.testlist);
+                R.id.test_list);
         InstantAdapter<InsideOut> itadp = new InstantAdapter<InsideOut>(
                 getActivity().getApplicationContext(),
                 R.layout.list_transaction_test_item, InsideOut.class, iiout);
@@ -160,7 +160,7 @@ public class TransactionFragment extends Fragment {
         final List<ParameterCopy> paramcp = ParameterCopy.PARAMCOPY();
         // 我们要操作的列表控件
         ListView lstv = (ListView) this.getActivity().findViewById(
-                R.id.copylist);
+                R.id.copy_list);
         InstantAdapter<ParameterCopy> itadp = new InstantAdapter<ParameterCopy>(
                 getActivity().getApplicationContext(),
                 R.layout.list_transaction_copy_item, ParameterCopy.class,

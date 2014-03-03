@@ -6,7 +6,7 @@
               android:orientation="vertical">
 
     <LinearLayout
-            android:id="@+id/lltransactionitem"
+            android:id="@+id/linear_transaction_item"
             android:layout_width="300dp"
             android:layout_height="wrap_content"
             android:baselineAligned="false"
@@ -15,7 +15,7 @@
             android:padding="10dp">
 
         <TextView
-                android:id="@+id/txttransaction"
+                android:id="@+id/text_transaction"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -24,11 +24,11 @@
                 android:text="Large Text"/>
 
         <ImageView
-                android:id="@+id/icontransaction"
+                android:id="@+id/icon_transaction"
                 android:layout_width="24dp"
                 android:layout_height="40dp"
                 android:layout_weight="0.06"
-                android:src="@drawable/nexticon_normal"/>
+                android:src="@drawable/next_icon_normal"/>
     </LinearLayout>
 
 </LinearLayout>

@@ -2,9 +2,9 @@ package com.kio.ElevatorControl.models;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import com.mobsandgeeks.adapters.InstantText;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.daos.ErrorHelpLogDao;
+import com.mobsandgeeks.adapters.InstantText;
 
 import java.util.Date;
 
@@ -18,12 +18,12 @@ public class ErrorHelpLog {
     public Context ctx;
 
 
-    @InstantText(viewId = R.id.txtfailurehistory)
+    @InstantText(viewId = R.id.text_failure_history)
     public String getUIName() {
         return ErrorHelpLogDao.findErrorHelp(ctx, errorHelpId).getDisplay();
     }
 
-    @InstantText(viewId = R.id.timefailurehistory)
+    @InstantText(viewId = R.id.time_failure_history)
     @SuppressLint("SimpleDateFormat")
     public String getUITime() {
         java.text.DateFormat format1 = new java.text.SimpleDateFormat("yyyy-MM-dd hh:mm:ss");

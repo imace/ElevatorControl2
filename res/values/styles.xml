@@ -4,6 +4,10 @@
         <item name="vpiTabPageIndicatorStyle">@style/CustomTabPageIndicator</item>
     </style>
 
+    <style name="SwitcherDialog" parent="android:Theme.Holo.Light.DarkActionBar">
+
+    </style>
+
     <style name="CustomTabPageIndicator" parent="Widget.TabPageIndicator">
         <item name="android:background">@drawable/custom_tab_indicator</item>
         <item name="android:textAppearance">@style/CustomTabPageIndicator.Text</item>
@@ -23,6 +27,3 @@
     </style>
 
 </resources>
-    
-    
-    

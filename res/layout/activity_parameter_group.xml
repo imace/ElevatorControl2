@@ -2,16 +2,15 @@
               android:layout_width="fill_parent"
               android:layout_height="fill_parent"
               android:orientation="vertical">
-
     <ListView
-            android:id="@+id/parametergroupsettingslist"
+            android:id="@+id/parameter_group_settings_list"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:layout_marginBottom="12dp"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginTop="12dp"
-            android:background="@drawable/shape_bg_listview">
+            android:background="@drawable/shape_bg_list_view">
     </ListView>
 
 </LinearLayout>

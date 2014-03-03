@@ -65,17 +65,17 @@ public class CustomDialoger {
         ((Switch) layout.findViewById(R.id.X15)).setEnabled(false);
         ((Switch) layout.findViewById(R.id.X16)).setEnabled(false);
 
-        return new AlertDialog.Builder(act, R.style.SwitcherDailog).setView(layout).setNeutralButton("确定", null);
+        return new AlertDialog.Builder(act, R.style.SwitcherDialog).setView(layout).setNeutralButton("确定", null);
     }
 
     public static AlertDialog.Builder parameterSettingDialog(final Activity act, final ParameterSettings p) {
-        final View layout = act.getLayoutInflater().inflate(R.layout.custom_dialog_parameterform, (ViewGroup) act.findViewById(R.id.custom_dialog_parameterform));
-        ((EditText) layout.findViewById(R.id.parametersettingvalue)).setText(ParseSerialsUtils.getValueTextFromParameterSetting(p));
-        ((TextView) layout.findViewById(R.id.parametersettingcode)).setText(p.getCode());
-        ((TextView) layout.findViewById(R.id.parametersettingname)).setText(p.getName());
-        ((TextView) layout.findViewById(R.id.parametersettingtype)).setText(p.getType());
-        ((TextView) layout.findViewById(R.id.parametersettingunit)).setText("(" + ((p.getUnit() == null || p.getUnit().length() <= 0) ? "-" : p.getUnit()) + ")");
-        ((TextView) layout.findViewById(R.id.parametersettingid)).setText(p.getProductId());
+        final View layout = act.getLayoutInflater().inflate(R.layout.custom_dialog_parameterform, (ViewGroup) act.findViewById(R.id.custom_dialog_parameter_form));
+        ((EditText) layout.findViewById(R.id.parameter_setting_value)).setText(ParseSerialsUtils.getValueTextFromParameterSetting(p));
+        ((TextView) layout.findViewById(R.id.parameter_setting_code)).setText(p.getCode());
+        ((TextView) layout.findViewById(R.id.parameter_setting_name)).setText(p.getName());
+        ((TextView) layout.findViewById(R.id.parameter_setting_type)).setText(p.getType());
+        ((TextView) layout.findViewById(R.id.parameter_setting_unit)).setText("(" + ((p.getUnit() == null || p.getUnit().length() <= 0) ? "-" : p.getUnit()) + ")");
+        ((TextView) layout.findViewById(R.id.parameter_setting_id)).setText(p.getProductId());
 
         return new AlertDialog.Builder(act, R.style.AppBaseTheme).setView(layout)
                 .setNeutralButton(act.getResources().getString(R.string.dialog_btn_ok), new DialogInterface.OnClickListener() {
@@ -88,7 +88,7 @@ public class CustomDialoger {
 
                             @Override
                             public void beforeSend() {
-                                String inputdata = ((EditText) layout.findViewById(R.id.parametersettingvalue)).getText().toString();
+                                String inputdata = ((EditText) layout.findViewById(R.id.parameter_setting_value)).getText().toString();
                                 String parsedata = ParseSerialsUtils.getHexStringFromUserInputParameterSetting(inputdata, p);
                                 setSendbuffer(HSerial.crc16(HSerial.hexStr2Ints("0206" + p.getCode() + parsedata)));
                                 Log.v("parameterSettingDialog write : ", "0206" + p.getCode() + parsedata);
@@ -145,11 +145,11 @@ public class CustomDialoger {
 
     public static AlertDialog.Builder failureHistoryDailog(final ErrorHelp errorhlep, final Activity act) {
         final View layout = act.getLayoutInflater().inflate(R.layout.tab_failure_current, null);
-        ((TextView) layout.findViewById(R.id.currenterrorhelpdisplay)).setText(errorhlep.getDisplay());
-        ((TextView) layout.findViewById(R.id.currenterrorhelplevel)).setText(errorhlep.getLevel());
-        ((TextView) layout.findViewById(R.id.currenterrorhelpname)).setText(errorhlep.getName());
-        ((TextView) layout.findViewById(R.id.currenterrorhelpreason)).setText(errorhlep.getReason());
-        ((TextView) layout.findViewById(R.id.currenterrorhelpsolution)).setText(errorhlep.getSolution());
+        ((TextView) layout.findViewById(R.id.current_error_help_display)).setText(errorhlep.getDisplay());
+        ((TextView) layout.findViewById(R.id.current_error_help_level)).setText(errorhlep.getLevel());
+        ((TextView) layout.findViewById(R.id.current_error_help_name)).setText(errorhlep.getName());
+        ((TextView) layout.findViewById(R.id.current_error_help_reason)).setText(errorhlep.getReason());
+        ((TextView) layout.findViewById(R.id.current_error_help_solution)).setText(errorhlep.getSolution());
 
         return new AlertDialog.Builder(act, R.style.AppBaseTheme).setView(layout).setNeutralButton("确定", null);
 

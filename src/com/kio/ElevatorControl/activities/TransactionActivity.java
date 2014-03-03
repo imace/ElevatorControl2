@@ -27,6 +27,7 @@ import java.util.List;
  * @author jch
  */
 public class TransactionActivity extends FragmentActivity {
+
     private final String HTAG = "TransactionActivity";
 
     /**

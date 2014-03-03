@@ -1,4 +1,4 @@
-package com.kio.ElevatorControl.views.customsinnper;
+package com.kio.ElevatorControl.views.customspinner;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
@@ -18,11 +18,11 @@ import android.widget.*;
 import android.widget.AdapterView.OnItemClickListener;
 import com.kio.ElevatorControl.R;
 
-public class HCustomSinnper extends Button {
+public class HCustomSpinner extends Button {
 
     protected PopupWindow popup = null;
 
-    private HCustomSinnper topButton;
+    private HCustomSpinner topButton;
 
     protected CornerListView mListView;
 
@@ -43,7 +43,7 @@ public class HCustomSinnper extends Button {
     @SuppressLint({
             "NewApi", "Recycle"
     })
-    public HCustomSinnper(Context context, AttributeSet attrs) {
+    public HCustomSpinner(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.mContext = context;
         topButton = this;
@@ -104,7 +104,7 @@ public class HCustomSinnper extends Button {
 
         mListView = new CornerListView(c);
         mListView.setScrollbarFadingEnabled(false);
-        mListView.setBackgroundResource(R.drawable.shape_bg_listview);
+        mListView.setBackgroundResource(R.drawable.shape_bg_list_view);
         mListView.setCacheColorHint(0);
         mListView.setOnItemClickListener(new OnItemClickListener() {
 

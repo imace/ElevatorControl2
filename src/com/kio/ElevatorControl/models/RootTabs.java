@@ -12,27 +12,25 @@ public class RootTabs {
     private Class[] clazz;//点击后跳转的activity
 
     /**
-     * 一级标签
+     * 构造函数
      *
-     * @param ctx
-     * @param txtrid  键的id
-     * @param iconrid 值的id
-     * @return 取不到或取道键值对的长度不等返回null
+     * @param ctx 上下文
+     * @return RootTabs
      */
     @SuppressWarnings("rawtypes")
     public static RootTabs getTabInstance(Context ctx) {
         RootTabs uic = new RootTabs();
-        String[] contents = ctx.getResources().getStringArray(R.array.RootTabTxt);// 临时存放变量
+        String[] contents = ctx.getResources().getStringArray(R.array.root_tab_text);// 临时存放变量
         ArrayList<Integer> icons = new ArrayList<Integer>();// 临时存放变量
         ArrayList<Class> clazz = new ArrayList<Class>();// 临时存放变量
         // 根据资源名称获取属性对应的内存地址
-        for (String itemvalue : ctx.getResources().getStringArray(R.array.RootTabIcon)) {
-            icons.add(ctx.getResources().getIdentifier(itemvalue,
+        for (String itemValue : ctx.getResources().getStringArray(R.array.root_tab_icon)) {
+            icons.add(ctx.getResources().getIdentifier(itemValue,
                     R.drawable.class.getSimpleName(),
                     R.class.getPackage().getName()));
         }
         //根据类名获取要跳转的类
-        for (String clsnm : ctx.getResources().getStringArray(R.array.RootTabClazz)) {
+        for (String clsnm : ctx.getResources().getStringArray(R.array.root_tab_class_name)) {
             try {
                 clazz.add(Class.forName(clsnm));
             } catch (ClassNotFoundException e) {

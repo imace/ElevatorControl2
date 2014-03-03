@@ -8,12 +8,12 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import com.hbluetooth.HHandler;
-import com.mobsandgeeks.adapters.InstantAdapter;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.activities.TransactionActivity;
 import com.kio.ElevatorControl.daos.ValuesDao;
 import com.kio.ElevatorControl.models.RealtimeMonitor;
 import com.kio.ElevatorControl.views.dialogs.CustomDialoger;
+import com.mobsandgeeks.adapters.InstantAdapter;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -78,7 +78,7 @@ public class TransactionHandler extends HHandler {
             monitorlist.add((RealtimeMonitor) currentMessage);
         }
         ListView lstv = (ListView) ((TransactionActivity) activity).pager
-                .findViewById(R.id.monitorlist);
+                .findViewById(R.id.monitor_list);
 
         InstantAdapter<RealtimeMonitor> itadp = new InstantAdapter<RealtimeMonitor>(
                 activity.getBaseContext(),

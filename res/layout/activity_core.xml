@@ -2,7 +2,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent">
-
     <TabHost
             android:id="@android:id/tabhost"
             android:layout_width="fill_parent"
@@ -15,11 +14,13 @@
 
             <FrameLayout
                     android:id="@android:id/tabcontent"
+                    android:layout_marginBottom="15dip"
                     android:layout_width="fill_parent"
                     android:layout_height="0dip"
                     android:layout_weight="1"/>
 
             <TabWidget
+                    android:background="@android:color/background_dark"
                     android:id="@android:id/tabs"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
@@ -28,12 +29,11 @@
     </TabHost>
 
     <ImageButton
-            android:id="@+id/resetbtn"
-            android:layout_width="70sp"
-            android:layout_height="70sp"
+            android:visibility="gone"
+            android:id="@+id/reset_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:background="@drawable/center_main_indicator"
-            android:src="@drawable/group_error"/>
+            android:layout_centerHorizontal="true"/>
 
 </RelativeLayout>
