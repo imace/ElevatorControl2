@@ -1,11 +1,9 @@
 <resources>
-
-    <style name="AppBaseTheme" parent="android:Theme.Holo.Light">
+    <style name="Theme.Elevator.Control" parent="android:Theme.Holo.Light">
         <item name="vpiTabPageIndicatorStyle">@style/CustomTabPageIndicator</item>
     </style>
 
     <style name="SwitcherDialog" parent="android:Theme.Holo.Light.DarkActionBar">
-
     </style>
 
     <style name="CustomTabPageIndicator" parent="Widget.TabPageIndicator">

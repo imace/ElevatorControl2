@@ -19,7 +19,7 @@ public class RootTabs {
      */
     @SuppressWarnings("rawtypes")
     public static RootTabs getTabInstance(Context ctx) {
-        RootTabs uic = new RootTabs();
+        RootTabs navigationTabs = new RootTabs();
         String[] contents = ctx.getResources().getStringArray(R.array.root_tab_text);// 临时存放变量
         ArrayList<Integer> icons = new ArrayList<Integer>();// 临时存放变量
         ArrayList<Class> clazz = new ArrayList<Class>();// 临时存放变量
@@ -30,20 +30,19 @@ public class RootTabs {
                     R.class.getPackage().getName()));
         }
         //根据类名获取要跳转的类
-        for (String clsnm : ctx.getResources().getStringArray(R.array.root_tab_class_name)) {
+        for (String className : ctx.getResources().getStringArray(R.array.root_tab_class_name)) {
             try {
-                clazz.add(Class.forName(clsnm));
+                clazz.add(Class.forName(className));
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
         }
-
         if (null != contents && null != icons && null != clazz
                 && contents.length == icons.size() && contents.length == clazz.size()) {
-            uic.setTexts(contents);
-            uic.setIcons(icons.toArray(new Integer[icons.size()]));
-            uic.setClazznames(clazz.toArray(new Class[clazz.size()]));
-            return uic;
+            navigationTabs.setTexts(contents);
+            navigationTabs.setIcons(icons.toArray(new Integer[icons.size()]));
+            navigationTabs.setClassNames(clazz.toArray(new Class[clazz.size()]));
+            return navigationTabs;
         }
         return null;
     }
@@ -70,7 +69,7 @@ public class RootTabs {
     }
 
     @SuppressWarnings("rawtypes")
-    public void setClazznames(Class[] clazznames) {
-        this.clazz = clazznames;
+    public void setClassNames(Class[] classNames) {
+        this.clazz = classNames;
     }
 }

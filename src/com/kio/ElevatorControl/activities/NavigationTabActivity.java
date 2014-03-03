@@ -19,8 +19,12 @@ import com.kio.ElevatorControl.views.customspinner.HCustomSpinner;
 import com.kio.ElevatorControl.views.customspinner.HDropListener;
 import com.kio.ElevatorControl.views.dialogs.CustomDialoger;
 
+/**
+ * TabActivity 导航
+ */
+
 @SuppressWarnings("deprecation")
-public class CoreActivity extends TabActivity {
+public class NavigationTabActivity extends TabActivity {
 
     private HCustomSpinner spinner = null;
 
@@ -28,7 +32,7 @@ public class CoreActivity extends TabActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
-        setContentView(R.layout.activity_core);
+        setContentView(R.layout.activity_navigation_tab);
         Views.inject(this);
         initTabs();
         initTitle();
@@ -49,7 +53,7 @@ public class CoreActivity extends TabActivity {
                 addTab(CONTENTS[i], ICONS[i], CLAZZ[i]);
                 if (i == 1) {
                     // 虽然调用了addTab,实际只是占用一个位置,并未真正添加这个标签
-                    addTab(getResources().getString(R.string.title_activity_index), R.drawable.group_save, IndexActivity.class);
+                    addTab(getResources().getString(R.string.title_activity_index), R.drawable.tab_home, HomeActivity.class);
                 }
             }
             btnMiddle(findViewById(R.id.reset_btn));
@@ -83,7 +87,7 @@ public class CoreActivity extends TabActivity {
             // 模拟一次点击事件
             this.getTabHost().getTabWidget().getChildTabViewAt(2).performClick();
         } catch (Exception e) {//
-            Log.e("CoreActivity.btnMain", e.getMessage());
+            Log.e("NavigationTabActivity.btnMain", e.getMessage());
         }
     }
 
@@ -127,7 +131,7 @@ public class CoreActivity extends TabActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                startActivity(new Intent(this, CoreActivity.class));
+                startActivity(new Intent(this, NavigationTabActivity.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -162,9 +166,9 @@ public class CoreActivity extends TabActivity {
 
             @Override
             public void onRefresh() {
-                spinner.setAdapter(new ArrayAdapter<String>(CoreActivity.this, android.R.layout.select_dialog_item, new String[]{}));
+                spinner.setAdapter(new ArrayAdapter<String>(NavigationTabActivity.this, android.R.layout.select_dialog_item, new String[]{}));
                 if (th == null || !th.isAlive()) {
-                    HBluetooth bth = HBluetooth.getInstance(CoreActivity.this).setPrepared(false).setDiscoveryMode(true).setHandler(new CoreHandler(CoreActivity.this));
+                    HBluetooth bth = HBluetooth.getInstance(NavigationTabActivity.this).setPrepared(false).setDiscoveryMode(true).setHandler(new CoreHandler(NavigationTabActivity.this));
                     bth.HStart();
                 }
             }

@@ -26,9 +26,9 @@ import java.util.List;
  *
  * @author jch
  */
-public class TransactionActivity extends FragmentActivity {
+public class ConfigurationActivity extends FragmentActivity {
 
-    private final String HTAG = "TransactionActivity";
+    private final String HTAG = "ConfigurationActivity";
 
     /**
      * 注入页面元素
@@ -44,10 +44,10 @@ public class TransactionActivity extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_transaction);
+        setContentView(R.layout.activity_configuration);
 
         Views.inject(this);
-        // TransactionActivity->TransactionAdapter->TransactionFragment->按照tabIndex初始化各个标签对应的子页面
+        // ConfigurationActivity->TransactionAdapter->TransactionFragment->按照tabIndex初始化各个标签对应的子页面
         pager.setAdapter(new TransactionAdapter(this));
         indicator.setViewPager(pager);
         indicator.setOnPageChangeListener(new OnPageChangeListener() {
@@ -61,12 +61,12 @@ public class TransactionActivity extends FragmentActivity {
 
             @Override
             public void onPageSelected(int index) {
-                HBluetooth.getInstance(TransactionActivity.this).setHandler(transHandler);
+                HBluetooth.getInstance(ConfigurationActivity.this).setHandler(transHandler);
                 try {
                     // 反射执行
-                    String mName = ValuesDao.getTransactionTabsLoadMethodName(index, TransactionActivity.this);
+                    String mName = ValuesDao.getTransactionTabsLoadMethodName(index, ConfigurationActivity.this);
                     Log.v(HTAG, String.valueOf(index) + " : " + mName);
-                    TransactionActivity.this.getClass().getMethod(mName).invoke(TransactionActivity.this);
+                    ConfigurationActivity.this.getClass().getMethod(mName).invoke(ConfigurationActivity.this);
                 } catch (NoSuchMethodException e) {
                     Log.e(HTAG, e.getMessage());
                 } catch (IllegalArgumentException e) {

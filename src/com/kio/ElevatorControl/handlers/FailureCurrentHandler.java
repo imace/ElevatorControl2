@@ -5,7 +5,7 @@ import android.os.Message;
 import android.widget.TextView;
 import com.hbluetooth.HHandler;
 import com.kio.ElevatorControl.R;
-import com.kio.ElevatorControl.activities.FailureActivity;
+import com.kio.ElevatorControl.activities.TroubleAnalyzeActivity;
 import com.kio.ElevatorControl.models.ErrorHelp;
 
 /**
@@ -25,11 +25,11 @@ public class FailureCurrentHandler extends HHandler {
         if (msg.obj != null && (msg.obj instanceof ErrorHelp)) {
             ErrorHelp errorhelp = (ErrorHelp) msg.obj;
 
-            TextView display = (TextView) ((FailureActivity) activity).pager.findViewById(R.id.current_error_help_display);
-            TextView level = (TextView) ((FailureActivity) activity).pager.findViewById(R.id.current_error_help_level);
-            TextView name = (TextView) ((FailureActivity) activity).pager.findViewById(R.id.current_error_help_name);
-            TextView reason = (TextView) ((FailureActivity) activity).pager.findViewById(R.id.current_error_help_reason);
-            TextView solution = (TextView) ((FailureActivity) activity).pager.findViewById(R.id.current_error_help_solution);
+            TextView display = (TextView) ((TroubleAnalyzeActivity) activity).pager.findViewById(R.id.current_error_help_display);
+            TextView level = (TextView) ((TroubleAnalyzeActivity) activity).pager.findViewById(R.id.current_error_help_level);
+            TextView name = (TextView) ((TroubleAnalyzeActivity) activity).pager.findViewById(R.id.current_error_help_name);
+            TextView reason = (TextView) ((TroubleAnalyzeActivity) activity).pager.findViewById(R.id.current_error_help_reason);
+            TextView solution = (TextView) ((TroubleAnalyzeActivity) activity).pager.findViewById(R.id.current_error_help_solution);
 
             name.setText(errorhelp.getName());
             display.setText(errorhelp.getDisplay());

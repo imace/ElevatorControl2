@@ -9,14 +9,13 @@ import butterknife.Views;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.daos.RestoreFactoryDao;
 
-public class IndexActivity extends Activity {
+public class HomeActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_index);
+        setContentView(R.layout.activity_home);
         Views.inject(this);
-
     }
 
     /**
@@ -27,7 +26,7 @@ public class IndexActivity extends Activity {
         try {
             RestoreFactoryDao.dbInit(this);
         } catch (Exception e) {//
-            Log.e("IndexActivity.btnRestoreFactoryClick", e.getMessage());
+            Log.e("HomeActivity.btnRestoreFactoryClick", e.getMessage());
         }
     }
 

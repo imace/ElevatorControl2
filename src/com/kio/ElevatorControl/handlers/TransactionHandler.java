@@ -9,7 +9,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import com.hbluetooth.HHandler;
 import com.kio.ElevatorControl.R;
-import com.kio.ElevatorControl.activities.TransactionActivity;
+import com.kio.ElevatorControl.activities.ConfigurationActivity;
 import com.kio.ElevatorControl.daos.ValuesDao;
 import com.kio.ElevatorControl.models.RealtimeMonitor;
 import com.kio.ElevatorControl.views.dialogs.CustomDialoger;
@@ -55,7 +55,7 @@ public class TransactionHandler extends HHandler {
             this.getClass()
                     .getMethod(
                             ValuesDao.getTransactionTabsLoadMethodName(
-                                    ((TransactionActivity) activity).pager
+                                    ((ConfigurationActivity) activity).pager
                                             .getCurrentItem(), activity))
                     .invoke(this);
         } catch (NoSuchMethodException e) {
@@ -77,7 +77,7 @@ public class TransactionHandler extends HHandler {
         if (null != this.currentMessage) {
             monitorlist.add((RealtimeMonitor) currentMessage);
         }
-        ListView lstv = (ListView) ((TransactionActivity) activity).pager
+        ListView lstv = (ListView) ((ConfigurationActivity) activity).pager
                 .findViewById(R.id.monitor_list);
 
         InstantAdapter<RealtimeMonitor> itadp = new InstantAdapter<RealtimeMonitor>(

@@ -12,7 +12,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import com.kio.ElevatorControl.R;
-import com.kio.ElevatorControl.activities.LoginActivity;
+import com.kio.ElevatorControl.activities.CheckAuthorizationActivity;
 import com.kio.ElevatorControl.activities.ParameterGroupActivity;
 import com.kio.ElevatorControl.daos.ParameterGroupSettingsDao;
 import com.kio.ElevatorControl.daos.ValuesDao;
@@ -147,7 +147,7 @@ public class TransactionFragment extends Fragment {
                                     int position, long id) {
                 TransactionFragment.this.getActivity().startActivity(
                         new Intent(TransactionFragment.this.getActivity(),
-                                LoginActivity.class));
+                                CheckAuthorizationActivity.class));
             }
         });
     }
@@ -172,7 +172,7 @@ public class TransactionFragment extends Fragment {
                                     int position, long id) {
                 TransactionFragment.this.getActivity().startActivity(
                         new Intent(TransactionFragment.this.getActivity(),
-                                LoginActivity.class));
+                                CheckAuthorizationActivity.class));
 
             }
         });

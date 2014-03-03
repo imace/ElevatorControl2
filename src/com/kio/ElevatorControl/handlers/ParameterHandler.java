@@ -39,7 +39,7 @@ public class ParameterHandler extends HHandler {
             InstantAdapter<ParameterSettings> itadp = new InstantAdapter<ParameterSettings>(
                     activity, R.layout.list_parameter_group_item,
                     ParameterSettings.class, parametersettings);
-            ListView lv = ((ParameterGroupActivity) activity).parametergroupsettingslist;
+            ListView lv = ((ParameterGroupActivity) activity).parameterGroupSettingsList;
             lv.setAdapter(itadp);
             lv.setOnItemClickListener(new OnItemClickListener() {
                 @Override

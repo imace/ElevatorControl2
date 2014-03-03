@@ -21,13 +21,13 @@ import java.util.List;
 
 public class ParameterGroupActivity extends Activity {
 
-    private List<ParameterSettings> parametersettings;
+    private List<ParameterSettings> parameterSettings;
 
     /**
      * 页面元素注入
      */
     @InjectView(R.id.parameter_group_settings_list)
-    public ListView parametergroupsettingslist;
+    public ListView parameterGroupSettingsList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,15 +46,14 @@ public class ParameterGroupActivity extends Activity {
 
         this.setTitle(pgroup.getGroupText());
         // 组成员
-        parametersettings = pgroup.getParametersettings().getList();
-
+        parameterSettings = pgroup.getParametersettings().getList();
         initBluetooth();
     }
 
     private void initBluetooth() {
-        HCommunication[] cumms = new HCommunication[parametersettings.size()];
-        for (int i = 0; i < parametersettings.size(); i++) {
-            cumms[i] = new HCommunication(parametersettings.get(i)) {
+        HCommunication[] cumms = new HCommunication[parameterSettings.size()];
+        for (int i = 0; i < parameterSettings.size(); i++) {
+            cumms[i] = new HCommunication(parameterSettings.get(i)) {
                 @Override
                 public void beforeSend() {
                     if (this.getItem() instanceof ParameterSettings) {

@@ -8,16 +8,16 @@
         <item>帮助</item>
     </string-array>
     <string-array name="root_tab_icon">
-        <item>group_error</item>
-        <item>group_save</item>
-        <item>group_search</item>
-        <item>group_helper</item>
+        <item>tab_trouble_analyze</item>
+        <item>tab_configuration</item>
+        <item>tab_firmware_manage</item>
+        <item>tab_help_system</item>
     </string-array>
     <string-array name="root_tab_class_name">
-        <item>com.kio.ElevatorControl.activities.FailureActivity</item>
-        <item>com.kio.ElevatorControl.activities.TransactionActivity</item>
-        <item>com.kio.ElevatorControl.activities.ContainerActivity</item>
-        <item>com.kio.ElevatorControl.activities.ContainerActivity</item>
+        <item>com.kio.ElevatorControl.activities.TroubleAnalyzeActivity</item>
+        <item>com.kio.ElevatorControl.activities.ConfigurationActivity</item>
+        <item>com.kio.ElevatorControl.activities.FirmwareManageActivity</item>
+        <item>com.kio.ElevatorControl.activities.HelpSystemActivity</item>
     </string-array>
 
     <!-- 电梯调试标签页选项卡 -->

@@ -14,32 +14,41 @@
             android:icon="@drawable/ic_launcher"
             android:label="@string/app_name"
             android:hardwareAccelerated="true"
-            android:theme="@style/AppBaseTheme">
+            android:theme="@style/Theme.Elevator.Control">
         <!-- 登陆认证 -->
         <activity
-                android:name="com.kio.ElevatorControl.activities.LoginActivity">
+                android:name=".activities.CheckAuthorizationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- TabHost 导航activity -->
         <activity
-                android:name="com.kio.ElevatorControl.activities.ContainerActivity">
+                android:name=".activities.NavigationTabActivity">
+        </activity>
+        <!-- 故障分析 -->
+        <activity
+                android:name=".activities.TroubleAnalyzeActivity">
+        </activity>
+        <!--电梯调试-->
+        <activity
+                android:name=".activities.ConfigurationActivity">
+        </activity>
+        <!--首页-->
+        <activity
+                android:name=".activities.HomeActivity">
+        </activity>
+        <!--固件管理-->
+        <activity
+                android:name=".activities.FirmwareManageActivity">
+        </activity>
+        <!--帮助-->
+        <activity
+                android:name=".activities.HelpSystemActivity">
         </activity>
         <activity
-                android:name="com.kio.ElevatorControl.activities.CoreActivity">
-        </activity>
-        <activity
-                android:name="com.kio.ElevatorControl.activities.FailureActivity">
-        </activity>
-        <activity
-                android:name="com.kio.ElevatorControl.activities.IndexActivity">
-        </activity>
-        <activity
-                android:name="com.kio.ElevatorControl.activities.TransactionActivity">
-        </activity>
-        <activity
-                android:name="com.kio.ElevatorControl.activities.ParameterGroupActivity">
+                android:name=".activities.ParameterGroupActivity">
         </activity>
     </application>
 

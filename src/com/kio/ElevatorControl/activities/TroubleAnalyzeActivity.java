@@ -28,9 +28,9 @@ import java.lang.reflect.InvocationTargetException;
  *
  * @author jch
  */
-public class FailureActivity extends FragmentActivity {
+public class TroubleAnalyzeActivity extends FragmentActivity {
 
-    private final String HTAG = "FailureActivity";
+    private final String HTAG = "TroubleAnalyzeActivity";
     /**
      * 注入页面元素
      */
@@ -45,12 +45,12 @@ public class FailureActivity extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_failure);
+        setContentView(R.layout.activity_trouble_analyze);
 
         // 注入以后才能使用@InjectView定义的对象
         Views.inject(this);
 
-        // FailureActivity --> FailureAdapter --> FailureFragment
+        // TroubleAnalyzeActivity --> FailureAdapter --> FailureFragment
         pager.setAdapter(new FailureAdapter(this));
         indicator.setViewPager(pager);
         indicator.setOnPageChangeListener(new OnPageChangeListener() {
@@ -67,9 +67,9 @@ public class FailureActivity extends FragmentActivity {
             public void onPageSelected(int index) {
                 try {
                     // 反射执行
-                    String mName = ValuesDao.getFailureTabsLoadMethodName(index, FailureActivity.this);
+                    String mName = ValuesDao.getFailureTabsLoadMethodName(index, TroubleAnalyzeActivity.this);
                     Log.v(HTAG, String.valueOf(index) + " : " + mName);
-                    FailureActivity.this.getClass().getMethod(mName).invoke(FailureActivity.this);
+                    TroubleAnalyzeActivity.this.getClass().getMethod(mName).invoke(TroubleAnalyzeActivity.this);
                 } catch (NoSuchMethodException e) {
                     Log.e(HTAG, e.getMessage());
                 } catch (IllegalArgumentException e) {
@@ -126,9 +126,9 @@ public class FailureActivity extends FragmentActivity {
                             Log.v(HTAG, HSerial.byte2HexStr(received));
                             ErrorHelp ep = new ErrorHelp();
                             try {
-                                ep.setReceived(FailureActivity.this, received);
+                                ep.setReceived(TroubleAnalyzeActivity.this, received);
                                 // 将ep存入数据库
-                                // ErrorHelpLogDao.Insert(FailureActivity.this,
+                                // ErrorHelpLogDao.Insert(TroubleAnalyzeActivity.this,
                                 // ErrorHelpLog.Instance(ep));
                                 return ep;
                             } catch (Exception e) {
@@ -179,8 +179,8 @@ public class FailureActivity extends FragmentActivity {
                             // 通过验证
                             ErrorHelpLog ehlog = new ErrorHelpLog();
                             ehlog.setReceived(received);
-                            ehlog.setCtx(FailureActivity.this);
-                            ehlog = ParseSerialsUtils.getErrorHelpLog(FailureActivity.this, ehlog);
+                            ehlog.setCtx(TroubleAnalyzeActivity.this);
+                            ehlog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, ehlog);
                             return ehlog;
                         }
                         return null;
@@ -210,8 +210,8 @@ public class FailureActivity extends FragmentActivity {
                     // 通过验证
                     ErrorHelpLog ehlog = new ErrorHelpLog();
                     ehlog.setReceived(received);
-                    ehlog.setCtx(FailureActivity.this);
-                    ehlog = ParseSerialsUtils.getErrorHelpLog(FailureActivity.this, ehlog);
+                    ehlog.setCtx(TroubleAnalyzeActivity.this);
+                    ehlog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, ehlog);
                     return ehlog;
                 }
                 return null;
@@ -241,8 +241,8 @@ public class FailureActivity extends FragmentActivity {
                     // 通过验证
                     ErrorHelpLog ehlog = new ErrorHelpLog();
                     ehlog.setReceived(received);
-                    ehlog.setCtx(FailureActivity.this);
-                    ehlog = ParseSerialsUtils.getErrorHelpLog(FailureActivity.this, ehlog);
+                    ehlog.setCtx(TroubleAnalyzeActivity.this);
+                    ehlog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, ehlog);
                     return ehlog;
                 }
                 return null;
@@ -272,8 +272,8 @@ public class FailureActivity extends FragmentActivity {
                     // 通过验证
                     ErrorHelpLog ehlog = new ErrorHelpLog();
                     ehlog.setReceived(received);
-                    ehlog.setCtx(FailureActivity.this);
-                    ehlog = ParseSerialsUtils.getErrorHelpLog(FailureActivity.this, ehlog);
+                    ehlog.setCtx(TroubleAnalyzeActivity.this);
+                    ehlog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, ehlog);
                     return ehlog;
                 }
                 return null;
@@ -303,8 +303,8 @@ public class FailureActivity extends FragmentActivity {
                     // 通过验证
                     ErrorHelpLog ehlog = new ErrorHelpLog();
                     ehlog.setReceived(received);
-                    ehlog.setCtx(FailureActivity.this);
-                    ehlog = ParseSerialsUtils.getErrorHelpLog(FailureActivity.this, ehlog);
+                    ehlog.setCtx(TroubleAnalyzeActivity.this);
+                    ehlog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, ehlog);
                     return ehlog;
                 }
                 return null;
@@ -334,8 +334,8 @@ public class FailureActivity extends FragmentActivity {
                     // 通过验证
                     ErrorHelpLog ehlog = new ErrorHelpLog();
                     ehlog.setReceived(received);
-                    ehlog.setCtx(FailureActivity.this);
-                    ehlog = ParseSerialsUtils.getErrorHelpLog(FailureActivity.this, ehlog);
+                    ehlog.setCtx(TroubleAnalyzeActivity.this);
+                    ehlog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, ehlog);
                     return ehlog;
                 }
                 return null;
@@ -365,8 +365,8 @@ public class FailureActivity extends FragmentActivity {
                     // 通过验证
                     ErrorHelpLog ehlog = new ErrorHelpLog();
                     ehlog.setReceived(received);
-                    ehlog.setCtx(FailureActivity.this);
-                    ehlog = ParseSerialsUtils.getErrorHelpLog(FailureActivity.this, ehlog);
+                    ehlog.setCtx(TroubleAnalyzeActivity.this);
+                    ehlog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, ehlog);
                     return ehlog;
                 }
                 return null;
@@ -396,8 +396,8 @@ public class FailureActivity extends FragmentActivity {
                     // 通过验证
                     ErrorHelpLog ehlog = new ErrorHelpLog();
                     ehlog.setReceived(received);
-                    ehlog.setCtx(FailureActivity.this);
-                    ehlog = ParseSerialsUtils.getErrorHelpLog(FailureActivity.this, ehlog);
+                    ehlog.setCtx(TroubleAnalyzeActivity.this);
+                    ehlog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, ehlog);
                     return ehlog;
                 }
                 return null;
@@ -427,8 +427,8 @@ public class FailureActivity extends FragmentActivity {
                     // 通过验证
                     ErrorHelpLog ehlog = new ErrorHelpLog();
                     ehlog.setReceived(received);
-                    ehlog.setCtx(FailureActivity.this);
-                    ehlog = ParseSerialsUtils.getErrorHelpLog(FailureActivity.this, ehlog);
+                    ehlog.setCtx(TroubleAnalyzeActivity.this);
+                    ehlog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, ehlog);
                     return ehlog;
                 }
                 return null;
@@ -458,8 +458,8 @@ public class FailureActivity extends FragmentActivity {
                     // 通过验证
                     ErrorHelpLog ehlog = new ErrorHelpLog();
                     ehlog.setReceived(received);
-                    ehlog.setCtx(FailureActivity.this);
-                    ehlog = ParseSerialsUtils.getErrorHelpLog(FailureActivity.this, ehlog);
+                    ehlog.setCtx(TroubleAnalyzeActivity.this);
+                    ehlog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, ehlog);
                     return ehlog;
                 }
                 return null;
@@ -489,8 +489,8 @@ public class FailureActivity extends FragmentActivity {
                     // 通过验证
                     ErrorHelpLog ehlog = new ErrorHelpLog();
                     ehlog.setReceived(received);
-                    ehlog.setCtx(FailureActivity.this);
-                    ehlog = ParseSerialsUtils.getErrorHelpLog(FailureActivity.this, ehlog);
+                    ehlog.setCtx(TroubleAnalyzeActivity.this);
+                    ehlog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, ehlog);
                     return ehlog;
                 }
                 return null;
