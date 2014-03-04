@@ -40,7 +40,7 @@ public class TroubleAnalyzeActivity extends FragmentActivity {
     @InjectView(R.id.indicator)
     public TabPageIndicator indicator;
 
-    private HHandler fhandler;
+    private HHandler bluetoothHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,7 +96,7 @@ public class TroubleAnalyzeActivity extends FragmentActivity {
      * 当前故障
      */
     public void loadCurrent() {
-        fhandler = new FailureCurrentHandler(this);
+        bluetoothHandler = new FailureCurrentHandler(this);
 
         HCommunication[] cumms = new HCommunication[]{
                 new HCommunication() {
@@ -142,10 +142,10 @@ public class TroubleAnalyzeActivity extends FragmentActivity {
                 }
         };
 
-        if (fhandler == null)
-            fhandler = new FailureCurrentHandler(this);
+        if (bluetoothHandler == null)
+            bluetoothHandler = new FailureCurrentHandler(this);
         if (HBluetooth.getInstance(this).isPrepared())
-            HBluetooth.getInstance(this).setHandler(fhandler).setCommunications(cumms).HStart();
+            HBluetooth.getInstance(this).setHandler(bluetoothHandler).setCommunications(cumms).HStart();
     }
 
 
@@ -177,11 +177,11 @@ public class TroubleAnalyzeActivity extends FragmentActivity {
                         if (HSerial.isCRC16Valid(getReceivebuffer())) {
                             byte[] received = HSerial.trimEnd(getReceivebuffer());
                             // 通过验证
-                            ErrorHelpLog ehlog = new ErrorHelpLog();
-                            ehlog.setReceived(received);
-                            ehlog.setCtx(TroubleAnalyzeActivity.this);
-                            ehlog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, ehlog);
-                            return ehlog;
+                            ErrorHelpLog errorHelpLog = new ErrorHelpLog();
+                            errorHelpLog.setReceived(received);
+                            errorHelpLog.setCtx(TroubleAnalyzeActivity.this);
+                            errorHelpLog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, errorHelpLog);
+                            return errorHelpLog;
                         }
                         return null;
                     }
@@ -208,11 +208,11 @@ public class TroubleAnalyzeActivity extends FragmentActivity {
                 if (HSerial.isCRC16Valid(getReceivebuffer())) {
                     byte[] received = HSerial.trimEnd(getReceivebuffer());
                     // 通过验证
-                    ErrorHelpLog ehlog = new ErrorHelpLog();
-                    ehlog.setReceived(received);
-                    ehlog.setCtx(TroubleAnalyzeActivity.this);
-                    ehlog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, ehlog);
-                    return ehlog;
+                    ErrorHelpLog errorHelpLog = new ErrorHelpLog();
+                    errorHelpLog.setReceived(received);
+                    errorHelpLog.setCtx(TroubleAnalyzeActivity.this);
+                    errorHelpLog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, errorHelpLog);
+                    return errorHelpLog;
                 }
                 return null;
             }
@@ -239,11 +239,11 @@ public class TroubleAnalyzeActivity extends FragmentActivity {
                 if (HSerial.isCRC16Valid(getReceivebuffer())) {
                     byte[] received = HSerial.trimEnd(getReceivebuffer());
                     // 通过验证
-                    ErrorHelpLog ehlog = new ErrorHelpLog();
-                    ehlog.setReceived(received);
-                    ehlog.setCtx(TroubleAnalyzeActivity.this);
-                    ehlog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, ehlog);
-                    return ehlog;
+                    ErrorHelpLog errorHelpLog = new ErrorHelpLog();
+                    errorHelpLog.setReceived(received);
+                    errorHelpLog.setCtx(TroubleAnalyzeActivity.this);
+                    errorHelpLog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, errorHelpLog);
+                    return errorHelpLog;
                 }
                 return null;
             }
@@ -270,11 +270,11 @@ public class TroubleAnalyzeActivity extends FragmentActivity {
                 if (HSerial.isCRC16Valid(getReceivebuffer())) {
                     byte[] received = HSerial.trimEnd(getReceivebuffer());
                     // 通过验证
-                    ErrorHelpLog ehlog = new ErrorHelpLog();
-                    ehlog.setReceived(received);
-                    ehlog.setCtx(TroubleAnalyzeActivity.this);
-                    ehlog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, ehlog);
-                    return ehlog;
+                    ErrorHelpLog errorHelpLog = new ErrorHelpLog();
+                    errorHelpLog.setReceived(received);
+                    errorHelpLog.setCtx(TroubleAnalyzeActivity.this);
+                    errorHelpLog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, errorHelpLog);
+                    return errorHelpLog;
                 }
                 return null;
             }
@@ -301,11 +301,11 @@ public class TroubleAnalyzeActivity extends FragmentActivity {
                 if (HSerial.isCRC16Valid(getReceivebuffer())) {
                     byte[] received = HSerial.trimEnd(getReceivebuffer());
                     // 通过验证
-                    ErrorHelpLog ehlog = new ErrorHelpLog();
-                    ehlog.setReceived(received);
-                    ehlog.setCtx(TroubleAnalyzeActivity.this);
-                    ehlog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, ehlog);
-                    return ehlog;
+                    ErrorHelpLog errorHelpLog = new ErrorHelpLog();
+                    errorHelpLog.setReceived(received);
+                    errorHelpLog.setCtx(TroubleAnalyzeActivity.this);
+                    errorHelpLog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, errorHelpLog);
+                    return errorHelpLog;
                 }
                 return null;
             }
@@ -332,11 +332,11 @@ public class TroubleAnalyzeActivity extends FragmentActivity {
                 if (HSerial.isCRC16Valid(getReceivebuffer())) {
                     byte[] received = HSerial.trimEnd(getReceivebuffer());
                     // 通过验证
-                    ErrorHelpLog ehlog = new ErrorHelpLog();
-                    ehlog.setReceived(received);
-                    ehlog.setCtx(TroubleAnalyzeActivity.this);
-                    ehlog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, ehlog);
-                    return ehlog;
+                    ErrorHelpLog errorHelpLog = new ErrorHelpLog();
+                    errorHelpLog.setReceived(received);
+                    errorHelpLog.setCtx(TroubleAnalyzeActivity.this);
+                    errorHelpLog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, errorHelpLog);
+                    return errorHelpLog;
                 }
                 return null;
             }
@@ -425,11 +425,11 @@ public class TroubleAnalyzeActivity extends FragmentActivity {
                 if (HSerial.isCRC16Valid(getReceivebuffer())) {
                     byte[] received = HSerial.trimEnd(getReceivebuffer());
                     // 通过验证
-                    ErrorHelpLog ehlog = new ErrorHelpLog();
-                    ehlog.setReceived(received);
-                    ehlog.setCtx(TroubleAnalyzeActivity.this);
-                    ehlog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, ehlog);
-                    return ehlog;
+                    ErrorHelpLog errorHelpLog = new ErrorHelpLog();
+                    errorHelpLog.setReceived(received);
+                    errorHelpLog.setCtx(TroubleAnalyzeActivity.this);
+                    errorHelpLog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, errorHelpLog);
+                    return errorHelpLog;
                 }
                 return null;
             }
@@ -487,26 +487,26 @@ public class TroubleAnalyzeActivity extends FragmentActivity {
                 if (HSerial.isCRC16Valid(getReceivebuffer())) {
                     byte[] received = HSerial.trimEnd(getReceivebuffer());
                     // 通过验证
-                    ErrorHelpLog ehlog = new ErrorHelpLog();
-                    ehlog.setReceived(received);
-                    ehlog.setCtx(TroubleAnalyzeActivity.this);
-                    ehlog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, ehlog);
-                    return ehlog;
+                    ErrorHelpLog errorHelpLog = new ErrorHelpLog();
+                    errorHelpLog.setReceived(received);
+                    errorHelpLog.setCtx(TroubleAnalyzeActivity.this);
+                    errorHelpLog = ParseSerialsUtils.getErrorHelpLog(TroubleAnalyzeActivity.this, errorHelpLog);
+                    return errorHelpLog;
                 }
                 return null;
             }
         }
         };
 
-        fhandler = new FailureLogHandler(this);
+        bluetoothHandler = new FailureLogHandler(this);
         if (HBluetooth.getInstance(this).isPrepared())
-            HBluetooth.getInstance(this).setHandler(fhandler).setCommunications(cumms).HStart();
+            HBluetooth.getInstance(this).setHandler(bluetoothHandler).setCommunications(cumms).HStart();
 
 
     }
 
     public void loadDictionary() {
         // 停止串口通信
-        HBluetooth.getInstance(this).setHandler(fhandler);
+        HBluetooth.getInstance(this).setHandler(bluetoothHandler);
     }
 }

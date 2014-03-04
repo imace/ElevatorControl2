@@ -28,11 +28,11 @@ public class HCustomSpinner extends Button {
 
     private ArrowView arrow;
 
-    private OnItemSeletedListener changListener;
+    private OnItemSelectedListener changListener;
 
     private Context mContext;
 
-    private HDropListener onpop;
+    private HDropListener onPopup;
 
     /**
      * Button topButton to addView
@@ -95,8 +95,8 @@ public class HCustomSpinner extends Button {
             public boolean onLongClick(View v) {
                 Vibrator vib = (Vibrator) v.getContext().getSystemService(Service.VIBRATOR_SERVICE);
                 vib.vibrate(300);
-                if (onpop != null)
-                    onpop.onRefresh();
+                if (onPopup != null)
+                    onPopup.onRefresh();
                 return false;
             }
 
@@ -113,7 +113,7 @@ public class HCustomSpinner extends Button {
                 Object obj = parent.getItemAtPosition(position);
                 topButton.setText(obj.toString());
                 dismiss();
-                changListener.onItemSeleted(parent, view, position, id);
+                changListener.onItemSelected(parent, view, position, id);
             }
         });
     }
@@ -133,8 +133,8 @@ public class HCustomSpinner extends Button {
         if (!popup.isShowing()) {
             popup.showAsDropDown(topButton);
         }
-        if (onpop != null)
-            onpop.onPopup();
+        if (onPopup != null)
+            onPopup.onPopup();
     }
 
     protected void dismiss() {
@@ -173,21 +173,21 @@ public class HCustomSpinner extends Button {
         setTopText(adapter);
     }
 
-    public void setOnItemSeletedListener(OnItemSeletedListener listener) {
+    public void setOnItemSelectedListener(OnItemSelectedListener listener) {
         this.changListener = listener;
     }
 
-    public HDropListener getOnpop() {
-        return onpop;
+    public HDropListener getOnPopup() {
+        return onPopup;
     }
 
-    public void setOnpop(HDropListener onpop) {
-        this.onpop = onpop;
+    public void setOnPopup(HDropListener onPopup) {
+        this.onPopup = onPopup;
     }
 
-    public interface OnItemSeletedListener {
+    public interface OnItemSelectedListener {
 
-        abstract void onItemSeleted(AdapterView<?> parent, View view, int position, long id);
+        abstract void onItemSelected(AdapterView<?> parent, View view, int position, long id);
 
     }
 

@@ -13,13 +13,15 @@ import com.kio.ElevatorControl.R;
 
 /**
  * 检查当前用户是否被授权
- *
  */
 public class CheckAuthorizationActivity extends Activity {
 
-    @InjectView(R.id.edit_text_login) EditText editTextLogin;
-    @InjectView(R.id.btn_login) Button btnLogin;
-    @InjectView(R.id.btn_sign_up) Button btnSignUp;
+    @InjectView(R.id.edit_text_login)
+    EditText editTextLogin;
+    @InjectView(R.id.btn_login)
+    Button btnLogin;
+    @InjectView(R.id.btn_sign_up)
+    Button btnSignUp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -1,24 +1,15 @@
 package com.kio.ElevatorControl.activities;
 
+import android.app.Activity;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
-import butterknife.InjectView;
-import butterknife.Views;
+import android.preference.PreferenceFragment;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.models.RootTabs;
-import com.kio.ElevatorControl.views.fragments.TestFragment;
-import com.viewpagerindicator.IconPagerAdapter;
-import com.viewpagerindicator.TabPageIndicator;
 
 /**
  * 帮助
- *
  */
-public class HelpSystemActivity extends FragmentActivity {
+public class HelpSystemActivity extends Activity {
 
     protected String[] CONTENTS = null;
     protected Integer[] ICONS = null;
@@ -38,8 +29,22 @@ public class HelpSystemActivity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_help_system);
-        //注入以后才能使用@InjectView定义的对象
         //Views.inject(this);
+        getFragmentManager().beginTransaction()
+                .replace(R.id.help_system_content, new HelpSystemPreferenceFragment())
+                .commit();
     }
 
+    /**
+     * 帮助 PreferenceFragment
+     */
+    private class HelpSystemPreferenceFragment extends PreferenceFragment {
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.help_system_preference);
+        }
+
+    }
 }

@@ -150,24 +150,23 @@ public class NavigationTabActivity extends TabActivity {
         actionBar.setDisplayShowCustomEnabled(true);
         actionBar.setDisplayShowTitleEnabled(false);
         actionBar.setHomeButtonEnabled(true);
-        actionBar.setDisplayUseLogoEnabled(false);
+        actionBar.setDisplayUseLogoEnabled(true);
         actionBar.setDisplayShowHomeEnabled(false);
         spinner = ((HCustomSpinner) actionBar.getCustomView().findViewById(R.id.custom_spinner));
         spinner.setAdapter(new ArrayAdapter<String>(this, android.R.layout.select_dialog_item, new String[]{}));
-        spinner.setOnpop(new HDropListener() {
+        spinner.setOnPopup(new HDropListener() {
 
-            private Thread th = null;
-
+            private Thread thread = null;
 
             @Override
             public void onPopup() {
-            }
 
+            }
 
             @Override
             public void onRefresh() {
                 spinner.setAdapter(new ArrayAdapter<String>(NavigationTabActivity.this, android.R.layout.select_dialog_item, new String[]{}));
-                if (th == null || !th.isAlive()) {
+                if (thread == null || !thread.isAlive()) {
                     HBluetooth bth = HBluetooth.getInstance(NavigationTabActivity.this).setPrepared(false).setDiscoveryMode(true).setHandler(new CoreHandler(NavigationTabActivity.this));
                     bth.HStart();
                 }
@@ -175,5 +174,4 @@ public class NavigationTabActivity extends TabActivity {
         });
         actionBar.show();
     }
-
 }

@@ -13,7 +13,6 @@ import com.hbluetooth.HHandler;
 import com.hbluetooth.HJudgeListener;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.views.customspinner.HCustomSpinner;
-import com.kio.ElevatorControl.views.customspinner.HCustomSpinner.OnItemSeletedListener;
 
 import java.util.Map;
 
@@ -57,10 +56,10 @@ public class CoreHandler extends HHandler {
         HCustomSpinner spinn = null;
         spinn = ((HCustomSpinner) activity.getActionBar().getCustomView().findViewById(R.id.custom_spinner));
         spinn.setAdapter(new ArrayAdapter<String>(activity, android.R.layout.select_dialog_item, ((Map<String, BluetoothDevice>) msg.obj).keySet().toArray(new String[]{})));
-        spinn.setOnItemSeletedListener(new OnItemSeletedListener() {
+        spinn.setOnItemSelectedListener(new HCustomSpinner.OnItemSelectedListener() {
 
             @Override
-            public void onItemSeleted(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 activity.getActionBar().getCustomView().findViewById(R.id.title_process_bar).setVisibility(View.VISIBLE);
 
                 // 设置选中

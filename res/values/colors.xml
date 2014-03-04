@@ -4,4 +4,8 @@
     <color name="tab_dark">#FF141414</color>
     <color name="tab_transparent">#00FFFFFF</color>
     <color name="shape_bg_list_view_color">#aeaeae</color>
+
+    <color name="result_view">#b0000000</color>
+    <color name="viewfinder_mask">#60000000</color>
+    <color name="possible_result_points">#c0ffff00</color>
 </resources>
