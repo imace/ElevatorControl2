@@ -5,7 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import com.sz.siiit.libhbt.R;
+import com.kio.bluetooth.R;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class HHandler extends Handler {
 
-    public String HTAG = "UnKnownHHandler";
+    public String TAG = HHandler.class.getSimpleName();
 
     protected Activity activity;
 
@@ -27,7 +27,7 @@ public class HHandler extends Handler {
      */
     @Override
     public void handleMessage(Message msg) {
-        for (Field f : R.msgwhat.class.getFields()) {
+        for (Field f : R.string.class.getFields()) {
             try {
                 if (msg.what == f.getInt(null)) {
                     this.getClass().getMethod(
@@ -35,15 +35,15 @@ public class HHandler extends Handler {
                             Message.class).invoke(this, msg);
                 }
             } catch (IllegalArgumentException e) {
-                Log.e(HTAG, "IllegalArgumentException");
+                Log.e(TAG, "IllegalArgumentException");
             } catch (IllegalAccessException e) {
-                Log.e(HTAG, "IllegalAccessException");
+                Log.e(TAG, "IllegalAccessException");
             } catch (NoSuchMethodException e) {
-                Log.e(HTAG, "NoSuchMethodException");
+                Log.e(TAG, "NoSuchMethodException");
             } catch (InvocationTargetException e) {
-                Log.e(HTAG, "InvocationTargetException");
+                Log.e(TAG, "InvocationTargetException");
             } catch (NullPointerException e) {
-                Log.e(HTAG, "NullPointerException");
+                Log.e(TAG, "NullPointerException");
             }
         }
         super.handleMessage(msg);
@@ -55,7 +55,7 @@ public class HHandler extends Handler {
      * @param msg
      */
     public void onBeginPreparing(Message msg) {
-        Log.v(HTAG, "onBeginPreparing");
+        Log.v(TAG, "onBeginPreparing");
     }
 
     /**
@@ -65,7 +65,7 @@ public class HHandler extends Handler {
      */
     @SuppressWarnings("unchecked")
     public void onFoundDevice(Message msg) {
-        Log.v(HTAG, "onFoundDevice : "
+        Log.v(TAG, "onFoundDevice : "
                 + ((Map<String, BluetoothDevice>) msg.obj).keySet().toString());
     }
 
@@ -75,7 +75,7 @@ public class HHandler extends Handler {
      * @param msg
      */
     public void onChooseDevice(final Message msg) {
-        Log.v(HTAG, "onChooseDevice");
+        Log.v(TAG, "onChooseDevice");
     }
 
     /**
@@ -83,8 +83,8 @@ public class HHandler extends Handler {
      *
      * @param msg
      */
-    public void onResetBluethooth(Message msg) {
-        Log.v(HTAG, "onResetBluethooth");
+    public void onResetBluetooth(Message msg) {
+        Log.v(TAG, "onResetBluetooth");
     }
 
     /**
@@ -92,8 +92,8 @@ public class HHandler extends Handler {
      *
      * @param msg
      */
-    public void onKillBluethooth(Message msg) {
-        Log.v(HTAG, "onKillBluethooth");
+    public void onKillBluetooth(Message msg) {
+        Log.v(TAG, "onKillBluetooth");
     }
 
     /**
@@ -102,7 +102,7 @@ public class HHandler extends Handler {
      * @param msg
      */
     public void onPrepared(Message msg) {
-        Log.v(HTAG, "onPrepared");
+        Log.v(TAG, "onPrepared");
     }
 
     /**
@@ -111,7 +111,7 @@ public class HHandler extends Handler {
      * @param msg
      */
     public void onPrepError(Message msg) {
-        Log.v(HTAG, "onPrepError");
+        Log.v(TAG, "onPrepError");
     }
 
     /**
@@ -120,7 +120,7 @@ public class HHandler extends Handler {
      * @param msg
      */
     public void onBeforeTalkSend(Message msg) {
-        Log.v(HTAG, "onBeforeTalkSend");
+        Log.v(TAG, "onBeforeTalkSend");
     }
 
     /**
@@ -129,7 +129,7 @@ public class HHandler extends Handler {
      * @param msg
      */
     public void onAfterTalkSend(Message msg) {
-        Log.v(HTAG, "onAfterTalkSend");
+        Log.v(TAG, "onAfterTalkSend");
     }
 
     /**
@@ -138,7 +138,7 @@ public class HHandler extends Handler {
      * @param msg
      */
     public void onTalkReceive(Message msg) {
-        Log.v(HTAG, "onTalkReceive : " + msg.obj.toString());
+        Log.v(TAG, "onTalkReceive : " + msg.obj.toString());
     }
 
     /**
@@ -147,7 +147,7 @@ public class HHandler extends Handler {
      * @param msg
      */
     public void onTalkError(Message msg) {
-        Log.v(HTAG,
+        Log.v(TAG,
                 "onTalkError : "
                         + ((msg.obj == null) ? "..." : msg.obj.toString()));
     }
@@ -158,9 +158,9 @@ public class HHandler extends Handler {
      * @param msg
      */
     public void onHandlerChanged(Message msg) { //the origin handler
-        Log.v(HTAG, "onHandlerChanged"
+        Log.v(TAG, "onHandlerChanged"
                 + ((msg.obj == null) ? "UnKnownHHandler"
-                : ((HHandler) msg.obj).HTAG));
+                : ((HHandler) msg.obj).TAG));
     }
 
 
@@ -170,7 +170,7 @@ public class HHandler extends Handler {
      * @param msg
      */
     public void onMultiTalkBegin(Message msg) {
-        Log.v(HTAG, "onMultiTalkBegin");
+        Log.v(TAG, "onMultiTalkBegin");
     }
 
     /**
@@ -179,6 +179,6 @@ public class HHandler extends Handler {
      * @param msg
      */
     public void onMultiTalkEnd(Message msg) {
-        Log.v(HTAG, "onMultiTalkEnd");
+        Log.v(TAG, "onMultiTalkEnd");
     }
 }

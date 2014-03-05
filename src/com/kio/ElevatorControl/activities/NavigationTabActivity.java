@@ -12,12 +12,12 @@ import butterknife.OnClick;
 import butterknife.Views;
 import com.hbluetooth.HBluetooth;
 import com.kio.ElevatorControl.R;
+import com.kio.ElevatorControl.daos.MenuValues;
 import com.kio.ElevatorControl.daos.RestoreFactoryDao;
-import com.kio.ElevatorControl.daos.ValuesDao;
 import com.kio.ElevatorControl.handlers.CoreHandler;
 import com.kio.ElevatorControl.views.customspinner.HCustomSpinner;
 import com.kio.ElevatorControl.views.customspinner.HDropListener;
-import com.kio.ElevatorControl.views.dialogs.CustomDialoger;
+import com.kio.ElevatorControl.views.dialogs.CustomDialog;
 
 /**
  * TabActivity 导航
@@ -44,9 +44,9 @@ public class NavigationTabActivity extends TabActivity {
      * 标签初始化
      */
     private void initTabs() {
-        String[] CONTENTS = ValuesDao.getRootTabsTexts(this);
-        Integer[] ICONS = ValuesDao.getRootTabsIcons(this);
-        Class<?>[] CLAZZ = ValuesDao.getRootTabsClazz(this);
+        String[] CONTENTS = MenuValues.getNavigationTabsTexts(this);
+        Integer[] ICONS = MenuValues.getNavigationTabsIcons(this);
+        Class<?>[] CLAZZ = MenuValues.getNavigationTabsClazz(this);
         if (null != CONTENTS && null != ICONS && CONTENTS.length == ICONS.length) {
             for (int i = 0; i < CONTENTS.length; i++) {
                 // 正常添加
@@ -79,7 +79,7 @@ public class NavigationTabActivity extends TabActivity {
     }
 
     /**
-     * 为中间特殊按钮设置click事件监听 跳转到indexactivity
+     * 为中间特殊按钮设置click事件监听 跳转到HomeActivity
      */
     @OnClick(R.id.reset_btn)
     public void btnMiddle(View v) {
@@ -116,7 +116,7 @@ public class NavigationTabActivity extends TabActivity {
      */
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_DOWN && event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
-            CustomDialoger.exitDialog(this).show();
+            CustomDialog.exitDialog(this).show();
             return false;
         }
         return super.dispatchKeyEvent(event);

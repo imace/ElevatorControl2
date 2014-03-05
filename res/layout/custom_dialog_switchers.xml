@@ -3,9 +3,12 @@
              android:id="@+id/custom_dialog_switchers"
              android:layout_width="match_parent"
              android:layout_height="wrap_content"
-             android:layout_margin="15dp"
-             android:background="@drawable/shape_bg_list_view">
-
+             android:layout_marginLeft="50dp"
+             android:layout_marginRight="50dp"
+             android:layout_marginTop="20dp"
+             android:layout_marginBottom="20dp"
+             android:layout_centerInParent="true"
+             android:background="@android:color/white">
     <TableRow
             android:id="@+id/TableRow07"
             android:layout_width="wrap_content"
@@ -175,6 +178,6 @@
                 android:textSize="12sp"/>
 
     </TableRow>
-
 </TableLayout>
+
 

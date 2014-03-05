@@ -1,7 +1,7 @@
 package com.kio.ElevatorControl.daos;
 
 import android.content.Context;
-import com.kio.ElevatorControl.models.RealtimeMonitor;
+import com.kio.ElevatorControl.models.RealTimeMonitor;
 import net.tsz.afinal.FinalDb;
 
 import java.util.List;
@@ -9,13 +9,13 @@ import java.util.List;
 public class RealtimeMonitorDao {
     private static final boolean DBDEBUG = true;
 
-    public static List<RealtimeMonitor> findAll(Context ctx) {
+    public static List<RealTimeMonitor> findAll(Context ctx) {
         // (android:label).db
         FinalDb db = FinalDb.create(ctx,
                 ctx.getString(ctx.getApplicationInfo().labelRes) + ".db",
                 DBDEBUG);
-        List<RealtimeMonitor> list = db.findAll(RealtimeMonitor.class);
-//		for(RealtimeMonitor r:list){//lazyload
+        List<RealTimeMonitor> list = db.findAll(RealTimeMonitor.class);
+//		for(RealTimeMonitor r:list){//lazyload
 //		}
         return list;
     }

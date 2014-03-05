@@ -12,11 +12,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * 只有db的demo listview 绑定这个版本是没有的
+ * 只有db的demo ListView 绑定这个版本是没有的
  *
  * @author jch
  */
-public class RealtimeMonitor implements Cloneable {
+public class RealTimeMonitor implements Cloneable {
 
     @Id
     private int Id;
@@ -35,9 +35,9 @@ public class RealtimeMonitor implements Cloneable {
      * 参数选项说明类型,根据description得出 无<0,数字=count,Bit=100000+bitcount
      * 0=error,100000=error
      */
-    private int descriptiontype;
-    private boolean Valid;
-    private Date lasttime;
+    private int descriptionType;
+    private boolean isValid;
+    private Date lastTime;
 
     /**
      * 收到的数据
@@ -46,12 +46,12 @@ public class RealtimeMonitor implements Cloneable {
     private byte[] received;
 
     /**
-     * 不持久化用来绑定到ui的listview
+     * 不持久化用来绑定到ui的ListView
      */
     @Transient
     private String listViewItemText;
 
-    public RealtimeMonitor() {
+    public RealTimeMonitor() {
     }
 
     /**
@@ -90,7 +90,7 @@ public class RealtimeMonitor implements Cloneable {
     }
 
     /**
-     * 显示到listview上的内容
+     * 显示到ListView上的内容
      *
      * @return
      */
@@ -178,20 +178,20 @@ public class RealtimeMonitor implements Cloneable {
         this.type = type;
     }
 
-    public Date getLasttime() {
-        return lasttime;
+    public Date getLastTime() {
+        return lastTime;
     }
 
-    public void setLasttime(Date lasttime) {
-        this.lasttime = lasttime;
+    public void setLastTime(Date lastTime) {
+        this.lastTime = lastTime;
     }
 
     public boolean isValid() {
-        return Valid;
+        return isValid;
     }
 
     public void setValid(boolean valid) {
-        Valid = valid;
+        isValid = valid;
     }
 
     public int getId() {
@@ -210,12 +210,12 @@ public class RealtimeMonitor implements Cloneable {
         this.showBit = showBit;
     }
 
-    public int getDescriptiontype() {
-        return descriptiontype;
+    public int getDescriptionType() {
+        return descriptionType;
     }
 
-    public void setDescriptiontype(int descriptiontype) {
-        this.descriptiontype = descriptiontype;
+    public void setDescriptionType(int descriptionType) {
+        this.descriptionType = descriptionType;
     }
 
     public byte[] getReceived() {
@@ -227,9 +227,9 @@ public class RealtimeMonitor implements Cloneable {
     }
 
     public Object clone() {
-        RealtimeMonitor o = null;
+        RealTimeMonitor o = null;
         try {
-            o = (RealtimeMonitor) super.clone();
+            o = (RealTimeMonitor) super.clone();
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }

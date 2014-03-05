@@ -8,7 +8,7 @@ import com.kio.ElevatorControl.daos.ErrorHelpDao;
 import com.kio.ElevatorControl.models.ErrorHelp;
 import com.kio.ElevatorControl.models.ErrorHelpLog;
 import com.kio.ElevatorControl.models.ParameterSettings;
-import com.kio.ElevatorControl.models.RealtimeMonitor;
+import com.kio.ElevatorControl.models.RealTimeMonitor;
 
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -17,7 +17,7 @@ import java.util.Date;
 public class ParseSerialsUtils {
 
     @SuppressLint("DefaultLocale")
-    public static String getValueTextFromRealtimeMonitor(RealtimeMonitor rm) {
+    public static String getValueTextFromRealtimeMonitor(RealTimeMonitor rm) {
         byte[] data = rm.getReceived();
         if (data.length == 8) {
             int value = data[4];

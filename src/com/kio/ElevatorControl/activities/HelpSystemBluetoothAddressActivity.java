@@ -1,6 +1,7 @@
 package com.kio.ElevatorControl.activities;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.os.Bundle;
 import android.view.MenuItem;
 import com.kio.ElevatorControl.R;
@@ -31,6 +32,38 @@ public class HelpSystemBluetoothAddressActivity extends Activity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * get bluetooth local device name
+     *
+     * @return device name String
+     */
+    public static String getLocalBluetoothName() {
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        // if device does not support Bluetooth
+        if (mBluetoothAdapter == null) {
+            return null;
+        }
+
+        return mBluetoothAdapter.getName();
+    }
+
+    /**
+     * get bluetooth adapter MAC address
+     *
+     * @return MAC address String
+     */
+    public static String getBluetoothMacAddress() {
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        // if device does not support Bluetooth
+        if (mBluetoothAdapter == null) {
+            return null;
+        }
+
+        return mBluetoothAdapter.getAddress();
     }
 
 }

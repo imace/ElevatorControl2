@@ -20,11 +20,11 @@
 
 
     <!-- Values -->
-    <string name="noselect">无</string>
-    <string name="manualbond">配对%1失败!请退出程序手动设置蓝牙配对</string>
-    <string name="cancelbond">取消配对!</string>
-    <string name="failbthconn">连接失败,蓝牙通讯异常!</string>
-    <string name="prepbthconn">建立连接成功!</string>
+    <string name="no_selected">无</string>
+    <string name="failed_bond">配对%1失败!请退出程序手动设置蓝牙配对</string>
+    <string name="cancel_bond">取消配对!</string>
+    <string name="failed_connect">连接失败,蓝牙通讯异常!</string>
+    <string name="success_connect">建立连接成功!</string>
 
     <item name="REQUEST_ENABLE_BT" format="integer" type="integer">3</item>
 

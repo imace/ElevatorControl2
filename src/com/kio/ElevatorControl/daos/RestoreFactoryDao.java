@@ -5,7 +5,7 @@ import android.util.Log;
 import com.kio.ElevatorControl.models.ErrorHelp;
 import com.kio.ElevatorControl.models.ParameterGroupSettings;
 import com.kio.ElevatorControl.models.ParameterSettings;
-import com.kio.ElevatorControl.models.RealtimeMonitor;
+import com.kio.ElevatorControl.models.RealTimeMonitor;
 import com.kio.ElevatorControl.utils.AssetUtils;
 import net.tsz.afinal.FinalDb;
 import org.json.JSONArray;
@@ -36,7 +36,7 @@ public class RestoreFactoryDao {
         int parametersettingssize = db.findAll(ParameterSettings.class).size();
         int parametergroupsettingssize = db.findAll(
                 ParameterGroupSettings.class).size();
-        int realtimemonitorsize = db.findAll(RealtimeMonitor.class).size();
+        int realtimemonitorsize = db.findAll(RealTimeMonitor.class).size();
         int errorhelpsize = db.findAll(ErrorHelp.class).size();
         if (parametersettingssize == 0 || parametergroupsettingssize == 0
                 || realtimemonitorsize == 0 || errorhelpsize == 0) {
@@ -124,7 +124,7 @@ public class RestoreFactoryDao {
         FinalDb db = FinalDb.create(ctx,
                 ctx.getString(ctx.getApplicationInfo().labelRes) + ".db",
                 DBDEBUG);
-        db.deleteAll(RealtimeMonitor.class);
+        db.deleteAll(RealTimeMonitor.class);
 
         // 读取NICE3000+_State.json
         String JSON = AssetUtils
@@ -133,13 +133,13 @@ public class RestoreFactoryDao {
             JSONArray monitors = new JSONArray(JSON);
             for (int i = 0; i < monitors.length(); i++) {
                 JSONObject mtor = monitors.getJSONObject(i);
-                RealtimeMonitor mtentity = new RealtimeMonitor();
+                RealTimeMonitor mtentity = new RealTimeMonitor();
                 mtentity.setName(mtor.optString("name"));
                 mtentity.setCode(mtor.optString("code"));
                 mtentity.setChildId(mtor.optString("childId"));
                 mtentity.setUnit(mtor.optString("unit"));
                 mtentity.setDescription(mtor.optString("description"));
-                mtentity.setDescriptiontype(RealtimeMonitor
+                mtentity.setDescriptionType(RealTimeMonitor
                         .ParseDescriptionToType(mtentity.getDescription()));
                 mtentity.setProductId(String.valueOf(mtor.optInt("productId")));
                 mtentity.setScale(String.valueOf(mtor.optDouble("scale")));
@@ -147,7 +147,7 @@ public class RestoreFactoryDao {
                 mtentity.setShowBit(Boolean.parseBoolean(mtor
                         .optString("showBit")));
                 mtentity.setValid(true);
-                mtentity.setLasttime(new Date());
+                mtentity.setLastTime(new Date());
                 db.save(mtentity);
             }
         } catch (JSONException ex) {

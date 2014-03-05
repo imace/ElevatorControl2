@@ -11,7 +11,7 @@ import com.hbluetooth.HHandler;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.activities.ParameterGroupActivity;
 import com.kio.ElevatorControl.models.ParameterSettings;
-import com.kio.ElevatorControl.views.dialogs.CustomDialoger;
+import com.kio.ElevatorControl.views.dialogs.CustomDialog;
 import com.mobsandgeeks.adapters.InstantAdapter;
 
 import java.util.ArrayList;
@@ -21,11 +21,11 @@ public class ParameterHandler extends HHandler {
 
     private boolean talking_success = false;
 
-    private List<ParameterSettings> parametersettings = new ArrayList<ParameterSettings>();
+    private List<ParameterSettings> parameterSettingses = new ArrayList<ParameterSettings>();
 
     public ParameterHandler(Activity activity) {
         super(activity);
-        HTAG = "ParameterHandler";
+        TAG = "ParameterHandler";
     }
 
     @Override
@@ -34,18 +34,18 @@ public class ParameterHandler extends HHandler {
         if (msg.obj instanceof ParameterSettings) {
             ParameterSettings p = (ParameterSettings) msg.obj;
 
-            parametersettings.add((ParameterSettings) p);
+            parameterSettingses.add((ParameterSettings) p);
 
-            InstantAdapter<ParameterSettings> itadp = new InstantAdapter<ParameterSettings>(
+            InstantAdapter<ParameterSettings> instantAdapter = new InstantAdapter<ParameterSettings>(
                     activity, R.layout.list_parameter_group_item,
-                    ParameterSettings.class, parametersettings);
+                    ParameterSettings.class, parameterSettingses);
             ListView lv = ((ParameterGroupActivity) activity).parameterGroupSettingsList;
-            lv.setAdapter(itadp);
+            lv.setAdapter(instantAdapter);
             lv.setOnItemClickListener(new OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> arg0, View view,
                                         int pos, long i) {
-                    CustomDialoger.parameterSettingDialog(activity, parametersettings.get(pos)).show();
+                    CustomDialog.parameterSettingDialog(activity, parameterSettingses.get(pos)).show();
                 }
             });
 
@@ -58,7 +58,7 @@ public class ParameterHandler extends HHandler {
     public void onMultiTalkBegin(Message msg) {
         super.onMultiTalkBegin(msg);
         talking_success = false;
-        parametersettings.clear();
+        parameterSettingses.clear();
     }
 
     @Override

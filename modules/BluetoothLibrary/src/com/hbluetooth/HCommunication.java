@@ -10,8 +10,8 @@ public abstract class HCommunication {
 
     private Object item;
 
-    private byte[] sendbuffer = null;
-    private byte[] receivebuffer = null;
+    private byte[] sendBuffer = null;
+    private byte[] receivedBuffer = null;
 
     public abstract void beforeSend();
 
@@ -31,20 +31,20 @@ public abstract class HCommunication {
         setItem(obj);
     }
 
-    public byte[] getSendbuffer() {
-        return sendbuffer;
+    public byte[] getSendBuffer() {
+        return sendBuffer;
     }
 
-    public void setSendbuffer(byte[] sendbuffer) {
-        this.sendbuffer = sendbuffer;
+    public void setSendBuffer(byte[] sendBuffer) {
+        this.sendBuffer = sendBuffer;
     }
 
-    public byte[] getReceivebuffer() {
-        return receivebuffer;
+    public byte[] getReceivedBuffer() {
+        return receivedBuffer;
     }
 
-    public void setReceivebuffer(byte[] receivebuffer) {
-        this.receivebuffer = receivebuffer;
+    public void setReceivedBuffer(byte[] receivedBuffer) {
+        this.receivedBuffer = receivedBuffer;
     }
 
     public Object getItem() {

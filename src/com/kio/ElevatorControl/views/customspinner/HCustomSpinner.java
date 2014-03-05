@@ -147,7 +147,7 @@ public class HCustomSpinner extends Button {
         ListAdapter mAdapter = adapter;
         String text = "";
         if (mAdapter.getCount() <= 0) {
-            text = this.getResources().getString(R.string.noselect);
+            text = this.getResources().getString(R.string.no_selected);
             topButton.setText(text);
             return;
         } else if (topButton.getText().toString().equals("")) {

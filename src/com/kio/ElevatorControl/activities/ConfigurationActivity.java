@@ -11,11 +11,11 @@ import com.hbluetooth.HBluetooth;
 import com.hbluetooth.HCommunication;
 import com.hbluetooth.HSerial;
 import com.kio.ElevatorControl.R;
-import com.kio.ElevatorControl.adapters.TransactionAdapter;
+import com.kio.ElevatorControl.adapters.ConfigurationAdapter;
+import com.kio.ElevatorControl.daos.MenuValues;
 import com.kio.ElevatorControl.daos.RealtimeMonitorDao;
-import com.kio.ElevatorControl.daos.ValuesDao;
-import com.kio.ElevatorControl.handlers.TransactionHandler;
-import com.kio.ElevatorControl.models.RealtimeMonitor;
+import com.kio.ElevatorControl.handlers.ConfigurationHandler;
+import com.kio.ElevatorControl.models.RealTimeMonitor;
 import com.viewpagerindicator.TabPageIndicator;
 
 import java.lang.reflect.InvocationTargetException;
@@ -28,7 +28,7 @@ import java.util.List;
  */
 public class ConfigurationActivity extends FragmentActivity {
 
-    private final String HTAG = "ConfigurationActivity";
+    private static final String TAG = ConfigurationActivity.class.getSimpleName();
 
     /**
      * 注入页面元素
@@ -39,16 +39,18 @@ public class ConfigurationActivity extends FragmentActivity {
     @InjectView(R.id.indicator)
     protected TabPageIndicator indicator;
 
-    private TransactionHandler transHandler;
+    private ConfigurationHandler transHandler;
+
+    public ConfigurationAdapter mConfigurationAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_configuration);
-
         Views.inject(this);
-        // ConfigurationActivity->TransactionAdapter->TransactionFragment->按照tabIndex初始化各个标签对应的子页面
-        pager.setAdapter(new TransactionAdapter(this));
+        // ConfigurationActivity->ConfigurationAdapter->ConfigurationFragment->按照tabIndex初始化各个标签对应的子页面
+        mConfigurationAdapter = new ConfigurationAdapter(this);
+        pager.setAdapter(mConfigurationAdapter);
         indicator.setViewPager(pager);
         indicator.setOnPageChangeListener(new OnPageChangeListener() {
             @Override
@@ -64,18 +66,19 @@ public class ConfigurationActivity extends FragmentActivity {
                 HBluetooth.getInstance(ConfigurationActivity.this).setHandler(transHandler);
                 try {
                     // 反射执行
-                    String mName = ValuesDao.getTransactionTabsLoadMethodName(index, ConfigurationActivity.this);
-                    Log.v(HTAG, String.valueOf(index) + " : " + mName);
+                    String mName = MenuValues.getConfigurationLoadMethodName(index, ConfigurationActivity.this);
+                    Log.v(TAG, String.valueOf(index) + " : " + mName);
                     ConfigurationActivity.this.getClass().getMethod(mName).invoke(ConfigurationActivity.this);
                 } catch (NoSuchMethodException e) {
-                    Log.e(HTAG, e.getMessage());
+                    Log.e(TAG, e.getMessage());
                 } catch (IllegalArgumentException e) {
-                    Log.e(HTAG, e.getMessage());
+                    Log.e(TAG, e.getMessage());
                 } catch (IllegalAccessException e) {
-                    Log.e(HTAG, e.getMessage());
+                    Log.e(TAG, e.getMessage());
                 } catch (InvocationTargetException e) {
-                    Log.e(HTAG, "InvocationTargetException");
+                    Log.e(TAG, "InvocationTargetException");
                 } finally {
+
                 }
             }
 
@@ -86,29 +89,30 @@ public class ConfigurationActivity extends FragmentActivity {
     protected void onResume() {
         super.onResume();
         if (transHandler == null)
-            transHandler = new TransactionHandler(this);
+            transHandler = new ConfigurationHandler(this);
         HBluetooth.getInstance(this).setHandler(transHandler);
         indicator.setCurrentItem(0);
-        loadMonitorLV();
+        loadMonitorView();
     }
 
     /**
      * 实时监控,加载内容 实时监控列表比较特殊,要在标签切换之后刷新 而标签切换只在一个activity中进行的
-     * 于是放在activity中加载,另外三个标签都是静态内容放在Fragement中加载
+     * 于是放在activity中加载,另外三个标签都是静态内容放在Fragment中加载
      */
-    public void loadMonitorLV() {
+    public void loadMonitorView() {
         // 连接成功的情况下
         if (HBluetooth.getInstance(null).isPrepared()) {
-            List<RealtimeMonitor> rmlst = RealtimeMonitorDao.findAll(this);
-            HCommunication[] cumms = new HCommunication[rmlst.size()];
-            for (int index = 0; index < rmlst.size(); index++) {
-                final String code = rmlst.get(index).getCode();
-                final RealtimeMonitor rmontor = rmlst.get(index);
+            List<RealTimeMonitor> monitorList = RealtimeMonitorDao.findAll(this);
+            HCommunication[] hCommunications = new HCommunication[monitorList.size()];
+            int commandSize = monitorList.size();
+            for (int index = 0; index < commandSize; index++) {
+                final String code = monitorList.get(index).getCode();
+                final RealTimeMonitor realTimeMonitor = monitorList.get(index);
                 // 生成发送的指令,逐个读取各个参数
-                cumms[index] = new HCommunication() {
+                hCommunications[index] = new HCommunication() {
                     @Override
                     public void beforeSend() {
-                        this.setSendbuffer(HSerial.crc16(HSerial.hexStr2Ints("0103" + code + "0001")));
+                        this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103" + code + "0001")));
                     }
 
                     @Override
@@ -125,37 +129,36 @@ public class ConfigurationActivity extends FragmentActivity {
 
                     @Override
                     public Object onParse() {
-                        if (HSerial.isCRC16Valid(getReceivebuffer())) {
+                        if (HSerial.isCRC16Valid(getReceivedBuffer())) {
                             // 通过验证
-                            byte[] received = HSerial.trimEnd(getReceivebuffer());
-
-                            RealtimeMonitor rm = (RealtimeMonitor) rmontor.clone();
-                            rm.setReceived(received);
-                            return rm;
+                            byte[] received = HSerial.trimEnd(getReceivedBuffer());
+                            RealTimeMonitor monitor = (RealTimeMonitor) realTimeMonitor.clone();
+                            monitor.setReceived(received);
+                            return monitor;
                         }
                         return null;
                     }
                 };
             }
             if (HBluetooth.getInstance(this).isPrepared())
-                HBluetooth.getInstance(this).setCommunications(cumms).HStart();
+                HBluetooth.getInstance(this).setCommunications(hCommunications).HStart();
         }
     }
 
     /***
      *
      */
-    public void loadSettingsLV() {
+    public void loadSettingView() {
         // 停止串口通信
         HBluetooth.getInstance(this).setHandler(transHandler);
     }
 
-    public void loadTestLV() {
+    public void loadDebugView() {
         // 停止串口通信
         HBluetooth.getInstance(this).setHandler(transHandler);
     }
 
-    public void loadCopyLV() {
+    public void loadDuplicateView() {
         // 停止串口通信
         HBluetooth.getInstance(this).setHandler(transHandler);
     }

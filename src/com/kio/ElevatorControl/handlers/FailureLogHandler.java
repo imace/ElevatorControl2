@@ -9,7 +9,7 @@ import android.widget.ListView;
 import com.hbluetooth.HHandler;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.models.ErrorHelpLog;
-import com.kio.ElevatorControl.views.dialogs.CustomDialoger;
+import com.kio.ElevatorControl.views.dialogs.CustomDialog;
 import com.mobsandgeeks.adapters.InstantAdapter;
 
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ public class FailureLogHandler extends HHandler {
 
     public FailureLogHandler(Activity activity) {
         super(activity);
-        HTAG = "FailureLogHandler";
+        TAG = "FailureLogHandler";
     }
 
     @Override
@@ -36,13 +36,13 @@ public class FailureLogHandler extends HHandler {
             loglist.add(ehlog);
             // 我们要操作的列表控件
             ListView lstv = (ListView) activity.findViewById(R.id.failure_history_list);
-            InstantAdapter<ErrorHelpLog> itadp = new InstantAdapter<ErrorHelpLog>(activity.getApplicationContext(), R.layout.list_failure_history_item, ErrorHelpLog.class,
+            InstantAdapter<ErrorHelpLog> itadp = new InstantAdapter<ErrorHelpLog>(activity.getApplicationContext(), R.layout.list_trouble_history_item, ErrorHelpLog.class,
                     loglist);
             lstv.setAdapter(itadp);
             lstv.setOnItemClickListener(new OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long arg3) {
-                    CustomDialoger.failureHistoryDailog(loglist.get(pos).getErrorHelp(), activity).show();
+                    CustomDialog.failureHistoryDialog(loglist.get(pos).getErrorHelp(), activity).show();
                 }
             });
 

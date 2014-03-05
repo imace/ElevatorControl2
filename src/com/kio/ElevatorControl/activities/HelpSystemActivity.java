@@ -1,15 +1,15 @@
 package com.kio.ElevatorControl.activities;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
+import android.support.v4.app.FragmentActivity;
 import com.kio.ElevatorControl.R;
-import com.kio.ElevatorControl.models.RootTabs;
+import com.kio.ElevatorControl.models.NavigationTabs;
 
 /**
  * 帮助
  */
-public class HelpSystemActivity extends Activity {
+public class HelpSystemActivity extends FragmentActivity {
 
     protected String[] CONTENTS = null;
     protected Integer[] ICONS = null;
@@ -20,7 +20,7 @@ public class HelpSystemActivity extends Activity {
 
     //初始化一级标签
     private void initTabConstant() {
-        RootTabs uic = RootTabs.getTabInstance(this);
+        NavigationTabs uic = NavigationTabs.getTabInstance(this);
         CONTENTS = uic.getTexts();
         ICONS = uic.getIcons();
     }

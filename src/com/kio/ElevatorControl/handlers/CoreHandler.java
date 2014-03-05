@@ -27,7 +27,7 @@ public class CoreHandler extends HHandler {
 
     public CoreHandler(Activity activity) {
         super(activity);
-        this.HTAG = "CoreHandler";
+        this.TAG = "CoreHandler";
         this.hbt = HBluetooth.getInstance(activity);
     }
 
@@ -38,7 +38,7 @@ public class CoreHandler extends HHandler {
      */
     @Override
     public void onBeginPreparing(Message msg) {
-        Log.v(HTAG, "onBeginPreparing");
+        Log.v(TAG, "onBeginPreparing");
         activity.getActionBar().getCustomView().findViewById(R.id.title_process_bar).setVisibility(View.VISIBLE);
     }
 
@@ -76,7 +76,7 @@ public class CoreHandler extends HHandler {
                 }).HStart();
             }
         });
-        Log.v(HTAG, "onFoundDevice : " + ((Map<String, BluetoothDevice>) msg.obj).keySet().toString());
+        Log.v(TAG, "onFoundDevice : " + ((Map<String, BluetoothDevice>) msg.obj).keySet().toString());
     }
 
     /**
@@ -85,8 +85,8 @@ public class CoreHandler extends HHandler {
      * @param msg
      */
     @Override
-    public void onKillBluethooth(Message msg) {
-        super.onKillBluethooth(msg);
+    public void onKillBluetooth(Message msg) {
+        super.onKillBluetooth(msg);
     }
 
     /**
@@ -98,7 +98,7 @@ public class CoreHandler extends HHandler {
     public void onPrepared(Message msg) {
         // 进度条
         activity.getActionBar().getCustomView().findViewById(R.id.title_process_bar).setVisibility(View.INVISIBLE);
-        Toast.makeText(activity, activity.getResources().getString(R.string.prepbthconn), Toast.LENGTH_SHORT).show();
+        Toast.makeText(activity, activity.getResources().getString(R.string.success_connect), Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -110,7 +110,7 @@ public class CoreHandler extends HHandler {
     public void onPrepError(Message msg) {
         // 进度条
         activity.getActionBar().getCustomView().findViewById(R.id.title_process_bar).setVisibility(View.INVISIBLE);
-        String errmsg = (null == msg.obj) ? activity.getResources().getString(R.string.failbthconn) : msg.obj.toString();
+        String errmsg = (null == msg.obj) ? activity.getResources().getString(R.string.failed_connect) : msg.obj.toString();
         Toast.makeText(activity, errmsg, Toast.LENGTH_SHORT).show();
     }
 
@@ -121,6 +121,7 @@ public class CoreHandler extends HHandler {
      */
     @Override
     public void onTalkReceive(Message msg) {
+
     }
 
     /**

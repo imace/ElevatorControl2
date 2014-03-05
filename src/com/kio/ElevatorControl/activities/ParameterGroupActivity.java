@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.ListView;
 import butterknife.InjectView;
 import butterknife.Views;
@@ -33,6 +34,8 @@ public class ParameterGroupActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_parameter_group);
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setHomeButtonEnabled(true);
         Views.inject(this);
     }
 
@@ -41,30 +44,30 @@ public class ParameterGroupActivity extends Activity {
         super.onResume();
         // 组
         int SelectedId = this.getIntent().getIntExtra("SelectedId", 0);
-        ParameterGroupSettings pgroup = ParameterGroupSettingsDao.findById(
+        ParameterGroupSettings parameterGroupSettings = ParameterGroupSettingsDao.findById(
                 this, SelectedId);
 
-        this.setTitle(pgroup.getGroupText());
+        this.setTitle(parameterGroupSettings.getGroupText());
         // 组成员
-        parameterSettings = pgroup.getParametersettings().getList();
+        parameterSettings = parameterGroupSettings.getParametersettings().getList();
         initBluetooth();
     }
 
     private void initBluetooth() {
-        HCommunication[] cumms = new HCommunication[parameterSettings.size()];
+        HCommunication[] hCommunications = new HCommunication[parameterSettings.size()];
         for (int i = 0; i < parameterSettings.size(); i++) {
-            cumms[i] = new HCommunication(parameterSettings.get(i)) {
+            hCommunications[i] = new HCommunication(parameterSettings.get(i)) {
                 @Override
                 public void beforeSend() {
                     if (this.getItem() instanceof ParameterSettings) {
-                        ParameterSettings psobj = (ParameterSettings) this
+                        ParameterSettings settings = (ParameterSettings) this
                                 .getItem();
-                        psobj.getCode();
-                        String acode = ParseSerialsUtils.getCalculatedCode(psobj);
-                        this.setSendbuffer(HSerial.crc16(HSerial
-                                .hexStr2Ints("0103" + acode + "0001")));
+                        settings.getCode();
+                        String code = ParseSerialsUtils.getCalculatedCode(settings);
+                        this.setSendBuffer(HSerial.crc16(HSerial
+                                .hexStr2Ints("0103" + code + "0001")));
                         Log.v("ParameterGroupActivity read : ",
-                                "0103" + acode + "0001");
+                                "0103" + code + "0001");
                     }
 
                 }
@@ -83,22 +86,31 @@ public class ParameterGroupActivity extends Activity {
 
                 @Override
                 public Object onParse() {
-                    if (HSerial.isCRC16Valid(getReceivebuffer())) {
+                    if (HSerial.isCRC16Valid(getReceivedBuffer())) {
                         byte[] received = HSerial
-                                .trimEnd(getReceivebuffer());
-                        ParameterSettings psobj = (ParameterSettings) this
+                                .trimEnd(getReceivedBuffer());
+                        ParameterSettings settings = (ParameterSettings) this
                                 .getItem();
-                        psobj.setReceived(received);
-                        return psobj;
+                        settings.setReceived(received);
+                        return settings;
                     }
                     return null;
                 }
 
             };
         }
+        HBluetooth.getInstance(this).setHandler(new ParameterHandler(this)).setCommunications(hCommunications).HStart();
+    }
 
-        HBluetooth.getInstance(this).setHandler(new ParameterHandler(this)).setCommunications(cumms).HStart();
-
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                setResult(RESULT_OK);
+                finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

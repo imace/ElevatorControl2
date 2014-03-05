@@ -61,7 +61,7 @@
     },
     {
         "code": "1015",
-        "name": "",
+        "name": "输入端子低位",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -73,7 +73,7 @@
     },
     {
         "code": "1016",
-        "name": "",
+        "name": "输入端子高位",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -85,7 +85,7 @@
     },
     {
         "code": "1017",
-        "name": "",
+        "name": "输出端子",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -133,7 +133,7 @@
     },
     {
         "code": "101B",
-        "name": "",
+        "name": "轿顶输入端子",
         "productId": 0,
         "description": "Bit0: 光幕1#\nBit1: 光幕2#Bit2: 开门到位1#Bit3: 开门到位2#Bit4: 关门到位1#Bit5: 关门到位2#Bit6: 满载信号#Bit7: 超载信号#Bit8: 开门按钮#Bit9: 关门按钮#Bit10: 开门延时按钮#Bit11: 直达信号#Bit12: 司机信号#Bit13: 换向信号#Bit14: 独立运行信号#Bit15: 消防员操作信号#",
         "childId": "Bit0: 5464#\nBit1: 5465#Bit2: 5466#Bit3: 5467#Bit4: 5468#Bit5: 5469#Bit6: 1142#Bit7: 1141#Bit8: 5307#Bit9: 5308#Bit10: 5309#Bit11: 5470#Bit12: 5471#Bit13: 5472#Bit14: 5473#Bit15: 5474#",
@@ -145,7 +145,7 @@
     },
     {
         "code": "101C",
-        "name": "",
+        "name": "轿顶输出端子",
         "productId": 0,
         "description": "Bit0: 开门输出1#\nBit1: 关门输出1#Bit2: 门锁信号#Bit3: 开门输出2#Bit4: 关门输出2#Bit5: 门锁信号#Bit6: 上到站钟#Bit7: 下到站钟#Bit8: 开门按钮显示#Bit9: 关门按钮显示#Bit10: 开门延时按钮#Bit11: 直达信号#Bit12: 保留#Bit13: 蜂鸣器输出#Bit14: 保留#Bit15: 节能#",
         "childId": "Bit0: 5475#\nBit1: 5476#Bit2: 5477#Bit3: 5478#Bit4: 5479#Bit5: 5477#Bit6: 1549#Bit7: 1550#Bit8: 1428#Bit9: 1429#Bit10: 5309#Bit11: 5470#Bit12: 1#Bit13: 1551#Bit14: 1#Bit15: 5480#",
@@ -157,7 +157,7 @@
     },
     {
         "code": "101D",
-        "name": "",
+        "name": "系统状态",
         "productId": 0,
         "description": "Bit0: 系统光幕状态1#\nBit1: 系统光幕状态2#Bit2: 厅外锁梯#Bit3: 厅外消防#Bit4-7: 系统状态#0: 检修#1: 井道自学习#2: 微动平层#3: 消防到基站#4: 消防员#5: 故障状态#6: 司机#7: 自动#8: 锁梯状态#9: 泊梯状态#10: 返平层状态#11: 检修速度平层状态#12: 电机调谐#13: 键盘控制#14: 基站校验#15: VIP状态#Bit8-11: 轿厢状态#0: 保留#1: 开门#2: 开门维持#3: 关门#4: 关门维持#5: 运行#6: 停车#7: 保留#8: 保留#9: 保留#10: 保留#11: 保留#12: 保留#13: 保留#14: 保留#15: 保留#Bit12: 系统满载#Bit13: 系统超载#Bit14: 保留#Bit15: 保留#",
         "childId": "Bit0: 5429#\nBit1: 5430#Bit2: 5431#Bit3: 5432#Bit4-7: 2199#0: 5433#1: 1907#2: 5448#3: 1178#4: 5438#5: 1528#6: 5439#7: 5440#8: 5434#9: 5435#10: 5436#11: 5437#12: 5701#13: 5702#14: 5703#15: 5704#Bit8-11: 5441#0: 1#1: 5442#2: 5443#3: 5444#4: 5445#5: 5446#6: 5447#7: 1#8: 1#9: 1#10: 1#11: 1#12: 1#13: 1#14: 1#15: 1#Bit12: 1567#Bit13: 1568#Bit14: 1#Bit15: 1#",
@@ -181,7 +181,7 @@
     },
     {
         "code": "101F",
-        "name": "减速距离",
+        "name": "额定梯速减速距离",
         "productId": 750,
         "description": null,
         "childId": null,
@@ -193,7 +193,7 @@
     },
     {
         "code": "1020",
-        "name": "",
+        "name": "端子输入状态3",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -205,7 +205,7 @@
     },
     {
         "code": "1021",
-        "name": "",
+        "name": "端子输入状态4",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -217,7 +217,7 @@
     },
     {
         "code": "1022",
-        "name": "",
+        "name": "高压端子输入状态",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -229,7 +229,7 @@
     },
     {
         "code": "1023",
-        "name": "",
+        "name": "输出端子2",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -241,7 +241,7 @@
     },
     {
         "code": "2000",
-        "name": "",
+        "name": "1-8层信息",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -253,7 +253,7 @@
     },
     {
         "code": "2001",
-        "name": "",
+        "name": "9-16层信息",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -265,7 +265,7 @@
     },
     {
         "code": "2002",
-        "name": "",
+        "name": "17-24层信息",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -277,7 +277,7 @@
     },
     {
         "code": "2003",
-        "name": "",
+        "name": "25-32层信息",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -289,7 +289,7 @@
     },
     {
         "code": "2004",
-        "name": "",
+        "name": "33-40层信息",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -301,7 +301,7 @@
     },
     {
         "code": "2005",
-        "name": "",
+        "name": "41-48层信息",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -313,7 +313,7 @@
     },
     {
         "code": "2010",
-        "name": "",
+        "name": "1~4层召唤信息",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -325,7 +325,7 @@
     },
     {
         "code": "2011",
-        "name": "",
+        "name": "5~8层召唤信息",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -337,7 +337,7 @@
     },
     {
         "code": "2012",
-        "name": "",
+        "name": "9~12层召唤信息",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -349,7 +349,7 @@
     },
     {
         "code": "2013",
-        "name": "",
+        "name": "13~16层召唤信息",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -361,7 +361,7 @@
     },
     {
         "code": "2014",
-        "name": "",
+        "name": "17~20层召唤信息",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -373,7 +373,7 @@
     },
     {
         "code": "2015",
-        "name": "",
+        "name": "21~24层召唤信息",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -385,7 +385,7 @@
     },
     {
         "code": "2016",
-        "name": "",
+        "name": "25~28层召唤信息",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -397,7 +397,7 @@
     },
     {
         "code": "2017",
-        "name": "",
+        "name": "29~32层召唤信息",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -409,7 +409,7 @@
     },
     {
         "code": "2018",
-        "name": "",
+        "name": "33~36层召唤信息",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -421,7 +421,7 @@
     },
     {
         "code": "2019",
-        "name": "",
+        "name": "37~40层召唤信息",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -433,7 +433,7 @@
     },
     {
         "code": "2020",
-        "name": "",
+        "name": "41~44层召唤信息",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -445,7 +445,7 @@
     },
     {
         "code": "2021",
-        "name": "",
+        "name": "45~48层召唤信息",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -457,7 +457,7 @@
     },
     {
         "code": "3000",
-        "name": "",
+        "name": "状态字功能",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -469,7 +469,7 @@
     },
     {
         "code": "6001",
-        "name": "",
+        "name": "锁梯",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -481,7 +481,7 @@
     },
     {
         "code": "6002",
-        "name": "",
+        "name": "消防",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -493,7 +493,7 @@
     },
     {
         "code": "6003",
-        "name": "",
+        "name": "恢复出厂参数",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -505,7 +505,7 @@
     },
     {
         "code": "6004",
-        "name": "",
+        "name": "运行停止命令",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -517,7 +517,7 @@
     },
     {
         "code": "8000",
-        "name": "",
+        "name": "故障信息",
         "productId": 0,
         "description": null,
         "childId": null,
