@@ -1,42 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:gravity="center_horizontal|center_vertical"
-              android:orientation="vertical">
-
-    <LinearLayout
-            android:id="@+id/linear_transaction_item"
-            android:layout_width="300dp"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:minHeight="48dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+    <TextView
+            android:id="@+id/text_transaction"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:baselineAligned="false"
-            android:descendantFocusability="blocksDescendants"
-            android:gravity="top"
+            android:layout_centerVertical="true"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="10dp"/>
+    <LinearLayout
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="10dp"
             android:orientation="horizontal"
-            android:padding="10dp">
-
-        <TextView
-                android:id="@+id/text_transaction"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginLeft="10dp"
-                android:layout_weight="0.9"
-                android:text="Large Text"/>
-
+            android:gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
         <TextView
                 android:id="@+id/value_monitor_item"
-                android:layout_width="24dp"
-                android:layout_height="40dp"
-                android:layout_weight="0.04"
-                android:text="Large Text"/>
-
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
         <TextView
                 android:id="@+id/unit_monitor_item"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_weight="0.06"
-                android:text="Large Text"/>
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
     </LinearLayout>
-
-</LinearLayout>
+</RelativeLayout>

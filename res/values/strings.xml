@@ -42,6 +42,19 @@
     <string name="scan_barcode_text">扫描一维码</string>
     <string name="bluetooth_address_text">蓝牙地址</string>
 
+    <!-- 应用程序设置 -->
+    <string name="bluetooth_setting_text">蓝牙设置</string>
+    <string name="application_update_text">软件更新</string>
+    <string name="application_log_text">日志</string>
+    <string name="about_text">关于</string>
+
+    <!-- 电梯内招、外招 -->
+    <string name="move_inside_text">内招</string>
+    <string name="move_outside_text">外招</string>
+    <string name="open_door_text">开门</string>
+    <string name="close_door_text">关门</string>
+
+    <!-- 扫描条形码 -->
     <string name="open_camera_text">打开相机</string>
     <string name="scan_result_text">扫描结果：</string>
 

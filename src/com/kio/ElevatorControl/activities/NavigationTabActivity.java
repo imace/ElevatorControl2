@@ -12,7 +12,7 @@ import butterknife.OnClick;
 import butterknife.Views;
 import com.hbluetooth.HBluetooth;
 import com.kio.ElevatorControl.R;
-import com.kio.ElevatorControl.daos.MenuValues;
+import com.kio.ElevatorControl.daos.MenuValuesDao;
 import com.kio.ElevatorControl.daos.RestoreFactoryDao;
 import com.kio.ElevatorControl.handlers.CoreHandler;
 import com.kio.ElevatorControl.views.customspinner.HCustomSpinner;
@@ -44,9 +44,9 @@ public class NavigationTabActivity extends TabActivity {
      * 标签初始化
      */
     private void initTabs() {
-        String[] CONTENTS = MenuValues.getNavigationTabsTexts(this);
-        Integer[] ICONS = MenuValues.getNavigationTabsIcons(this);
-        Class<?>[] CLAZZ = MenuValues.getNavigationTabsClazz(this);
+        String[] CONTENTS = MenuValuesDao.getNavigationTabsTexts(this);
+        Integer[] ICONS = MenuValuesDao.getNavigationTabsIcons(this);
+        Class<?>[] CLAZZ = MenuValuesDao.getNavigationTabsClazz(this);
         if (null != CONTENTS && null != ICONS && CONTENTS.length == ICONS.length) {
             for (int i = 0; i < CONTENTS.length; i++) {
                 // 正常添加
@@ -70,7 +70,7 @@ public class NavigationTabActivity extends TabActivity {
     private void addTab(String key, int value, Class<?> c) {
         TabHost tabHost = this.getTabHost();
         if (null != tabHost) {
-            View tabIndicator = LayoutInflater.from(this).inflate(R.layout.tab_indicator, getTabWidget(), false);
+            View tabIndicator = LayoutInflater.from(this).inflate(R.layout.navigation_tab_indicator, getTabWidget(), false);
             TabHost.TabSpec spec = tabHost.newTabSpec("tab" + key).setIndicator(tabIndicator).setContent(new Intent(this, c));
             ((TextView) tabIndicator.findViewById(R.id.title)).setText(key);
             ((ImageView) tabIndicator.findViewById(R.id.icon)).setImageResource(value);
@@ -94,7 +94,7 @@ public class NavigationTabActivity extends TabActivity {
     private void initBluetooth() {
         // 必须用CoreActivity初始化用CoreActivity
         if (!HBluetooth.getInstance(this).isPrepared()) {
-            HBluetooth.getInstance(this).setPrepared(false).setDiscoveryMode(true).setHandler(new CoreHandler(this)).HStart();
+            HBluetooth.getInstance(this).setPrepared(false).setDiscoveryMode(true).setHandler(new CoreHandler(this)).Start();
         }
     }
 
@@ -168,7 +168,7 @@ public class NavigationTabActivity extends TabActivity {
                 spinner.setAdapter(new ArrayAdapter<String>(NavigationTabActivity.this, android.R.layout.select_dialog_item, new String[]{}));
                 if (thread == null || !thread.isAlive()) {
                     HBluetooth bth = HBluetooth.getInstance(NavigationTabActivity.this).setPrepared(false).setDiscoveryMode(true).setHandler(new CoreHandler(NavigationTabActivity.this));
-                    bth.HStart();
+                    bth.Start();
                 }
             }
         });

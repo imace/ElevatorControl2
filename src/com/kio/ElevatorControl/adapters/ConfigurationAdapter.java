@@ -3,7 +3,7 @@ package com.kio.ElevatorControl.adapters;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import com.kio.ElevatorControl.daos.MenuValues;
+import com.kio.ElevatorControl.daos.MenuValuesDao;
 import com.kio.ElevatorControl.views.fragments.ConfigurationFragment;
 
 import java.util.ArrayList;
@@ -38,7 +38,7 @@ public class ConfigurationAdapter extends FragmentPagerAdapter {
     public ConfigurationFragment getItem(int position) {
         if (position > mFragments.size() - 1) {
             ConfigurationFragment configurationFragment = ConfigurationFragment.newInstance(
-                    MenuValues.getConfigurationTabsTextsPosition(position, fragmentActivity),
+                    MenuValuesDao.getConfigurationTabsTextsPosition(position, fragmentActivity),
                     fragmentActivity);
             mFragments.add(configurationFragment);
             return configurationFragment;
@@ -49,12 +49,12 @@ public class ConfigurationAdapter extends FragmentPagerAdapter {
 
     @Override
     public CharSequence getPageTitle(int position) {
-        return MenuValues.getConfigurationTabsPageTitle(position, fragmentActivity);
+        return MenuValuesDao.getConfigurationTabsPageTitle(position, fragmentActivity);
     }
 
     @Override
     public int getCount() {
-        return MenuValues.getConfigurationTabsCount(fragmentActivity);
+        return MenuValuesDao.getConfigurationTabsCount(fragmentActivity);
     }
 
 }

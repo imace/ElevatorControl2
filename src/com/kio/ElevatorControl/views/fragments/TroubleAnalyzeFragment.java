@@ -13,7 +13,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.daos.ErrorHelpDao;
-import com.kio.ElevatorControl.daos.MenuValues;
+import com.kio.ElevatorControl.daos.MenuValuesDao;
 import com.kio.ElevatorControl.models.ErrorHelp;
 
 import java.lang.reflect.InvocationTargetException;
@@ -41,7 +41,7 @@ public class TroubleAnalyzeFragment extends Fragment {
         TroubleAnalyzeFragment troubleAnalyzeFragment = new TroubleAnalyzeFragment();
         troubleAnalyzeFragment.tabIndex = tabIndex;
         troubleAnalyzeFragment.context = ctx;
-        troubleAnalyzeFragment.layoutId = MenuValues.getTroubleAnalyzeTabsLayoutId(tabIndex, ctx);
+        troubleAnalyzeFragment.layoutId = MenuValuesDao.getTroubleAnalyzeTabsLayoutId(tabIndex, ctx);
         if (troubleAnalyzeFragment.layoutId == 0) {
             troubleAnalyzeFragment.layoutId = R.layout.fragment_test;
         }
@@ -56,7 +56,7 @@ public class TroubleAnalyzeFragment extends Fragment {
         super.onResume();
         try {
             // 反射执行
-            this.getClass().getMethod(MenuValues.getTroubleAnalyzeTabsLoadMethodName(tabIndex, context)).invoke(this);
+            this.getClass().getMethod(MenuValuesDao.getTroubleAnalyzeTabsLoadMethodName(tabIndex, context)).invoke(this);
         } catch (NoSuchMethodException e) {
             Log.e(TAG, e.getMessage());
         } catch (IllegalArgumentException e) {

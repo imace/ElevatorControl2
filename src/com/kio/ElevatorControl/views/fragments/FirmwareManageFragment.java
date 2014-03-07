@@ -8,7 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import com.kio.ElevatorControl.R;
-import com.kio.ElevatorControl.daos.MenuValues;
+import com.kio.ElevatorControl.daos.MenuValuesDao;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -36,7 +36,7 @@ public class FirmwareManageFragment extends Fragment{
         FirmwareManageFragment firmwareManageFragment = new FirmwareManageFragment();
         firmwareManageFragment.tabIndex = tabIndex;
         firmwareManageFragment.context = context;
-        firmwareManageFragment.layoutId = MenuValues.getFirmwareManageTabsLayoutId(tabIndex, context);
+        firmwareManageFragment.layoutId = MenuValuesDao.getFirmwareManageTabsLayoutId(tabIndex, context);
         if (firmwareManageFragment.layoutId == 0) {
             firmwareManageFragment.layoutId = R.layout.fragment_test;
         }
@@ -54,7 +54,7 @@ public class FirmwareManageFragment extends Fragment{
         super.onResume();
         try {
             // 反射执行
-            this.getClass().getMethod(MenuValues.getFirmwareManageTabsLoadMethodName(tabIndex, context))
+            this.getClass().getMethod(MenuValuesDao.getFirmwareManageTabsLoadMethodName(tabIndex, context))
                     .invoke(this);
         } catch (NoSuchMethodException e) {
             Log.e(TAG, e.getMessage());

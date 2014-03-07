@@ -17,14 +17,14 @@ import java.util.Date;
 public class ParseSerialsUtils {
 
     @SuppressLint("DefaultLocale")
-    public static String getValueTextFromRealtimeMonitor(RealTimeMonitor rm) {
+    public static String getValueTextFromRealTimeMonitor(RealTimeMonitor rm) {
         byte[] data = rm.getReceived();
         if (data.length == 8) {
             int value = data[4];
             value = value << 8;
             value = value | data[5];
-            Float fvalue = value * Float.parseFloat(rm.getScale());
-            String txt = String.format("%.2f", fvalue);
+            Float floatValue = value * Float.parseFloat(rm.getScale());
+            String txt = String.format("%.2f", floatValue);
             return txt;
         }
         return "Error";
@@ -37,8 +37,8 @@ public class ParseSerialsUtils {
             int value = data[4];
             value = value << 8;
             value = value | data[5];
-            Float fvalue = value * Float.parseFloat(rm.getScale());
-            String txt = String.format("%.2f", fvalue);
+            Float aFloat = value * Float.parseFloat(rm.getScale());
+            String txt = String.format("%.2f", aFloat);
             return txt;
         }
         return "Error";
@@ -148,8 +148,6 @@ public class ParseSerialsUtils {
         ehlog.setErrorHelpId(ErrorHelpDao.findByDisplay(ctx, "E" + eptdf.format(value1)).getId());
 
         return ehlog;
-
     }
-
 
 }

@@ -73,7 +73,7 @@ public class CoreHandler extends HHandler {
                         String deviceLogName = dev.getName() + "(" + dev.getAddress() + ")";
                         return deviceLogName.trim().equalsIgnoreCase(devName);
                     }
-                }).HStart();
+                }).Start();
             }
         });
         Log.v(TAG, "onFoundDevice : " + ((Map<String, BluetoothDevice>) msg.obj).keySet().toString());

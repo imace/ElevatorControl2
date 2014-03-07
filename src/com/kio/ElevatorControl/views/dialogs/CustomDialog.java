@@ -84,7 +84,6 @@ public class CustomDialog {
                     public void onClick(DialogInterface dialog, int which) {
                         HCommunication[] hCommunications = new HCommunication[1];
                         hCommunications[0] = new HCommunication() {
-
                             @Override
                             public void beforeSend() {
                                 String inputData = ((EditText) layout.findViewById(R.id.parameter_setting_value)).getText().toString();
@@ -95,14 +94,17 @@ public class CustomDialog {
 
                             @Override
                             public void afterSend() {
+
                             }
 
                             @Override
                             public void beforeReceive() {
+
                             }
 
                             @Override
                             public void afterReceive() {
+
                             }
 
                             @Override
@@ -110,15 +112,13 @@ public class CustomDialog {
                                 if (HSerial.isCRC16Valid(getReceivedBuffer())) {
                                     // 通过验证
                                     byte[] received = HSerial.trimEnd(getReceivedBuffer());
-                                    Log.v("parameterSettingDialog receive", HSerial.byte2HexStr(received));
+                                    Log.v("parameterSettingDialogReceived", HSerial.byte2HexStr(received));
                                     return null;
                                 }
                                 return null;
                             }
                         };
-
-                        HBluetooth.getInstance(act).setCommunications(hCommunications).HStart();
-
+                        HBluetooth.getInstance(act).setCommunications(hCommunications).Start();
                     }
                 }).setNegativeButton(act.getResources().getString(R.string.dialog_btn_cancel), null).setCancelable(false);
     }
@@ -144,6 +144,7 @@ public class CustomDialog {
 
     public static AlertDialog.Builder failureHistoryDialog(final ErrorHelp errorhlep, final Activity act) {
         final View layout = act.getLayoutInflater().inflate(R.layout.trouble_analyze_tab_current, null);
+        assert layout != null;
         ((TextView) layout.findViewById(R.id.current_error_help_display)).setText(errorhlep.getDisplay());
         ((TextView) layout.findViewById(R.id.current_error_help_level)).setText(errorhlep.getLevel());
         ((TextView) layout.findViewById(R.id.current_error_help_name)).setText(errorhlep.getName());

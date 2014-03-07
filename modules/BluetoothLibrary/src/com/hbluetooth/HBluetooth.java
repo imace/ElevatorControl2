@@ -27,9 +27,11 @@ import java.util.concurrent.TimeUnit;
 @SuppressLint("NewApi")
 public class HBluetooth implements Runnable {
 
-    private final String LOGTAG = "HBluetooth";
-    private final int SOCKETTIMEOUT = 400;
-    private final int MAXREADBUFFER = 1024;
+    private final String TAG = "HBluetooth";
+
+    private final int SOCKET_TIMEOUT = 200;
+
+    private final int MAX_READ_BUFFER = 1024;
 
     private int[] arrPorts = {// 可尝试的用来打开蓝牙socket的端口
             1
@@ -38,13 +40,13 @@ public class HBluetooth implements Runnable {
     private Activity activity = null;// 用来注册广播的activity
 
     private BluetoothAdapter mAdapter = null;
-    private BroadcastReceiver bcrcvr = null;
+    private BroadcastReceiver broadcastReceiver = null;
 
     // 创建一个可单线程的线程池
     private ExecutorService pool = Executors.newSingleThreadExecutor();
 
     // 扫描到的所有设备
-    private Map<String, BluetoothDevice> allDevs = null;
+    private Map<String, BluetoothDevice> stringBluetoothDeviceMap = null;
 
     // 准备完毕,它的set接口是开放的,只要将其设为false,就重做准备工作
     // 代替btSocket.isConnected()这个接口有的设备出现明明连接上但值是false的情况
@@ -65,7 +67,6 @@ public class HBluetooth implements Runnable {
 
     // socket
     public BluetoothSocket btSocket;
-
 
     private HBluetooth() {
     }
@@ -103,47 +104,50 @@ public class HBluetooth implements Runnable {
     }
 
     /**
-     * 停止搜索 clearpaire : true 停止搜索,关闭连接,清除配对 false 停止搜索
+     * 停止搜索 clearPair : true 停止搜索,关闭连接,清除配对 false 停止搜索
      */
-    public void reset(boolean clearpaire) {
+    public void reset(boolean clearPair) {
+
         prepared = abortTalking = false;
+
         mAdapter = BluetoothAdapter.getDefaultAdapter();
+
         judgement = null;
 
         // 如果在检测蓝牙设备,则中止
         stopDiscovery();
 
         //
-        if (clearpaire) {
-            if (null != allDevs) {
+        if (clearPair) {
+            if (null != stringBluetoothDeviceMap) {
                 try {
                     // 删除之前配对,以后必须重新配对,重新输入pin
-                    allDevs.clear();
+                    stringBluetoothDeviceMap.clear();
                     if (null != handler) {
                         // 代表重置的消息
                         handler.sendEmptyMessage(R.string.rest_bluetooth);
                     }
-                    Log.d(LOGTAG, "removing cached devices...");
+                    Log.d(TAG, "removing cached devices...");
                 } catch (UnsupportedOperationException e) {
-                    Log.d(LOGTAG, e.getMessage());
+                    Log.d(TAG, e.getMessage());
                 }
             }
         }
-        if (null != bcrcvr) {
+        if (null != broadcastReceiver) {
             try {
-                activity.unregisterReceiver(bcrcvr);
-                bcrcvr = null;
-                Log.d(LOGTAG, "activity unregistered...");
+                activity.unregisterReceiver(broadcastReceiver);
+                broadcastReceiver = null;
+                Log.d(TAG, "activity unregistered...");
             } catch (Exception e) {
-                Log.d(LOGTAG, "activity failed unregistered...");
+                Log.d(TAG, "activity failed unregistered...");
             }
         }
-        allDevs = new ConcurrentHashMap<String, BluetoothDevice>();
+        stringBluetoothDeviceMap = new ConcurrentHashMap<String, BluetoothDevice>();
 
-        if (clearpaire) {
+        if (clearPair) {
             socketClose();
         }
-        bcrcvr = null;
+        broadcastReceiver = null;
     }
 
     /**
@@ -156,23 +160,23 @@ public class HBluetooth implements Runnable {
                 try {
                     btSocket.getInputStream().close();
                 } catch (IOException e) {
-                    Log.d(LOGTAG, e.getMessage());
+                    Log.d(TAG, e.getMessage());
                 }
                 try {
                     btSocket.getOutputStream().close();
                 } catch (IOException e) {
-                    Log.d(LOGTAG, e.getMessage());
+                    Log.d(TAG, e.getMessage());
                 }
                 try {
                     btSocket.close();
                 } catch (IOException e) {
-                    Log.d(LOGTAG, e.getMessage());
+                    Log.d(TAG, e.getMessage());
                 } finally {
                     btSocket = null;
                 }
             }
             btSocket = null;
-            Log.v(LOGTAG, "bluetooth socket closed.");
+            Log.v(TAG, "bluetooth socket closed.");
         }
     }
 
@@ -189,48 +193,48 @@ public class HBluetooth implements Runnable {
         try {
             // 没配置好,不能发送
             if (null == communication || null == btSocket || !btSocket.isConnected()) {
-                final String errmsg = "cannot send or receive! " + ((communication == null) ? "communication==null" : "") + ((btSocket == null) ? "btSocket" : "")
+                final String errorMessage = "cannot send or receive! " + ((communication == null) ? "communication==null" : "") + ((btSocket == null) ? "btSocket" : "")
                         + ((btSocket.isConnected()) ? "connected" : "unconnected");
-                msgError.obj = errmsg;// 消息体
+                msgError.obj = errorMessage;// 消息体
                 if (null != handler)
                     handler.sendMessage(msgError);
-                Log.d(LOGTAG, errmsg);
+                Log.d(TAG, errorMessage);
                 return null;
             }
             if (null != handler)
                 handler.sendEmptyMessage(R.string.talk_before_send);
             // 发送之前
             communication.beforeSend();
-            byte[] sendbuffer = communication.getSendBuffer();// 指令
-            if (!(null != sendbuffer && sendbuffer.length > 0)) {// 出错
-                final String errmsg = "no CMD or DATA!";
-                msgError.obj = errmsg;// 消息体
+            byte[] sendBuffer = communication.getSendBuffer();// 指令
+            if (!(null != sendBuffer && sendBuffer.length > 0)) {// 出错
+                final String errorMessage = "no CMD or DATA!";
+                msgError.obj = errorMessage;// 消息体
                 if (null != handler)
                     handler.sendMessage(msgError);
-                Log.d(LOGTAG, errmsg);
+                Log.d(TAG, errorMessage);
                 return null;
             }
             // 发送
-            btSocket.getOutputStream().write(sendbuffer);
+            btSocket.getOutputStream().write(sendBuffer);
             btSocket.getOutputStream().flush();
             if (null != handler) {// 发送之后
                 Message mg = new Message();
                 mg.what = R.string.talk_after_send;
-                mg.obj = sendbuffer;
+                mg.obj = sendBuffer;
                 handler.sendMessage(mg);
             }
             communication.afterSend();
 
             // 休眠适当时间等待接收完全
-            Thread.sleep(SOCKETTIMEOUT);
+            Thread.sleep(SOCKET_TIMEOUT);
 
             communication.beforeReceive();
-            byte[] readbuf = new byte[MAXREADBUFFER];// 预留足够大空间
+            byte[] readBuffer = new byte[MAX_READ_BUFFER];// 预留足够大空间
             BufferedInputStream inStream = new BufferedInputStream(btSocket.getInputStream());
             int ret = -1;
             while (inStream.available() > 0) {
                 try {
-                    ret = inStream.read(readbuf);
+                    ret = inStream.read(readBuffer);
                 } catch (IOException e) {// 出错
                     msgError.obj = e.getMessage();
                     if (null != handler)
@@ -238,7 +242,7 @@ public class HBluetooth implements Runnable {
                     return null;// 接收出错直接退出
                 }
             }
-            communication.setReceivedBuffer(readbuf);
+            communication.setReceivedBuffer(readBuffer);
             communication.afterReceive();
             // 能走到此处说明一次交互完成,则发出消息
             Message mg = new Message();
@@ -246,12 +250,12 @@ public class HBluetooth implements Runnable {
             mg.obj = communication.onParse();
             if (null != handler)
                 handler.sendMessage(mg);
-            return HSerial.byte2HexStr(readbuf);
+            return HSerial.byte2HexStr(readBuffer);
         } catch (IOException e) {// 出错
             msgError.obj = e.getMessage();
             if (null != handler)
                 handler.sendMessage(msgError);
-            Log.d(LOGTAG, e.getMessage());
+            Log.d(TAG, e.getMessage());
             return null;
         } catch (InterruptedException e1) {// 出错
             msgError.obj = e1.getMessage();
@@ -263,7 +267,7 @@ public class HBluetooth implements Runnable {
             msgError.obj = e2.getMessage();
             if (null != handler)
                 handler.sendMessage(msgError);
-            Log.d(LOGTAG, "null pointer");
+            Log.d(TAG, "null pointer");
             return null;
         }
     }
@@ -315,18 +319,18 @@ public class HBluetooth implements Runnable {
 
     private void restartSearch() {
         startDiscovery();
-        if (null != bcrcvr) {
+        if (null != broadcastReceiver) {
             try {
-                activity.unregisterReceiver(bcrcvr);
-                bcrcvr = null;
-                Log.d(LOGTAG, "activity unregistered...");
+                activity.unregisterReceiver(broadcastReceiver);
+                broadcastReceiver = null;
+                Log.d(TAG, "activity unregistered...");
             } catch (Exception e) {
-                Log.d(LOGTAG, "activity failed unregistered...");
+                Log.d(TAG, "activity failed unregistered...");
             }
         }
         // 注册一个Receiver
-        bcrcvr = getPrepareReceiver();
-        activity.registerReceiver(bcrcvr, getPrepareFilter());
+        broadcastReceiver = getPrepareReceiver();
+        activity.registerReceiver(broadcastReceiver, getPrepareFilter());
         // 开始准备
         if (null != handler)
             handler.sendEmptyMessage(R.string.begin_preparing);
@@ -336,7 +340,7 @@ public class HBluetooth implements Runnable {
      * 开始搜索可用设备
      */
     private void startDiscovery() {
-        Log.d(LOGTAG, "start discovery...");
+        Log.d(TAG, "start discovery...");
         mAdapter.startDiscovery();
     }
 
@@ -344,7 +348,7 @@ public class HBluetooth implements Runnable {
      * 结束搜索
      */
     private void stopDiscovery() {
-        Log.d(LOGTAG, "cancel discovery...");
+        Log.d(TAG, "cancel discovery...");
         mAdapter.cancelDiscovery();
     }
 
@@ -371,58 +375,58 @@ public class HBluetooth implements Runnable {
     @SuppressLint("NewApi")
     private boolean buildConnection(BluetoothDevice dev) {
         socketClose();
-        boolean buildSuccessfull = false;
+        boolean buildSuccessful = false;
         try {
-            if (!buildSuccessfull) {
+            if (!buildSuccessful) {
                 try {
                     btSocket = dev.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));
                     btSocket.connect();
                     if (btSocket.isConnected()) {
-                        buildSuccessfull = true;// 只有connect()不发生错误才连接成功
+                        buildSuccessful = true;// 只有connect()不发生错误才连接成功
                     }
                 } catch (IOException e) {
-                    buildSuccessfull = false;
+                    buildSuccessful = false;
                 }
             }
         } catch (Exception e) {
-            Log.e(LOGTAG, "error on tring to connet through UUID : " + e.getMessage());
+            Log.e(TAG, "error on tring to connet through UUID : " + e.getMessage());
         } finally {
             int len = arrPorts.length;
-            while ((!buildSuccessfull) && len > 0) {// 以上不成功,改用非公开的api
+            while ((!buildSuccessful) && len > 0) {// 以上不成功,改用非公开的api
                 len--;
                 try {
-                    Log.v(LOGTAG, "try open port : " + arrPorts[len]);
+                    Log.v(TAG, "try open port : " + arrPorts[len]);
                     btSocket = (BluetoothSocket) dev.getClass().getMethod("createRfcommSocket", new Class[]{
                             int.class
                     }).invoke(dev, Integer.valueOf(arrPorts[len]));
                     btSocket.connect();
-                    buildSuccessfull = true;// 只有connect()不发生错误才连接成功
+                    buildSuccessful = true;// 只有connect()不发生错误才连接成功
                     break;
                 } catch (IllegalArgumentException e) {
-                    Log.e(LOGTAG, "error on tring to connet through socket : " + e.getMessage());
+                    Log.e(TAG, "error on tring to connet through socket : " + e.getMessage());
                 } catch (IllegalAccessException e) {
-                    Log.e(LOGTAG, "error on tring to connet through socket : " + e.getMessage());
+                    Log.e(TAG, "error on tring to connet through socket : " + e.getMessage());
                 } catch (InvocationTargetException e) {
-                    Log.e(LOGTAG, "error on tring to connet through socket : " + e.getMessage());
+                    Log.e(TAG, "error on tring to connet through socket : " + e.getMessage());
                 } catch (NoSuchMethodException e) {
-                    Log.e(LOGTAG, "error on tring to connet through socket : " + e.getMessage());
+                    Log.e(TAG, "error on tring to connet through socket : " + e.getMessage());
                 } catch (IOException e) {
-                    Log.e(LOGTAG, "error on tring to connet through socket : " + e.getMessage());
+                    Log.e(TAG, "error on tring to connet through socket : " + e.getMessage());
                 }
             }
 
         }
 
-        if (null != bcrcvr) {
+        if (null != broadcastReceiver) {
             try {
-                activity.unregisterReceiver(bcrcvr);
-                Log.d(LOGTAG, "activity unregistered...");
+                activity.unregisterReceiver(broadcastReceiver);
+                Log.d(TAG, "activity unregistered...");
             } catch (Exception e) {
-                Log.d(LOGTAG, "activity failed unregistered...");
+                Log.d(TAG, "activity failed unregistered...");
             }
         }
 
-        return buildSuccessfull;
+        return buildSuccessful;
     }
 
     /**
@@ -476,9 +480,9 @@ public class HBluetooth implements Runnable {
             private void buildPair(BluetoothDevice dev) {
                 try {
                     Boolean returnValue = (Boolean) Class.forName("android.bluetooth.BluetoothDevice").getMethod("createBond").invoke(dev);
-                    Log.v(LOGTAG, "auto bond : " + returnValue);
+                    Log.v(TAG, "auto bond : " + returnValue);
                 } catch (Exception e) {// any exception occurs
-                    Log.e(LOGTAG, e.getMessage());
+                    Log.e(TAG, e.getMessage());
                     Message msgBond = new Message();
                     msgBond.what = R.string.prepare_failed;
                     msgBond.obj = String.format(activity.getResources().getString(R.string.failed_bond), dev.getName() + "(" + dev.getAddress() + ")");
@@ -495,9 +499,9 @@ public class HBluetooth implements Runnable {
             private void cancelPair(BluetoothDevice dev) {
                 try {
                     Boolean returnValue = (Boolean) Class.forName("android.bluetooth.BluetoothDevice").getMethod("cancelBondProcess").invoke(dev);
-                    Log.v(LOGTAG, "cancel bond : " + returnValue);
+                    Log.v(TAG, "cancel bond : " + returnValue);
                 } catch (Exception e) {// any exception occurs
-                    Log.e(LOGTAG, e.getMessage());
+                    Log.e(TAG, e.getMessage());
                     Message msgBond = new Message();
                     msgBond.what = R.string.prepare_failed;
                     msgBond.obj = String.format(activity.getResources().getString(R.string.cancel_bond), dev.getName() + "(" + dev.getAddress() + ")");
@@ -514,15 +518,15 @@ public class HBluetooth implements Runnable {
                     // 如果不是discoveryMode则不要发消息,那么这个过程就不会影响ui而是自动判断并弹出配对框
                     if (discoveryMode) {
                         String deviceLogName = device.getName() + "(" + device.getAddress() + ")";
-                        allDevs.put(deviceLogName, device);
+                        stringBluetoothDeviceMap.put(deviceLogName, device);
                         if (null != handler) {
                             Message msg = new Message();
                             msg.what = R.string.found_device;
-                            msg.obj = allDevs;
+                            msg.obj = stringBluetoothDeviceMap;
                             handler.sendMessage(msg);
                         }
-                        Log.v(LOGTAG, "find device : " + deviceLogName);
-                        Log.v(LOGTAG, "map added " + deviceLogName + "(" + allDevs.size() + ")");
+                        Log.v(TAG, "find device : " + deviceLogName);
+                        Log.v(TAG, "map added " + deviceLogName + "(" + stringBluetoothDeviceMap.size() + ")");
                     }
 
                     // 该设备已配对
@@ -535,10 +539,10 @@ public class HBluetooth implements Runnable {
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                     switch (device.getBondState()) {
                         case BluetoothDevice.BOND_BONDING:
-                            Log.v(LOGTAG, "BOND BONDING : ");
+                            Log.v(TAG, "BOND BONDING : ");
                             break;
                         case BluetoothDevice.BOND_BONDED:
-                            Log.v(LOGTAG, "BOND BONDED : ");
+                            Log.v(TAG, "BOND BONDED : ");
                             onReceivePairedDevice(device);// 连接设备
                             break;
                         case BluetoothDevice.BOND_NONE:
@@ -666,14 +670,14 @@ public class HBluetooth implements Runnable {
             pool.awaitTermination(100, TimeUnit.MILLISECONDS);
 //			Thread.currentThread().interrupt();
         } catch (Exception e) {
-            Log.e(LOGTAG, e.getMessage());
+            Log.e(TAG, e.getMessage());
         } finally {
             abortTalking = false;
         }
         return this;
     }
 
-    public HBluetooth HStart() {
+    public HBluetooth Start() {
         HInterrupt();
         pool.execute(this);
         return this;

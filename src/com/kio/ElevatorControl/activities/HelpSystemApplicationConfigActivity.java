@@ -2,6 +2,7 @@ package com.kio.ElevatorControl.activities;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.preference.PreferenceFragment;
 import android.view.MenuItem;
 import com.kio.ElevatorControl.R;
 
@@ -20,6 +21,9 @@ public class HelpSystemApplicationConfigActivity extends Activity {
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
         setContentView(R.layout.activity_help_system_application_config);
+        getFragmentManager().beginTransaction()
+                .replace(R.id.application_config_content, new ApplicationConfigFragment())
+                .commit();
     }
 
     @Override
@@ -31,6 +35,20 @@ public class HelpSystemApplicationConfigActivity extends Activity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * 应用程序设置 Fragment
+     *
+     */
+    private class ApplicationConfigFragment extends PreferenceFragment{
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.application_preference);
+        }
+
     }
 
 }

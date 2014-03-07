@@ -20,7 +20,7 @@ import java.util.Date;
  * @author jch
  */
 public class RestoreFactoryDao {
-    private static final boolean DBDEBUG = true;
+    private static final boolean DEBUG = true;
 
     /**
      * 记录是否为空
@@ -32,14 +32,14 @@ public class RestoreFactoryDao {
         // (android:label).db
         FinalDb db = FinalDb.create(ctx,
                 ctx.getString(ctx.getApplicationInfo().labelRes) + ".db",
-                DBDEBUG);
-        int parametersettingssize = db.findAll(ParameterSettings.class).size();
-        int parametergroupsettingssize = db.findAll(
+                DEBUG);
+        int parameterSettingsSize = db.findAll(ParameterSettings.class).size();
+        int parameterGroupSettingsSize = db.findAll(
                 ParameterGroupSettings.class).size();
-        int realtimemonitorsize = db.findAll(RealTimeMonitor.class).size();
-        int errorhelpsize = db.findAll(ErrorHelp.class).size();
-        if (parametersettingssize == 0 || parametergroupsettingssize == 0
-                || realtimemonitorsize == 0 || errorhelpsize == 0) {
+        int realTimeMonitorSize = db.findAll(RealTimeMonitor.class).size();
+        int errorHelpSize = db.findAll(ErrorHelp.class).size();
+        if (parameterSettingsSize == 0 || parameterGroupSettingsSize == 0
+                || realTimeMonitorSize == 0 || errorHelpSize == 0) {
             return true;
         }
         return false;
@@ -50,7 +50,7 @@ public class RestoreFactoryDao {
      */
     public static void dbInit(Context ctx) {
         restoreFactoryParameterGroupSettings(ctx);
-        restoreFactoryRealtimeMonitor(ctx);
+        restoreFactoryRealTimeMonitor(ctx);
         restoreFactoryErrorHelp(ctx);
     }
 
@@ -63,7 +63,7 @@ public class RestoreFactoryDao {
         // (android:label).db
         FinalDb db = FinalDb.create(ctx,
                 ctx.getString(ctx.getApplicationInfo().labelRes) + ".db",
-                DBDEBUG);
+                DEBUG);
         // 清理数据
         db.deleteAll(ParameterSettings.class);
         db.deleteAll(ParameterGroupSettings.class);
@@ -78,39 +78,41 @@ public class RestoreFactoryDao {
             // 遍历group
             for (int i = 0; i < groups.length(); i++) {
 
-                JSONObject groupjson = groups.getJSONObject(i);
-                ParameterGroupSettings groupentity = new ParameterGroupSettings();
-                groupentity.setGroupText(groupjson.optString("groupText"));
-                groupentity.setGroupId(groupjson.optString("groupId"));
-                groupentity.setValid(true);
-                groupentity.setLasttime(new Date());
-                // 保存groupentity并且id设置为插入后的值
-                db.saveBindId(groupentity);
+                JSONObject groupsJSONObject = groups.getJSONObject(i);
+                ParameterGroupSettings parameterGroupSetting = new ParameterGroupSettings();
+                parameterGroupSetting.setGroupText(groupsJSONObject.optString("groupText"));
+                parameterGroupSetting.setGroupId(groupsJSONObject.optString("groupId"));
+                parameterGroupSetting.setValid(true);
+                parameterGroupSetting.setLasttime(new Date());
+                // 保存groupEntity并且id设置为插入后的值
+                db.saveBindId(parameterGroupSetting);
 
-                JSONArray settingjson = groupjson
-                        .getJSONArray("parametersettings");
+                String groupID = groupsJSONObject.optString("groupId");
+
+                JSONArray settingJson = groupsJSONObject
+                        .getJSONArray("parameterSettings");
                 // 遍历settings
-                for (int j = 0; j < settingjson.length(); j++) {
-                    JSONObject stjsn = settingjson.getJSONObject(j);
-                    ParameterSettings setting = new ParameterSettings();
-                    setting.setCode(stjsn.optString("code"));
-                    setting.setName(stjsn.optString("name"));
-                    setting.setProductId(String.valueOf(stjsn
+                for (int j = 0; j < settingJson.length(); j++) {
+                    JSONObject jsonObject = settingJson.getJSONObject(j);
+                    ParameterSettings parameterSetting = new ParameterSettings();
+                    parameterSetting.setCode(jsonObject.optString("code"));
+                    parameterSetting.setName(jsonObject.optString("name"));
+                    parameterSetting.setProductId(String.valueOf(jsonObject
                             .optInt("productId")));
-                    setting.setDescription(stjsn.optString("description"));
-                    setting.setDescriptiontype(ParameterSettings
-                            .ParseDescriptionToType(setting.getDescription()));
-                    setting.setChildId(stjsn.optString("childId"));
-                    setting.setScope(stjsn.optString("scope"));
-                    setting.setDefaultValue(String.valueOf(stjsn
+                    parameterSetting.setDescription(jsonObject.optString("description"));
+                    parameterSetting.setDescriptiontype(ParameterSettings
+                            .ParseDescriptionToType(parameterSetting.getDescription()));
+                    parameterSetting.setChildId(jsonObject.optString("childId"));
+                    parameterSetting.setScope(jsonObject.optString("scope"));
+                    parameterSetting.setDefaultValue(String.valueOf(jsonObject
                             .optInt("defaultValue")));
-                    setting.setScale(String.valueOf(stjsn.optDouble("scale")));
-                    setting.setUnit(stjsn.optString("unit"));
-                    setting.setType(String.valueOf(stjsn.optInt("type")));
-                    setting.setMode(String.valueOf(stjsn.optInt("mode")));
-                    setting.setParametergroupsettings(groupentity);
+                    parameterSetting.setScale(String.valueOf(jsonObject.optDouble("scale")));
+                    parameterSetting.setUnit(jsonObject.optString("unit"));
+                    parameterSetting.setType(String.valueOf(jsonObject.optInt("type")));
+                    parameterSetting.setMode(String.valueOf(jsonObject.optInt("mode")));
+                    parameterSetting.setParametergroupsettings(parameterGroupSetting);
                     // 保存setting
-                    db.save(setting);
+                    db.save(parameterSetting);
                 }
             }
         } catch (JSONException ex) {
@@ -119,11 +121,11 @@ public class RestoreFactoryDao {
         }
     }
 
-    public static void restoreFactoryRealtimeMonitor(Context ctx) {
+    public static void restoreFactoryRealTimeMonitor(Context ctx) {
         // (android:label).db
         FinalDb db = FinalDb.create(ctx,
                 ctx.getString(ctx.getApplicationInfo().labelRes) + ".db",
-                DBDEBUG);
+                DEBUG);
         db.deleteAll(RealTimeMonitor.class);
 
         // 读取NICE3000+_State.json
@@ -132,23 +134,23 @@ public class RestoreFactoryDao {
         try {
             JSONArray monitors = new JSONArray(JSON);
             for (int i = 0; i < monitors.length(); i++) {
-                JSONObject mtor = monitors.getJSONObject(i);
-                RealTimeMonitor mtentity = new RealTimeMonitor();
-                mtentity.setName(mtor.optString("name"));
-                mtentity.setCode(mtor.optString("code"));
-                mtentity.setChildId(mtor.optString("childId"));
-                mtentity.setUnit(mtor.optString("unit"));
-                mtentity.setDescription(mtor.optString("description"));
-                mtentity.setDescriptionType(RealTimeMonitor
-                        .ParseDescriptionToType(mtentity.getDescription()));
-                mtentity.setProductId(String.valueOf(mtor.optInt("productId")));
-                mtentity.setScale(String.valueOf(mtor.optDouble("scale")));
-                mtentity.setScope(mtor.optString("scope"));
-                mtentity.setShowBit(Boolean.parseBoolean(mtor
+                JSONObject jsonObject = monitors.getJSONObject(i);
+                RealTimeMonitor realTimeMonitor = new RealTimeMonitor();
+                realTimeMonitor.setName(jsonObject.optString("name"));
+                realTimeMonitor.setCode(jsonObject.optString("code"));
+                realTimeMonitor.setChildId(jsonObject.optString("childId"));
+                realTimeMonitor.setUnit(jsonObject.optString("unit"));
+                realTimeMonitor.setDescription(jsonObject.optString("description"));
+                realTimeMonitor.setDescriptionType(RealTimeMonitor
+                        .ParseDescriptionToType(realTimeMonitor.getDescription()));
+                realTimeMonitor.setProductId(String.valueOf(jsonObject.optInt("productId")));
+                realTimeMonitor.setScale(String.valueOf(jsonObject.optDouble("scale")));
+                realTimeMonitor.setScope(jsonObject.optString("scope"));
+                realTimeMonitor.setShowBit(Boolean.parseBoolean(jsonObject
                         .optString("showBit")));
-                mtentity.setValid(true);
-                mtentity.setLastTime(new Date());
-                db.save(mtentity);
+                realTimeMonitor.setValid(true);
+                realTimeMonitor.setLastTime(new Date());
+                db.save(realTimeMonitor);
             }
         } catch (JSONException ex) {
             // 异常处理代码
@@ -160,27 +162,27 @@ public class RestoreFactoryDao {
         // (android:label).db
         FinalDb db = FinalDb.create(ctx,
                 ctx.getString(ctx.getApplicationInfo().labelRes) + ".db",
-                DBDEBUG);
+                DEBUG);
         db.deleteAll(ErrorHelp.class);
         // 读取NICE3000+_State.json
         String JSON = AssetUtils.readDefaultFunCode(ctx,
                 "NICE3000+_ErrHelp.json");
         try {
-            JSONArray errhelplist = new JSONArray(JSON);
-            for (int i = 0; i < errhelplist.length(); i++) {
-                JSONObject errhp = errhelplist.getJSONObject(i);
-                ErrorHelp epobj = new ErrorHelp();
-                epobj.setDisplay(errhp.optString("display"));
-                epobj.setName(errhp.optString("name"));
-                epobj.setChildIda(errhp.optString("childIda"));
-                epobj.setChildIdb(errhp.optString("childIdb"));
-                epobj.setLevel(errhp.optString("level"));
-                epobj.setProductId(String.valueOf(errhp.optInt("productId")));
-                epobj.setReason(errhp.optString("reason"));
-                epobj.setSolution(errhp.optString("solution"));
-                epobj.setValid(true);
-                epobj.setLasttime(new Date());
-                db.save(epobj);
+            JSONArray errHelpList = new JSONArray(JSON);
+            for (int i = 0; i < errHelpList.length(); i++) {
+                JSONObject jsonObject = errHelpList.getJSONObject(i);
+                ErrorHelp errorHelp = new ErrorHelp();
+                errorHelp.setDisplay(jsonObject.optString("display"));
+                errorHelp.setName(jsonObject.optString("name"));
+                errorHelp.setChildIda(jsonObject.optString("childIda"));
+                errorHelp.setChildIdb(jsonObject.optString("childIdb"));
+                errorHelp.setLevel(jsonObject.optString("level"));
+                errorHelp.setProductId(String.valueOf(jsonObject.optInt("productId")));
+                errorHelp.setReason(jsonObject.optString("reason"));
+                errorHelp.setSolution(jsonObject.optString("solution"));
+                errorHelp.setValid(true);
+                errorHelp.setLastTime(new Date());
+                db.save(errorHelp);
             }
         } catch (JSONException ex) {
             // 异常处理代码

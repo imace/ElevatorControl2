@@ -1,5 +1,6 @@
 package com.kio.ElevatorControl.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
@@ -12,8 +13,8 @@ import com.hbluetooth.HCommunication;
 import com.hbluetooth.HSerial;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.adapters.ConfigurationAdapter;
-import com.kio.ElevatorControl.daos.MenuValues;
-import com.kio.ElevatorControl.daos.RealtimeMonitorDao;
+import com.kio.ElevatorControl.daos.MenuValuesDao;
+import com.kio.ElevatorControl.daos.RealTimeMonitorDao;
 import com.kio.ElevatorControl.handlers.ConfigurationHandler;
 import com.kio.ElevatorControl.models.RealTimeMonitor;
 import com.viewpagerindicator.TabPageIndicator;
@@ -29,6 +30,8 @@ import java.util.List;
 public class ConfigurationActivity extends FragmentActivity {
 
     private static final String TAG = ConfigurationActivity.class.getSimpleName();
+
+    private int mCurrentPageIndex;
 
     /**
      * 注入页面元素
@@ -49,12 +52,14 @@ public class ConfigurationActivity extends FragmentActivity {
         setContentView(R.layout.activity_configuration);
         Views.inject(this);
         // ConfigurationActivity->ConfigurationAdapter->ConfigurationFragment->按照tabIndex初始化各个标签对应的子页面
+        mCurrentPageIndex = 0;
         mConfigurationAdapter = new ConfigurationAdapter(this);
         pager.setAdapter(mConfigurationAdapter);
         indicator.setViewPager(pager);
         indicator.setOnPageChangeListener(new OnPageChangeListener() {
             @Override
             public void onPageScrollStateChanged(int arg0) {
+
             }
 
             @Override
@@ -63,10 +68,11 @@ public class ConfigurationActivity extends FragmentActivity {
 
             @Override
             public void onPageSelected(int index) {
+                mCurrentPageIndex = index;
                 HBluetooth.getInstance(ConfigurationActivity.this).setHandler(transHandler);
                 try {
                     // 反射执行
-                    String mName = MenuValues.getConfigurationLoadMethodName(index, ConfigurationActivity.this);
+                    String mName = MenuValuesDao.getConfigurationLoadMethodName(index, ConfigurationActivity.this);
                     Log.v(TAG, String.valueOf(index) + " : " + mName);
                     ConfigurationActivity.this.getClass().getMethod(mName).invoke(ConfigurationActivity.this);
                 } catch (NoSuchMethodException e) {
@@ -91,8 +97,12 @@ public class ConfigurationActivity extends FragmentActivity {
         if (transHandler == null)
             transHandler = new ConfigurationHandler(this);
         HBluetooth.getInstance(this).setHandler(transHandler);
-        indicator.setCurrentItem(0);
-        loadMonitorView();
+        indicator.setCurrentItem(mCurrentPageIndex);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode,
+                                    Intent data) {
     }
 
     /**
@@ -102,7 +112,7 @@ public class ConfigurationActivity extends FragmentActivity {
     public void loadMonitorView() {
         // 连接成功的情况下
         if (HBluetooth.getInstance(null).isPrepared()) {
-            List<RealTimeMonitor> monitorList = RealtimeMonitorDao.findAll(this);
+            List<RealTimeMonitor> monitorList = RealTimeMonitorDao.findAll(this);
             HCommunication[] hCommunications = new HCommunication[monitorList.size()];
             int commandSize = monitorList.size();
             for (int index = 0; index < commandSize; index++) {
@@ -141,7 +151,7 @@ public class ConfigurationActivity extends FragmentActivity {
                 };
             }
             if (HBluetooth.getInstance(this).isPrepared())
-                HBluetooth.getInstance(this).setCommunications(hCommunications).HStart();
+                HBluetooth.getInstance(this).setCommunications(hCommunications).Start();
         }
     }
 

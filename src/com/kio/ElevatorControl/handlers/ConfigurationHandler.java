@@ -11,7 +11,7 @@ import android.widget.ListView;
 import com.hbluetooth.HHandler;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.activities.ConfigurationActivity;
-import com.kio.ElevatorControl.daos.MenuValues;
+import com.kio.ElevatorControl.daos.MenuValuesDao;
 import com.kio.ElevatorControl.models.RealTimeMonitor;
 import com.kio.ElevatorControl.views.dialogs.CustomDialog;
 import com.mobsandgeeks.adapters.InstantAdapter;
@@ -57,7 +57,7 @@ public class ConfigurationHandler extends HHandler {
             // 根据当前页反射执行 loadMonitorView() 方法
             this.getClass()
                     .getMethod(
-                            MenuValues.getConfigurationLoadMethodName(
+                            MenuValuesDao.getConfigurationLoadMethodName(
                                     ((ConfigurationActivity) activity).pager
                                             .getCurrentItem(), activity))
                     .invoke(this);

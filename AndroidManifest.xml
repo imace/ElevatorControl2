@@ -60,7 +60,7 @@
                 android:name=".activities.HelpSystemActivity">
         </activity>
         <activity
-                android:name=".activities.ParameterGroupActivity">
+                android:name=".activities.ParameterDetailActivity">
         </activity>
         <activity android:name=".activities.HelpSystemRemoteHelpActivity"/>
         <activity android:name=".activities.HelpSystemApplicationConfigActivity"/>
@@ -72,6 +72,8 @@
                   android:screenOrientation="portrait"
                   android:windowSoftInputMode="stateAlwaysHidden"
                   android:theme="@android:style/Theme.NoTitleBar.Fullscreen"/>
+        <activity android:name=".activities.MoveInsideActivity"/>
+        <activity android:name=".activities.MoveOutsideActivity"/>
     </application>
 
 </manifest>

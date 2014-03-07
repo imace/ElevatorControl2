@@ -9,7 +9,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 import com.hbluetooth.HHandler;
 import com.kio.ElevatorControl.R;
-import com.kio.ElevatorControl.activities.ParameterGroupActivity;
+import com.kio.ElevatorControl.activities.ParameterDetailActivity;
 import com.kio.ElevatorControl.models.ParameterSettings;
 import com.kio.ElevatorControl.views.dialogs.CustomDialog;
 import com.mobsandgeeks.adapters.InstantAdapter;
@@ -19,9 +19,9 @@ import java.util.List;
 
 public class ParameterHandler extends HHandler {
 
-    private boolean talking_success = false;
+    private boolean talkingSuccess = false;
 
-    private List<ParameterSettings> parameterSettingses = new ArrayList<ParameterSettings>();
+    private List<ParameterSettings> parameterSettings = new ArrayList<ParameterSettings>();
 
     public ParameterHandler(Activity activity) {
         super(activity);
@@ -30,41 +30,36 @@ public class ParameterHandler extends HHandler {
 
     @Override
     public void onTalkReceive(Message msg) {
-        talking_success = true;
+        talkingSuccess = true;
         if (msg.obj instanceof ParameterSettings) {
-            ParameterSettings p = (ParameterSettings) msg.obj;
-
-            parameterSettingses.add((ParameterSettings) p);
-
+            ParameterSettings settings = (ParameterSettings) msg.obj;
+            parameterSettings.add(settings);
             InstantAdapter<ParameterSettings> instantAdapter = new InstantAdapter<ParameterSettings>(
                     activity, R.layout.list_parameter_group_item,
-                    ParameterSettings.class, parameterSettingses);
-            ListView lv = ((ParameterGroupActivity) activity).parameterGroupSettingsList;
+                    ParameterSettings.class, parameterSettings);
+            ListView lv = ((ParameterDetailActivity) activity).parameterGroupSettingsList;
             lv.setAdapter(instantAdapter);
             lv.setOnItemClickListener(new OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> arg0, View view,
-                                        int pos, long i) {
-                    CustomDialog.parameterSettingDialog(activity, parameterSettingses.get(pos)).show();
+                                        int position, long i) {
+                    CustomDialog.parameterSettingDialog(activity, parameterSettings.get(position)).show();
                 }
             });
-
-
         }
-
     }
 
     @Override
     public void onMultiTalkBegin(Message msg) {
         super.onMultiTalkBegin(msg);
-        talking_success = false;
-        parameterSettingses.clear();
+        talkingSuccess = false;
+        parameterSettings.clear();
     }
 
     @Override
     public void onMultiTalkEnd(Message msg) {
         super.onMultiTalkEnd(msg);
-        if (!talking_success) {
+        if (!talkingSuccess) {
             Toast.makeText(
                     activity,
                     activity.getResources().getString(

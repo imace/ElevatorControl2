@@ -9,16 +9,15 @@ import java.util.List;
 
 public class ErrorHelpDao {
 
-    private static final boolean DBDEBUG = true;
-
+    private static final boolean DEBUG = true;
 
     @SuppressLint("DefaultLocale")
     public static ErrorHelp findByDisplay(Context ctx, String display) {
         // (android:label).db
-        FinalDb db = FinalDb.create(ctx, ctx.getString(ctx.getApplicationInfo().labelRes) + ".db", DBDEBUG);
-        List<ErrorHelp> listep = db.findAllByWhere(ErrorHelp.class, " display = '" + display.toUpperCase() + "' or display='" + display.toLowerCase() + "'");
-        if (listep != null && listep.size() > 0) {
-            return listep.get(0);
+        FinalDb db = FinalDb.create(ctx, ctx.getString(ctx.getApplicationInfo().labelRes) + ".db", DEBUG);
+        List<ErrorHelp> helpList = db.findAllByWhere(ErrorHelp.class, " display = '" + display.toUpperCase() + "' or display='" + display.toLowerCase() + "'");
+        if (helpList != null && helpList.size() > 0) {
+            return helpList.get(0);
         }
         return null;
     }

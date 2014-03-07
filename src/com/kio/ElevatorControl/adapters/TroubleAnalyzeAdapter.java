@@ -4,7 +4,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import com.kio.ElevatorControl.daos.MenuValues;
+import com.kio.ElevatorControl.daos.MenuValuesDao;
 import com.kio.ElevatorControl.views.fragments.TroubleAnalyzeFragment;
 
 public class TroubleAnalyzeAdapter extends FragmentPagerAdapter {
@@ -22,19 +22,19 @@ public class TroubleAnalyzeAdapter extends FragmentPagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-        return TroubleAnalyzeFragment.newInstance(MenuValues
+        return TroubleAnalyzeFragment.newInstance(MenuValuesDao
                 .getTroubleAnalyzeTabsTextsPosition(position, fragmentActivity),
                 fragmentActivity);
     }
 
     @Override
     public CharSequence getPageTitle(int position) {
-        return MenuValues.getTroubleAnalyzeTabsPageTitle(position, fragmentActivity);
+        return MenuValuesDao.getTroubleAnalyzeTabsPageTitle(position, fragmentActivity);
     }
 
     @Override
     public int getCount() {
-        return MenuValues.getTroubleAnalyzeTabsCount(fragmentActivity);
+        return MenuValuesDao.getTroubleAnalyzeTabsCount(fragmentActivity);
     }
 
     public FragmentActivity getFragmentActivity() {

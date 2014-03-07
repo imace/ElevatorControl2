@@ -96,7 +96,7 @@ public class RealTimeMonitor implements Cloneable {
      */
     @InstantText(viewId = R.id.value_monitor_item)
     public String getListViewItemText() {
-        listViewItemText = ParseSerialsUtils.getValueTextFromRealtimeMonitor(this);
+        listViewItemText = ParseSerialsUtils.getValueTextFromRealTimeMonitor(this);
         return this.listViewItemText;
     }
 

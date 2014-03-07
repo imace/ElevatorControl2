@@ -13,11 +13,13 @@ import android.widget.ListView;
 import com.devspark.progressfragment.ProgressFragment;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.activities.CheckAuthorizationActivity;
-import com.kio.ElevatorControl.activities.ParameterGroupActivity;
-import com.kio.ElevatorControl.daos.MenuValues;
+import com.kio.ElevatorControl.activities.MoveInsideActivity;
+import com.kio.ElevatorControl.activities.MoveOutsideActivity;
+import com.kio.ElevatorControl.activities.ParameterDetailActivity;
+import com.kio.ElevatorControl.daos.MenuValuesDao;
 import com.kio.ElevatorControl.daos.ParameterGroupSettingsDao;
-import com.kio.ElevatorControl.models.InsideOut;
-import com.kio.ElevatorControl.models.ParameterCopy;
+import com.kio.ElevatorControl.models.MoveInsideOutside;
+import com.kio.ElevatorControl.models.ParameterDuplicate;
 import com.kio.ElevatorControl.models.ParameterGroupSettings;
 import com.mobsandgeeks.adapters.InstantAdapter;
 
@@ -57,7 +59,7 @@ public class ConfigurationFragment extends ProgressFragment {
         ConfigurationFragment configurationFragment = new ConfigurationFragment();
         configurationFragment.tabIndex = tabIndex;
         configurationFragment.context = ctx;
-        configurationFragment.layoutId = MenuValues.getConfigurationTabsLayoutId(tabIndex, ctx);
+        configurationFragment.layoutId = MenuValuesDao.getConfigurationTabsLayoutId(tabIndex, ctx);
         if (configurationFragment.layoutId == 0) {
             configurationFragment.layoutId = R.layout.fragment_test;
         }
@@ -71,9 +73,9 @@ public class ConfigurationFragment extends ProgressFragment {
     public void onResume() {
         try {
             // 反射执行
-            this.getClass()
+            ((Object)this).getClass()
                     .getMethod(
-                            MenuValues.getConfigurationLoadMethodName(
+                            MenuValuesDao.getConfigurationLoadMethodName(
                                     tabIndex, context)).invoke(this);
         } catch (NoSuchMethodException e) {
             Log.e(TAG, e.getMessage());
@@ -136,7 +138,7 @@ public class ConfigurationFragment extends ProgressFragment {
                                     int position, long id) {
                 Intent intent = new Intent(
                         ConfigurationFragment.this.getActivity(),
-                        ParameterGroupActivity.class);
+                        ParameterDetailActivity.class);
                 intent.putExtra("SelectedId", settingsList.get(position).getId());
                 ConfigurationFragment.this.getActivity().startActivity(intent);
             }
@@ -146,27 +148,36 @@ public class ConfigurationFragment extends ProgressFragment {
     }
 
     /**
-     * 测试功能,加载内容
+     * 测试功能，加载内容，内招和外招。
      */
     public void loadDebugView() {
         // 列表值绑定到InsideOut对象 获取InsideOut对象列表,数据源
-        final List<InsideOut> insideOut = InsideOut.INSIDEOUT();
+        final List<MoveInsideOutside> insideOut = MoveInsideOutside.getInsideOutLists();
         // 我们要操作的列表控件
         ListView lstView = (ListView) this.getActivity().findViewById(
                 R.id.test_list);
-        InstantAdapter<InsideOut> instantAdapter = new InstantAdapter<InsideOut>(
+        InstantAdapter<MoveInsideOutside> instantAdapter = new InstantAdapter<MoveInsideOutside>(
                 getActivity().getApplicationContext(),
-                R.layout.list_configuration_debug_item, InsideOut.class, insideOut);
-
+                R.layout.list_configuration_debug_item, MoveInsideOutside.class, insideOut);
         lstView.setAdapter(instantAdapter);
-
         lstView.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                ConfigurationFragment.this.getActivity().startActivity(
-                        new Intent(ConfigurationFragment.this.getActivity(),
-                                CheckAuthorizationActivity.class));
+                switch (position){
+                    case 0:{
+                        ConfigurationFragment.this.getActivity().startActivity(
+                                new Intent(ConfigurationFragment.this.getActivity(),
+                                        MoveInsideActivity.class));
+                    }
+                    break;
+                    case 1:{
+                        ConfigurationFragment.this.getActivity().startActivity(
+                                new Intent(ConfigurationFragment.this.getActivity(),
+                                        MoveOutsideActivity.class));
+                    }
+                    break;
+                }
             }
         });
         setContentShown(true);
@@ -177,13 +188,13 @@ public class ConfigurationFragment extends ProgressFragment {
      */
     public void loadDuplicateView() {
         // 列表值绑定到InsideOut对象 获取InsideOut对象列表,数据源
-        final List<ParameterCopy> paramDuplicate = ParameterCopy.PARAMCOPY();
+        final List<ParameterDuplicate> paramDuplicate = ParameterDuplicate.getParamDuplicateLists();
         // 我们要操作的列表控件
         ListView lstView = (ListView) this.getActivity().findViewById(
                 R.id.copy_list);
-        InstantAdapter<ParameterCopy> instantAdapter = new InstantAdapter<ParameterCopy>(
+        InstantAdapter<ParameterDuplicate> instantAdapter = new InstantAdapter<ParameterDuplicate>(
                 getActivity().getApplicationContext(),
-                R.layout.list_configuration_duplicate_item, ParameterCopy.class,
+                R.layout.list_configuration_duplicate_item, ParameterDuplicate.class,
                 paramDuplicate);
         lstView.setAdapter(instantAdapter);
         lstView.setOnItemClickListener(new OnItemClickListener() {

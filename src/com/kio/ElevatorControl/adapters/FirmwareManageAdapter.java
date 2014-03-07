@@ -3,7 +3,7 @@ package com.kio.ElevatorControl.adapters;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import com.kio.ElevatorControl.daos.MenuValues;
+import com.kio.ElevatorControl.daos.MenuValuesDao;
 import com.kio.ElevatorControl.views.fragments.FirmwareManageFragment;
 
 import java.util.ArrayList;
@@ -44,7 +44,7 @@ public class FirmwareManageAdapter extends FragmentPagerAdapter {
     public FirmwareManageFragment getItem(int position) {
         if (position > mFragments.size() - 1) {
             FirmwareManageFragment firmwareManageFragment = FirmwareManageFragment.newInstance(
-                    MenuValues.getConfigurationTabsTextsPosition(position, fragmentActivity),
+                    MenuValuesDao.getConfigurationTabsTextsPosition(position, fragmentActivity),
                     fragmentActivity);
             mFragments.add(firmwareManageFragment);
             return firmwareManageFragment;
@@ -55,11 +55,11 @@ public class FirmwareManageAdapter extends FragmentPagerAdapter {
 
     @Override
     public CharSequence getPageTitle(int position) {
-        return MenuValues.getFirmwareManageTabsPageTitle(position, fragmentActivity);
+        return MenuValuesDao.getFirmwareManageTabsPageTitle(position, fragmentActivity);
     }
 
     @Override
     public int getCount() {
-        return MenuValues.getFirmwareManageTabsCount(fragmentActivity);
+        return MenuValuesDao.getFirmwareManageTabsCount(fragmentActivity);
     }
 }

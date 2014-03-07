@@ -13,7 +13,7 @@ import com.hbluetooth.HHandler;
 import com.hbluetooth.HSerial;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.adapters.TroubleAnalyzeAdapter;
-import com.kio.ElevatorControl.daos.MenuValues;
+import com.kio.ElevatorControl.daos.MenuValuesDao;
 import com.kio.ElevatorControl.handlers.FailureCurrentHandler;
 import com.kio.ElevatorControl.handlers.FailureLogHandler;
 import com.kio.ElevatorControl.models.ErrorHelp;
@@ -67,7 +67,7 @@ public class TroubleAnalyzeActivity extends FragmentActivity {
             public void onPageSelected(int index) {
                 try {
                     // 反射执行
-                    String mName = MenuValues.getTroubleAnalyzeTabsLoadMethodName(index, TroubleAnalyzeActivity.this);
+                    String mName = MenuValuesDao.getTroubleAnalyzeTabsLoadMethodName(index, TroubleAnalyzeActivity.this);
                     Log.v(TAG, String.valueOf(index) + " : " + mName);
                     TroubleAnalyzeActivity.this.getClass().getMethod(mName).invoke(TroubleAnalyzeActivity.this);
                 } catch (NoSuchMethodException e) {
@@ -142,7 +142,7 @@ public class TroubleAnalyzeActivity extends FragmentActivity {
         if (bluetoothHandler == null)
             bluetoothHandler = new FailureCurrentHandler(this);
         if (HBluetooth.getInstance(this).isPrepared())
-            HBluetooth.getInstance(this).setHandler(bluetoothHandler).setCommunications(hCommunications).HStart();
+            HBluetooth.getInstance(this).setHandler(bluetoothHandler).setCommunications(hCommunications).Start();
     }
 
 
@@ -496,7 +496,7 @@ public class TroubleAnalyzeActivity extends FragmentActivity {
         };
         bluetoothHandler = new FailureLogHandler(this);
         if (HBluetooth.getInstance(this).isPrepared())
-            HBluetooth.getInstance(this).setHandler(bluetoothHandler).setCommunications(hCommunications).HStart();
+            HBluetooth.getInstance(this).setHandler(bluetoothHandler).setCommunications(hCommunications).Start();
     }
 
     public void loadDictionary() {

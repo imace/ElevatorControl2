@@ -22,7 +22,7 @@ public class ErrorHelp {
     private String level;//故障级
 
     private boolean Valid;
-    private Date lasttime;
+    private Date lastTime;
 
     private byte[] received;
 
@@ -35,12 +35,12 @@ public class ErrorHelp {
         Valid = valid;
     }
 
-    public Date getLasttime() {
-        return lasttime;
+    public Date getLastTime() {
+        return lastTime;
     }
 
-    public void setLasttime(Date lasttime) {
-        this.lasttime = lasttime;
+    public void setLastTime(Date lastTime) {
+        this.lastTime = lastTime;
     }
 
     public byte[] getReceived() {
@@ -61,7 +61,7 @@ public class ErrorHelp {
             this.setChildIdb(eh.getChildIdb());
             this.setDisplay(eh.getDisplay());
             this.setId(eh.getId());
-            this.setLasttime(eh.getLasttime());
+            this.setLastTime(eh.getLastTime());
             this.setLevel(eh.getLevel());
             this.setName(eh.getName());
             this.setProductId(eh.getProductId());

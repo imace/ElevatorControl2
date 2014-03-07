@@ -8,4 +8,6 @@
     <color name="result_view">#b0000000</color>
     <color name="viewfinder_mask">#60000000</color>
     <color name="possible_result_points">#c0ffff00</color>
+
+    <color name="main_content_background_color">#E2E2E2</color>
 </resources>

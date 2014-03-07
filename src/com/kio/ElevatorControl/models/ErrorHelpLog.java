@@ -39,10 +39,10 @@ public class ErrorHelpLog {
      * @return
      */
     public static ErrorHelpLog Instance(ErrorHelp eh) {
-        ErrorHelpLog elocal = new ErrorHelpLog();
-        elocal.errorTime = new Date();
-        elocal.errorHelpId = eh.getId();
-        return elocal;
+        ErrorHelpLog errorHelpLog = new ErrorHelpLog();
+        errorHelpLog.errorTime = new Date();
+        errorHelpLog.errorHelpId = eh.getId();
+        return errorHelpLog;
     }
 
     public Date getErrorTime() {

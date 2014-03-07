@@ -2,7 +2,7 @@
     {
         "groupText": "F0基本参数",
         "groupId": "100",
-        "parametersettings": [
+        "parameterSettings": [
             {
                 "code": "F000",
                 "name": "控制方式",
@@ -112,7 +112,7 @@
     {
         "groupText": "F1电机参数",
         "groupId": "101",
-        "parametersettings": [
+        "parameterSettings": [
             {
                 "code": "F100",
                 "name": "编码器类型选择",
@@ -456,7 +456,7 @@
     {
         "groupText": "F2矢量控制参数",
         "groupId": "102",
-        "parametersettings": [
+        "parameterSettings": [
             {
                 "code": "F200",
                 "name": "速度环KP1",
@@ -800,7 +800,7 @@
     {
         "groupText": "F3运行控制参数",
         "groupId": "103",
-        "parametersettings": [
+        "parameterSettings": [
             {
                 "code": "F300",
                 "name": "启动速度",
@@ -1131,7 +1131,7 @@
     {
         "groupText": "F4楼层参数",
         "groupId": "104",
-        "parametersettings": [
+        "parameterSettings": [
             {
                 "code": "F400",
                 "name": "平层调整",
@@ -2463,7 +2463,7 @@
     {
         "groupText": "F5端子功能参数",
         "groupId": "105",
-        "parametersettings": [
+        "parameterSettings": [
             {
                 "code": "F500",
                 "name": "司机自动转换时间",
@@ -3015,7 +3015,7 @@
     {
         "groupText": "F6电梯逻辑参数",
         "groupId": "106",
-        "parametersettings": [
+        "parameterSettings": [
             {
                 "code": "F600",
                 "name": "最高层",
@@ -3775,7 +3775,7 @@
     {
         "groupText": "F7测试功能参数",
         "groupId": "2247",
-        "parametersettings": [
+        "parameterSettings": [
             {
                 "code": "F700",
                 "name": "内召唤登记",
@@ -3950,7 +3950,7 @@
     {
         "groupText": "F8增强功能参数",
         "groupId": "2248",
-        "parametersettings": [
+        "parameterSettings": [
             {
                 "code": "F800",
                 "name": "称重自学习设定",
@@ -4294,7 +4294,7 @@
     {
         "groupText": "F9时间保护参数",
         "groupId": "109",
-        "parametersettings": [
+        "parameterSettings": [
             {
                 "code": "F900",
                 "name": "空闲返基站时间",
@@ -4768,7 +4768,7 @@
     {
         "groupText": "FA键盘设定",
         "groupId": "2249",
-        "parametersettings": [
+        "parameterSettings": [
             {
                 "code": "FA00",
                 "name": "小键盘显示选择",
@@ -5411,7 +5411,7 @@
     {
         "groupText": "FB门功能参数",
         "groupId": "111",
-        "parametersettings": [
+        "parameterSettings": [
             {
                 "code": "FB00",
                 "name": "门机数量",
@@ -5755,7 +5755,7 @@
     {
         "groupText": "FC保护功能参数",
         "groupId": "112",
-        "parametersettings": [
+        "parameterSettings": [
             {
                 "code": "FC00",
                 "name": "程序控制选择",
@@ -6710,7 +6710,7 @@
     {
         "groupText": "FD通讯参数",
         "groupId": "2250",
-        "parametersettings": [
+        "parameterSettings": [
             {
                 "code": "FD00",
                 "name": "波特率设定",
@@ -7067,7 +7067,7 @@
     {
         "groupText": "FE显示设置",
         "groupId": "114",
-        "parametersettings": [
+        "parameterSettings": [
             {
                 "code": "FE00",
                 "name": "集选方式",
@@ -7814,7 +7814,7 @@
     {
         "groupText": "FR平层调整参数",
         "groupId": "2305",
-        "parametersettings": [
+        "parameterSettings": [
             {
                 "code": "FR00",
                 "name": "平层调整模式",
@@ -8210,7 +8210,7 @@
     {
         "groupText": "A1专用客户参数",
         "groupId": "2251",
-        "parametersettings": [
+        "parameterSettings": [
             {
                 "code": "A100",
                 "name": "保留",
