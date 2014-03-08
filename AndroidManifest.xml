@@ -26,9 +26,11 @@
             android:icon="@drawable/ic_launcher"
             android:label="@string/app_name"
             android:hardwareAccelerated="true"
-            android:theme="@style/Theme.Elevator.Control">
+            android:theme="@style/Theme.Global"
+            android:name=".ElevatorControlApplication">
         <!-- 登陆认证 -->
         <activity
+                android:theme="@style/Holo.Theme.Light.NoActionBar"
                 android:name=".activities.CheckAuthorizationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

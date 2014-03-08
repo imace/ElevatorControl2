@@ -1,33 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:gravity="center_horizontal|center_vertical"
-              android:orientation="vertical">
-
-    <LinearLayout
-            android:id="@+id/failure_history_item"
-            android:layout_width="300dp"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:minHeight="48dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+    <TextView
+            android:id="@+id/text_failure_history"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:baselineAligned="false"
-            android:descendantFocusability="blocksDescendants"
-            android:gravity="top"
-            android:orientation="horizontal"
-            android:padding="10dp">
-
-        <TextView
-                android:id="@+id/text_failure_history"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginLeft="10dp"
-                android:layout_weight="0.7"/>
-
-        <TextView
-                android:id="@+id/time_failure_history"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.3"/>
-    </LinearLayout>
-
-</LinearLayout>
+            android:layout_centerVertical="true"
+            android:layout_alignParentLeft="true"
+            android:textSize="16sp"
+            android:textColor="#515151"
+            android:layout_marginLeft="10dp"/>
+    <TextView
+            android:id="@+id/time_failure_history"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:layout_marginRight="10dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:textColor="#515151"/>
+</RelativeLayout>

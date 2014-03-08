@@ -17,7 +17,7 @@ public class TroubleAnalyzeTabs {
      * @return
      */
     public static TroubleAnalyzeTabs getTabInstance(Context ctx) {
-        TroubleAnalyzeTabs ft = new TroubleAnalyzeTabs();
+        TroubleAnalyzeTabs troubleAnalyzeTabs = new TroubleAnalyzeTabs();
         String[] txt = ctx.getResources().getStringArray(R.array.trouble_analyze_tab_text);// text
         String[] lot = ctx.getResources().getStringArray(
                 R.array.trouble_analyze_tab_layout);// layout
@@ -25,10 +25,10 @@ public class TroubleAnalyzeTabs {
         if (null != txt && null != lot && null != fuc && txt.length > 0
                 && lot.length > 0 && fuc.length > 0 && txt.length == lot.length
                 && lot.length == fuc.length) {
-            ft.setTexts(txt);
-            ft.setFunctionName(fuc);
-            ft.setLayouts(lot);
-            return ft;
+            troubleAnalyzeTabs.setTexts(txt);
+            troubleAnalyzeTabs.setFunctionName(fuc);
+            troubleAnalyzeTabs.setLayouts(lot);
+            return troubleAnalyzeTabs;
         }
         return null;
     }

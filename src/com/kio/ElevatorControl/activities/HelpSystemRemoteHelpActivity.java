@@ -1,6 +1,6 @@
 package com.kio.ElevatorControl.activities;
 
-import android.app.Activity;
+import org.holoeverywhere.app.Activity;
 import android.os.Bundle;
 import android.view.MenuItem;
 import com.kio.ElevatorControl.R;

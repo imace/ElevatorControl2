@@ -21,13 +21,14 @@
     <string name="error_no_data_received">没有数据！</string>
     <string name="are_you_sure_exit">您确定退出吗？</string>
     <string name="are_you_sure_message">友情提示</string>
-    <string name="label_txt_error_display">故障码</string>
+    <string name="label_txt_error_code">故障码</string>
     <string name="label_txt_error_name">故障名称</string>
     <string name="label_txt_error_level">故障级别</string>
     <string name="label_txt_error_reason">故障原因</string>
     <string name="label_txt_error_solution">故障解决方案</string>
     <string name="label_txt_failure_dictionary_search">搜索</string>
     <string name="registration_code_text">注册码</string>
+    <string name="init_data_wait_text">初始化数据中，请稍后…</string>
 
     <string name="login_text">登陆</string>
     <string name="sign_up_text">注册</string>
@@ -35,6 +36,10 @@
     <string name="focus_to_scan_text">对焦扫描</string>
     <string name="restart_scan_text">继续扫描</string>
     <string name="scan_tips_text">扫描条形码中，请稍后…</string>
+
+    <!-- 故障查询 -->
+    <string name="search_hint_text">输入故障码查询</string>
+    <string name="no_error_code_result">未查询到结果</string>
 
     <!-- 帮助 -->
     <string name="remote_help_text">远程协助</string>

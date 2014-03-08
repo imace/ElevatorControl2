@@ -37,7 +37,7 @@ public class NavigationTabActivity extends TabActivity {
         initTabs();
         initTitle();
         initBluetooth();
-        initDB();
+        //initDB();
     }
 
     /**
@@ -140,6 +140,7 @@ public class NavigationTabActivity extends TabActivity {
 
     @SuppressLint("NewApi")
     private void initTitle() {
+        /*
         ActionBar actionBar = this.getActionBar();
         ActionBar.LayoutParams layoutParams = new ActionBar.LayoutParams(ActionBar.LayoutParams.FILL_PARENT,
                 ActionBar.LayoutParams.FILL_PARENT);
@@ -173,5 +174,21 @@ public class NavigationTabActivity extends TabActivity {
             }
         });
         actionBar.show();
+        */
+        getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+        getActionBar().setDisplayShowTitleEnabled(false);
+        String[] actions = new String[]{
+                "Test"
+        };
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getBaseContext(),
+                R.layout.simple_spinner_dropdown_item, actions);
+        ActionBar.OnNavigationListener navigationListener = new ActionBar.OnNavigationListener() {
+            @Override
+            public boolean onNavigationItemSelected(int itemPosition, long itemId) {
+                return false;
+            }
+        };
+        getActionBar().setListNavigationCallbacks(adapter, navigationListener);
+        adapter.setDropDownViewResource(R.layout.simple_spinner_item);
     }
 }

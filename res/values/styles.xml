@@ -1,5 +1,5 @@
 <resources>
-    <style name="Theme.Elevator.Control" parent="android:Theme.Holo.Light">
+    <style name="Theme.Global" parent="Holo.Theme.Light.DarkActionBar">
         <item name="vpiTabPageIndicatorStyle">@style/CustomTabPageIndicator</item>
     </style>
 
@@ -11,9 +11,8 @@
     <style name="CustomTabPageIndicator" parent="Widget.TabPageIndicator">
         <item name="android:background">@drawable/custom_tab_indicator</item>
         <item name="android:textAppearance">@style/CustomTabPageIndicator.Text</item>
-        <item name="android:textColor">#FF555555</item>
+        <item name="android:textColor">@drawable/tab_indicator_text_color</item>
         <item name="android:textSize">16sp</item>
-        <item name="android:divider">@drawable/custom_tab_indicator_divider</item>
         <item name="android:dividerPadding">10dp</item>
         <item name="android:showDividers">middle</item>
         <item name="android:paddingLeft">8dp</item>

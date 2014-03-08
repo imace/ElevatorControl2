@@ -73,7 +73,7 @@ public class ConfigurationFragment extends ProgressFragment {
     public void onResume() {
         try {
             // 反射执行
-            ((Object)this).getClass()
+            ((Object) this).getClass()
                     .getMethod(
                             MenuValuesDao.getConfigurationLoadMethodName(
                                     tabIndex, context)).invoke(this);
@@ -164,14 +164,14 @@ public class ConfigurationFragment extends ProgressFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                switch (position){
-                    case 0:{
+                switch (position) {
+                    case 0: {
                         ConfigurationFragment.this.getActivity().startActivity(
                                 new Intent(ConfigurationFragment.this.getActivity(),
                                         MoveInsideActivity.class));
                     }
                     break;
-                    case 1:{
+                    case 1: {
                         ConfigurationFragment.this.getActivity().startActivity(
                                 new Intent(ConfigurationFragment.this.getActivity(),
                                         MoveOutsideActivity.class));

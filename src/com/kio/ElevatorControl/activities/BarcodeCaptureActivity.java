@@ -7,7 +7,6 @@ package com.kio.ElevatorControl.activities;
  * Time: 13:42.
  */
 
-import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.hardware.Camera;
 import android.hardware.Camera.AutoFocusCallback;
@@ -23,6 +22,7 @@ import android.widget.TextView;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.views.zbar.CameraPreview;
 import net.sourceforge.zbar.*;
+import org.holoeverywhere.app.Activity;
 
 /* Import ZBar Class files */
 

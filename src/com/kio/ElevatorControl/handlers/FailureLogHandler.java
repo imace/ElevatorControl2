@@ -22,7 +22,7 @@ import java.util.List;
  */
 public class FailureLogHandler extends HHandler {
 
-    private List<ErrorHelpLog> loglist = new ArrayList<ErrorHelpLog>();
+    private List<ErrorHelpLog> logArrayList = new ArrayList<ErrorHelpLog>();
 
     public FailureLogHandler(Activity activity) {
         super(activity);
@@ -32,17 +32,17 @@ public class FailureLogHandler extends HHandler {
     @Override
     public void onTalkReceive(Message msg) {
         if (msg.obj != null && (msg.obj instanceof ErrorHelpLog)) {
-            ErrorHelpLog ehlog = (ErrorHelpLog) msg.obj;
-            loglist.add(ehlog);
+            ErrorHelpLog errorHelpLog = (ErrorHelpLog) msg.obj;
+            logArrayList.add(errorHelpLog);
             // 我们要操作的列表控件
-            ListView lstv = (ListView) activity.findViewById(R.id.failure_history_list);
-            InstantAdapter<ErrorHelpLog> itadp = new InstantAdapter<ErrorHelpLog>(activity.getApplicationContext(), R.layout.list_trouble_history_item, ErrorHelpLog.class,
-                    loglist);
-            lstv.setAdapter(itadp);
-            lstv.setOnItemClickListener(new OnItemClickListener() {
+            ListView listView = (ListView) activity.findViewById(R.id.failure_history_list);
+            InstantAdapter<ErrorHelpLog> instantAdapter = new InstantAdapter<ErrorHelpLog>(activity.getApplicationContext(), R.layout.list_trouble_history_item, ErrorHelpLog.class,
+                    logArrayList);
+            listView.setAdapter(instantAdapter);
+            listView.setOnItemClickListener(new OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long arg3) {
-                    CustomDialog.failureHistoryDialog(loglist.get(pos).getErrorHelp(), activity).show();
+                    CustomDialog.failureHistoryDialog(logArrayList.get(pos).getErrorHelp(), activity).show();
                 }
             });
 

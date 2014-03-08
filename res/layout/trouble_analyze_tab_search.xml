@@ -1,138 +1,147 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@color/main_content_background_color">
+    <!-- 搜索框 -->
+    <LinearLayout
+            android:layout_margin="15dp"
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
+            android:layout_height="48dp"
+            android:padding="8dp"
+            android:background="@drawable/card_view_background">
+        <EditText
+                android:id="@+id/dictionary_edit"
+                android:background="@android:color/transparent"
+                android:textSize="17sp"
+                android:inputType="text"
+                android:imeOptions="actionSearch"
+                android:textColor="#6e6e6e"
+                android:textColorHint="#C4C4C4"
+                android:hint="@string/search_hint_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+        </EditText>
+    </LinearLayout>
+    <!-- 搜索结果 -->
     <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:layout_marginBottom="15dp"
+            android:padding="8dp"
             android:orientation="vertical"
-            android:padding="20dp">
-
+            android:background="@drawable/card_view_background">
         <LinearLayout
+                android:id="@+id/content_container"
+                android:orientation="vertical"
+                android:visibility="invisible"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp">
-
-            <EditText
-                    android:id="@+id/dictionary_edit"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:ems="10">
-
-                <requestFocus/>
-            </EditText>
-
-            <Button
-                    android:id="@+id/dictionary_error_btn"
-                    style="?android:attr/buttonStyleSmall"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/label_txt_failure_dictionary_search"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-            <TextView
-                    android:id="@+id/TextView09"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_txt_error_display"
-                    android:textAppearance="?android:attr/textAppearanceMedium"/>
-
-            <TextView
-                    android:id="@+id/dictionary_error_help_display"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"/>
-        </LinearLayout>
-
-        <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-            <TextView
-                    android:id="@+id/TextView07"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_txt_error_name"
-                    android:textAppearance="?android:attr/textAppearanceMedium"/>
-
-            <TextView
-                    android:id="@+id/dictionary_error_help_name"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"/>
-        </LinearLayout>
-
-        <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-            <TextView
-                    android:id="@+id/TextView05"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_txt_error_level"
-                    android:textAppearance="?android:attr/textAppearanceMedium"/>
-
-            <TextView
-                    android:id="@+id/dictionary_error_help_level"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"/>
-        </LinearLayout>
-
-        <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-            <TextView
-                    android:id="@+id/TextView04"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_txt_error_reason"
-                    android:textAppearance="?android:attr/textAppearanceMedium"/>
-        </LinearLayout>
-
-        <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-            <TextView
-                    android:id="@+id/dictionary_error_help_reason"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"/>
-        </LinearLayout>
-
-        <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-            <TextView
-                    android:id="@+id/textView1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_txt_error_solution"
-                    android:textAppearance="?android:attr/textAppearanceMedium"/>
-        </LinearLayout>
-
-        <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-            <TextView
-                    android:id="@+id/dictionary_error_help_solution"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"/>
+                android:layout_height="match_parent">
+            <!-- 故障码 -->
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                <TextView
+                        android:id="@+id/TextView09"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_txt_error_code"
+                        android:layout_marginRight="5dp"
+                        android:textColor="#333333"
+                        android:textAppearance="?android:attr/textAppearanceMedium"/>
+                <TextView
+                        android:id="@+id/dictionary_error_help_display"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#6e6e6e"
+                        android:textAppearance="?android:attr/textAppearanceMedium"/>
+            </LinearLayout>
+            <!-- 故障名称 -->
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                <TextView
+                        android:id="@+id/TextView07"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_txt_error_name"
+                        android:layout_marginRight="5dp"
+                        android:textColor="#333333"
+                        android:textAppearance="?android:attr/textAppearanceMedium"/>
+                <TextView
+                        android:id="@+id/dictionary_error_help_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#6e6e6e"
+                        android:textAppearance="?android:attr/textAppearanceMedium"/>
+            </LinearLayout>
+            <!-- 故障级别 -->
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                <TextView
+                        android:id="@+id/TextView05"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_txt_error_level"
+                        android:layout_marginRight="5dp"
+                        android:textColor="#333333"
+                        android:textAppearance="?android:attr/textAppearanceMedium"/>
+                <TextView
+                        android:id="@+id/dictionary_error_help_level"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#6e6e6e"
+                        android:textAppearance="?android:attr/textAppearanceMedium"/>
+            </LinearLayout>
+            <!-- 故障原因 -->
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                <TextView
+                        android:id="@+id/TextView04"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_txt_error_reason"
+                        android:layout_marginRight="5dp"
+                        android:textColor="#333333"
+                        android:textAppearance="?android:attr/textAppearanceMedium"/>
+                <TextView
+                        android:id="@+id/dictionary_error_help_reason"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#6e6e6e"
+                        android:textAppearance="?android:attr/textAppearanceMedium"/>
+            </LinearLayout>
+            <!-- 故障解决方案 -->
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                <TextView
+                        android:id="@+id/textView1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_txt_error_solution"
+                        android:layout_marginRight="5dp"
+                        android:textColor="#333333"
+                        android:textAppearance="?android:attr/textAppearanceMedium"/>
+                <TextView
+                        android:id="@+id/dictionary_error_help_solution"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#6e6e6e"
+                        android:textAppearance="?android:attr/textAppearanceMedium"/>
+            </LinearLayout>
         </LinearLayout>
 
     </LinearLayout>
-</ScrollView>
+</LinearLayout>

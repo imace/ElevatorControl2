@@ -1,10 +1,10 @@
 package com.kio.ElevatorControl.activities;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 import android.view.MenuItem;
 import com.kio.ElevatorControl.R;
+import org.holoeverywhere.app.Activity;
 
 /**
  * Created by IntelliJ IDEA.
@@ -39,9 +39,8 @@ public class HelpSystemApplicationConfigActivity extends Activity {
 
     /**
      * 应用程序设置 Fragment
-     *
      */
-    private class ApplicationConfigFragment extends PreferenceFragment{
+    private class ApplicationConfigFragment extends PreferenceFragment {
 
         @Override
         public void onCreate(Bundle savedInstanceState) {

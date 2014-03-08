@@ -1,15 +1,15 @@
 package com.kio.ElevatorControl.activities;
 
 import android.os.Bundle;
-import android.preference.PreferenceFragment;
-import android.support.v4.app.FragmentActivity;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.models.NavigationTabs;
+import org.holoeverywhere.app.Activity;
+import org.holoeverywhere.preference.PreferenceFragment;
 
 /**
  * 帮助
  */
-public class HelpSystemActivity extends FragmentActivity {
+public class HelpSystemActivity extends Activity {
 
     protected String[] CONTENTS = null;
     protected Integer[] ICONS = null;
@@ -30,7 +30,7 @@ public class HelpSystemActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_help_system);
         //Views.inject(this);
-        getFragmentManager().beginTransaction()
+        getSupportFragmentManager().beginTransaction()
                 .replace(R.id.help_system_content, new HelpSystemPreferenceFragment())
                 .commit();
     }

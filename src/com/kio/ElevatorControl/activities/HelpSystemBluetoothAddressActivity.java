@@ -1,10 +1,10 @@
 package com.kio.ElevatorControl.activities;
 
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.os.Bundle;
 import android.view.MenuItem;
 import com.kio.ElevatorControl.R;
+import org.holoeverywhere.app.Activity;
 
 /**
  * Created by IntelliJ IDEA.

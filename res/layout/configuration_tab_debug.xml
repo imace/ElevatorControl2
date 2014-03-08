@@ -3,17 +3,14 @@
               android:id="@+id/tab_container_transaction_test"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
+              android:background="@color/main_content_background_color"
               android:orientation="vertical">
-
     <ListView
             android:id="@+id/test_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginBottom="0dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/shape_bg_list_view">
+            android:layout_margin="15dp"
+            android:background="@drawable/card_view_background">
     </ListView>
 
 </LinearLayout>

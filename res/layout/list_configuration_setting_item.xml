@@ -1,34 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:gravity="center_horizontal|center_vertical"
-              android:orientation="vertical">
-
-    <LinearLayout
-            android:id="@+id/linear_transaction_item"
-            android:layout_width="300dp"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:minHeight="48dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+    <TextView
+            android:id="@+id/text_transaction"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:baselineAligned="false"
-            android:gravity="top"
-            android:orientation="horizontal"
-            android:padding="10dp">
-
-        <TextView
-                android:id="@+id/text_transaction"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginLeft="10dp"
-                android:layout_weight="0.9"
-                android:text="Large Text"/>
-
-        <ImageView
-                android:id="@+id/icon_transaction"
-                android:layout_width="24dp"
-                android:layout_height="40dp"
-                android:layout_weight="0.06"
-                android:src="@drawable/next_icon_normal"/>
-    </LinearLayout>
-
-</LinearLayout>
+            android:layout_centerVertical="true"
+            android:layout_alignParentLeft="true"
+            android:textSize="16sp"
+            android:textColor="#515151"
+            android:layout_marginLeft="10dp"/>
+    <ImageView
+            android:id="@+id/icon_transaction"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:contentDescription="@null"
+            android:layout_marginRight="10dp"
+            android:src="@drawable/setting_more_arrow"/>
+</RelativeLayout>

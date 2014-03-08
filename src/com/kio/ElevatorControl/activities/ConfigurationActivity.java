@@ -2,10 +2,13 @@ package com.kio.ElevatorControl.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.Log;
+import android.view.View;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.hbluetooth.HBluetooth;
@@ -18,6 +21,7 @@ import com.kio.ElevatorControl.daos.RealTimeMonitorDao;
 import com.kio.ElevatorControl.handlers.ConfigurationHandler;
 import com.kio.ElevatorControl.models.RealTimeMonitor;
 import com.viewpagerindicator.TabPageIndicator;
+import org.holoeverywhere.app.Activity;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -27,7 +31,7 @@ import java.util.List;
  *
  * @author jch
  */
-public class ConfigurationActivity extends FragmentActivity {
+public class ConfigurationActivity extends Activity {
 
     private static final String TAG = ConfigurationActivity.class.getSimpleName();
 
@@ -55,6 +59,7 @@ public class ConfigurationActivity extends FragmentActivity {
         mCurrentPageIndex = 0;
         mConfigurationAdapter = new ConfigurationAdapter(this);
         pager.setAdapter(mConfigurationAdapter);
+        pager.setOffscreenPageLimit(3);
         indicator.setViewPager(pager);
         indicator.setOnPageChangeListener(new OnPageChangeListener() {
             @Override
@@ -69,6 +74,7 @@ public class ConfigurationActivity extends FragmentActivity {
             @Override
             public void onPageSelected(int index) {
                 mCurrentPageIndex = index;
+                /*
                 HBluetooth.getInstance(ConfigurationActivity.this).setHandler(transHandler);
                 try {
                     // 反射执行
@@ -86,6 +92,31 @@ public class ConfigurationActivity extends FragmentActivity {
                 } finally {
 
                 }
+                */
+                Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        HBluetooth.getInstance(ConfigurationActivity.this).setHandler(transHandler);
+                        try {
+                            // 反射执行
+                            String mName = MenuValuesDao.getConfigurationLoadMethodName(mCurrentPageIndex, ConfigurationActivity.this);
+                            Log.v(TAG, String.valueOf(mCurrentPageIndex) + " : " + mName);
+                            ((Object)ConfigurationActivity.this).getClass().getMethod(mName).invoke(ConfigurationActivity.this);
+                        } catch (NoSuchMethodException e) {
+                            Log.e(TAG, e.getMessage());
+                        } catch (IllegalArgumentException e) {
+                            Log.e(TAG, e.getMessage());
+                        } catch (IllegalAccessException e) {
+                            Log.e(TAG, e.getMessage());
+                        } catch (InvocationTargetException e) {
+                            Log.e(TAG, "InvocationTargetException");
+                        } finally {
+
+                        }
+                    }
+                };
+                Thread thread = new Thread(runnable);
+                thread.start();
             }
 
         });

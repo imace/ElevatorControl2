@@ -4,13 +4,15 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.daos.ErrorHelpDao;
 import com.kio.ElevatorControl.daos.MenuValuesDao;
@@ -92,31 +94,51 @@ public class TroubleAnalyzeFragment extends Fragment {
 //				CustomDialog.failureHistoryDialog(loglist.get(pos).getErrorHelp(),getActivity()).show();
 //			}
 //		});
-
     }
 
+    /**
+     * 故障查询
+     */
     public void loadSearchTroubleView() {
-        ((Button) getActivity().findViewById(R.id.dictionary_error_btn)).setOnClickListener(new OnClickListener() {
+        final View contentContainer = getActivity().findViewById(R.id.content_container);
+        final EditText searchEditText = (EditText) getActivity().findViewById(R.id.dictionary_edit);
+        final TextView errorCode = (TextView) getActivity().findViewById(R.id.dictionary_error_help_display);
+        final TextView level = (TextView) getActivity().findViewById(R.id.dictionary_error_help_level);
+        final TextView name = (TextView) getActivity().findViewById(R.id.dictionary_error_help_name);
+        final TextView reason = (TextView) getActivity().findViewById(R.id.dictionary_error_help_reason);
+        final TextView solution = (TextView) getActivity().findViewById(R.id.dictionary_error_help_solution);
+        searchEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
-            public void onClick(View arg0) {
-                EditText edit = (EditText) getActivity().findViewById(R.id.dictionary_edit);
-                TextView display = (TextView) getActivity().findViewById(R.id.dictionary_error_help_display);
-                TextView level = (TextView) getActivity().findViewById(R.id.dictionary_error_help_level);
-                TextView name = (TextView) getActivity().findViewById(R.id.dictionary_error_help_name);
-                TextView reason = (TextView) getActivity().findViewById(R.id.dictionary_error_help_reason);
-                TextView solution = (TextView) getActivity().findViewById(R.id.dictionary_error_help_solution);
-
-                ErrorHelp ehp = ErrorHelpDao.findByDisplay(getActivity(), edit.getText().toString().trim().replaceAll("'", ""));
-                if (ehp != null) {
-                    display.setText(ehp.getDisplay());
-                    level.setText(ehp.getLevel());
-                    name.setText(ehp.getName());
-                    reason.setText(ehp.getReason());
-                    solution.setText(ehp.getSolution());
+            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    String searchCode = searchEditText.getText().toString().trim().replaceAll("'", "");
+                    ErrorHelp errorHelp = ErrorHelpDao.findByDisplay(getActivity(), searchCode);
+                    if (errorHelp != null) {
+                        errorCode.setText(errorHelp.getDisplay());
+                        level.setText(errorHelp.getLevel());
+                        name.setText(errorHelp.getName());
+                        reason.setText(errorHelp.getReason());
+                        solution.setText(errorHelp.getSolution());
+                        // 隐藏虚拟键盘
+                        InputMethodManager inputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        inputMethodManager.hideSoftInputFromWindow(searchEditText.getWindowToken(), InputMethodManager.RESULT_UNCHANGED_SHOWN);
+                        contentContainer.setVisibility(View.VISIBLE);
+                    } else {
+                        errorCode.setText("");
+                        errorCode.setText("");
+                        level.setText("");
+                        name.setText("");
+                        reason.setText("");
+                        solution.setText("");
+                        contentContainer.setVisibility(View.INVISIBLE);
+                        Toast toast = Toast.makeText(getActivity(), R.string.no_error_code_result, Toast.LENGTH_SHORT);
+                        toast.show();
+                    }
+                    return true;
                 }
+                return false;
             }
         });
-
     }
 
     @Override

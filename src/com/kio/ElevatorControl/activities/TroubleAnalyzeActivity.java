@@ -20,6 +20,7 @@ import com.kio.ElevatorControl.models.ErrorHelp;
 import com.kio.ElevatorControl.models.ErrorHelpLog;
 import com.kio.ElevatorControl.utils.ParseSerialsUtils;
 import com.viewpagerindicator.TabPageIndicator;
+import org.holoeverywhere.app.Activity;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -28,7 +29,7 @@ import java.lang.reflect.InvocationTargetException;
  *
  * @author jch
  */
-public class TroubleAnalyzeActivity extends FragmentActivity {
+public class TroubleAnalyzeActivity extends Activity {
 
     private static final String TAG = TroubleAnalyzeActivity.class.getSimpleName();
     /**
@@ -52,6 +53,7 @@ public class TroubleAnalyzeActivity extends FragmentActivity {
 
         // TroubleAnalyzeActivity --> TroubleAnalyzeAdapter --> TroubleAnalyzeFragment
         pager.setAdapter(new TroubleAnalyzeAdapter(this));
+        pager.setOffscreenPageLimit(3);
         indicator.setViewPager(pager);
         indicator.setOnPageChangeListener(new OnPageChangeListener() {
 
@@ -65,21 +67,30 @@ public class TroubleAnalyzeActivity extends FragmentActivity {
 
             @Override
             public void onPageSelected(int index) {
-                try {
-                    // 反射执行
-                    String mName = MenuValuesDao.getTroubleAnalyzeTabsLoadMethodName(index, TroubleAnalyzeActivity.this);
-                    Log.v(TAG, String.valueOf(index) + " : " + mName);
-                    TroubleAnalyzeActivity.this.getClass().getMethod(mName).invoke(TroubleAnalyzeActivity.this);
-                } catch (NoSuchMethodException e) {
-                    Log.e(TAG, e.getMessage());
-                } catch (IllegalArgumentException e) {
-                    Log.e(TAG, e.getMessage());
-                } catch (IllegalAccessException e) {
-                    Log.e(TAG, e.getMessage());
-                } catch (InvocationTargetException e) {
-                    Log.e(TAG, "InvocationTargetException");
-                } finally {
-                }
+                final int currentPageIndex = index;
+                Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            // 反射执行
+                            String mName = MenuValuesDao.getTroubleAnalyzeTabsLoadMethodName(currentPageIndex, TroubleAnalyzeActivity.this);
+                            Log.v(TAG, String.valueOf(currentPageIndex) + " : " + mName);
+                            ((Object)TroubleAnalyzeActivity.this).getClass().getMethod(mName).invoke(TroubleAnalyzeActivity.this);
+                        } catch (NoSuchMethodException e) {
+                            Log.e(TAG, e.getMessage());
+                        } catch (IllegalArgumentException e) {
+                            Log.e(TAG, e.getMessage());
+                        } catch (IllegalAccessException e) {
+                            Log.e(TAG, e.getMessage());
+                        } catch (InvocationTargetException e) {
+                            Log.e(TAG, "InvocationTargetException");
+                        } finally {
+
+                        }
+                    }
+                };
+                Thread thread = new Thread(runnable);
+                thread.start();
             }
         });
     }
@@ -499,7 +510,10 @@ public class TroubleAnalyzeActivity extends FragmentActivity {
             HBluetooth.getInstance(this).setHandler(bluetoothHandler).setCommunications(hCommunications).Start();
     }
 
-    public void loadDictionary() {
+    /**
+     * 故障查询
+     */
+    public void loadSearchTroubleView() {
         // 停止串口通信
         HBluetooth.getInstance(this).setHandler(bluetoothHandler);
     }

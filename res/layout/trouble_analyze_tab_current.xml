@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/layout_failure_current"
+            android:background="@color/main_content_background_color"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_margin="15dp"
+            android:padding="7dp"
+            android:background="@drawable/card_view_background"
             android:orientation="vertical">
-
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
@@ -17,7 +20,7 @@
                     android:id="@+id/TextView09"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/label_txt_error_display"
+                    android:text="@string/label_txt_error_code"
                     android:textAppearance="?android:attr/textAppearanceMedium"/>
 
             <TextView

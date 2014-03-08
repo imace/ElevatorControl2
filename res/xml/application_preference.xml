@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 蓝牙设置 -->
+    <PreferenceScreen
+            android:key="remote_help"
+            android:title="@string/bluetooth_setting_text"
+            android:summary="@null">
+        <intent
+                android:action="android.intent.action.MAIN"
+                android:targetPackage="com.kio.ElevatorControl"
+                android:targetClass="com.kio.ElevatorControl.activities.HelpSystemRemoteHelpActivity"/>
+    </PreferenceScreen>
+    <!-- 软件更新 -->
+    <PreferenceScreen
+            android:key="application_config"
+            android:title="@string/application_update_text"
+            android:summary="@null">
+        <intent
+                android:action="android.intent.action.MAIN"
+                android:targetPackage="com.kio.ElevatorControl"
+                android:targetClass="com.kio.ElevatorControl.activities.HelpSystemApplicationConfigActivity"/>
+    </PreferenceScreen>
+    <!-- 日志 -->
+    <PreferenceScreen
+            android:key="scan_barcode"
+            android:title="@string/application_log_text"
+            android:summary="@null">
+        <intent
+                android:action="android.intent.action.MAIN"
+                android:targetPackage="com.kio.ElevatorControl"
+                android:targetClass="com.kio.ElevatorControl.activities.HelpSystemScanBarcodeActivity"/>
+    </PreferenceScreen>
+    <!-- 关于 -->
+    <PreferenceScreen
+            android:key="bluetooth_address"
+            android:title="@string/about_text"
+            android:summary="@null">
+        <intent
+                android:action="android.intent.action.MAIN"
+                android:targetPackage="com.kio.ElevatorControl"
+                android:targetClass="com.kio.ElevatorControl.activities.HelpSystemBluetoothAddressActivity"/>
+    </PreferenceScreen>
+</PreferenceScreen>

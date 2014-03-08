@@ -8,11 +8,12 @@ import butterknife.Views;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.adapters.FirmwareManageAdapter;
 import com.viewpagerindicator.TabPageIndicator;
+import org.holoeverywhere.app.Activity;
 
 /**
  * 固件管理
  */
-public class FirmwareManageActivity extends FragmentActivity {
+public class FirmwareManageActivity extends Activity {
 
     private static final String TAG = FirmwareManageActivity.class.getSimpleName();
 
@@ -60,15 +61,15 @@ public class FirmwareManageActivity extends FragmentActivity {
         loadFirmwareApplyView();
     }
 
-    public void loadFirmwareApplyView(){
+    public void loadFirmwareApplyView() {
 
     }
 
-    public void loadFirmwareDownloadView(){
+    public void loadFirmwareDownloadView() {
 
     }
 
-    public void loadFirmwareBurnView(){
+    public void loadFirmwareBurnView() {
 
     }
 }

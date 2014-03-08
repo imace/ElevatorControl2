@@ -18,7 +18,7 @@ import java.lang.reflect.InvocationTargetException;
  * Date: 14-3-5.
  * Time: 15:04.
  */
-public class FirmwareManageFragment extends Fragment{
+public class FirmwareManageFragment extends Fragment {
 
     private static final String TAG = FirmwareManageFragment.class.getSimpleName();
 
@@ -67,15 +67,15 @@ public class FirmwareManageFragment extends Fragment{
         }
     }
 
-    public void loadFirmwareApplyView(){
+    public void loadFirmwareApplyView() {
 
     }
 
-    public void loadFirmwareDownloadView(){
+    public void loadFirmwareDownloadView() {
 
     }
 
-    public void loadFirmwareBurnView(){
+    public void loadFirmwareBurnView() {
 
     }
 
