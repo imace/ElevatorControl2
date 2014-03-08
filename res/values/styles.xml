@@ -1,6 +1,16 @@
 <resources>
     <style name="Theme.Global" parent="Holo.Theme.Light.DarkActionBar">
         <item name="vpiTabPageIndicatorStyle">@style/CustomTabPageIndicator</item>
+        <item name="android:spinnerItemStyle">@style/CustomSpinnerItemStyle</item>
+        <item name="android:spinnerDropDownItemStyle">@style/CustomSpinnerDropdownItemStyle</item>
+    </style>
+
+    <style name="CustomSpinnerItemStyle" parent="android:TextAppearance.Widget.TextView.SpinnerItem">
+        <item name="android:textColor">#eeeeee</item>
+    </style>
+
+    <style name="CustomSpinnerDropdownItemStyle" parent="@android:style/Widget.Holo.DropDownItem.Spinner">
+        <item name="android:textColor">#eeeeee</item>
     </style>
 
     <style name="CustomDialogStyle" parent="android:Theme.Holo.Dialog">

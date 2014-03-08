@@ -18,15 +18,19 @@ import com.kio.ElevatorControl.handlers.CoreHandler;
 import com.kio.ElevatorControl.views.customspinner.HCustomSpinner;
 import com.kio.ElevatorControl.views.customspinner.HDropListener;
 import com.kio.ElevatorControl.views.dialogs.CustomDialog;
+import com.manuelpeinado.refreshactionitem.ProgressIndicatorType;
+import com.manuelpeinado.refreshactionitem.RefreshActionItem;
 
 /**
  * TabActivity 导航
  */
 
 @SuppressWarnings("deprecation")
-public class NavigationTabActivity extends TabActivity {
+public class NavigationTabActivity extends TabActivity implements RefreshActionItem.RefreshActionListener{
 
     private HCustomSpinner spinner = null;
+
+    private RefreshActionItem mRefreshActionItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,8 +126,13 @@ public class NavigationTabActivity extends TabActivity {
         return super.dispatchKeyEvent(event);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    @Override public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.actionbar_menu, menu);
+        MenuItem item = menu.findItem(R.id.refresh_button);
+        mRefreshActionItem = (RefreshActionItem) item.getActionView();
+        mRefreshActionItem.setMenuItem(item);
+        mRefreshActionItem.setProgressIndicatorType(ProgressIndicatorType.INDETERMINATE);
+        mRefreshActionItem.setRefreshActionListener(NavigationTabActivity.this);
         return true;
     }
 
@@ -181,7 +190,7 @@ public class NavigationTabActivity extends TabActivity {
                 "Test"
         };
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getBaseContext(),
-                R.layout.simple_spinner_dropdown_item, actions);
+                android.R.layout.simple_spinner_item, actions);
         ActionBar.OnNavigationListener navigationListener = new ActionBar.OnNavigationListener() {
             @Override
             public boolean onNavigationItemSelected(int itemPosition, long itemId) {
@@ -189,6 +198,25 @@ public class NavigationTabActivity extends TabActivity {
             }
         };
         getActionBar().setListNavigationCallbacks(adapter, navigationListener);
-        adapter.setDropDownViewResource(R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+    }
+
+    @Override
+    public void onRefreshButtonClick(RefreshActionItem sender) {
+        mRefreshActionItem.showProgress(true);
+        /*
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                HBluetooth bth = HBluetooth.getInstance(NavigationTabActivity.this)
+                        .setPrepared(false)
+                        .setDiscoveryMode(true)
+                        .setHandler(new CoreHandler(NavigationTabActivity.this));
+                bth.Start();
+            }
+        };
+        Thread thread = new Thread(runnable);
+        thread.start();
+        */
     }
 }
