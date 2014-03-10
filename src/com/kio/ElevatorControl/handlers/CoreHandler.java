@@ -53,10 +53,10 @@ public class CoreHandler extends HHandler {
 
         activity.getActionBar().getCustomView().findViewById(R.id.title_process_bar).setVisibility(View.VISIBLE);
 
-        HCustomSpinner spinn = null;
-        spinn = ((HCustomSpinner) activity.getActionBar().getCustomView().findViewById(R.id.custom_spinner));
-        spinn.setAdapter(new ArrayAdapter<String>(activity, android.R.layout.select_dialog_item, ((Map<String, BluetoothDevice>) msg.obj).keySet().toArray(new String[]{})));
-        spinn.setOnItemSelectedListener(new HCustomSpinner.OnItemSelectedListener() {
+        HCustomSpinner customSpinner = null;
+        customSpinner = ((HCustomSpinner) activity.getActionBar().getCustomView().findViewById(R.id.custom_spinner));
+        customSpinner.setAdapter(new ArrayAdapter<String>(activity, android.R.layout.select_dialog_item, ((Map<String, BluetoothDevice>) msg.obj).keySet().toArray(new String[]{})));
+        customSpinner.setOnItemSelectedListener(new HCustomSpinner.OnItemSelectedListener() {
 
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {

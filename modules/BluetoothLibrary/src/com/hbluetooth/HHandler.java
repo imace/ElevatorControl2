@@ -50,7 +50,7 @@ public class HHandler extends Handler {
     }
 
     /**
-     * BEGINPREPARING
+     * BEGIN PREPARING
      *
      * @param msg
      */
@@ -59,7 +59,7 @@ public class HHandler extends Handler {
     }
 
     /**
-     * FOUNDDEVICE
+     * FOUND DEVICE
      *
      * @param msg
      */
@@ -70,7 +70,7 @@ public class HHandler extends Handler {
     }
 
     /**
-     * CHOOSEDEVICE
+     * CHOOSE DEVICE
      *
      * @param msg
      */
@@ -79,7 +79,7 @@ public class HHandler extends Handler {
     }
 
     /**
-     * RESETBLUETOOTH
+     * RESET BLUETOOTH
      *
      * @param msg
      */
@@ -88,7 +88,7 @@ public class HHandler extends Handler {
     }
 
     /**
-     * KILLBLUETOOTH
+     * KILL BLUETOOTH
      *
      * @param msg
      */
@@ -97,7 +97,7 @@ public class HHandler extends Handler {
     }
 
     /**
-     * PREPARESUCCESSFULL
+     * PREPARE SUCCESSFUL
      *
      * @param msg
      */
@@ -106,7 +106,7 @@ public class HHandler extends Handler {
     }
 
     /**
-     * PREPAREFAILED
+     * PREPARE FAILED
      *
      * @param msg
      */
@@ -115,7 +115,7 @@ public class HHandler extends Handler {
     }
 
     /**
-     * TALKBEFORESEND
+     * TALK BEFORE SEND
      *
      * @param msg
      */
@@ -124,7 +124,7 @@ public class HHandler extends Handler {
     }
 
     /**
-     * TALKAFTERSEND
+     * TALK AFTER SEND
      *
      * @param msg
      */
@@ -133,7 +133,7 @@ public class HHandler extends Handler {
     }
 
     /**
-     * TALKRECEIVE
+     * TALK RECEIVE
      *
      * @param msg
      */
@@ -142,7 +142,7 @@ public class HHandler extends Handler {
     }
 
     /**
-     * TALKERROR
+     * TALK ERROR
      *
      * @param msg
      */
@@ -153,7 +153,7 @@ public class HHandler extends Handler {
     }
 
     /**
-     * HANDLERCHANGED
+     * HANDLER CHANGED
      *
      * @param msg
      */
@@ -165,7 +165,7 @@ public class HHandler extends Handler {
 
 
     /**
-     * MULTITALKBEGIN
+     * MULTI TALK BEGIN
      *
      * @param msg
      */
@@ -174,7 +174,7 @@ public class HHandler extends Handler {
     }
 
     /**
-     * MULTITALKEND
+     * MULTI TALK END
      *
      * @param msg
      */

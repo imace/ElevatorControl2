@@ -1,6 +1,5 @@
 package com.kio.ElevatorControl.activities;
 
-import org.holoeverywhere.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -8,6 +7,7 @@ import butterknife.OnClick;
 import butterknife.Views;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.daos.RestoreFactoryDao;
+import org.holoeverywhere.app.Activity;
 
 public class HomeActivity extends Activity {
 

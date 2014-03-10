@@ -18,7 +18,7 @@
                 android:textSize="17sp"
                 android:inputType="text"
                 android:imeOptions="actionSearch"
-                android:textColor="#6e6e6e"
+                android:textColor="#ff7f7f7f"
                 android:textColorHint="#C4C4C4"
                 android:hint="@string/search_hint_text"
                 android:layout_width="match_parent"
@@ -58,7 +58,7 @@
                         android:id="@+id/dictionary_error_help_display"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="#6e6e6e"
+                        android:textColor="#ff7f7f7f"
                         android:textAppearance="?android:attr/textAppearanceMedium"/>
             </LinearLayout>
             <!-- 故障名称 -->
@@ -78,7 +78,7 @@
                         android:id="@+id/dictionary_error_help_name"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="#6e6e6e"
+                        android:textColor="#ff7f7f7f"
                         android:textAppearance="?android:attr/textAppearanceMedium"/>
             </LinearLayout>
             <!-- 故障级别 -->
@@ -98,12 +98,12 @@
                         android:id="@+id/dictionary_error_help_level"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="#6e6e6e"
+                        android:textColor="#ff7f7f7f"
                         android:textAppearance="?android:attr/textAppearanceMedium"/>
             </LinearLayout>
             <!-- 故障原因 -->
             <LinearLayout
-                    android:orientation="horizontal"
+                    android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                 <TextView
@@ -118,12 +118,12 @@
                         android:id="@+id/dictionary_error_help_reason"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="#6e6e6e"
+                        android:textColor="#ff7f7f7f"
                         android:textAppearance="?android:attr/textAppearanceMedium"/>
             </LinearLayout>
             <!-- 故障解决方案 -->
             <LinearLayout
-                    android:orientation="horizontal"
+                    android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                 <TextView
@@ -138,7 +138,7 @@
                         android:id="@+id/dictionary_error_help_solution"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="#6e6e6e"
+                        android:textColor="#ff7f7f7f"
                         android:textAppearance="?android:attr/textAppearanceMedium"/>
             </LinearLayout>
         </LinearLayout>

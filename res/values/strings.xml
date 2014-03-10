@@ -63,6 +63,12 @@
     <string name="open_camera_text">打开相机</string>
     <string name="scan_result_text">扫描结果：</string>
 
+    <string name="choose_bluetooth_device">选择蓝牙设备…</string>
+
+    <!-- 参数拷贝 -->
+    <string name="parameter_upload_text">参数上传</string>
+    <string name="parameter_download_text">参数下载</string>
+
     <!-- //////////////////////////////////// 标签选项卡 START ////////////////////////////////// -->
     <!-- 主标签页选项卡 -->
     <string-array name="navigation_tab_text">

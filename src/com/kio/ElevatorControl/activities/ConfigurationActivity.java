@@ -2,13 +2,9 @@ package com.kio.ElevatorControl.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.Log;
-import android.view.View;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.hbluetooth.HBluetooth;
@@ -46,7 +42,7 @@ public class ConfigurationActivity extends Activity {
     @InjectView(R.id.indicator)
     protected TabPageIndicator indicator;
 
-    private ConfigurationHandler transHandler;
+    private ConfigurationHandler configurationHandler;
 
     public ConfigurationAdapter mConfigurationAdapter;
 
@@ -75,7 +71,7 @@ public class ConfigurationActivity extends Activity {
             public void onPageSelected(int index) {
                 mCurrentPageIndex = index;
                 /*
-                HBluetooth.getInstance(ConfigurationActivity.this).setHandler(transHandler);
+                HBluetooth.getInstance(ConfigurationActivity.this).setHandler(configurationHandler);
                 try {
                     // 反射执行
                     String mName = MenuValuesDao.getConfigurationLoadMethodName(index, ConfigurationActivity.this);
@@ -96,12 +92,12 @@ public class ConfigurationActivity extends Activity {
                 Runnable runnable = new Runnable() {
                     @Override
                     public void run() {
-                        HBluetooth.getInstance(ConfigurationActivity.this).setHandler(transHandler);
+                        HBluetooth.getInstance(ConfigurationActivity.this).setHandler(configurationHandler);
                         try {
                             // 反射执行
                             String mName = MenuValuesDao.getConfigurationLoadMethodName(mCurrentPageIndex, ConfigurationActivity.this);
                             Log.v(TAG, String.valueOf(mCurrentPageIndex) + " : " + mName);
-                            ((Object)ConfigurationActivity.this).getClass().getMethod(mName).invoke(ConfigurationActivity.this);
+                            ((Object) ConfigurationActivity.this).getClass().getMethod(mName).invoke(ConfigurationActivity.this);
                         } catch (NoSuchMethodException e) {
                             Log.e(TAG, e.getMessage());
                         } catch (IllegalArgumentException e) {
@@ -125,10 +121,11 @@ public class ConfigurationActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (transHandler == null)
-            transHandler = new ConfigurationHandler(this);
-        HBluetooth.getInstance(this).setHandler(transHandler);
+        if (configurationHandler == null)
+            configurationHandler = new ConfigurationHandler(this);
+        HBluetooth.getInstance(this).setHandler(configurationHandler);
         indicator.setCurrentItem(mCurrentPageIndex);
+        loadMonitorView();
     }
 
     @Override
@@ -191,17 +188,17 @@ public class ConfigurationActivity extends Activity {
      */
     public void loadSettingView() {
         // 停止串口通信
-        HBluetooth.getInstance(this).setHandler(transHandler);
+        HBluetooth.getInstance(this).setHandler(configurationHandler);
     }
 
     public void loadDebugView() {
         // 停止串口通信
-        HBluetooth.getInstance(this).setHandler(transHandler);
+        HBluetooth.getInstance(this).setHandler(configurationHandler);
     }
 
     public void loadDuplicateView() {
         // 停止串口通信
-        HBluetooth.getInstance(this).setHandler(transHandler);
+        HBluetooth.getInstance(this).setHandler(configurationHandler);
     }
 
 }

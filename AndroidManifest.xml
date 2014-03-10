@@ -76,6 +76,8 @@
                   android:theme="@android:style/Theme.NoTitleBar.Fullscreen"/>
         <activity android:name=".activities.MoveInsideActivity"/>
         <activity android:name=".activities.MoveOutsideActivity"/>
+        <activity android:name=".activities.ParameterUploadActivity"/>
+        <activity android:name=".activities.ParameterDownloadActivity"/>
     </application>
 
 </manifest>

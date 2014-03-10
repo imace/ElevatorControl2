@@ -9,8 +9,8 @@
             android:id="@+id/copy_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_margin="@dimen/card_view_margin"
-            android:background="@drawable/card_view_background">
-    </ListView>
-
+            android:dividerHeight="8dp"
+            android:scrollbarStyle="outsideOverlay"
+            android:divider="@android:color/transparent"
+            android:padding="@dimen/card_view_margin"/>
 </LinearLayout>

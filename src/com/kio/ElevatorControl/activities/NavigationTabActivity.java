@@ -3,7 +3,9 @@ package com.kio.ElevatorControl.activities;
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.TabActivity;
+import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.*;
@@ -11,12 +13,14 @@ import android.widget.*;
 import butterknife.OnClick;
 import butterknife.Views;
 import com.hbluetooth.HBluetooth;
+import com.hbluetooth.HJudgeListener;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.daos.MenuValuesDao;
-import com.kio.ElevatorControl.daos.RestoreFactoryDao;
 import com.kio.ElevatorControl.handlers.CoreHandler;
+import com.kio.ElevatorControl.handlers.SearchBluetoothHandler;
 import com.kio.ElevatorControl.views.customspinner.HCustomSpinner;
-import com.kio.ElevatorControl.views.customspinner.HDropListener;
+import com.kio.ElevatorControl.views.customspinner.NoDefaultSpinner;
+import com.kio.ElevatorControl.views.customspinner.ViewGroupUtils;
 import com.kio.ElevatorControl.views.dialogs.CustomDialog;
 import com.manuelpeinado.refreshactionitem.ProgressIndicatorType;
 import com.manuelpeinado.refreshactionitem.RefreshActionItem;
@@ -26,11 +30,15 @@ import com.manuelpeinado.refreshactionitem.RefreshActionItem;
  */
 
 @SuppressWarnings("deprecation")
-public class NavigationTabActivity extends TabActivity implements RefreshActionItem.RefreshActionListener{
+public class NavigationTabActivity extends TabActivity implements RefreshActionItem.RefreshActionListener {
+
+    private static final String TAG = NavigationTabActivity.class.getSimpleName();
 
     private HCustomSpinner spinner = null;
 
-    private RefreshActionItem mRefreshActionItem;
+    public RefreshActionItem mRefreshActionItem;
+
+    private NoDefaultSpinner actionbarSpinnerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,9 +47,9 @@ public class NavigationTabActivity extends TabActivity implements RefreshActionI
         setContentView(R.layout.activity_navigation_tab);
         Views.inject(this);
         initTabs();
-        initTitle();
-        initBluetooth();
-        //initDB();
+        replaceTitleViewWithSpinnerView();
+        //initBluetooth();
+        //initTitle();
     }
 
     /**
@@ -95,28 +103,11 @@ public class NavigationTabActivity extends TabActivity implements RefreshActionI
         }
     }
 
-    private void initBluetooth() {
-        // 必须用CoreActivity初始化用CoreActivity
-        if (!HBluetooth.getInstance(this).isPrepared()) {
-            HBluetooth.getInstance(this).setPrepared(false).setDiscoveryMode(true).setHandler(new CoreHandler(this)).Start();
-        }
-    }
-
     /**
-     * 如果如果第一次运行本程序 db在此处初始化
-     */
-    private void initDB() {
-        if (RestoreFactoryDao.dbEmpty(this)) {
-            RestoreFactoryDao.dbInit(this);
-        }
-    }
-
-    /**
-     * 退出 tabactivity的onKeyDown有bug 改用dispatchKeyEvent
+     * 退出 tab activity的onKeyDown有bug 改用dispatchKeyEvent
      *
-     * @param keyCode
-     * @param event
-     * @return
+     * @param event key event
+     * @return boolean
      */
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_DOWN && event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
@@ -126,14 +117,27 @@ public class NavigationTabActivity extends TabActivity implements RefreshActionI
         return super.dispatchKeyEvent(event);
     }
 
-    @Override public boolean onCreateOptionsMenu(Menu menu) {
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.actionbar_menu, menu);
         MenuItem item = menu.findItem(R.id.refresh_button);
+        assert item != null;
         mRefreshActionItem = (RefreshActionItem) item.getActionView();
+        assert mRefreshActionItem != null;
         mRefreshActionItem.setMenuItem(item);
         mRefreshActionItem.setProgressIndicatorType(ProgressIndicatorType.INDETERMINATE);
         mRefreshActionItem.setRefreshActionListener(NavigationTabActivity.this);
         return true;
+    }
+
+    private void initBluetooth() {
+        // 必须用NavigationTabActivity初始化用NavigationTabActivity
+        if (!HBluetooth.getInstance(this).isPrepared()) {
+            HBluetooth.getInstance(this)
+                    .setPrepared(false)
+                    .setDiscoveryMode(true)
+                    .setHandler(new CoreHandler(this)).Start();
+        }
     }
 
     @Override
@@ -145,6 +149,22 @@ public class NavigationTabActivity extends TabActivity implements RefreshActionI
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    /**
+     * 替换 TitleView 为 SpinnerView
+     */
+    public void replaceTitleViewWithSpinnerView() {
+        ActionBar actionBar = getActionBar();
+        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+        int titleId = Resources.getSystem().getIdentifier("action_bar_title", "id", "android");
+        View titleView = findViewById(titleId);
+        actionbarSpinnerView = (NoDefaultSpinner) getLayoutInflater().inflate(R.layout.custom_spinner_layout, null);
+        ViewGroupUtils.replaceView(titleView, actionbarSpinnerView);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getBaseContext(),
+                android.R.layout.simple_spinner_item, new String[]{});
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        actionbarSpinnerView.setAdapter(adapter);
     }
 
     @SuppressLint("NewApi")
@@ -184,39 +204,50 @@ public class NavigationTabActivity extends TabActivity implements RefreshActionI
         });
         actionBar.show();
         */
-        getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-        getActionBar().setDisplayShowTitleEnabled(false);
-        String[] actions = new String[]{
-                "Test"
-        };
+        //updateSpinnerDropdownItem(new String[]{});
+    }
+
+    /**
+     * 更新蓝牙设备 Spinner 下拉列表
+     *
+     * @param items 蓝牙设备列表
+     */
+    public void updateSpinnerDropdownItem(String[] items) {
+        final String[] devices = items;
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getBaseContext(),
-                android.R.layout.simple_spinner_item, actions);
-        ActionBar.OnNavigationListener navigationListener = new ActionBar.OnNavigationListener() {
-            @Override
-            public boolean onNavigationItemSelected(int itemPosition, long itemId) {
-                return false;
-            }
-        };
-        getActionBar().setListNavigationCallbacks(adapter, navigationListener);
+                android.R.layout.simple_spinner_item, devices);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        actionbarSpinnerView.setAdapter(adapter);
+        actionbarSpinnerView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                final String devName = devices[i];
+                HBluetooth bluetoothSocket = HBluetooth.getInstance(NavigationTabActivity.this);
+                bluetoothSocket.setPrepared(false)
+                        .setDiscoveryMode(false)
+                        .setJudgement(new HJudgeListener() {
+                            @Override
+                            public boolean judge(BluetoothDevice dev) {
+                                String deviceLogName = dev.getName() + "(" + dev.getAddress() + ")";
+                                return deviceLogName.trim().equalsIgnoreCase(devName);
+                            }
+                        }).Start();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
     }
 
     @Override
     public void onRefreshButtonClick(RefreshActionItem sender) {
-        mRefreshActionItem.showProgress(true);
-        /*
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                HBluetooth bth = HBluetooth.getInstance(NavigationTabActivity.this)
-                        .setPrepared(false)
-                        .setDiscoveryMode(true)
-                        .setHandler(new CoreHandler(NavigationTabActivity.this));
-                bth.Start();
-            }
-        };
-        Thread thread = new Thread(runnable);
-        thread.start();
-        */
+        if (!HBluetooth.getInstance(this).isPrepared()) {
+            HBluetooth.getInstance(this)
+                    .setPrepared(false)
+                    .setDiscoveryMode(true)
+                    .setHandler(new SearchBluetoothHandler(this)).Start();
+        }
     }
 }

@@ -1,7 +1,6 @@
 package com.kio.ElevatorControl.activities;
 
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.Log;
@@ -75,7 +74,7 @@ public class TroubleAnalyzeActivity extends Activity {
                             // 反射执行
                             String mName = MenuValuesDao.getTroubleAnalyzeTabsLoadMethodName(currentPageIndex, TroubleAnalyzeActivity.this);
                             Log.v(TAG, String.valueOf(currentPageIndex) + " : " + mName);
-                            ((Object)TroubleAnalyzeActivity.this).getClass().getMethod(mName).invoke(TroubleAnalyzeActivity.this);
+                            ((Object) TroubleAnalyzeActivity.this).getClass().getMethod(mName).invoke(TroubleAnalyzeActivity.this);
                         } catch (NoSuchMethodException e) {
                             Log.e(TAG, e.getMessage());
                         } catch (IllegalArgumentException e) {

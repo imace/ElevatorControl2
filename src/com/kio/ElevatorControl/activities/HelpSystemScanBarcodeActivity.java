@@ -1,6 +1,5 @@
 package com.kio.ElevatorControl.activities;
 
-import org.holoeverywhere.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -11,6 +10,7 @@ import butterknife.InjectView;
 import butterknife.OnClick;
 import butterknife.Views;
 import com.kio.ElevatorControl.R;
+import org.holoeverywhere.app.Activity;
 
 /**
  * Created by IntelliJ IDEA.

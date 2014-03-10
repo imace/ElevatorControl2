@@ -1,7 +1,6 @@
 package com.kio.ElevatorControl.activities;
 
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import butterknife.InjectView;
 import butterknife.Views;

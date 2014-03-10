@@ -7,10 +7,12 @@
 
     <style name="CustomSpinnerItemStyle" parent="android:TextAppearance.Widget.TextView.SpinnerItem">
         <item name="android:textColor">#eeeeee</item>
+        <item name="android:background">@android:color/transparent</item>
     </style>
 
     <style name="CustomSpinnerDropdownItemStyle" parent="@android:style/Widget.Holo.DropDownItem.Spinner">
         <item name="android:textColor">#eeeeee</item>
+        <item name="android:background">#303030</item>
     </style>
 
     <style name="CustomDialogStyle" parent="android:Theme.Holo.Dialog">

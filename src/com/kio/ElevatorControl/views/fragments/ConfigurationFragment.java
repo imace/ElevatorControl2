@@ -12,10 +12,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import com.devspark.progressfragment.ProgressFragment;
 import com.kio.ElevatorControl.R;
-import com.kio.ElevatorControl.activities.CheckAuthorizationActivity;
-import com.kio.ElevatorControl.activities.MoveInsideActivity;
-import com.kio.ElevatorControl.activities.MoveOutsideActivity;
-import com.kio.ElevatorControl.activities.ParameterDetailActivity;
+import com.kio.ElevatorControl.activities.*;
 import com.kio.ElevatorControl.daos.MenuValuesDao;
 import com.kio.ElevatorControl.daos.ParameterGroupSettingsDao;
 import com.kio.ElevatorControl.models.MoveInsideOutside;
@@ -201,10 +198,16 @@ public class ConfigurationFragment extends ProgressFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                ConfigurationFragment.this.getActivity().startActivity(
-                        new Intent(ConfigurationFragment.this.getActivity(),
-                                CheckAuthorizationActivity.class));
-
+                if (position == 0){
+                    Intent intent = new Intent(ConfigurationFragment.this.getActivity(),
+                            ParameterUploadActivity.class);
+                    ConfigurationFragment.this.getActivity().startActivity(intent);
+                }
+                else if (position == 1){
+                    Intent intent = new Intent(ConfigurationFragment.this.getActivity(),
+                            ParameterDownloadActivity.class);
+                    ConfigurationFragment.this.getActivity().startActivity(intent);
+                }
             }
         });
         setContentShown(true);

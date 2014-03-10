@@ -10,4 +10,5 @@
     <color name="possible_result_points">#c0ffff00</color>
 
     <color name="main_content_background_color">#E2E2E2</color>
+    <color name="card_highlight_color">#26e83a00</color>
 </resources>

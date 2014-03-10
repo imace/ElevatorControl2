@@ -1,6 +1,5 @@
 package com.kio.ElevatorControl.activities;
 
-import org.holoeverywhere.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -13,6 +12,7 @@ import butterknife.OnClick;
 import butterknife.Views;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.daos.RestoreFactoryDao;
+import org.holoeverywhere.app.Activity;
 
 /**
  * 检查当前用户是否被授权
@@ -61,11 +61,11 @@ public class CheckAuthorizationActivity extends Activity {
         }
     }
 
-    private Handler mHandler = new Handler(){
+    private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case WRITE_FINISH:{
+                case WRITE_FINISH: {
                     progressView.setVisibility(View.GONE);
                     editTextLogin.setEnabled(true);
                     btnLogin.setEnabled(true);

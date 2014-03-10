@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.kio.ElevatorControl.views.SquareView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:kio="http://schemas.android.com/apk/res-auto"
+        android:background="@drawable/floor_item_selector"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:minHeight="100dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    <com.kio.ElevatorControl.views.TypefaceTextView
+            android:id="@+id/floor_text"
+            android:textSize="48sp"
+            android:textColor="#ff787878"
+            android:textStyle="bold"
+            android:layout_gravity="center"
+            android:gravity="center"
+            kio:customTypeface="fonts/digifaw.ttf"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+</com.kio.ElevatorControl.views.SquareView>
