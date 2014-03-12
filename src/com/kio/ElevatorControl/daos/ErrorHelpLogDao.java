@@ -8,7 +8,7 @@ import net.tsz.afinal.FinalDb;
 import java.util.List;
 
 public class ErrorHelpLogDao {
-    private static final boolean DBDEBUG = true;
+    private static final boolean DEBUG = true;
 
     /**
      * 失败返回-1
@@ -21,7 +21,7 @@ public class ErrorHelpLogDao {
         // (android:label).db
         FinalDb db = FinalDb.create(ctx,
                 ctx.getString(ctx.getApplicationInfo().labelRes) + ".db",
-                DBDEBUG);
+                DEBUG);
         if (db.saveBindId(entity)) {
             return entity.getId();
         }
@@ -32,7 +32,7 @@ public class ErrorHelpLogDao {
         // (android:label).db
         FinalDb db = FinalDb.create(ctx,
                 ctx.getString(ctx.getApplicationInfo().labelRes) + ".db",
-                DBDEBUG);
+                DEBUG);
         List<ErrorHelpLog> result = db.findAll(ErrorHelpLog.class);
         if (result != null) {
             for (ErrorHelpLog lg : result) {
@@ -46,7 +46,7 @@ public class ErrorHelpLogDao {
         // (android:label).db
         FinalDb db = FinalDb.create(ctx,
                 ctx.getString(ctx.getApplicationInfo().labelRes) + ".db",
-                DBDEBUG);
+                DEBUG);
         return db.findById(id, ErrorHelp.class);
     }
 

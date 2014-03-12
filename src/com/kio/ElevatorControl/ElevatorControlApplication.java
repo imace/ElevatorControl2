@@ -1,5 +1,6 @@
 package com.kio.ElevatorControl;
 
+import android.content.Context;
 import org.holoeverywhere.HoloEverywhere;
 import org.holoeverywhere.app.Application;
 

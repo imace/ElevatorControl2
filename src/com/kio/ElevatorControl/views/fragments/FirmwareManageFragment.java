@@ -7,10 +7,16 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ListView;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.daos.MenuValuesDao;
+import com.kio.ElevatorControl.models.Firmware;
+import com.mobsandgeeks.adapters.InstantAdapter;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -54,7 +60,7 @@ public class FirmwareManageFragment extends Fragment {
         super.onResume();
         try {
             // 反射执行
-            this.getClass().getMethod(MenuValuesDao.getFirmwareManageTabsLoadMethodName(tabIndex, context))
+            ((Object)this).getClass().getMethod(MenuValuesDao.getFirmwareManageTabsLoadMethodName(tabIndex, context))
                     .invoke(this);
         } catch (NoSuchMethodException e) {
             Log.e(TAG, e.getMessage());
@@ -72,7 +78,24 @@ public class FirmwareManageFragment extends Fragment {
     }
 
     public void loadFirmwareDownloadView() {
+        ListView listView = (ListView) this.getActivity().findViewById(
+                R.id.download_list);
+        List<Firmware> firmwareLists = new ArrayList<Firmware>();
+        Firmware firmware = new Firmware();
+        firmware.setName("固件1");
+        firmware.setVersion("0.1");
+        firmware.setStatus(true);
+        firmwareLists.add(firmware);
+        InstantAdapter<Firmware> instantAdapter = new InstantAdapter<Firmware>(
+                getActivity().getApplicationContext(),
+                R.layout.firmware_download_item, Firmware.class, firmwareLists);
+        listView.setAdapter(instantAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
+            }
+        });
     }
 
     public void loadFirmwareBurnView() {

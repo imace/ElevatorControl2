@@ -7,16 +7,21 @@ import net.tsz.afinal.FinalDb;
 import java.util.List;
 
 public class RealTimeMonitorDao {
+
     private static final boolean DEBUG = true;
 
-    public static List<RealTimeMonitor> findAll(Context ctx) {
-        // (android:label).db
-        FinalDb db = FinalDb.create(ctx,
-                ctx.getString(ctx.getApplicationInfo().labelRes) + ".db",
+    public static List<RealTimeMonitor> findAll(Context context) {
+        FinalDb db = FinalDb.create(context,
+                context.getString(context.getApplicationInfo().labelRes) + ".db",
                 DEBUG);
-        List<RealTimeMonitor> list = db.findAll(RealTimeMonitor.class);
-//		for(RealTimeMonitor r:list){//lazyload
-//		}
-        return list;
+        return db.findAll(RealTimeMonitor.class);
     }
+
+    public static List<RealTimeMonitor> findByType(Context context, String type) {
+        FinalDb db = FinalDb.create(context,
+                context.getString(context.getApplicationInfo().labelRes) + ".db",
+                DEBUG);
+        return db.findAllByWhere(RealTimeMonitor.class, " type = '" + type + "'");
+    }
+
 }

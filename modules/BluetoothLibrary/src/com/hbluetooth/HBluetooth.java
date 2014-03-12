@@ -27,9 +27,9 @@ import java.util.concurrent.TimeUnit;
 @SuppressLint("NewApi")
 public class HBluetooth implements Runnable {
 
-    private final String TAG = "HBluetooth";
+    private final String TAG = HBluetooth.class.getSimpleName();
 
-    private final int SOCKET_TIMEOUT = 200;
+    private final int SOCKET_TIMEOUT = 100;
 
     private final int MAX_READ_BUFFER = 1024;
 
@@ -68,27 +68,24 @@ public class HBluetooth implements Runnable {
     // socket
     public BluetoothSocket btSocket;
 
-    private HBluetooth() {
-    }
-
-    private static class HBluetoothHolder {
-
-        private static HBluetooth instance = new HBluetooth();
-    }
+    private static HBluetooth instance = new HBluetooth();
 
     /**
      * 不管多少次getInstance(activity) activity始终是第一次调用的时候的那个
      *
-     * @param activity
-     * @return
+     * @param activity activity
+     * @return bluetooth
      */
     public static HBluetooth getInstance(Activity activity) {
-        if (null == HBluetoothHolder.instance.activity)
-            HBluetoothHolder.instance.activity = activity;
-        HBluetoothHolder.instance.arrPorts = HBluetoothHolder.instance.activity.getResources().getIntArray(R.array.array_ports);
-        return HBluetoothHolder.instance;
+        if (null == instance.activity) {
+            instance.activity = activity;
+        }
+        instance.arrPorts = instance
+                .activity
+                .getResources()
+                .getIntArray(R.array.array_ports);
+        return instance;
     }
-
 
     /**
      * 关闭连接,释放对象

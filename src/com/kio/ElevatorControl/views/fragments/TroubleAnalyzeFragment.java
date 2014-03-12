@@ -58,7 +58,7 @@ public class TroubleAnalyzeFragment extends Fragment {
         super.onResume();
         try {
             // 反射执行
-            this.getClass().getMethod(MenuValuesDao.getTroubleAnalyzeTabsLoadMethodName(tabIndex, context)).invoke(this);
+            ((Object) this).getClass().getMethod(MenuValuesDao.getTroubleAnalyzeTabsLoadMethodName(tabIndex, context)).invoke(this);
         } catch (NoSuchMethodException e) {
             Log.e(TAG, e.getMessage());
         } catch (IllegalArgumentException e) {

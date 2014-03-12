@@ -78,6 +78,7 @@ public class SearchBluetoothHandler extends HHandler {
     public void onPrepared(Message msg) {
         Log.v(TAG, "prepared");
         mNavigationTabActivity.mRefreshActionItem.showProgress(false);
+        mNavigationTabActivity.startHomeActivityStatusSyncTask();
         Toast.makeText(activity, activity.getResources().getString(R.string.success_connect), Toast.LENGTH_SHORT).show();
     }
 

@@ -27,7 +27,7 @@ public class CoreHandler extends HHandler {
 
     public CoreHandler(Activity activity) {
         super(activity);
-        this.TAG = "CoreHandler";
+        this.TAG = CoreHandler.class.getSimpleName();
         this.hbt = HBluetooth.getInstance(activity);
     }
 

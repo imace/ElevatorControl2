@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/layout_failure_current"
-            android:background="@color/main_content_background_color"
+            android:background="@color/main_background"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 

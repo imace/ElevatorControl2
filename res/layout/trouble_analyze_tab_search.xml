@@ -3,7 +3,7 @@
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:background="@color/main_content_background_color">
+              android:background="@color/main_background">
     <!-- 搜索框 -->
     <LinearLayout
             android:layout_margin="@dimen/card_view_margin"

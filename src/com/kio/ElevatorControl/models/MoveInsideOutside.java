@@ -1,5 +1,6 @@
 package com.kio.ElevatorControl.models;
 
+import android.content.Context;
 import com.kio.ElevatorControl.R;
 import com.mobsandgeeks.adapters.InstantText;
 
@@ -7,23 +8,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 内招 外招
+ * 内召 外召
  */
 
 public class MoveInsideOutside {
 
-    private String name;//内招或外招
+    private String name;//内召或外召
 
-    public static List<MoveInsideOutside> getInsideOutLists() {
+    public static List<MoveInsideOutside> getInsideOutLists(Context context) {
         List<MoveInsideOutside> moveInsideOutsides = new ArrayList<MoveInsideOutside>();
 
         MoveInsideOutside moveInsideOutside = null;
         moveInsideOutside = new MoveInsideOutside();
-        moveInsideOutside.setName("内招");
+        moveInsideOutside.setName(context.getResources().getString(R.string.move_inside_text));
         moveInsideOutsides.add(moveInsideOutside);
 
         moveInsideOutside = new MoveInsideOutside();
-        moveInsideOutside.setName("外招");
+        moveInsideOutside.setName(context.getResources().getString(R.string.move_outside_text));
         moveInsideOutsides.add(moveInsideOutside);
         return moveInsideOutsides;
     }

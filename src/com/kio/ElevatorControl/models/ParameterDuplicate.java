@@ -1,5 +1,6 @@
 package com.kio.ElevatorControl.models;
 
+import android.content.Context;
 import com.kio.ElevatorControl.R;
 import com.mobsandgeeks.adapters.InstantText;
 
@@ -12,17 +13,17 @@ public class ParameterDuplicate {
 
     private String name;
 
-    public static List<ParameterDuplicate> getParamDuplicateLists() {
+    public static List<ParameterDuplicate> getParamDuplicateLists(Context context) {
         ArrayList<ParameterDuplicate> arr = new ArrayList<ParameterDuplicate>();
         ParameterDuplicate pcy = null;
         pcy = new ParameterDuplicate();
-        pcy.setName("参数上传");
+        pcy.setName(context.getResources().getString(R.string.parameter_upload_text));
         arr.add(pcy);
         pcy = new ParameterDuplicate();
-        pcy.setName("参数下载");
+        pcy.setName(context.getResources().getString(R.string.parameter_download_text));
         arr.add(pcy);
         pcy = new ParameterDuplicate();
-        pcy.setName("恢复出厂设置");
+        pcy.setName(context.getResources().getString(R.string.restore_factory_settings_text));
         arr.add(pcy);
         return arr;
     }

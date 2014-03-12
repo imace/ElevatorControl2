@@ -26,7 +26,7 @@ public class FailureLogHandler extends HHandler {
 
     public FailureLogHandler(Activity activity) {
         super(activity);
-        TAG = "FailureLogHandler";
+        TAG = FailureLogHandler.class.getSimpleName();
     }
 
     @Override

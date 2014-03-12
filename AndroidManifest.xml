@@ -51,7 +51,8 @@
         </activity>
         <!--首页-->
         <activity
-                android:name=".activities.HomeActivity">
+                android:name=".activities.HomeActivity"
+                android:launchMode="singleInstance">
         </activity>
         <!--固件管理-->
         <activity

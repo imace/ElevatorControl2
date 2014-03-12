@@ -25,7 +25,7 @@ public class ParameterHandler extends HHandler {
 
     public ParameterHandler(Activity activity) {
         super(activity);
-        TAG = "ParameterHandler";
+        TAG = ParameterHandler.class.getSimpleName();
     }
 
     @Override

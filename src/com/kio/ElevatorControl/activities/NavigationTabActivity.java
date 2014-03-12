@@ -75,8 +75,8 @@ public class NavigationTabActivity extends TabActivity implements RefreshActionI
     /**
      * 新建并添加一个Tab到tabHost
      *
-     * @param key
-     * @param value
+     * @param key   key
+     * @param value value
      * @param c     Intent新建实例使用
      */
     private void addTab(String key, int value, Class<?> c) {
@@ -250,4 +250,17 @@ public class NavigationTabActivity extends TabActivity implements RefreshActionI
                     .setHandler(new SearchBluetoothHandler(this)).Start();
         }
     }
+
+    /**
+     * 开启HomeActivity Sync Task
+     */
+    public void startHomeActivityStatusSyncTask() {
+        if (getTabHost().getCurrentTab() == 2) {
+            if (getCurrentActivity() instanceof HomeActivity) {
+                HomeActivity homeActivity = (HomeActivity) getCurrentActivity();
+                homeActivity.loopSyncElevatorStatusTask();
+            }
+        }
+    }
+
 }

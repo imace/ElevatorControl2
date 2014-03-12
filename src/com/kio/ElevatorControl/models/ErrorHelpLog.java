@@ -9,6 +9,7 @@ import com.mobsandgeeks.adapters.InstantText;
 import java.util.Date;
 
 public class ErrorHelpLog {
+
     private int Id;
     private Date errorTime;
     private int errorHelpId;

@@ -15,7 +15,7 @@
             android:textStyle="bold"
             android:layout_gravity="center"
             android:gravity="center"
-            kio:customTypeface="fonts/digifaw.ttf"
+            kio:customTypeface="fonts/digit_font.ttf"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
 </com.kio.ElevatorControl.views.SquareView>

@@ -20,6 +20,7 @@ import java.util.Date;
  * @author jch
  */
 public class RestoreFactoryDao {
+
     private static final boolean DEBUG = true;
 
     /**
@@ -97,15 +98,13 @@ public class RestoreFactoryDao {
                     ParameterSettings parameterSetting = new ParameterSettings();
                     parameterSetting.setCode(jsonObject.optString("code"));
                     parameterSetting.setName(jsonObject.optString("name"));
-                    parameterSetting.setProductId(String.valueOf(jsonObject
-                            .optInt("productId")));
+                    parameterSetting.setProductId(String.valueOf(jsonObject.optInt("productId")));
                     parameterSetting.setDescription(jsonObject.optString("description"));
                     parameterSetting.setDescriptiontype(ParameterSettings
                             .ParseDescriptionToType(parameterSetting.getDescription()));
                     parameterSetting.setChildId(jsonObject.optString("childId"));
                     parameterSetting.setScope(jsonObject.optString("scope"));
-                    parameterSetting.setDefaultValue(String.valueOf(jsonObject
-                            .optInt("defaultValue")));
+                    parameterSetting.setDefaultValue(String.valueOf(jsonObject.optInt("defaultValue")));
                     parameterSetting.setScale(String.valueOf(jsonObject.optDouble("scale")));
                     parameterSetting.setUnit(jsonObject.optString("unit"));
                     parameterSetting.setType(String.valueOf(jsonObject.optInt("type")));
@@ -117,7 +116,7 @@ public class RestoreFactoryDao {
             }
         } catch (JSONException ex) {
             // 异常处理代码
-            Log.e("JSONEXP", ex.getMessage());
+            Log.e("JSONException", ex.getMessage());
         }
     }
 
@@ -140,21 +139,21 @@ public class RestoreFactoryDao {
                 realTimeMonitor.setCode(jsonObject.optString("code"));
                 realTimeMonitor.setChildId(jsonObject.optString("childId"));
                 realTimeMonitor.setUnit(jsonObject.optString("unit"));
+                realTimeMonitor.setType(jsonObject.optString("type"));
                 realTimeMonitor.setDescription(jsonObject.optString("description"));
                 realTimeMonitor.setDescriptionType(RealTimeMonitor
                         .ParseDescriptionToType(realTimeMonitor.getDescription()));
                 realTimeMonitor.setProductId(String.valueOf(jsonObject.optInt("productId")));
                 realTimeMonitor.setScale(String.valueOf(jsonObject.optDouble("scale")));
                 realTimeMonitor.setScope(jsonObject.optString("scope"));
-                realTimeMonitor.setShowBit(Boolean.parseBoolean(jsonObject
-                        .optString("showBit")));
+                realTimeMonitor.setShowBit(Boolean.parseBoolean(jsonObject.optString("showBit")));
                 realTimeMonitor.setValid(true);
                 realTimeMonitor.setLastTime(new Date());
                 db.save(realTimeMonitor);
             }
         } catch (JSONException ex) {
             // 异常处理代码
-            Log.e("JSONEXP", ex.getMessage());
+            Log.e("JSONException", ex.getMessage());
         }
     }
 
@@ -186,7 +185,7 @@ public class RestoreFactoryDao {
             }
         } catch (JSONException ex) {
             // 异常处理代码
-            Log.e("JSONEXP", ex.getMessage());
+            Log.e("JSONException", ex.getMessage());
         }
 
     }

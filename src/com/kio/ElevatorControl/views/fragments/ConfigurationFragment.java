@@ -145,11 +145,11 @@ public class ConfigurationFragment extends ProgressFragment {
     }
 
     /**
-     * 测试功能，加载内容，内招和外招。
+     * 测试功能，加载内容，内召和外召。
      */
     public void loadDebugView() {
         // 列表值绑定到InsideOut对象 获取InsideOut对象列表,数据源
-        final List<MoveInsideOutside> insideOut = MoveInsideOutside.getInsideOutLists();
+        final List<MoveInsideOutside> insideOut = MoveInsideOutside.getInsideOutLists(ConfigurationFragment.this.getActivity());
         // 我们要操作的列表控件
         ListView lstView = (ListView) this.getActivity().findViewById(
                 R.id.test_list);
@@ -185,7 +185,7 @@ public class ConfigurationFragment extends ProgressFragment {
      */
     public void loadDuplicateView() {
         // 列表值绑定到InsideOut对象 获取InsideOut对象列表,数据源
-        final List<ParameterDuplicate> paramDuplicate = ParameterDuplicate.getParamDuplicateLists();
+        final List<ParameterDuplicate> paramDuplicate = ParameterDuplicate.getParamDuplicateLists(ConfigurationFragment.this.getActivity());
         // 我们要操作的列表控件
         ListView lstView = (ListView) this.getActivity().findViewById(
                 R.id.copy_list);
@@ -198,12 +198,11 @@ public class ConfigurationFragment extends ProgressFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                if (position == 0){
+                if (position == 0) {
                     Intent intent = new Intent(ConfigurationFragment.this.getActivity(),
                             ParameterUploadActivity.class);
                     ConfigurationFragment.this.getActivity().startActivity(intent);
-                }
-                else if (position == 1){
+                } else if (position == 1) {
                     Intent intent = new Intent(ConfigurationFragment.this.getActivity(),
                             ParameterDownloadActivity.class);
                     ConfigurationFragment.this.getActivity().startActivity(intent);

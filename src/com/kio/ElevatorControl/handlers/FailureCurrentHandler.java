@@ -17,7 +17,7 @@ public class FailureCurrentHandler extends HHandler {
 
     public FailureCurrentHandler(Activity activity) {
         super(activity);
-        TAG = "FailureHandler";
+        TAG = FailureCurrentHandler.class.getSimpleName();
     }
 
     @Override

@@ -131,13 +131,13 @@ public class TroubleAnalyzeActivity extends Activity {
                             // 通过验证
                             byte[] received = HSerial.trimEnd(getReceivedBuffer());
                             Log.v(TAG, HSerial.byte2HexStr(received));
-                            ErrorHelp ep = new ErrorHelp();
+                            ErrorHelp errorHelp = new ErrorHelp();
                             try {
-                                ep.setReceived(TroubleAnalyzeActivity.this, received);
+                                errorHelp.setReceived(TroubleAnalyzeActivity.this, received);
                                 // 将ep存入数据库
                                 // ErrorHelpLogDao.Insert(TroubleAnalyzeActivity.this,
                                 // ErrorHelpLog.Instance(ep));
-                                return ep;
+                                return errorHelp;
                             } catch (Exception e) {
                                 // 失败
                                 Log.e(TAG, e.getLocalizedMessage());
@@ -152,7 +152,10 @@ public class TroubleAnalyzeActivity extends Activity {
         if (bluetoothHandler == null)
             bluetoothHandler = new FailureCurrentHandler(this);
         if (HBluetooth.getInstance(this).isPrepared())
-            HBluetooth.getInstance(this).setHandler(bluetoothHandler).setCommunications(hCommunications).Start();
+            HBluetooth.getInstance(this)
+                    .setHandler(bluetoothHandler)
+                    .setCommunications(hCommunications)
+                    .Start();
     }
 
 
@@ -506,7 +509,9 @@ public class TroubleAnalyzeActivity extends Activity {
         };
         bluetoothHandler = new FailureLogHandler(this);
         if (HBluetooth.getInstance(this).isPrepared())
-            HBluetooth.getInstance(this).setHandler(bluetoothHandler).setCommunications(hCommunications).Start();
+            HBluetooth.getInstance(this)
+                    .setHandler(bluetoothHandler)
+                    .setCommunications(hCommunications).Start();
     }
 
     /**

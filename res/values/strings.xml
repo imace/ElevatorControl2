@@ -37,6 +37,13 @@
     <string name="restart_scan_text">继续扫描</string>
     <string name="scan_tips_text">扫描条形码中，请稍后…</string>
 
+    <!-- 程序首页 Home -->
+    <string name="elevator_status_text">电梯状态</string>
+    <string name="running_speed_text">运行速度</string>
+    <string name="door_status_text">开关门状态</string>
+    <string name="lock_elevator_status_text">轿厢状态</string>
+    <string name="error_code_text">故障</string>
+
     <!-- 故障查询 -->
     <string name="search_hint_text">输入故障码查询</string>
     <string name="no_error_code_result">未查询到结果</string>
@@ -53,9 +60,9 @@
     <string name="application_log_text">日志</string>
     <string name="about_text">关于</string>
 
-    <!-- 电梯内招、外招 -->
-    <string name="move_inside_text">内招</string>
-    <string name="move_outside_text">外招</string>
+    <!-- 电梯内召、外召 -->
+    <string name="move_inside_text">内召</string>
+    <string name="move_outside_text">外召</string>
     <string name="open_door_text">开门</string>
     <string name="close_door_text">关门</string>
 
@@ -66,8 +73,21 @@
     <string name="choose_bluetooth_device">选择蓝牙设备…</string>
 
     <!-- 参数拷贝 -->
-    <string name="parameter_upload_text">参数上传</string>
-    <string name="parameter_download_text">参数下载</string>
+    <string name="parameter_upload_text">参数写入</string>
+    <string name="parameter_download_text">参数读取</string>
+    <string name="restore_factory_settings_text">恢复出厂设置</string>
+
+    <!-- 固件申请 -->
+    <string name="equipment_manufacturers_text">设备厂家</string>
+    <string name="equipment_model_text">设备型号</string>
+    <string name="firmware_version_text">固件版本</string>
+    <string name="remark_text">备注</string>
+    <string name="submit_application_text">提交申请</string>
+
+    <string-array name="firmware_download_status">
+        <item>已下载</item>
+        <item>未下载</item>
+    </string-array>
 
     <!-- //////////////////////////////////// 标签选项卡 START ////////////////////////////////// -->
     <!-- 主标签页选项卡 -->

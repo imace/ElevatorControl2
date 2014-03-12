@@ -28,10 +28,10 @@ public class SquareView extends LinearLayout {
         int height = MeasureSpec.getSize(heightMeasureSpec);
         int mScale = 1;
 
-        if (width < (int)(mScale * height + 0.5)) {
-            width = (int)(mScale * height + 0.5);
+        if (width < (int) (mScale * height + 0.5)) {
+            width = (int) (mScale * height + 0.5);
         } else {
-            height = (int)(width / mScale + 0.5);
+            height = (int) (width / mScale + 0.5);
         }
 
         super.onMeasure(
