@@ -1,8 +1,7 @@
 package com.kio.ElevatorControl.models;
 
-import android.content.res.Resources;
+import android.content.Context;
 import com.kio.ElevatorControl.R;
-import com.mobsandgeeks.adapters.InstantText;
 
 /**
  * Created by IntelliJ IDEA.
@@ -20,13 +19,24 @@ public class Firmware {
 
     private boolean status;
 
+    private String updateDate;
+
+    private String expireDate;
+
+    private int burnTime;
+
+    private int totalBurnTime;
+
     private String localLocation;
 
-    private String[] downloadStatusText;
+    private String[] downloadStatusTextArray;
 
-    public Firmware(){
-        downloadStatusText = Resources
-                .getSystem()
+    private Context mContext;
+
+    public Firmware(Context context) {
+        mContext = context;
+        downloadStatusTextArray = mContext
+                .getResources()
                 .getStringArray(R.array.firmware_download_status);
     }
 
@@ -38,7 +48,6 @@ public class Firmware {
         Id = id;
     }
 
-    @InstantText(viewId = R.id.firmware_name)
     public String getName() {
         return name;
     }
@@ -47,7 +56,6 @@ public class Firmware {
         this.name = name;
     }
 
-    @InstantText(viewId = R.id.firmware_version)
     public String getVersion() {
         return version;
     }
@@ -64,14 +72,47 @@ public class Firmware {
         this.status = status;
     }
 
-    @InstantText(viewId = R.id.firmware_version)
     public String getDownloadStatusText() {
-        if (this.status){
-            return downloadStatusText[0];
-        }
-        else {
-            return downloadStatusText[1];
-        }
+        return this.status ? downloadStatusTextArray[0] : downloadStatusTextArray[1];
+    }
+
+    public String getUpdateDate() {
+        return updateDate;
+    }
+
+    public void setUpdateDate(String updateDate) {
+        this.updateDate = updateDate;
+    }
+
+    public String getExpireDate() {
+        return expireDate;
+    }
+
+    public void setExpireDate(String expireDate) {
+        this.expireDate = expireDate;
+    }
+
+    public int getBurnTime() {
+        return burnTime;
+    }
+
+    public void setBurnTime(int burnTime) {
+        this.burnTime = burnTime;
+    }
+
+    public int getTotalBurnTime() {
+        return totalBurnTime;
+    }
+
+    public void setTotalBurnTime(int totalBurnTime) {
+        this.totalBurnTime = totalBurnTime;
+    }
+
+    public String getResidueTime() {
+        return (totalBurnTime - burnTime)
+                + mContext
+                .getResources()
+                .getString(R.string.time_unit_text);
     }
 
     public String getLocalLocation() {
@@ -81,4 +122,6 @@ public class Firmware {
     public void setLocalLocation(String localLocation) {
         this.localLocation = localLocation;
     }
+
+
 }

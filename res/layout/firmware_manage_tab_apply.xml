@@ -29,8 +29,8 @@
                 android:layout_marginRight="5dp"
                 android:layout_width="1dp"
                 android:layout_height="match_parent"/>
-        <EditText
-                android:inputType="text"
+        <AutoCompleteTextView
+                android:id="@+id/equipment_manufacturers"
                 android:background="@android:color/transparent"
                 android:layout_weight="1"
                 android:layout_width="0dp"
@@ -60,6 +60,7 @@
                 android:layout_width="1dp"
                 android:layout_height="match_parent"/>
         <com.kio.ElevatorControl.views.customspinner.NoDefaultSpinner
+                android:id="@+id/equipment_model"
                 android:layout_weight="1"
                 android:layout_width="0dp"
                 android:background="@android:color/transparent"
@@ -89,6 +90,7 @@
                 android:layout_width="1dp"
                 android:layout_height="match_parent"/>
         <com.kio.ElevatorControl.views.customspinner.NoDefaultSpinner
+                android:id="@+id/firmware_version"
                 android:layout_weight="1"
                 android:layout_width="0dp"
                 android:background="@android:color/transparent"
@@ -123,16 +125,18 @@
                 android:ems="10"
                 android:background="@android:color/transparent"
                 android:gravity="top"
-                android:id="@+id/editText"
+                android:id="@+id/remark"
                 android:layout_weight="1"/>
     </LinearLayout>
     <!-- 提交 -->
     <LinearLayout
+            android:id="@+id/submit_apply"
             android:layout_marginRight="@dimen/card_view_margin"
             android:layout_marginLeft="@dimen/card_view_margin"
             android:background="@drawable/card_view_selector"
             android:layout_width="match_parent"
             android:gravity="center"
+            android:layout_marginBottom="8dp"
             android:layout_height="50dp">
         <TextView
                 android:textSize="18sp"
@@ -141,4 +145,15 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
     </LinearLayout>
+    <LinearLayout
+            android:visibility="invisible"
+            android:id="@+id/submit_progress"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <org.holoeverywhere.widget.ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+    </LinearLayout>
+
 </LinearLayout>

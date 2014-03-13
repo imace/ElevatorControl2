@@ -32,9 +32,9 @@ public class FirmwareManageActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_firmware_manage);
         Views.inject(this);
-
         mFirmwareManageAdapter = new FirmwareManageAdapter(this);
         pager.setAdapter(mFirmwareManageAdapter);
+        pager.setOffscreenPageLimit(3);
         indicator.setViewPager(pager);
         indicator.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override

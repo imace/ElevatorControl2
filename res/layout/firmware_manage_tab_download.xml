@@ -5,9 +5,8 @@
               android:background="@color/main_background"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
-    <ListView
+    <org.holoeverywhere.widget.ListView
             android:id="@+id/download_list"
-            android:background="#af0000"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:listSelector="@android:color/transparent"

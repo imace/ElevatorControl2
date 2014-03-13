@@ -76,10 +76,12 @@
     <string name="parameter_upload_text">参数写入</string>
     <string name="parameter_download_text">参数读取</string>
     <string name="restore_factory_settings_text">恢复出厂设置</string>
+    <string name="parameter_file_package_text">参数文件包</string>
 
     <!-- 固件申请 -->
     <string name="equipment_manufacturers_text">设备厂家</string>
     <string name="equipment_model_text">设备型号</string>
+    <string name="manufacturers_serial_number_text">厂家编号</string>
     <string name="firmware_version_text">固件版本</string>
     <string name="remark_text">备注</string>
     <string name="submit_application_text">提交申请</string>
@@ -88,6 +90,11 @@
         <item>已下载</item>
         <item>未下载</item>
     </string-array>
+
+    <string name="update_date_text">更新时间</string>
+    <string name="expire_date_text">过期时间</string>
+    <string name="residue_time_text">剩余次数</string>
+    <string name="time_unit_text">次</string>
 
     <!-- //////////////////////////////////// 标签选项卡 START ////////////////////////////////// -->
     <!-- 主标签页选项卡 -->

@@ -14,9 +14,7 @@ public class ParameterGroupSettingsDao {
         FinalDb db = FinalDb.create(ctx,
                 ctx.getString(ctx.getApplicationInfo().labelRes) + ".db",
                 DEBUG);
-        List<ParameterGroupSettings> list = db
-                .findAll(ParameterGroupSettings.class);
-        return list;
+        return db.findAll(ParameterGroupSettings.class);
     }
 
     public static ParameterGroupSettings findById(Context ctx, int id) {

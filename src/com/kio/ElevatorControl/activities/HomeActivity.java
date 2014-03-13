@@ -7,7 +7,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import butterknife.InjectView;
@@ -25,7 +24,6 @@ import org.holoeverywhere.widget.ListView;
 import org.holoeverywhere.widget.TextView;
 
 import java.util.Timer;
-import java.util.TimerTask;
 
 public class HomeActivity extends Activity {
 
@@ -68,26 +66,8 @@ public class HomeActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         Views.inject(this);
+        mSyncStatusHandler = new SyncStatusHandler(HomeActivity.this);
         setListViewDataSource();
-        handler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                switch (msg.what) {
-                    case 1:
-                        HomeActivity.this.syncElevatorStatus();
-                        break;
-                }
-                super.handleMessage(msg);
-            }
-        };
-        timer = new Timer();
-        ViewTreeObserver vto = doorAnimationView.getViewTreeObserver();
-        vto.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-            public boolean onPreDraw() {
-                Log.e("ViewWidthHeight", "Height: " + doorAnimationView.getMeasuredHeight() + " Width: " + doorAnimationView.getMeasuredWidth());
-                return true;
-            }
-        });
     }
 
     @OnClick(R.id.door_button)
@@ -103,34 +83,21 @@ public class HomeActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        timer = new Timer();
-        loopSyncElevatorStatusTask();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        timer.cancel();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        timer.cancel();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        timer.cancel();
-        timer.purge();
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        doorAnimationView.getWidth();
-        Log.v(TAG, doorAnimationView.getWidth() + ":" + doorAnimationView.getHeight());
     }
 
     /**
@@ -138,14 +105,18 @@ public class HomeActivity extends Activity {
      */
     public void loopSyncElevatorStatusTask() {
         if (HBluetooth.getInstance(HomeActivity.this).isPrepared()) {
-            timer.schedule(new TimerTask() {
-                @Override
+            new Thread() {
                 public void run() {
-                    Message message = new Message();
-                    message.what = 1;
-                    handler.sendMessage(message);
+                    while (true) {
+                        HomeActivity.this.syncElevatorStatus();
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            Log.e(TAG, "Bluetooth Thread Error", e);
+                        }
+                    }
                 }
-            }, 0, 1000);
+            }.start();
         }
     }
 
@@ -204,9 +175,6 @@ public class HomeActivity extends Activity {
                     }
                 };
             }
-        }
-        if (mSyncStatusHandler == null) {
-            mSyncStatusHandler = new SyncStatusHandler(HomeActivity.this);
         }
         if (HBluetooth.getInstance(HomeActivity.this).isPrepared()) {
             HBluetooth.getInstance(HomeActivity.this)

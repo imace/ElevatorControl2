@@ -9,7 +9,7 @@
             android:layout_margin="@dimen/card_view_margin"
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
+            android:layout_height="@dimen/card_cell_height"
             android:padding="8dp"
             android:background="@drawable/card_view_background">
         <EditText

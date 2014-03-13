@@ -2,8 +2,11 @@ package com.kio.ElevatorControl.activities;
 
 import android.os.Bundle;
 import android.view.MenuItem;
+import butterknife.InjectView;
+import butterknife.Views;
 import com.kio.ElevatorControl.R;
 import org.holoeverywhere.app.Activity;
+import org.holoeverywhere.widget.ListView;
 
 /**
  * Created by IntelliJ IDEA.
@@ -13,12 +16,16 @@ import org.holoeverywhere.app.Activity;
  */
 public class ParameterUploadActivity extends Activity {
 
+    @InjectView(R.id.upload_list)
+    ListView listView;
+
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTitle(R.string.parameter_upload_text);
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
         setContentView(R.layout.activity_parameter_upload);
+        Views.inject(this);
     }
 
     @Override
