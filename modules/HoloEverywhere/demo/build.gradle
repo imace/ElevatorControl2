@@ -1,0 +1,8 @@
+apply plugin: 'holoeverywhere-app'
+holoeverywhere.apply 'android_default.gradle'
+
+dependencies {
+    compile project(':library')
+    compile project(':addons:preferences')
+    compile project(':addons:slider')
+}

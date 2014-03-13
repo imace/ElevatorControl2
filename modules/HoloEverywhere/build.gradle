@@ -1,0 +1,26 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url = 'http://oss.sonatype.org/content/repositories/releases/' }
+    }
+
+    dependencies {
+        classpath 'org.holoeverywhere:plugin:0.2.11'
+    }
+}
+
+allprojects {
+    group = 'org.holoeverywhere'
+    version = '2.1.1-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+    }
+
+    tasks.withType(Compile) {
+        options.encoding = "UTF-8"
+    }
+}
+
+apply plugin: 'holoeverywhere-repo'
+apply plugin: 'android-reporting'
