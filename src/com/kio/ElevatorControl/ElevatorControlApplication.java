@@ -1,5 +1,6 @@
 package com.kio.ElevatorControl;
 
+import com.kio.ElevatorControl.cache.LruCacheTool;
 import org.holoeverywhere.HoloEverywhere;
 import org.holoeverywhere.app.Application;
 
@@ -16,4 +17,10 @@ public class ElevatorControlApplication extends Application {
         HoloEverywhere.DEBUG = true;
     }
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        // 初始化缓存组件
+        LruCacheTool.getInstance().initCache(getApplicationContext());
+    }
 }

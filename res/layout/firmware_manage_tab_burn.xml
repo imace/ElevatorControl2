@@ -10,7 +10,8 @@
             android:layout_marginLeft="@dimen/card_view_margin"
             android:layout_marginTop="@dimen/card_view_margin"
             android:layout_marginBottom="8dp"
-            android:padding="5dp"
+            android:paddingLeft="@dimen/card_view_margin"
+            android:paddingRight="@dimen/card_view_margin"
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">

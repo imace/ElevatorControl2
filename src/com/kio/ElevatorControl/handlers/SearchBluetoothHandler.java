@@ -23,14 +23,12 @@ public class SearchBluetoothHandler extends HHandler {
 
     private static final String TAG = SearchBluetoothHandler.class.getSimpleName();
 
-    private HBluetooth bluetoothSocket;
-
     private NavigationTabActivity mNavigationTabActivity;
 
     public SearchBluetoothHandler(Activity activity) {
         super(activity);
         mNavigationTabActivity = (NavigationTabActivity) activity;
-        this.bluetoothSocket = HBluetooth.getInstance(activity);
+        HBluetooth bluetoothSocket = HBluetooth.getInstance(activity);
     }
 
     /**

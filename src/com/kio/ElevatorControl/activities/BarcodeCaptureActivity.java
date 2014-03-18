@@ -27,11 +27,15 @@ import org.holoeverywhere.app.Activity;
 /* Import ZBar Class files */
 
 public class BarcodeCaptureActivity extends Activity {
+
     private Camera mCamera;
+
     private CameraPreview mPreview;
+
     private Handler autoFocusHandler;
 
     TextView scanText;
+
     Button scanButton;
 
     ImageScanner scanner;

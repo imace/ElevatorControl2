@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="tab_medium">#FF383838</color>
     <color name="tab_dark">#FF141414</color>
-    <color name="tab_transparent">#00FFFFFF</color>
+    <color name="tab_transparent">#00000000</color>
     <color name="shape_bg_list_view_color">#aeaeae</color>
 
     <color name="result_view">#b0000000</color>
@@ -10,5 +9,6 @@
     <color name="possible_result_points">#c0ffff00</color>
 
     <color name="main_background">#E2E2E2</color>
-    <color name="card_highlight_color">#26e83a00</color>
+    <color name="card_highlight_color">#260e87c6</color>
+    <color name="highlight_text_color">#0e87c6</color>
 </resources>

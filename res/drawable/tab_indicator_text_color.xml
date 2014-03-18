@@ -3,8 +3,8 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item
             android:state_selected="true"
-            android:color="#e88a53"/>
+            android:color="#0e87c6"/>
     <item
             android:state_selected="false"
-            android:color="#eeeeee"/>
+            android:color="#2f2f2f"/>
 </selector>

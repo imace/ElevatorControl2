@@ -22,7 +22,10 @@ import com.kio.ElevatorControl.views.TypefaceTextView;
 import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.widget.GridView;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by IntelliJ IDEA.
@@ -35,7 +38,7 @@ public class MoveOutsideActivity extends Activity {
     @InjectView(R.id.grid_view)
     GridView mGridView;
 
-    public Floors mFloors;
+    private List<Integer> floors;
 
     private static final String codeType = "64";
 
@@ -45,6 +48,10 @@ public class MoveOutsideActivity extends Activity {
 
     private static final String TAG = MoveOutsideActivity.class.getSimpleName();
 
+    private Timer timer;
+
+    private boolean getFloors;
+
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTitle(R.string.move_outside_text);
@@ -52,10 +59,21 @@ public class MoveOutsideActivity extends Activity {
         getActionBar().setHomeButtonEnabled(true);
         setContentView(R.layout.activity_move_outside);
         Views.inject(this);
-        // 取得外召信息Code
+        mMoveOutsideHandler = new MoveOutsideHandler(this);
+        getFloors = false;
         mStateCodes = RealTimeMonitorDao.findByType(this, codeType);
-        mFloors = new Floors();
-        loadDataAndRenderView();
+        floors = new ArrayList<Integer>();
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (!getFloors) {
+                    loadDataAndRenderView();
+                } else {
+                    timer.cancel();
+                }
+            }
+        }, 0, 1000);
     }
 
     @Override
@@ -72,88 +90,56 @@ public class MoveOutsideActivity extends Activity {
     /**
      * 更新 GridView 数据源
      */
-    public void updateGridViewDataSource(Floors floors) {
+    public void updateGridViewDataSource(List<Integer> floors) {
         OutsideFloorAdapter adapter = new OutsideFloorAdapter(floors);
         mGridView.setAdapter(adapter);
     }
 
     private void loadDataAndRenderView() {
-        HCommunication[] communications = new HCommunication[]{
-                // 读取最底层
-                new HCommunication() {
-                    @Override
-                    public void beforeSend() {
-                        this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103F6010001")));
-                    }
+        final String[] codes = new String[]{"F601", "F600"};
+        HCommunication[] communications = new HCommunication[codes.length];
+        int index = 0;
+        for (String code : codes) {
+            final String data = code;
+            communications[index] = new HCommunication() {
+                @Override
+                public void beforeSend() {
+                    this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103" + data + "0001")));
+                }
 
-                    @Override
-                    public void afterSend() {
+                @Override
+                public void afterSend() {
 
-                    }
+                }
 
-                    @Override
-                    public void beforeReceive() {
+                @Override
+                public void beforeReceive() {
 
-                    }
+                }
 
-                    @Override
-                    public void afterReceive() {
+                @Override
+                public void afterReceive() {
 
-                    }
+                }
 
-                    @Override
-                    public Object onParse() {
-                        if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                            // 校验数据
-                            byte[] received = HSerial.trimEnd(getReceivedBuffer());
-                            Log.v(TAG, String.valueOf(received.length));
-                            if (received.length == 8) {
-                                int value = received[4];
-                                value = value << 8;
-                                value = value | received[5];
-                                mFloors.setStartFloors(value);
-                                return mFloors;
-                            }
-                        }
-                        return null;
-                    }
-                },
-                // 读取最高层
-                new HCommunication() {
-                    @Override
-                    public void beforeSend() {
-                        this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103F6000001")));
-                    }
-
-                    @Override
-                    public void afterSend() {
-
-                    }
-
-                    @Override
-                    public void beforeReceive() {
-
-                    }
-
-                    @Override
-                    public void afterReceive() {
-
-                    }
-
-                    @Override
-                    public Object onParse() {
+                @Override
+                public Object onParse() {
+                    if (HSerial.isCRC16Valid(getReceivedBuffer())) {
+                        // 校验数据
                         byte[] received = HSerial.trimEnd(getReceivedBuffer());
                         if (received.length == 8) {
                             int value = received[4];
                             value = value << 8;
                             value = value | received[5];
-                            mFloors.setEndFloors(value);
-                            return mFloors;
+                            floors.add(value);
+                            return floors;
                         }
-                        return null;
                     }
+                    return null;
                 }
-        };
+            };
+            index++;
+        }
         if (mMoveOutsideHandler == null) {
             mMoveOutsideHandler = new MoveOutsideHandler(MoveOutsideActivity.this);
         }
@@ -172,15 +158,15 @@ public class MoveOutsideActivity extends Activity {
      */
     private class OutsideFloorAdapter extends BaseAdapter {
 
-        private Floors mFloors;
+        private List<Integer> mFloors;
 
-        public OutsideFloorAdapter(Floors floors) {
+        public OutsideFloorAdapter(List<Integer> floors) {
             mFloors = floors;
         }
 
         @Override
         public int getCount() {
-            return (mFloors.endFloors - mFloors.startFloors + 1);
+            return Math.abs(mFloors.get(0) - mFloors.get(1)) + 1;
         }
 
         @Override
@@ -208,7 +194,7 @@ public class MoveOutsideActivity extends Activity {
                 holder = (ViewHolder) convertView.getTag();
             }
             final int index = position;
-            holder.mFloorTextView.setText(String.valueOf(mFloors.startFloors + position));
+            holder.mFloorTextView.setText(String.valueOf(Math.min(mFloors.get(0), mFloors.get(1)) + position));
             holder.mUpButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -302,7 +288,7 @@ public class MoveOutsideActivity extends Activity {
             if (position == 0) {
                 holder.mUpButton.setVisibility(View.VISIBLE);
                 holder.mDownButton.setVisibility(View.INVISIBLE);
-            } else if (position == (mFloors.endFloors - mFloors.startFloors)) {
+            } else if (position == getCount() - 1) {
                 holder.mUpButton.setVisibility(View.INVISIBLE);
                 holder.mDownButton.setVisibility(View.VISIBLE);
             } else {
@@ -357,8 +343,6 @@ public class MoveOutsideActivity extends Activity {
      */
     private class MoveOutsideHandler extends HHandler {
 
-        private Object receivedMessage;
-
         public MoveOutsideHandler(Activity activity) {
             super(activity);
             TAG = MoveInsideActivity.class.getSimpleName();
@@ -376,36 +360,12 @@ public class MoveOutsideActivity extends Activity {
 
         @Override
         public void onTalkReceive(Message msg) {
-            receivedMessage = msg.obj;
-            if (receivedMessage != null && (receivedMessage instanceof Floors)) {
-                Floors floors = (Floors) receivedMessage;
-                if (floors.totalParams == 2) {
-                    MoveOutsideActivity.this.updateGridViewDataSource(floors);
-                }
+            if (MoveOutsideActivity.this.floors.size() == 2) {
+                MoveOutsideActivity.this.updateGridViewDataSource(MoveOutsideActivity.this.floors);
+                MoveOutsideActivity.this.getFloors = true;
             }
         }
 
-    }
-
-    // ========================================== 最高层/最底层 =============================================//
-
-    private class Floors {
-
-        public int totalParams = 0;
-
-        public int startFloors;
-
-        public int endFloors;
-
-        public void setStartFloors(int floors) {
-            this.startFloors = floors;
-            totalParams++;
-        }
-
-        public void setEndFloors(int floors) {
-            this.endFloors = floors;
-            totalParams++;
-        }
     }
 
 }

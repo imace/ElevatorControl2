@@ -3,58 +3,50 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:kio="http://schemas.android.com/apk/res-auto"
               android:orientation="horizontal"
-              android:background="@drawable/card_view_background"
               android:layout_centerVertical="true"
               android:layout_width="match_parent"
               android:minHeight="120dp"
               android:layout_height="match_parent">
-    <com.kio.ElevatorControl.views.TypefaceTextView
-            android:id="@+id/floor_text"
-            android:textSize="64sp"
-            android:textColor="#787878"
-            android:gravity="center"
-            kio:customTypeface="fonts/digit_font.ttf"
-            android:layout_weight="2"
-            android:layout_width="0dip"
-            android:layout_height="match_parent"/>
-    <View
-            android:background="#ffdfdfdf"
-            android:layout_width="1dp"
-            android:layout_height="match_parent"/>
-    <LinearLayout
-            android:orientation="vertical"
-            android:layout_weight="1"
-            android:layout_width="0dip"
+    <RelativeLayout
+            android:layout_marginRight="8dp"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent">
-        <RelativeLayout
-                android:layout_weight="1"
-                android:layout_width="match_parent"
-                android:layout_height="0dp">
-            <com.kio.ElevatorControl.views.TintedImageButton
-                    android:id="@+id/up_button"
-                    android:layout_centerInParent="true"
-                    android:src="@drawable/elevator_up"
-                    android:contentDescription="@null"
-                    android:background="@android:color/transparent"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-        </RelativeLayout>
-        <View
-                android:background="#ffdfdfdf"
-                android:layout_width="match_parent"
-                android:layout_height="1dp"/>
-        <RelativeLayout
-                android:layout_weight="1"
-                android:layout_width="match_parent"
-                android:layout_height="0dp">
-            <com.kio.ElevatorControl.views.TintedImageButton
-                    android:id="@+id/down_button"
-                    android:layout_centerInParent="true"
-                    android:src="@drawable/elevator_down"
-                    android:contentDescription="@null"
-                    android:background="@android:color/transparent"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-        </RelativeLayout>
+        <ImageView
+                android:layout_centerInParent="true"
+                android:contentDescription="@null"
+                android:src="@drawable/floor_button_background"
+                android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"/>
+        <com.kio.ElevatorControl.views.TypefaceTextView
+                android:id="@+id/floor_text"
+                android:textSize="64sp"
+                android:textColor="#1d2225"
+                android:gravity="center"
+                android:layout_centerInParent="true"
+                kio:customTypeface="fonts/uni_dream_LED.ttf"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+    </RelativeLayout>
+
+    <LinearLayout
+            android:gravity="center"
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+        <com.kio.ElevatorControl.views.TintedImageButton
+                android:id="@+id/up_button"
+                android:src="@drawable/elevator_up"
+                android:contentDescription="@null"
+                android:background="@android:color/transparent"
+                android:layout_marginBottom="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        <com.kio.ElevatorControl.views.TintedImageButton
+                android:id="@+id/down_button"
+                android:src="@drawable/elevator_down"
+                android:contentDescription="@null"
+                android:background="@android:color/transparent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
     </LinearLayout>
 </LinearLayout>

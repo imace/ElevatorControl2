@@ -20,10 +20,12 @@
                     android:layout_weight="1"/>
 
             <TabWidget
-                    android:background="@android:color/background_dark"
+                    android:showDividers="none"
+                    android:divider="#00000000"
+                    android:background="@drawable/navigation_bar_gray"
                     android:id="@android:id/tabs"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="60dp"
                     android:layout_weight="0"/>
         </LinearLayout>
     </TabHost>

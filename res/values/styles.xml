@@ -3,6 +3,17 @@
         <item name="vpiTabPageIndicatorStyle">@style/CustomTabPageIndicator</item>
         <item name="android:spinnerItemStyle">@style/CustomSpinnerItemStyle</item>
         <item name="android:spinnerDropDownItemStyle">@style/CustomSpinnerDropdownItemStyle</item>
+        <item name="android:actionBarStyle">@style/CustomActionBarStyle</item>
+        <!-- Support library compatibility -->
+        <item name="actionBarStyle">@style/CustomActionBarStyle</item>
+    </style>
+
+    <!-- ActionBar 样式 -->
+    <style name="CustomActionBarStyle"
+           parent="@style/Widget.AppCompat.Light.ActionBar.Solid.Inverse">
+        <item name="android:background">@drawable/actionbar_blue</item>
+        <!-- Support library compatibility -->
+        <item name="background">@drawable/actionbar_blue</item>
     </style>
 
     <style name="CustomSpinnerItemStyle" parent="android:TextAppearance.Widget.TextView.SpinnerItem">
@@ -15,7 +26,7 @@
         <item name="android:background">#303030</item>
     </style>
 
-    <style name="CustomDialogStyle" parent="android:Theme.Holo.Dialog">
+    <style name="CustomDialogStyle" parent="Holo.Theme.Dialog.Light">
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
     </style>

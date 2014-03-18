@@ -29,7 +29,7 @@ public class DoorAnimationView extends RelativeLayout {
 
     private int doorStatus;
 
-    private boolean isPlayingAnimation;
+    public boolean animating;
 
     public DoorAnimationView(Context context) {
         super(context);
@@ -40,7 +40,7 @@ public class DoorAnimationView extends RelativeLayout {
         LayoutInflater.from(context).inflate(R.layout.animation_view, this, true);
         leftDoor = (ImageView) findViewById(R.id.left_door);
         rightDoor = (ImageView) findViewById(R.id.right_door);
-        isPlayingAnimation = false;
+        animating = false;
         doorStatus = DOOR_CLOSE;
     }
 
@@ -52,7 +52,7 @@ public class DoorAnimationView extends RelativeLayout {
      * 开门
      */
     public void openDoor() {
-        if (doorStatus == DOOR_CLOSE && !isPlayingAnimation) {
+        if (doorStatus == DOOR_CLOSE && !animating) {
             Animation openLeftDoor = AnimationUtils
                     .loadAnimation(DoorAnimationView.this.getContext(), R.anim.open_left_door);
             openLeftDoor.setAnimationListener(new Animation.AnimationListener() {
@@ -63,7 +63,7 @@ public class DoorAnimationView extends RelativeLayout {
 
                 @Override
                 public void onAnimationEnd(Animation animation) {
-                    isPlayingAnimation = false;
+                    animating = false;
                     doorStatus = DOOR_OPEN;
                 }
 
@@ -82,7 +82,7 @@ public class DoorAnimationView extends RelativeLayout {
 
                 @Override
                 public void onAnimationEnd(Animation animation) {
-                    isPlayingAnimation = false;
+                    animating = false;
                     doorStatus = DOOR_OPEN;
                 }
 
@@ -93,7 +93,7 @@ public class DoorAnimationView extends RelativeLayout {
             });
             leftDoor.startAnimation(openLeftDoor);
             rightDoor.startAnimation(openRightDoor);
-            isPlayingAnimation = true;
+            animating = true;
         }
     }
 
@@ -101,7 +101,7 @@ public class DoorAnimationView extends RelativeLayout {
      * 关门
      */
     public void closeDoor() {
-        if (doorStatus == DOOR_OPEN && !isPlayingAnimation) {
+        if (doorStatus == DOOR_OPEN && !animating) {
             Animation closeLeftDoor = AnimationUtils
                     .loadAnimation(DoorAnimationView.this.getContext(), R.anim.close_left_door);
             closeLeftDoor.setAnimationListener(new Animation.AnimationListener() {
@@ -112,7 +112,7 @@ public class DoorAnimationView extends RelativeLayout {
 
                 @Override
                 public void onAnimationEnd(Animation animation) {
-                    isPlayingAnimation = false;
+                    animating = false;
                     doorStatus = DOOR_CLOSE;
                 }
 
@@ -131,7 +131,7 @@ public class DoorAnimationView extends RelativeLayout {
 
                 @Override
                 public void onAnimationEnd(Animation animation) {
-                    isPlayingAnimation = false;
+                    animating = false;
                     doorStatus = DOOR_CLOSE;
                 }
 
@@ -142,7 +142,20 @@ public class DoorAnimationView extends RelativeLayout {
             });
             leftDoor.startAnimation(closeLeftDoor);
             rightDoor.startAnimation(closeRightDoor);
-            isPlayingAnimation = true;
+            animating = true;
+        }
+    }
+
+    /**
+     * 更新状态
+     *
+     * @param willOpen Will Open
+     */
+    public void setStatus(boolean willOpen) {
+        if (willOpen) {
+            this.openDoor();
+        } else {
+            this.closeDoor();
         }
     }
 

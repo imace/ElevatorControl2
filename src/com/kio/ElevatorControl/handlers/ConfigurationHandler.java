@@ -77,7 +77,7 @@ public class ConfigurationHandler extends HHandler {
      * 实时监控,加载内容
      */
     public void loadMonitorView() {
-        if (null != this.currentMessage) {
+        if (null != this.currentMessage && currentMessage instanceof RealTimeMonitor) {
             monitorList.add((RealTimeMonitor) currentMessage);
         }
         if (monitorList.size() <= 1) {
@@ -88,10 +88,6 @@ public class ConfigurationHandler extends HHandler {
                     R.layout.list_configuration_monitor_item, RealTimeMonitor.class,
                     monitorList);
             monitorListView.setAdapter(monitorListViewAdapter);
-            // 停止加载指示器动画，显示内容。
-            ((ConfigurationActivity) activity).mConfigurationAdapter
-                    .getItem((((ConfigurationActivity) activity).pager.getCurrentItem()))
-                    .setContentShown(true);
             monitorListView.setOnItemClickListener(new OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view,

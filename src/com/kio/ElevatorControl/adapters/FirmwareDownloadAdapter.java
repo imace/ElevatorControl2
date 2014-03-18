@@ -34,8 +34,8 @@ public class FirmwareDownloadAdapter extends BaseAdapter {
     }
 
     @Override
-    public Object getItem(int i) {
-        return null;
+    public Firmware getItem(int i) {
+        return firmwareLists.get(i);
     }
 
     @Override
@@ -57,7 +57,7 @@ public class FirmwareDownloadAdapter extends BaseAdapter {
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
-        Firmware firmware = firmwareLists.get(position);
+        Firmware firmware = getItem(position);
         holder.firmwareName.setText(firmware.getName());
         holder.firmwareVersion.setText(firmware.getVersion());
         holder.firmwareDownloadStatus.setText(firmware.getDownloadStatusText());

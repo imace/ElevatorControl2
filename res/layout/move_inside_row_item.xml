@@ -1,21 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.kio.ElevatorControl.views.SquareView
+<RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:kio="http://schemas.android.com/apk/res-auto"
-        android:background="@drawable/floor_item_selector"
-        android:layout_gravity="center"
-        android:orientation="vertical"
-        android:minHeight="100dp"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+    <ImageView
+            android:contentDescription="@null"
+            android:layout_centerInParent="true"
+            android:src="@drawable/floor_button_background"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
     <com.kio.ElevatorControl.views.TypefaceTextView
+            android:layout_centerInParent="true"
             android:id="@+id/floor_text"
-            android:textSize="48sp"
-            android:textColor="#ff787878"
+            android:textSize="58sp"
+            android:textColor="#1d2225"
+            android:textColorHighlight="@color/highlight_text_color"
             android:textStyle="bold"
             android:layout_gravity="center"
             android:gravity="center"
-            kio:customTypeface="fonts/digit_font.ttf"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-</com.kio.ElevatorControl.views.SquareView>
+            kio:customTypeface="fonts/uni_dream_LED.ttf"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+</RelativeLayout>

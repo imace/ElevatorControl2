@@ -6,21 +6,19 @@
     <uses-sdk
             android:minSdkVersion="14"
             android:targetSdkVersion="19"/>
-
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
     <uses-permission android:name="android.permission.BLUETOOTH"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.FLASHLIGHT"/>
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <uses-feature android:name="android.hardware.camera.front" android:required="false"/>
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
     <uses-feature android:name="android.hardware.camera.flash" android:required="false"/>
-
     <application
             android:allowBackup="true"
             android:icon="@drawable/ic_launcher"
@@ -37,37 +35,54 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- 连接蓝牙设备 -->
+        <activity
+                android:theme="@style/Holo.Theme.Light.NoActionBar"
+                android:name=".activities.ChooseDeviceActivity"/>
+        <!-- //////////////////////////////////////////////////////////////////////////// -->
         <!-- TabHost 导航activity -->
         <activity
+                android:windowSoftInputMode="adjustPan|adjustResize"
                 android:name=".activities.NavigationTabActivity">
         </activity>
         <!-- 故障分析 -->
         <activity
+                android:windowSoftInputMode="adjustPan|adjustResize"
                 android:name=".activities.TroubleAnalyzeActivity">
         </activity>
         <!--电梯调试-->
         <activity
+                android:windowSoftInputMode="adjustPan|adjustResize"
                 android:name=".activities.ConfigurationActivity">
         </activity>
         <!--首页-->
         <activity
                 android:name=".activities.HomeActivity"
+                android:windowSoftInputMode="adjustPan|adjustResize"
                 android:launchMode="singleInstance">
         </activity>
         <!--固件管理-->
         <activity
+                android:windowSoftInputMode="adjustPan|adjustResize"
                 android:name=".activities.FirmwareManageActivity">
         </activity>
         <!--帮助-->
         <activity
+                android:windowSoftInputMode="adjustPan|adjustResize"
                 android:name=".activities.HelpSystemActivity">
         </activity>
+        <!-- ////////////////////////////////////////////////////////////////////////// -->
+        <!-- 参数详细 -->
         <activity
                 android:name=".activities.ParameterDetailActivity">
         </activity>
+        <!-- 远程协助 -->
         <activity android:name=".activities.HelpSystemRemoteHelpActivity"/>
+        <!-- 应用程序设置 -->
         <activity android:name=".activities.HelpSystemApplicationConfigActivity"/>
+        <!-- 条形码扫描 -->
         <activity android:name=".activities.HelpSystemScanBarcodeActivity"/>
+        <!-- 蓝牙地址 -->
         <activity android:name=".activities.HelpSystemBluetoothAddressActivity"/>
         <!-- 抓取条形码 -->
         <activity android:name=".activities.BarcodeCaptureActivity"
@@ -75,10 +90,13 @@
                   android:screenOrientation="portrait"
                   android:windowSoftInputMode="stateAlwaysHidden"
                   android:theme="@android:style/Theme.NoTitleBar.Fullscreen"/>
+        <!-- 内召 -->
         <activity android:name=".activities.MoveInsideActivity"/>
+        <!-- 外召 -->
         <activity android:name=".activities.MoveOutsideActivity"/>
+        <!-- 参数写入 -->
         <activity android:name=".activities.ParameterUploadActivity"/>
+        <!-- 参数读取 -->
         <activity android:name=".activities.ParameterDownloadActivity"/>
     </application>
-
 </manifest>

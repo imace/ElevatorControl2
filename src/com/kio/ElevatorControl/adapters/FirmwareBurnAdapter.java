@@ -34,8 +34,8 @@ public class FirmwareBurnAdapter extends BaseAdapter {
     }
 
     @Override
-    public Object getItem(int i) {
-        return null;
+    public Firmware getItem(int i) {
+        return firmwareLists.get(i);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class FirmwareBurnAdapter extends BaseAdapter {
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
-        Firmware firmware = firmwareLists.get(position);
+        Firmware firmware = getItem(position);
         holder.firmwareVersion.setText(firmware.getVersion());
         holder.updateDate.setText(firmware.getUpdateDate());
         holder.expireDate.setText(firmware.getExpireDate());

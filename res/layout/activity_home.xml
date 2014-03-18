@@ -38,7 +38,7 @@
                     android:layout_height="wrap_content">
                 <org.holoeverywhere.widget.TextView
                         android:textSize="22sp"
-                        android:textColor="#333333"
+                        android:textColor="#005387"
                         android:text="@string/elevator_status_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
@@ -58,7 +58,7 @@
                 <org.holoeverywhere.widget.TextView
                         android:id="@+id/running_speed"
                         android:textSize="18sp"
-                        android:textColor="#ff666666"
+                        android:textColor="#ff989898"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
             </LinearLayout>
@@ -77,7 +77,7 @@
                 <org.holoeverywhere.widget.TextView
                         android:id="@+id/door_status"
                         android:textSize="18sp"
-                        android:textColor="#ff666666"
+                        android:textColor="#ff989898"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
             </LinearLayout>
@@ -96,7 +96,7 @@
                 <org.holoeverywhere.widget.TextView
                         android:id="@+id/lock_status"
                         android:textSize="18sp"
-                        android:textColor="#ff666666"
+                        android:textColor="#ff989898"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
             </LinearLayout>

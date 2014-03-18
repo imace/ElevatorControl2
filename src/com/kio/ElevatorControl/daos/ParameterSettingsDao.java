@@ -5,6 +5,7 @@ import com.kio.ElevatorControl.models.ParameterSettings;
 import net.tsz.afinal.FinalDb;
 
 public class ParameterSettingsDao {
+
     private static final boolean DEBUG = true;
 
     public static ParameterSettings findById(Context ctx, int id) {

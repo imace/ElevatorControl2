@@ -3,6 +3,7 @@ package com.kio.ElevatorControl.views.fragments;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,7 +11,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
-import com.devspark.progressfragment.ProgressFragment;
+import com.hbluetooth.HBluetooth;
+import com.hbluetooth.HCommunication;
+import com.hbluetooth.HSerial;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.activities.*;
 import com.kio.ElevatorControl.daos.MenuValuesDao;
@@ -28,7 +31,7 @@ import java.util.List;
  *
  * @author jch
  */
-public class ConfigurationFragment extends ProgressFragment {
+public class ConfigurationFragment extends Fragment {
 
     private static final String TAG = ConfigurationFragment.class.getSimpleName();
 
@@ -40,17 +43,15 @@ public class ConfigurationFragment extends ProgressFragment {
 
     private Context context;
 
-    private View mContentView;
-
     // 内容数据源
     private List<ParameterGroupSettings> settingsList;
 
     /**
      * 记录下当前选中的tabIndex
      *
-     * @param tabIndex
-     * @param ctx
-     * @return
+     * @param tabIndex tab index
+     * @param ctx      context
+     * @return fragment
      */
     public static ConfigurationFragment newInstance(int tabIndex, Context ctx) {
         ConfigurationFragment configurationFragment = new ConfigurationFragment();
@@ -96,23 +97,15 @@ public class ConfigurationFragment extends ProgressFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // 返回layoutId对应的布局
-        mContentView = inflater.inflate(layoutId, container, false);
-        //return mContentView;
-        return super.onCreateView(inflater, container, savedInstanceState);
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        setContentView(mContentView);
+        super.onSaveInstanceState(savedInstanceState);
+        return inflater.inflate(layoutId, container, false);
     }
 
     /**
      * 实时监控,加载内容
      */
     public void loadMonitorView() {
-        setContentShown(false);
+
     }
 
     /**
@@ -140,8 +133,6 @@ public class ConfigurationFragment extends ProgressFragment {
                 ConfigurationFragment.this.getActivity().startActivity(intent);
             }
         });
-        // 停止加载动画，显示内容。
-        setContentShown(true);
     }
 
     /**
@@ -149,7 +140,8 @@ public class ConfigurationFragment extends ProgressFragment {
      */
     public void loadDebugView() {
         // 列表值绑定到InsideOut对象 获取InsideOut对象列表,数据源
-        final List<MoveInsideOutside> insideOut = MoveInsideOutside.getInsideOutLists(ConfigurationFragment.this.getActivity());
+        final List<MoveInsideOutside> insideOut = MoveInsideOutside
+                .getInsideOutLists(ConfigurationFragment.this.getActivity());
         // 我们要操作的列表控件
         ListView lstView = (ListView) this.getActivity().findViewById(
                 R.id.test_list);
@@ -177,7 +169,6 @@ public class ConfigurationFragment extends ProgressFragment {
                 }
             }
         });
-        setContentShown(true);
     }
 
     /**
@@ -185,7 +176,8 @@ public class ConfigurationFragment extends ProgressFragment {
      */
     public void loadDuplicateView() {
         // 列表值绑定到InsideOut对象 获取InsideOut对象列表,数据源
-        final List<ParameterDuplicate> paramDuplicate = ParameterDuplicate.getParamDuplicateLists(ConfigurationFragment.this.getActivity());
+        final List<ParameterDuplicate> paramDuplicate = ParameterDuplicate
+                .getParamDuplicateLists(ConfigurationFragment.this.getActivity());
         // 我们要操作的列表控件
         ListView lstView = (ListView) this.getActivity().findViewById(
                 R.id.copy_list);
@@ -198,17 +190,63 @@ public class ConfigurationFragment extends ProgressFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                if (position == 0) {
-                    Intent intent = new Intent(ConfigurationFragment.this.getActivity(),
-                            ParameterUploadActivity.class);
-                    ConfigurationFragment.this.getActivity().startActivity(intent);
-                } else if (position == 1) {
-                    Intent intent = new Intent(ConfigurationFragment.this.getActivity(),
-                            ParameterDownloadActivity.class);
-                    ConfigurationFragment.this.getActivity().startActivity(intent);
+                switch (position) {
+                    case 0: {
+                        Intent intent = new Intent(ConfigurationFragment.this.getActivity(),
+                                ParameterUploadActivity.class);
+                        ConfigurationFragment.this.getActivity().startActivity(intent);
+                    }
+                    break;
+                    case 1: {
+                        Intent intent = new Intent(ConfigurationFragment.this.getActivity(),
+                                ParameterDownloadActivity.class);
+                        ConfigurationFragment.this.getActivity().startActivity(intent);
+                    }
+                    break;
+                    case 2: {
+                        // 恢复出厂参数设置
+                        HCommunication[] communications = new HCommunication[1];
+                        communications[0] = new HCommunication() {
+                            @Override
+                            public void beforeSend() {
+                                this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("010660030001")));
+                            }
+
+                            @Override
+                            public void afterSend() {
+
+                            }
+
+                            @Override
+                            public void beforeReceive() {
+
+                            }
+
+                            @Override
+                            public void afterReceive() {
+
+                            }
+
+                            @Override
+                            public Object onParse() {
+                                if (HSerial.isCRC16Valid(getReceivedBuffer())) {
+                                    // 通过验证
+                                    byte[] received = HSerial.trimEnd(getReceivedBuffer());
+                                    Log.v(TAG, HSerial.byte2HexStr(received));
+                                    return null;
+                                }
+                                return null;
+                            }
+                        };
+                        if (HBluetooth.getInstance(ConfigurationFragment.this.getActivity()).isPrepared()) {
+                            HBluetooth.getInstance(ConfigurationFragment.this.getActivity())
+                                    .setCommunications(communications)
+                                    .Start();
+                        }
+                    }
+                    break;
                 }
             }
         });
-        setContentShown(true);
     }
 }

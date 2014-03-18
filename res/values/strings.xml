@@ -29,10 +29,19 @@
     <string name="label_txt_failure_dictionary_search">搜索</string>
     <string name="registration_code_text">注册码</string>
     <string name="init_data_wait_text">初始化数据中，请稍后…</string>
-
+    <string name="data_error_text">错误</string>
+    <string name="download_text">下载</string>
     <string name="login_text">登陆</string>
     <string name="sign_up_text">注册</string>
 
+    <string name="company_name_text">汇川技术股份有限公司</string>
+    <string name="company_description_text">高效产业 · 清洁能源 · 美好生活</string>
+    <string name="company_copyright_text">Copyright ©2004</string>
+
+    <string name="choose_device_tips_text">选择需要连接的设备</string>
+    <string name="research_text">重新搜索</string>
+
+    <!-- 条形码扫描 -->
     <string name="focus_to_scan_text">对焦扫描</string>
     <string name="restart_scan_text">继续扫描</string>
     <string name="scan_tips_text">扫描条形码中，请稍后…</string>
@@ -53,6 +62,9 @@
     <string name="application_config_text">程序设置</string>
     <string name="scan_barcode_text">扫描一维码</string>
     <string name="bluetooth_address_text">蓝牙地址</string>
+    <string name="current_connected_device_name_text">当前连接设备名称</string>
+    <string name="current_connected_device_address_text">当前连接设备蓝牙地址</string>
+    <string name="no_connected_device">未连接任何设备</string>
 
     <!-- 应用程序设置 -->
     <string name="bluetooth_setting_text">蓝牙设置</string>
@@ -69,14 +81,25 @@
     <!-- 扫描条形码 -->
     <string name="open_camera_text">打开相机</string>
     <string name="scan_result_text">扫描结果：</string>
-
     <string name="choose_bluetooth_device">选择蓝牙设备…</string>
 
-    <!-- 参数拷贝 -->
+    <!-- 参数上传 -->
+    <string name="parameter_file_package_text">参数文件包</string>
+    <string name="upload_button_text">上传</string>
+    <string name="profile_version_text">版本</string>
+    <string name="profile_update_date_text">发布日期</string>
+    <string name="uploading_profile_text">正在写入参数</string>
+
+    <!-- 参数读取 -->
     <string name="parameter_upload_text">参数写入</string>
     <string name="parameter_download_text">参数读取</string>
     <string name="restore_factory_settings_text">恢复出厂设置</string>
-    <string name="parameter_file_package_text">参数文件包</string>
+    <string name="current_parameters_version_text">当前参数版本</string>
+    <string name="parameters_update_date_text">更新日期</string>
+    <string name="save_file_dialog_title">保存配置文件</string>
+    <string name="local_save_file_name_hint">保存的文件名</string>
+    <string name="save_file_failed_title">保存失败</string>
+    <string name="cannot_save_file">未能保存文件，请检查SD卡！</string>
 
     <!-- 固件申请 -->
     <string name="equipment_manufacturers_text">设备厂家</string>

@@ -7,7 +7,7 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
     <TextView
-            android:id="@+id/shortcut_name"
+            android:id="@+id/shortcut"
             android:textSize="16sp"
             android:textColor="#515151"
             android:layout_marginLeft="10dp"

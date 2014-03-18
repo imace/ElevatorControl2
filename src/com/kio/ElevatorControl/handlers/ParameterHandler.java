@@ -2,16 +2,13 @@ package com.kio.ElevatorControl.handlers;
 
 import android.app.Activity;
 import android.os.Message;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
+import android.util.Log;
 import android.widget.ListView;
 import android.widget.Toast;
 import com.hbluetooth.HHandler;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.activities.ParameterDetailActivity;
 import com.kio.ElevatorControl.models.ParameterSettings;
-import com.kio.ElevatorControl.views.dialogs.CustomDialog;
 import com.mobsandgeeks.adapters.InstantAdapter;
 
 import java.util.ArrayList;
@@ -21,7 +18,9 @@ public class ParameterHandler extends HHandler {
 
     private boolean talkingSuccess = false;
 
-    private List<ParameterSettings> parameterSettings = new ArrayList<ParameterSettings>();
+    public List<ParameterSettings> parameters = new ArrayList<ParameterSettings>();
+
+    public InstantAdapter<ParameterSettings> parameterSettingsAdapter;
 
     public ParameterHandler(Activity activity) {
         super(activity);
@@ -31,21 +30,26 @@ public class ParameterHandler extends HHandler {
     @Override
     public void onTalkReceive(Message msg) {
         talkingSuccess = true;
+        Log.v(TAG, String.valueOf(msg.obj));
         if (msg.obj instanceof ParameterSettings) {
             ParameterSettings settings = (ParameterSettings) msg.obj;
-            parameterSettings.add(settings);
-            InstantAdapter<ParameterSettings> instantAdapter = new InstantAdapter<ParameterSettings>(
-                    activity, R.layout.list_parameter_group_item,
-                    ParameterSettings.class, parameterSettings);
-            ListView lv = ((ParameterDetailActivity) activity).parameterGroupSettingsList;
-            lv.setAdapter(instantAdapter);
-            lv.setOnItemClickListener(new OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> arg0, View view,
-                                        int position, long i) {
-                    CustomDialog.parameterSettingDialog(activity, parameterSettings.get(position)).show();
+            parameters.add(settings);
+            if (parameters.size() <= 1) {
+                ListView listView = ((ParameterDetailActivity) activity).parameterGroupSettingsList;
+                parameterSettingsAdapter = new InstantAdapter<ParameterSettings>(activity,
+                        R.layout.list_parameter_group_item,
+                        ParameterSettings.class,
+                        parameters);
+                listView.setAdapter(parameterSettingsAdapter);
+            } else {
+                if (parameterSettingsAdapter == null) {
+                    parameterSettingsAdapter = new InstantAdapter<ParameterSettings>(activity,
+                            R.layout.list_parameter_group_item,
+                            ParameterSettings.class,
+                            parameters);
                 }
-            });
+                parameterSettingsAdapter.notifyDataSetChanged();
+            }
         }
     }
 
@@ -53,7 +57,7 @@ public class ParameterHandler extends HHandler {
     public void onMultiTalkBegin(Message msg) {
         super.onMultiTalkBegin(msg);
         talkingSuccess = false;
-        parameterSettings.clear();
+        parameterSettingsAdapter.clear();
     }
 
     @Override

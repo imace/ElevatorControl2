@@ -50,6 +50,7 @@ public class NavigationTabActivity extends TabActivity implements RefreshActionI
         replaceTitleViewWithSpinnerView();
         //initBluetooth();
         //initTitle();
+        startHomeActivityStatusSyncTask();
     }
 
     /**

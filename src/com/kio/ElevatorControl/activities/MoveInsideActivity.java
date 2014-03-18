@@ -23,7 +23,10 @@ import com.kio.ElevatorControl.views.TypefaceTextView;
 import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.widget.GridView;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by IntelliJ IDEA.
@@ -37,14 +40,20 @@ public class MoveInsideActivity extends Activity {
 
     private static final String codeType = "62";
 
-    public Floors mFloors;
-
     private List<RealTimeMonitor> mStateCodes;
 
     @InjectView(R.id.grid_view)
     GridView mGridView;
 
     private MoveInsideHandler mMoveInsideHandler;
+
+    private FloorHandler floorHandler;
+
+    private List<Integer> floors;
+
+    private Timer timer;
+
+    private boolean getFloors;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,10 +62,23 @@ public class MoveInsideActivity extends Activity {
         getActionBar().setHomeButtonEnabled(true);
         setContentView(R.layout.activity_move_inside);
         Views.inject(this);
-        // 取得召唤信息Code
+        bindListViewItemClickEvent();
+        getFloors = false;
+        mMoveInsideHandler = new MoveInsideHandler(this);
+        floorHandler = new FloorHandler(this);
+        floors = new ArrayList<Integer>();
         mStateCodes = RealTimeMonitorDao.findByType(this, codeType);
-        mFloors = new Floors();
-        loadDataAndRenderView();
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (!getFloors) {
+                    loadDataAndRenderView();
+                } else {
+                    timer.cancel();
+                }
+            }
+        }, 0, 1000);
     }
 
     @Override
@@ -68,6 +90,68 @@ public class MoveInsideActivity extends Activity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * 绑定ListView点击事件
+     */
+    private void bindListViewItemClickEvent() {
+        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                // 0103 读取
+                // 0106 写入
+                String condition = getCondition(position);
+                // 召唤指定楼层
+                for (RealTimeMonitor stateCode : mStateCodes) {
+                    if (condition.equalsIgnoreCase(stateCode.getName())) {
+                        final RealTimeMonitor codeObject = stateCode;
+                        HCommunication[] communications = new HCommunication[]{
+                                new HCommunication() {
+                                    @Override
+                                    public void beforeSend() {
+                                        this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0106"
+                                                + codeObject.getCode()
+                                                + "0001")));
+                                    }
+
+                                    @Override
+                                    public void afterSend() {
+
+                                    }
+
+                                    @Override
+                                    public void beforeReceive() {
+
+                                    }
+
+                                    @Override
+                                    public void afterReceive() {
+
+                                    }
+
+                                    @Override
+                                    public Object onParse() {
+                                        if (HSerial.isCRC16Valid(getReceivedBuffer())) {
+                                            byte[] received = HSerial.trimEnd(getReceivedBuffer());
+                                            Log.v(TAG, HSerial.byte2HexStr(received));
+                                            codeObject.setReceived(received);
+                                            return codeObject;
+                                        }
+                                        return null;
+                                    }
+                                }
+                        };
+                        if (HBluetooth.getInstance(MoveInsideActivity.this).isPrepared()) {
+                            HBluetooth.getInstance(MoveInsideActivity.this)
+                                    .setHandler(floorHandler)
+                                    .setCommunications(communications)
+                                    .Start();
+                        }
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -156,61 +240,9 @@ public class MoveInsideActivity extends Activity {
     /**
      * 更新 GridView 数据源
      */
-    public void updateGridViewDataSource(Floors floors) {
+    public void updateGridViewDataSource(List<Integer> floors) {
         InsideFloorAdapter adapter = new InsideFloorAdapter(floors);
         mGridView.setAdapter(adapter);
-        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                // 0103 读取
-                // 0106 写入
-                String condition = getCondition(position);
-                Log.v(TAG, condition);
-                for (RealTimeMonitor stateCode : mStateCodes) {
-                    if (condition.equalsIgnoreCase(stateCode.getName())) {
-                        Log.v(TAG, stateCode.getCode());
-                        final RealTimeMonitor codeObject = stateCode;
-                        HCommunication[] communications = new HCommunication[]{
-                                new HCommunication() {
-                                    @Override
-                                    public void beforeSend() {
-                                        this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0106"
-                                                + codeObject.getCode()
-                                                + "0001")));
-                                    }
-
-                                    @Override
-                                    public void afterSend() {
-
-                                    }
-
-                                    @Override
-                                    public void beforeReceive() {
-
-                                    }
-
-                                    @Override
-                                    public void afterReceive() {
-
-                                    }
-
-                                    @Override
-                                    public Object onParse() {
-                                        byte[] received = HSerial.trimEnd(getReceivedBuffer());
-                                        Log.v(TAG, HSerial.byte2HexStr(received));
-                                        return null;
-                                    }
-                                }
-                        };
-                        if (HBluetooth.getInstance(MoveInsideActivity.this).isPrepared()) {
-                            HBluetooth.getInstance(MoveInsideActivity.this)
-                                    .setCommunications(communications)
-                                    .Start();
-                        }
-                    }
-                }
-            }
-        });
     }
 
     /**
@@ -237,86 +269,53 @@ public class MoveInsideActivity extends Activity {
         return searchCondition;
     }
 
+    /**
+     * 取得电梯层数
+     */
     private void loadDataAndRenderView() {
-        HCommunication[] communications = new HCommunication[]{
-                // 读取最底层
-                new HCommunication() {
-                    @Override
-                    public void beforeSend() {
-                        // 0103 prefix
-                        // 0001 suffix
-                        this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103F6010001")));
-                    }
+        final String[] codes = new String[]{"F601", "F600"};
+        HCommunication[] communications = new HCommunication[codes.length];
+        int index = 0;
+        for (String code : codes) {
+            final String data = code;
+            communications[index] = new HCommunication() {
+                @Override
+                public void beforeSend() {
+                    this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103" + data + "0001")));
+                }
 
-                    @Override
-                    public void afterSend() {
+                @Override
+                public void afterSend() {
 
-                    }
+                }
 
-                    @Override
-                    public void beforeReceive() {
+                @Override
+                public void beforeReceive() {
 
-                    }
+                }
 
-                    @Override
-                    public void afterReceive() {
+                @Override
+                public void afterReceive() {
 
-                    }
+                }
 
-                    @Override
-                    public Object onParse() {
-                        if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                            // 校验数据
-                            byte[] received = HSerial.trimEnd(getReceivedBuffer());
-                            if (received.length == 8) {
-                                int value = received[4];
-                                value = value << 8;
-                                value = value | received[5];
-                                mFloors.setStartFloors(value);
-                                return mFloors;
-                            }
-                        }
-                        return null;
-                    }
-                },
-                // 读取最高层
-                new HCommunication() {
-                    @Override
-                    public void beforeSend() {
-                        this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103F6000001")));
-                    }
-
-                    @Override
-                    public void afterSend() {
-
-                    }
-
-                    @Override
-                    public void beforeReceive() {
-
-                    }
-
-                    @Override
-                    public void afterReceive() {
-
-                    }
-
-                    @Override
-                    public Object onParse() {
+                @Override
+                public Object onParse() {
+                    if (HSerial.isCRC16Valid(getReceivedBuffer())) {
+                        // 校验数据
                         byte[] received = HSerial.trimEnd(getReceivedBuffer());
                         if (received.length == 8) {
                             int value = received[4];
                             value = value << 8;
                             value = value | received[5];
-                            mFloors.setEndFloors(value);
-                            return mFloors;
+                            floors.add(value);
+                            return floors;
                         }
-                        return null;
                     }
+                    return null;
                 }
-        };
-        if (mMoveInsideHandler == null) {
-            mMoveInsideHandler = new MoveInsideHandler(this);
+            };
+            index++;
         }
         if (HBluetooth.getInstance(MoveInsideActivity.this).isPrepared()) {
             HBluetooth.getInstance(MoveInsideActivity.this)
@@ -333,15 +332,15 @@ public class MoveInsideActivity extends Activity {
      */
     private class InsideFloorAdapter extends BaseAdapter {
 
-        private Floors mFloors;
+        private List<Integer> mFloors;
 
-        public InsideFloorAdapter(Floors floors) {
+        public InsideFloorAdapter(List<Integer> floors) {
             mFloors = floors;
         }
 
         @Override
         public int getCount() {
-            return (mFloors.endFloors - mFloors.startFloors + 1);
+            return Math.abs(mFloors.get(0) - mFloors.get(1)) + 1;
         }
 
         @Override
@@ -366,7 +365,7 @@ public class MoveInsideActivity extends Activity {
             } else {
                 holder = (ViewHolder) convertView.getTag();
             }
-            holder.mFloorTextView.setText(String.valueOf(mFloors.startFloors + position));
+            holder.mFloorTextView.setText(String.valueOf(Math.min(mFloors.get(0), mFloors.get(1)) + position));
             return convertView;
         }
 
@@ -381,8 +380,6 @@ public class MoveInsideActivity extends Activity {
      * 蓝牙 Socket handler
      */
     private class MoveInsideHandler extends HHandler {
-
-        private Object receivedMessage;
 
         public MoveInsideHandler(Activity activity) {
             super(activity);
@@ -401,36 +398,43 @@ public class MoveInsideActivity extends Activity {
 
         @Override
         public void onTalkReceive(Message msg) {
-            receivedMessage = msg.obj;
-            if (receivedMessage != null && (receivedMessage instanceof Floors)) {
-                Floors floors = (Floors) receivedMessage;
-                if (floors.totalParams == 2) {
-                    MoveInsideActivity.this.updateGridViewDataSource(floors);
-                }
+            if (MoveInsideActivity.this.floors.size() == 2) {
+                MoveInsideActivity.this.updateGridViewDataSource(MoveInsideActivity.this.floors);
+                MoveInsideActivity.this.getFloors = true;
             }
         }
 
     }
 
-    // ========================================== 最高层/最底层 =============================================//
+    // ==================================== 召唤楼层 =================================================//
 
-    private class Floors {
+    /**
+     * 召唤楼层
+     */
+    private class FloorHandler extends HHandler {
 
-        public int totalParams = 0;
-
-        public int startFloors;
-
-        public int endFloors;
-
-        public void setStartFloors(int floors) {
-            this.startFloors = floors;
-            totalParams++;
+        public FloorHandler(Activity activity) {
+            super(activity);
+            TAG = FloorHandler.class.getSimpleName();
         }
 
-        public void setEndFloors(int floors) {
-            this.endFloors = floors;
-            totalParams++;
+        @Override
+        public void onMultiTalkBegin(Message msg) {
+            super.onMultiTalkBegin(msg);
+        }
+
+        @Override
+        public void onMultiTalkEnd(Message msg) {
+            super.onMultiTalkEnd(msg);
+        }
+
+        @Override
+        public void onTalkReceive(Message msg) {
+            if (msg.obj != null && msg.obj instanceof RealTimeMonitor) {
+                RealTimeMonitor monitor = (RealTimeMonitor) msg.obj;
+            }
         }
 
     }
+
 }

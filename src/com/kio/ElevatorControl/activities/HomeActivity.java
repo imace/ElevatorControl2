@@ -1,7 +1,7 @@
 package com.kio.ElevatorControl.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,7 +23,8 @@ import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.widget.ListView;
 import org.holoeverywhere.widget.TextView;
 
-import java.util.Timer;
+import java.util.ArrayList;
+import java.util.List;
 
 public class HomeActivity extends Activity {
 
@@ -55,17 +56,33 @@ public class HomeActivity extends Activity {
 
     private SyncStatusHandler mSyncStatusHandler;
 
-    private Handler handler;
+    private Thread syncThread;
 
-    private Timer timer;
+    private boolean threadPause;
 
     private static final String TAG = HomeActivity.class.getSimpleName();
+
+    private static final int RUNNING_SPEED = 0;
+
+    private static final int DOOR_STATUS = 1;
+
+    private static final int LOCK_STATUS = 2;
+
+    private static final int ERROR_CODE = 3;
+
+    private static final int CURRENT_FLOOR = 4;
+
+    /**
+     * 同步间隔
+     */
+    private static final int SYNC_TIME = 300;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         Views.inject(this);
+        threadPause = false;
         mSyncStatusHandler = new SyncStatusHandler(HomeActivity.this);
         setListViewDataSource();
     }
@@ -83,21 +100,26 @@ public class HomeActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        threadPause = false;
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        threadPause = true;
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        threadPause = true;
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        threadPause = true;
+        syncThread.interrupt();
     }
 
     /**
@@ -105,18 +127,21 @@ public class HomeActivity extends Activity {
      */
     public void loopSyncElevatorStatusTask() {
         if (HBluetooth.getInstance(HomeActivity.this).isPrepared()) {
-            new Thread() {
+            syncThread = new Thread() {
                 public void run() {
                     while (true) {
-                        HomeActivity.this.syncElevatorStatus();
+                        if (!threadPause) {
+                            HomeActivity.this.syncElevatorStatus();
+                        }
                         try {
-                            Thread.sleep(1000);
+                            Thread.sleep(SYNC_TIME);
                         } catch (InterruptedException e) {
                             Log.e(TAG, "Bluetooth Thread Error", e);
                         }
                     }
                 }
-            }.start();
+            };
+            syncThread.start();
         }
     }
 
@@ -125,18 +150,16 @@ public class HomeActivity extends Activity {
      */
     private void syncElevatorStatus() {
         if (communications == null) {
-            SyncItem[] items = new SyncItem[]{
-                    new SyncItem(runningSpeedTextView, "1010", "0.1"),
-                    //new SyncItem(doorStatusTextView, ""),
-                    //new SyncItem(lockStatusTextView, ""),
-                    //new SyncItem(errorStatusTextView, ""),
-                    //new SyncItem(errorStatusTextView, ""),
-            };
-            communications = new HCommunication[items.length];
-            int commandSize = items.length;
-            for (int index = 0; index < commandSize; index++) {
-                final SyncItem item = items[index];
-                communications[index] = new HCommunication() {
+            List<SyncItem> items = new ArrayList<SyncItem>();
+            items.add(new SyncItem(RUNNING_SPEED, "1010"));
+            items.add(new SyncItem(ERROR_CODE, "8000"));
+            items.add(new SyncItem(CURRENT_FLOOR, "1018"));
+            communications = new HCommunication[items.size()];
+            int index = 0;
+            for (SyncItem syncItem : items) {
+                final int i = index;
+                final SyncItem item = syncItem;
+                communications[i] = new HCommunication() {
                     @Override
                     public void beforeSend() {
                         this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103" + item.code + "0001")));
@@ -166,14 +189,30 @@ public class HomeActivity extends Activity {
                                 int value = received[4];
                                 value = value << 8;
                                 value = value | received[5];
-                                Float floatValue = value * Float.parseFloat(item.scale);
-                                item.value = String.format("%.2f", floatValue);
-                                return item;
+                                switch (item.type) {
+                                    // 运行速度
+                                    case RUNNING_SPEED: {
+                                        Float floatValue = value * Float.parseFloat("0.001");
+                                        item.value = String.format("%.2f", floatValue) + "m/s";
+                                        return item;
+                                    }
+                                    // 错误码
+                                    case ERROR_CODE: {
+                                        item.value = String.format("E%02d", value);
+                                        return item;
+                                    }
+                                    // 当前楼层
+                                    case CURRENT_FLOOR: {
+                                        item.value = String.valueOf(value);
+                                        return item;
+                                    }
+                                }
                             }
                         }
                         return null;
                     }
                 };
+                index++;
             }
         }
         if (HBluetooth.getInstance(HomeActivity.this).isPrepared()) {
@@ -222,7 +261,7 @@ public class HomeActivity extends Activity {
             if (convertView == null) {
                 convertView = mInflater.inflate(R.layout.home_list_view_item, null);
                 holder = new ViewHolder();
-                holder.mShortcutName = (TextView) convertView.findViewById(R.id.shortcut_name);
+                holder.mShortcutName = (TextView) convertView.findViewById(R.id.shortcut);
                 convertView.setTag(holder);
             } else {
                 holder = (ViewHolder) convertView.getTag();
@@ -263,7 +302,23 @@ public class HomeActivity extends Activity {
         public void onTalkReceive(Message msg) {
             if (msg.obj != null && (msg.obj instanceof SyncItem)) {
                 SyncItem item = (SyncItem) msg.obj;
-                item.displayTextView.setText(item.value);
+                switch (item.type) {
+                    // 运行速度
+                    case RUNNING_SPEED: {
+                        HomeActivity.this.runningSpeedTextView.setText(item.value);
+                    }
+                    break;
+                    // 错误码
+                    case ERROR_CODE: {
+                        HomeActivity.this.errorStatusTextView.setText(item.value);
+                    }
+                    break;
+                    // 当前楼层
+                    case CURRENT_FLOOR: {
+                        HomeActivity.this.currentFloorTextView.setText(item.value);
+                    }
+                    break;
+                }
             }
         }
     }
@@ -271,22 +326,19 @@ public class HomeActivity extends Activity {
     // ========================================= Sync Status Object =============================================
 
     /**
-     * 电梯状态条目
+     * 电梯同步状态条目
      */
     private class SyncItem {
 
-        TextView displayTextView;
+        int type;
 
         String value;
 
         String code;
 
-        String scale;
-
-        public SyncItem(TextView textView, String code, String scale) {
-            this.displayTextView = textView;
+        public SyncItem(int type, String code) {
+            this.type = type;
             this.code = code;
-            this.scale = scale;
         }
 
     }

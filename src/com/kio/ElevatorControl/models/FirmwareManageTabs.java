@@ -20,7 +20,7 @@ public class FirmwareManageTabs {
     public static FirmwareManageTabs getTabInstance(Context ctx) {
         FirmwareManageTabs firmwareManageTabs = new FirmwareManageTabs();
         String[] t = ctx.getResources().getStringArray(
-                R.array.firmware_manage_tab_text);// 临时存放变量
+                R.array.firmware_manage_tab_text);
         String[] ls = ctx.getResources().getStringArray(
                 R.array.firmware_manage_tab_layout);
         String[] fs = ctx.getResources().getStringArray(

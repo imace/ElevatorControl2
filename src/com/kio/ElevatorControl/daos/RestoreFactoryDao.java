@@ -26,8 +26,8 @@ public class RestoreFactoryDao {
     /**
      * 记录是否为空
      *
-     * @param ctx
-     * @return
+     * @param ctx context
+     * @return boolean
      */
     public static boolean dbEmpty(Context ctx) {
         // (android:label).db
@@ -58,7 +58,7 @@ public class RestoreFactoryDao {
     /**
      * 恢复ParameterGroupSettings的出厂设置
      *
-     * @param ctx
+     * @param ctx context
      */
     public static void restoreFactoryParameterGroupSettings(Context ctx) {
         // (android:label).db
@@ -77,7 +77,8 @@ public class RestoreFactoryDao {
         try {
             JSONArray groups = new JSONArray(JSON);
             // 遍历group
-            for (int i = 0; i < groups.length(); i++) {
+            int size = groups.length();
+            for (int i = 0; i < size; i++) {
 
                 JSONObject groupsJSONObject = groups.getJSONObject(i);
                 ParameterGroupSettings parameterGroupSetting = new ParameterGroupSettings();
@@ -93,7 +94,8 @@ public class RestoreFactoryDao {
                 JSONArray settingJson = groupsJSONObject
                         .getJSONArray("parameterSettings");
                 // 遍历settings
-                for (int j = 0; j < settingJson.length(); j++) {
+                int length = settingJson.length();
+                for (int j = 0; j < length; j++) {
                     JSONObject jsonObject = settingJson.getJSONObject(j);
                     ParameterSettings parameterSetting = new ParameterSettings();
                     parameterSetting.setCode(jsonObject.optString("code"));
@@ -120,6 +122,11 @@ public class RestoreFactoryDao {
         }
     }
 
+    /**
+     * 恢复实施监控数据
+     *
+     * @param ctx Context
+     */
     public static void restoreFactoryRealTimeMonitor(Context ctx) {
         // (android:label).db
         FinalDb db = FinalDb.create(ctx,
@@ -157,6 +164,11 @@ public class RestoreFactoryDao {
         }
     }
 
+    /**
+     * 恢复写入错误帮助信息
+     *
+     * @param ctx Context
+     */
     public static void restoreFactoryErrorHelp(Context ctx) {
         // (android:label).db
         FinalDb db = FinalDb.create(ctx,

@@ -17,6 +17,8 @@ public class HHandler extends Handler {
 
     protected Activity activity;
 
+    private boolean DEBUG = false;
+
     public HHandler(Activity activity) {
         super();
         this.activity = activity;
@@ -55,7 +57,9 @@ public class HHandler extends Handler {
      * @param msg
      */
     public void onBeginPreparing(Message msg) {
-        Log.v(TAG, "onBeginPreparing");
+        if (DEBUG) {
+            Log.v(TAG, "onBeginPreparing");
+        }
     }
 
     /**
@@ -65,8 +69,10 @@ public class HHandler extends Handler {
      */
     @SuppressWarnings("unchecked")
     public void onFoundDevice(Message msg) {
-        Log.v(TAG, "onFoundDevice : "
-                + ((Map<String, BluetoothDevice>) msg.obj).keySet().toString());
+        if (DEBUG) {
+            Log.v(TAG, "onFoundDevice : "
+                    + ((Map<String, BluetoothDevice>) msg.obj).keySet().toString());
+        }
     }
 
     /**
@@ -75,7 +81,9 @@ public class HHandler extends Handler {
      * @param msg
      */
     public void onChooseDevice(final Message msg) {
-        Log.v(TAG, "onChooseDevice");
+        if (DEBUG) {
+            Log.v(TAG, "onChooseDevice");
+        }
     }
 
     /**
@@ -84,7 +92,9 @@ public class HHandler extends Handler {
      * @param msg
      */
     public void onResetBluetooth(Message msg) {
-        Log.v(TAG, "onResetBluetooth");
+        if (DEBUG) {
+            Log.v(TAG, "onResetBluetooth");
+        }
     }
 
     /**
@@ -93,7 +103,9 @@ public class HHandler extends Handler {
      * @param msg
      */
     public void onKillBluetooth(Message msg) {
-        Log.v(TAG, "onKillBluetooth");
+        if (DEBUG) {
+            Log.v(TAG, "onKillBluetooth");
+        }
     }
 
     /**
@@ -102,7 +114,9 @@ public class HHandler extends Handler {
      * @param msg
      */
     public void onPrepared(Message msg) {
-        Log.v(TAG, "onPrepared");
+        if (DEBUG) {
+            Log.v(TAG, "onPrepared");
+        }
     }
 
     /**
@@ -111,7 +125,9 @@ public class HHandler extends Handler {
      * @param msg
      */
     public void onPrepError(Message msg) {
-        Log.v(TAG, "onPrepError");
+        if (DEBUG) {
+            Log.v(TAG, "onPrepError");
+        }
     }
 
     /**
@@ -120,7 +136,9 @@ public class HHandler extends Handler {
      * @param msg
      */
     public void onBeforeTalkSend(Message msg) {
-        Log.v(TAG, "onBeforeTalkSend");
+        if (DEBUG) {
+            Log.v(TAG, "onBeforeTalkSend");
+        }
     }
 
     /**
@@ -129,7 +147,9 @@ public class HHandler extends Handler {
      * @param msg
      */
     public void onAfterTalkSend(Message msg) {
-        Log.v(TAG, "onAfterTalkSend");
+        if (DEBUG) {
+            Log.v(TAG, "onAfterTalkSend");
+        }
     }
 
     /**
@@ -138,7 +158,9 @@ public class HHandler extends Handler {
      * @param msg
      */
     public void onTalkReceive(Message msg) {
-        Log.v(TAG, "onTalkReceive : " + msg.obj.toString());
+        if (DEBUG) {
+            Log.v(TAG, "onTalkReceive : " + msg.obj.toString());
+        }
     }
 
     /**
@@ -147,9 +169,11 @@ public class HHandler extends Handler {
      * @param msg
      */
     public void onTalkError(Message msg) {
-        Log.v(TAG,
-                "onTalkError : "
-                        + ((msg.obj == null) ? "..." : msg.obj.toString()));
+        if (DEBUG) {
+            Log.v(TAG,
+                    "onTalkError : "
+                            + ((msg.obj == null) ? "..." : msg.obj.toString()));
+        }
     }
 
     /**
@@ -158,9 +182,11 @@ public class HHandler extends Handler {
      * @param msg
      */
     public void onHandlerChanged(Message msg) { //the origin handler
-        Log.v(TAG, "onHandlerChanged"
-                + ((msg.obj == null) ? "UnKnownHHandler"
-                : ((HHandler) msg.obj).TAG));
+        if (DEBUG) {
+            Log.v(TAG, "onHandlerChanged"
+                    + ((msg.obj == null) ? "UnKnownHHandler"
+                    : ((HHandler) msg.obj).TAG));
+        }
     }
 
 
@@ -170,7 +196,9 @@ public class HHandler extends Handler {
      * @param msg
      */
     public void onMultiTalkBegin(Message msg) {
-        Log.v(TAG, "onMultiTalkBegin");
+        if (DEBUG) {
+            Log.v(TAG, "onMultiTalkBegin");
+        }
     }
 
     /**
@@ -179,6 +207,8 @@ public class HHandler extends Handler {
      * @param msg
      */
     public void onMultiTalkEnd(Message msg) {
-        Log.v(TAG, "onMultiTalkEnd");
+        if (DEBUG) {
+            Log.v(TAG, "onMultiTalkEnd");
+        }
     }
 }

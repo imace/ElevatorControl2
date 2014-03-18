@@ -70,6 +70,8 @@ public class HBluetooth implements Runnable {
 
     private static HBluetooth instance = new HBluetooth();
 
+    public BluetoothDevice connectedDevice;
+
     /**
      * 不管多少次getInstance(activity) activity始终是第一次调用的时候的那个
      *
@@ -221,10 +223,8 @@ public class HBluetooth implements Runnable {
                 handler.sendMessage(mg);
             }
             communication.afterSend();
-
             // 休眠适当时间等待接收完全
             Thread.sleep(SOCKET_TIMEOUT);
-
             communication.beforeReceive();
             byte[] readBuffer = new byte[MAX_READ_BUFFER];// 预留足够大空间
             BufferedInputStream inStream = new BufferedInputStream(btSocket.getInputStream());
@@ -379,9 +379,11 @@ public class HBluetooth implements Runnable {
                     btSocket = dev.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));
                     btSocket.connect();
                     if (btSocket.isConnected()) {
+                        connectedDevice = dev;
                         buildSuccessful = true;// 只有connect()不发生错误才连接成功
                     }
                 } catch (IOException e) {
+                    connectedDevice = null;
                     buildSuccessful = false;
                 }
             }

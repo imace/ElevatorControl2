@@ -2,6 +2,7 @@ package com.kio.ElevatorControl.models;
 
 import android.content.Context;
 import com.kio.ElevatorControl.R;
+import net.tsz.afinal.annotation.sqlite.Id;
 
 /**
  * Created by IntelliJ IDEA.
@@ -11,6 +12,7 @@ import com.kio.ElevatorControl.R;
  */
 public class Firmware {
 
+    @Id
     private int Id;
 
     private String name;
