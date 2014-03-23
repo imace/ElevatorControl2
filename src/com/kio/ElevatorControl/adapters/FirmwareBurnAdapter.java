@@ -1,12 +1,13 @@
 package com.kio.ElevatorControl.adapters;
 
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import com.kio.ElevatorControl.R;
+import com.kio.ElevatorControl.activities.FirmwareManageActivity;
 import com.kio.ElevatorControl.models.Firmware;
+import org.holoeverywhere.widget.ImageButton;
 import org.holoeverywhere.widget.TextView;
 
 import java.util.List;
@@ -19,18 +20,18 @@ import java.util.List;
  */
 public class FirmwareBurnAdapter extends BaseAdapter {
 
+    private FirmwareManageActivity baseActivity;
+
     private List<Firmware> firmwareLists;
 
-    private Context mContext;
-
-    public FirmwareBurnAdapter(Context context, List<Firmware> lists) {
-        mContext = context;
+    public FirmwareBurnAdapter(FirmwareManageActivity activity, List<Firmware> lists) {
+        baseActivity = activity;
         firmwareLists = lists;
     }
 
     @Override
     public int getCount() {
-        return 0;
+        return firmwareLists.size();
     }
 
     @Override
@@ -46,7 +47,7 @@ public class FirmwareBurnAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup viewGroup) {
         ViewHolder holder = null;
-        LayoutInflater mInflater = LayoutInflater.from(mContext);
+        LayoutInflater mInflater = LayoutInflater.from(baseActivity);
         if (convertView == null) {
             convertView = mInflater.inflate(R.layout.firmware_burn_item, null);
             holder = new ViewHolder();
@@ -54,15 +55,23 @@ public class FirmwareBurnAdapter extends BaseAdapter {
             holder.updateDate = (TextView) convertView.findViewById(R.id.update_date);
             holder.expireDate = (TextView) convertView.findViewById(R.id.expire_date);
             holder.residueTime = (TextView) convertView.findViewById(R.id.residue_time);
+            holder.moreOption = (ImageButton) convertView.findViewById(R.id.more_option);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
-        Firmware firmware = getItem(position);
+        final int index = position;
+        final Firmware firmware = getItem(position);
         holder.firmwareVersion.setText(firmware.getVersion());
         holder.updateDate.setText(firmware.getUpdateDate());
         holder.expireDate.setText(firmware.getExpireDate());
         holder.residueTime.setText(firmware.getResidueTime());
+        holder.moreOption.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                baseActivity.onClickFirmwareBurnItemMoreOption(view, index, firmware);
+            }
+        });
         return convertView;
     }
 
@@ -73,5 +82,6 @@ public class FirmwareBurnAdapter extends BaseAdapter {
         TextView updateDate;
         TextView expireDate;
         TextView residueTime;
+        ImageButton moreOption;
     }
 }

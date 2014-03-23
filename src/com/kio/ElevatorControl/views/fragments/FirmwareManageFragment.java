@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import com.kio.ElevatorControl.R;
+import com.kio.ElevatorControl.activities.FirmwareManageActivity;
 import com.kio.ElevatorControl.adapters.FirmwareBurnAdapter;
 import com.kio.ElevatorControl.adapters.FirmwareDownloadAdapter;
 import com.kio.ElevatorControl.daos.MenuValuesDao;
@@ -16,6 +17,7 @@ import com.kio.ElevatorControl.models.Firmware;
 import com.kio.ElevatorControl.views.customspinner.NoDefaultSpinner;
 import org.holoeverywhere.widget.AutoCompleteTextView;
 import org.holoeverywhere.widget.EditText;
+import org.holoeverywhere.widget.GridView;
 import org.holoeverywhere.widget.ListView;
 
 import java.lang.reflect.InvocationTargetException;
@@ -121,10 +123,23 @@ public class FirmwareManageFragment extends Fragment {
      * 固件烧录
      */
     public void loadFirmwareBurnView() {
-        ListView listView = (ListView) getActivity().findViewById(R.id.firmware_list);
+        GridView gridView = (GridView) getActivity().findViewById(R.id.firmware_list);
         List<Firmware> firmwareLists = new ArrayList<Firmware>();
-        FirmwareBurnAdapter adapter = new FirmwareBurnAdapter(getActivity(), firmwareLists);
-        listView.setAdapter(adapter);
+
+        for (int i = 0; i < 10; i++){
+            Firmware firmware = new Firmware(getActivity());
+            firmware.setName("固件1");
+            firmware.setVersion("0.1");
+            firmware.setStatus(true);
+            firmware.setExpireDate("2014/5/10");
+            firmware.setBurnTime(2);
+            firmware.setTotalBurnTime(4);
+            firmwareLists.add(firmware);
+        }
+
+        FirmwareBurnAdapter adapter = new FirmwareBurnAdapter((FirmwareManageActivity)getActivity(),
+                firmwareLists);
+        gridView.setAdapter(adapter);
     }
 
 }

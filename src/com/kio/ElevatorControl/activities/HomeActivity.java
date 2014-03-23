@@ -1,6 +1,5 @@
 package com.kio.ElevatorControl.activities;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Message;
 import android.util.Log;
@@ -17,13 +16,16 @@ import com.hbluetooth.HCommunication;
 import com.hbluetooth.HHandler;
 import com.hbluetooth.HSerial;
 import com.kio.ElevatorControl.R;
+import com.kio.ElevatorControl.config.ApplicationConfig;
+import com.kio.ElevatorControl.daos.RealTimeMonitorDao;
+import com.kio.ElevatorControl.models.RealTimeMonitor;
+import com.kio.ElevatorControl.utils.ParseSerialsUtils;
 import com.kio.ElevatorControl.views.DoorAnimationView;
 import com.kio.ElevatorControl.views.TypefaceTextView;
 import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.widget.ListView;
 import org.holoeverywhere.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class HomeActivity extends Activity {
@@ -36,9 +38,6 @@ public class HomeActivity extends Activity {
 
     @InjectView(R.id.running_speed)
     TextView runningSpeedTextView;
-
-    @InjectView(R.id.door_status)
-    TextView doorStatusTextView;
 
     @InjectView(R.id.lock_status)
     TextView lockStatusTextView;
@@ -62,20 +61,12 @@ public class HomeActivity extends Activity {
 
     private static final String TAG = HomeActivity.class.getSimpleName();
 
-    private static final int RUNNING_SPEED = 0;
-
-    private static final int DOOR_STATUS = 1;
-
-    private static final int LOCK_STATUS = 2;
-
-    private static final int ERROR_CODE = 3;
-
-    private static final int CURRENT_FLOOR = 4;
+    private List<RealTimeMonitor> monitorLists;
 
     /**
      * 同步间隔
      */
-    private static final int SYNC_TIME = 300;
+    private static final int SYNC_TIME = 600;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +76,58 @@ public class HomeActivity extends Activity {
         threadPause = false;
         mSyncStatusHandler = new SyncStatusHandler(HomeActivity.this);
         setListViewDataSource();
+        readMonitorStateCode();
+    }
+
+    /**
+     * 读取状态参数Code
+     */
+    private void readMonitorStateCode() {
+        monitorLists = RealTimeMonitorDao.findByNames(this, new String[]{
+                ApplicationConfig.RUNNING_SPEED_NAME,
+                ApplicationConfig.ERROR_CODE_NAME,
+                ApplicationConfig.CURRENT_FLOOR_NAME,
+                ApplicationConfig.SYSTEM_STATUS_NAME
+        });
+        int size = monitorLists.size();
+        communications = new HCommunication[size];
+        for (int index = 0; index < size; index++) {
+            final int i = index;
+            communications[i] = new HCommunication() {
+                @Override
+                public void beforeSend() {
+                    this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103"
+                            + monitorLists.get(i).getCode()
+                            + "0001")));
+                }
+
+                @Override
+                public void afterSend() {
+
+                }
+
+                @Override
+                public void beforeReceive() {
+
+                }
+
+                @Override
+                public void afterReceive() {
+
+                }
+
+                @Override
+                public Object onParse() {
+                    if (HSerial.isCRC16Valid(getReceivedBuffer())) {
+                        byte[] received = HSerial.trimEnd(getReceivedBuffer());
+                        RealTimeMonitor monitor = (RealTimeMonitor) monitorLists.get(i).clone();
+                        monitor.setReceived(received);
+                        return monitor;
+                    }
+                    return null;
+                }
+            };
+        }
     }
 
     @OnClick(R.id.door_button)
@@ -149,72 +192,6 @@ public class HomeActivity extends Activity {
      * 同步电梯状态信息
      */
     private void syncElevatorStatus() {
-        if (communications == null) {
-            List<SyncItem> items = new ArrayList<SyncItem>();
-            items.add(new SyncItem(RUNNING_SPEED, "1010"));
-            items.add(new SyncItem(ERROR_CODE, "8000"));
-            items.add(new SyncItem(CURRENT_FLOOR, "1018"));
-            communications = new HCommunication[items.size()];
-            int index = 0;
-            for (SyncItem syncItem : items) {
-                final int i = index;
-                final SyncItem item = syncItem;
-                communications[i] = new HCommunication() {
-                    @Override
-                    public void beforeSend() {
-                        this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103" + item.code + "0001")));
-                    }
-
-                    @Override
-                    public void afterSend() {
-
-                    }
-
-                    @Override
-                    public void beforeReceive() {
-
-                    }
-
-                    @Override
-                    public void afterReceive() {
-
-                    }
-
-                    @Override
-                    public Object onParse() {
-                        if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                            // 通过验证
-                            byte[] received = HSerial.trimEnd(getReceivedBuffer());
-                            if (received.length == 8) {
-                                int value = received[4];
-                                value = value << 8;
-                                value = value | received[5];
-                                switch (item.type) {
-                                    // 运行速度
-                                    case RUNNING_SPEED: {
-                                        Float floatValue = value * Float.parseFloat("0.001");
-                                        item.value = String.format("%.2f", floatValue) + "m/s";
-                                        return item;
-                                    }
-                                    // 错误码
-                                    case ERROR_CODE: {
-                                        item.value = String.format("E%02d", value);
-                                        return item;
-                                    }
-                                    // 当前楼层
-                                    case CURRENT_FLOOR: {
-                                        item.value = String.valueOf(value);
-                                        return item;
-                                    }
-                                }
-                            }
-                        }
-                        return null;
-                    }
-                };
-                index++;
-            }
-        }
         if (HBluetooth.getInstance(HomeActivity.this).isPrepared()) {
             HBluetooth.getInstance(HomeActivity.this)
                     .setHandler(mSyncStatusHandler)
@@ -300,47 +277,34 @@ public class HomeActivity extends Activity {
 
         @Override
         public void onTalkReceive(Message msg) {
-            if (msg.obj != null && (msg.obj instanceof SyncItem)) {
-                SyncItem item = (SyncItem) msg.obj;
-                switch (item.type) {
-                    // 运行速度
-                    case RUNNING_SPEED: {
-                        HomeActivity.this.runningSpeedTextView.setText(item.value);
+            if (msg.obj != null && (msg.obj instanceof RealTimeMonitor)) {
+                RealTimeMonitor monitor = (RealTimeMonitor) msg.obj;
+                if (monitor.getName().equalsIgnoreCase(ApplicationConfig.RUNNING_SPEED_NAME)) {
+                    HomeActivity.this.runningSpeedTextView
+                            .setText(ParseSerialsUtils.getValueTextFromRealTimeMonitor(monitor)
+                                    + monitor.getUnit());
+                } else if (monitor.getName().equalsIgnoreCase(ApplicationConfig.ERROR_CODE_NAME)) {
+                    HomeActivity.this.errorStatusTextView
+                            .setText(ParseSerialsUtils.getErrorCode(monitor.getReceived()));
+                } else if (monitor.getName().equalsIgnoreCase(ApplicationConfig.CURRENT_FLOOR_NAME)) {
+                    HomeActivity.this.currentFloorTextView
+                            .setText(ParseSerialsUtils.getIntString(monitor));
+                } else if (monitor.getName().equalsIgnoreCase(ApplicationConfig.SYSTEM_STATUS_NAME)) {
+                    switch (ParseSerialsUtils.getSystemStatusCode(monitor)){
+                        case 1:
+                            HomeActivity.this.lockStatusTextView
+                                    .setText("开门");
+                            HomeActivity.this.doorAnimationView.openDoor();
+                            break;
+                        case 3:
+                            HomeActivity.this.lockStatusTextView
+                                    .setText("关门");
+                            HomeActivity.this.doorAnimationView.closeDoor();
+                            break;
                     }
-                    break;
-                    // 错误码
-                    case ERROR_CODE: {
-                        HomeActivity.this.errorStatusTextView.setText(item.value);
-                    }
-                    break;
-                    // 当前楼层
-                    case CURRENT_FLOOR: {
-                        HomeActivity.this.currentFloorTextView.setText(item.value);
-                    }
-                    break;
                 }
             }
         }
-    }
-
-    // ========================================= Sync Status Object =============================================
-
-    /**
-     * 电梯同步状态条目
-     */
-    private class SyncItem {
-
-        int type;
-
-        String value;
-
-        String code;
-
-        public SyncItem(int type, String code) {
-            this.type = type;
-            this.code = code;
-        }
-
     }
 
 }

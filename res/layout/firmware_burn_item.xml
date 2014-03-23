@@ -1,97 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:background="@drawable/card_view_selector"
+              android:orientation="horizontal"
               android:gravity="center_vertical"
+              android:paddingTop="7dp"
+              android:paddingBottom="7dp"
               android:layout_width="match_parent"
+              android:background="@drawable/card_view_background"
               android:layout_height="match_parent">
-    <!-- 固件名称版本 -->
     <LinearLayout
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:gravity="center"
-            android:layout_marginBottom="2dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-        <TextView
-                android:textColor="#515151"
-                android:textSize="16sp"
-                android:text="@string/firmware_version_text"
-                android:layout_marginRight="5dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-        <TextView
-                android:id="@+id/firmware_version"
-                android:textColor="#787878"
-                android:textSize="16sp"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_width="0dp"
+            android:layout_height="match_parent">
+        <!-- 固件名称版本 -->
+        <LinearLayout
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:layout_marginBottom="2dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+            <TextView
+                    android:textColor="#333333"
+                    android:textSize="16sp"
+                    android:text="@string/firmware_version_text"
+                    android:layout_marginRight="5dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            <TextView
+                    android:id="@+id/firmware_version"
+                    android:textColor="#333333"
+                    android:textSize="16sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+        </LinearLayout>
+        <!-- 更新时间 -->
+        <LinearLayout
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:layout_marginBottom="2dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+            <TextView
+                    android:textColor="#787878"
+                    android:textSize="16sp"
+                    android:text="@string/update_date_text"
+                    android:layout_marginRight="5dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            <TextView
+                    android:id="@+id/update_date"
+                    android:textColor="#787878"
+                    android:textSize="16sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+        </LinearLayout>
+        <!-- 过期时间 -->
+        <LinearLayout
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:layout_marginBottom="2dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+            <TextView
+                    android:textColor="#787878"
+                    android:textSize="16sp"
+                    android:text="@string/expire_date_text"
+                    android:layout_marginRight="5dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            <TextView
+                    android:id="@+id/expire_date"
+                    android:textColor="#787878"
+                    android:textSize="16sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+        </LinearLayout>
+        <!-- 剩余次数 -->
+        <LinearLayout
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+            <TextView
+                    android:textColor="#787878"
+                    android:textSize="16sp"
+                    android:text="@string/residue_time_text"
+                    android:layout_marginRight="5dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            <TextView
+                    android:id="@+id/residue_time"
+                    android:textColor="#787878"
+                    android:textSize="16sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+        </LinearLayout>
+    </LinearLayout>
+    <!-- ////////////////////// 下拉菜单 ////////////////// -->
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+        <ImageButton
+                android:id="@+id/more_option"
+                android:contentDescription="@null"
+                android:background="#00000000"
+                android:src="@drawable/more_option"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
     </LinearLayout>
-    <!-- 更新时间 -->
-    <LinearLayout
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:gravity="center"
-            android:layout_marginBottom="2dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-        <TextView
-                android:textColor="#515151"
-                android:textSize="16sp"
-                android:text="@string/update_date_text"
-                android:layout_marginRight="5dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-        <TextView
-                android:id="@+id/update_date"
-                android:textColor="#787878"
-                android:textSize="16sp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-    </LinearLayout>
-    <!-- 过期时间 -->
-    <LinearLayout
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:gravity="center"
-            android:layout_marginBottom="2dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-        <TextView
-                android:textColor="#515151"
-                android:textSize="16sp"
-                android:text="@string/expire_date_text"
-                android:layout_marginRight="5dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-        <TextView
-                android:id="@+id/expire_date"
-                android:textColor="#787878"
-                android:textSize="16sp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-    </LinearLayout>
-    <!-- 剩余次数 -->
-    <LinearLayout
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:gravity="center"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-        <TextView
-                android:textColor="#515151"
-                android:textSize="16sp"
-                android:text="@string/residue_time_text"
-                android:layout_marginRight="5dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-        <TextView
-                android:id="@+id/residue_time"
-                android:textColor="#787878"
-                android:textSize="16sp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-    </LinearLayout>
+
 
 </LinearLayout>

@@ -62,25 +62,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
             </LinearLayout>
-            <!-- 开关门状态 -->
-            <LinearLayout
-                    android:orientation="horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-                <org.holoeverywhere.widget.TextView
-                        android:textSize="18sp"
-                        android:textColor="#515151"
-                        android:layout_marginRight="5dp"
-                        android:text="@string/door_status_text"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
-                <org.holoeverywhere.widget.TextView
-                        android:id="@+id/door_status"
-                        android:textSize="18sp"
-                        android:textColor="#ff989898"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
-            </LinearLayout>
             <!-- 轿厢状态 -->
             <LinearLayout
                     android:orientation="horizontal"

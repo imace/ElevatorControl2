@@ -17,6 +17,7 @@ import com.hbluetooth.HBluetooth;
 import com.hbluetooth.HHandler;
 import com.hbluetooth.HJudgeListener;
 import com.kio.ElevatorControl.R;
+import org.holoeverywhere.preference.SharedPreferences;
 import org.holoeverywhere.widget.ListView;
 import org.holoeverywhere.widget.ProgressBar;
 import org.holoeverywhere.widget.TextView;
@@ -45,6 +46,8 @@ public class ChooseDeviceActivity extends Activity {
     private SearchHandler searchHandler;
 
     private DeviceAdapter adapter;
+
+    private SharedPreferences preferences;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

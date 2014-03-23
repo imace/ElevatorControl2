@@ -114,6 +114,10 @@
         <item>未下载</item>
     </string-array>
 
+    <string name="burn_firmware_text">烧录</string>
+    <string name="will_burn_firmware_text">烧录固件</string>
+    <string name="burning_firmware_text">正在烧录固件</string>
+
     <string name="update_date_text">更新时间</string>
     <string name="expire_date_text">过期时间</string>
     <string name="residue_time_text">剩余次数</string>

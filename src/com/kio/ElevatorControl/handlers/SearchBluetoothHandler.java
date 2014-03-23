@@ -88,7 +88,6 @@ public class SearchBluetoothHandler extends HHandler {
     @Override
     public void onPrepError(Message msg) {
         // 进度条
-        Log.v(TAG, "prepare failed");
         mNavigationTabActivity.mRefreshActionItem.showProgress(false);
         String errorMessage = (null == msg.obj) ? activity.getResources().getString(R.string.failed_connect) : msg.obj.toString();
         Toast.makeText(activity, errorMessage, Toast.LENGTH_SHORT).show();

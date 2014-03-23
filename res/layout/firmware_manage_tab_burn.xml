@@ -9,7 +9,6 @@
             android:layout_marginRight="@dimen/card_view_margin"
             android:layout_marginLeft="@dimen/card_view_margin"
             android:layout_marginTop="@dimen/card_view_margin"
-            android:layout_marginBottom="8dp"
             android:paddingLeft="@dimen/card_view_margin"
             android:paddingRight="@dimen/card_view_margin"
             android:orientation="vertical"
@@ -48,13 +47,17 @@
                     android:layout_height="wrap_content"/>
         </LinearLayout>
     </LinearLayout>
-    <org.holoeverywhere.widget.ListView
+    <org.holoeverywhere.widget.GridView
             android:id="@+id/firmware_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:listSelector="@android:color/transparent"
-            android:dividerHeight="8dp"
+            android:gravity="center"
+            android:verticalSpacing="10dp"
+            android:horizontalSpacing="10dp"
+            android:columnWidth="220dp"
             android:scrollbarStyle="outsideOverlay"
-            android:divider="@android:color/transparent"
-            android:padding="@dimen/card_view_margin"/>
+            android:stretchMode="columnWidth"
+            android:listSelector="#00000000"
+            android:padding="@dimen/card_view_margin"
+            android:numColumns="auto_fit"/>
 </LinearLayout>

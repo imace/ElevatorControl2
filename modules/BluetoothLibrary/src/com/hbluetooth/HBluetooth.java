@@ -29,7 +29,7 @@ public class HBluetooth implements Runnable {
 
     private final String TAG = HBluetooth.class.getSimpleName();
 
-    private final int SOCKET_TIMEOUT = 100;
+    private final int SOCKET_TIMEOUT = 110;
 
     private final int MAX_READ_BUFFER = 1024;
 
@@ -192,7 +192,9 @@ public class HBluetooth implements Runnable {
         try {
             // 没配置好,不能发送
             if (null == communication || null == btSocket || !btSocket.isConnected()) {
-                final String errorMessage = "cannot send or receive! " + ((communication == null) ? "communication==null" : "") + ((btSocket == null) ? "btSocket" : "")
+                final String errorMessage = "cannot send or receive! "
+                        + ((communication == null) ? "communication==null" : "")
+                        + ((btSocket == null) ? "btSocket" : "")
                         + ((btSocket.isConnected()) ? "connected" : "unconnected");
                 msgError.obj = errorMessage;// 消息体
                 if (null != handler)
@@ -376,7 +378,8 @@ public class HBluetooth implements Runnable {
         try {
             if (!buildSuccessful) {
                 try {
-                    btSocket = dev.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));
+                    btSocket = dev.createRfcommSocketToServiceRecord(UUID
+                            .fromString("00001101-0000-1000-8000-00805F9B34FB"));
                     btSocket.connect();
                     if (btSocket.isConnected()) {
                         connectedDevice = dev;
@@ -413,7 +416,6 @@ public class HBluetooth implements Runnable {
                     Log.e(TAG, "error on tring to connet through socket : " + e.getMessage());
                 }
             }
-
         }
 
         if (null != broadcastReceiver) {
@@ -477,14 +479,19 @@ public class HBluetooth implements Runnable {
              * @return 配对, 注意并不是配对是否建立
              */
             private void buildPair(BluetoothDevice dev) {
+                Log.v(TAG, "bondPaid");
                 try {
-                    Boolean returnValue = (Boolean) Class.forName("android.bluetooth.BluetoothDevice").getMethod("createBond").invoke(dev);
+                    Boolean returnValue = (Boolean) Class
+                            .forName("android.bluetooth.BluetoothDevice")
+                            .getMethod("createBond")
+                            .invoke(dev);
                     Log.v(TAG, "auto bond : " + returnValue);
                 } catch (Exception e) {// any exception occurs
                     Log.e(TAG, e.getMessage());
                     Message msgBond = new Message();
                     msgBond.what = R.string.prepare_failed;
-                    msgBond.obj = String.format(activity.getResources().getString(R.string.failed_bond), dev.getName() + "(" + dev.getAddress() + ")");
+                    msgBond.obj = String.format(activity.getResources().getString(R.string.failed_bond),
+                            dev.getName() + "(" + dev.getAddress() + ")");
                     if (null != handler)
                         handler.sendMessage(msgBond);
                 }
@@ -497,13 +504,17 @@ public class HBluetooth implements Runnable {
              */
             private void cancelPair(BluetoothDevice dev) {
                 try {
-                    Boolean returnValue = (Boolean) Class.forName("android.bluetooth.BluetoothDevice").getMethod("cancelBondProcess").invoke(dev);
+                    Boolean returnValue = (Boolean) Class
+                            .forName("android.bluetooth.BluetoothDevice")
+                            .getMethod("cancelBondProcess")
+                            .invoke(dev);
                     Log.v(TAG, "cancel bond : " + returnValue);
                 } catch (Exception e) {// any exception occurs
                     Log.e(TAG, e.getMessage());
                     Message msgBond = new Message();
                     msgBond.what = R.string.prepare_failed;
-                    msgBond.obj = String.format(activity.getResources().getString(R.string.cancel_bond), dev.getName() + "(" + dev.getAddress() + ")");
+                    msgBond.obj = String.format(activity.getResources().getString(R.string.cancel_bond),
+                            dev.getName() + "(" + dev.getAddress() + ")");
                     if (null != handler)
                         handler.sendMessage(msgBond);
                 }

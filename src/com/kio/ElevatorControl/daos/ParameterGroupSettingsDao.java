@@ -9,20 +9,36 @@ import java.util.List;
 public class ParameterGroupSettingsDao {
     private static final boolean DEBUG = true;
 
-    public static List<ParameterGroupSettings> findAll(Context ctx) {
+    public static List<ParameterGroupSettings> findAll(Context context) {
         // (android:label).db
-        FinalDb db = FinalDb.create(ctx,
-                ctx.getString(ctx.getApplicationInfo().labelRes) + ".db",
+        FinalDb db = FinalDb.create(context,
+                context.getString(context.getApplicationInfo().labelRes) + ".db",
                 DEBUG);
         return db.findAll(ParameterGroupSettings.class);
     }
 
-    public static ParameterGroupSettings findById(Context ctx, int id) {
+    public static ParameterGroupSettings findById(Context context, int id) {
         // (android:label).db
-        FinalDb db = FinalDb.create(ctx,
-                ctx.getString(ctx.getApplicationInfo().labelRes) + ".db",
+        FinalDb db = FinalDb.create(context,
+                context.getString(context.getApplicationInfo().labelRes) + ".db",
                 DEBUG);
         return db.findById(id, ParameterGroupSettings.class);
+    }
+
+    /**
+     * Find By Name
+     *
+     * @param context context
+     * @param name Name
+     * @return ParameterGroupSettings
+     */
+    public static ParameterGroupSettings findByName(Context context, String name){
+        FinalDb db = FinalDb.create(context,
+                context.getString(context.getApplicationInfo().labelRes) + ".db",
+                DEBUG);
+        List<ParameterGroupSettings> lists = db.findAllByWhere(ParameterGroupSettings.class,
+                " groupText = '" + name + "'");
+        return lists.size() > 0 ? lists.get(0) : null;
     }
 
 }

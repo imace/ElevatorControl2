@@ -58,12 +58,27 @@ public class ParseSerialsUtils {
         return r2 + r4;
     }
 
+    /**
+     * 取得十进制数
+     *
+     * @param data byte[]
+     * @return int
+     */
+    public static int getIntFromBytes(byte[] data){
+        if (data.length == 8) {
+            int value = data[4];
+            value = value << 8;
+            value = value | data[5];
+            return value;
+        }
+        return 0;
+    }
 
     /**
      * 根据单位换算,把用户输入转换成二位16进制
      *
-     * @param str
-     * @return
+     * @param str String
+     * @return String
      */
     public static String getHexStringFromUserInputParameterSetting(String str, ParameterSettings rm) {
         try {
@@ -77,16 +92,67 @@ public class ParseSerialsUtils {
         return "0000";
     }
 
+    /**
+     * 取得Error Code
+     *
+     * @param data byte[]
+     * @return Error Code String
+     */
+    @SuppressLint("DefaultLocale")
+    public static String getErrorCode(byte[] data) {
+        if (data.length == 8) {
+            int value = data[4];
+            value = value << 8;
+            value = value | data[5];
+            // 2位整数
+            return String.format("E%02d", value);
+        }
+        return null;
+    }
+
+    /**
+     * 取得十进制数据
+     *
+     * @param monitor RealTimeMonitor
+     * @return Int String
+     */
+    @SuppressLint("DefaultLocale")
+    public static String getIntString(RealTimeMonitor monitor) {
+        byte[] data = monitor.getReceived();
+        if (data.length == 8) {
+            int value = data[4];
+            value = value << 8;
+            value = value | data[5];
+            // 2位整数
+            return String.valueOf(value);
+        }
+        return null;
+    }
+
+    /**
+     * 取得轿厢状态Code Bit 8-11
+     *
+     * @param monitor RealTimeMonitor
+     * @return code
+     */
+    @SuppressLint("DefaultLocale")
+    public static int getSystemStatusCode(RealTimeMonitor monitor) {
+        byte[] data = monitor.getReceived();
+        if (data.length == 8) {
+            return data[5] & 0x0F;
+        }
+        return 0;
+    }
 
     /**
      * 把received解析成ErrorHelp对象
      *
-     * @param ep
-     * @return
+     * @param errorHelp ErrorHelp
+     * @return ErrorHelpLog
      */
     @SuppressLint("DefaultLocale")
-    public static ErrorHelp getErrorHelpFromErrorHelp(Context ctx, ErrorHelp ep) {
-        byte[] data = ep.getReceived();
+    public static ErrorHelp getErrorHelpFromErrorHelp(Context ctx, ErrorHelp errorHelp) {
+        byte[] data = errorHelp.getReceived();
         if (data.length == 8) {
             int value = data[4];
             value = value << 8;
@@ -102,12 +168,12 @@ public class ParseSerialsUtils {
     /**
      * 把received解析成ErrorHelpLog对象
      *
-     * @param ep
-     * @return
+     * @param errorHelpLog ErrorHelpLog
+     * @return ErrorHelpLog
      */
     @SuppressLint("SimpleDateFormat")
-    public static ErrorHelpLog getErrorHelpLog(Context ctx, ErrorHelpLog ehlog) {
-        byte[] data = ehlog.getReceived();
+    public static ErrorHelpLog getErrorHelpLog(Context ctx, ErrorHelpLog errorHelpLog) {
+        byte[] data = errorHelpLog.getReceived();
 
         // 信息
         int value1 = data[4];
@@ -141,13 +207,13 @@ public class ParseSerialsUtils {
                         + String.valueOf(value4 * 0.01).split("\\.")[1]//minute
                 ;
         ParsePosition pos = new ParsePosition(0);
-        ehlog.setErrorTime(formatter.parse(strDate, pos));
+        errorHelpLog.setErrorTime(formatter.parse(strDate, pos));
 
         String eptn = "00";
         java.text.DecimalFormat eptdf = new java.text.DecimalFormat(eptn);
-        ehlog.setErrorHelpId(ErrorHelpDao.findByDisplay(ctx, "E" + eptdf.format(value1)).getId());
+        errorHelpLog.setErrorHelpId(ErrorHelpDao.findByDisplay(ctx, "E" + eptdf.format(value1)).getId());
 
-        return ehlog;
+        return errorHelpLog;
     }
 
 }

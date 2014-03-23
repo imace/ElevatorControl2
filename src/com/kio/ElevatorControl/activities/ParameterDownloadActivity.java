@@ -17,6 +17,7 @@ import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.daos.ParameterGroupSettingsDao;
 import com.kio.ElevatorControl.models.ParameterGroupSettings;
 import com.kio.ElevatorControl.models.ParameterSettings;
+import com.kio.ElevatorControl.utils.GenerateJSON;
 import com.kio.ElevatorControl.utils.ParseSerialsUtils;
 import org.holoeverywhere.LayoutInflater;
 import org.holoeverywhere.app.Activity;
@@ -26,6 +27,7 @@ import org.holoeverywhere.widget.ProgressBar;
 import org.holoeverywhere.widget.TextView;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,7 +36,6 @@ import java.util.List;
  * Date: 14-3-10.
  * Time: 11:35.
  */
-// TODO ////////////////////// 16进制 0xFR 无法转换问题 /////////////////////////
 public class ParameterDownloadActivity extends Activity {
 
     private final static String TAG = ParameterDownloadActivity.class.getSimpleName();
@@ -46,6 +47,10 @@ public class ParameterDownloadActivity extends Activity {
     private ProgressBar downloadProgressBar;
 
     private EditText fileNameEditText;
+
+    private List<HCommunication[]> communicationsLists;
+
+    private AlertDialog downloadDialog;
 
     private List<ParameterGroupSettings> parameterGroupLists;
 
@@ -100,11 +105,11 @@ public class ParameterDownloadActivity extends Activity {
         builder.setView(dialogView);
         builder.setPositiveButton(R.string.dialog_btn_ok, null);
         builder.setNegativeButton(R.string.dialog_btn_cancel, null);
-        AlertDialog dialog = builder.create();
-        dialog.setCancelable(false);
-        dialog.setCanceledOnTouchOutside(false);
-        dialog.show();
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+        downloadDialog = builder.create();
+        downloadDialog.setCancelable(false);
+        downloadDialog.setCanceledOnTouchOutside(false);
+        downloadDialog.show();
+        downloadDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 ParameterDownloadActivity.this.saveProfileToLocal(fileNameEditText.getText().toString());
@@ -125,82 +130,81 @@ public class ParameterDownloadActivity extends Activity {
             if (!directory.exists()) {
                 directory.mkdir();
             }
+            int maxProgress = 0;
             fileNameEditText.setVisibility(View.GONE);
             parameterGroupLists = ParameterGroupSettingsDao.findAll(ParameterDownloadActivity.this);
-            // Start to download
-            int maxProgress = 0;
+            communicationsLists = new ArrayList<HCommunication[]>();
             for (ParameterGroupSettings groupItem : parameterGroupLists) {
-                maxProgress += groupItem.getParametersettings().getList().size();
+                List<ParameterSettings> detailSettings = groupItem.getParametersettings().getList();
+                int detailSize = detailSettings.size();
+                maxProgress += detailSize;
+                HCommunication[] communications = new HCommunication[detailSize];
+                for (int i = 0; i < detailSize; i++) {
+                    final ParameterSettings item = detailSettings.get(i);
+                    communications[i] = new HCommunication() {
+                        @Override
+                        public void beforeSend() {
+                            this.setSendBuffer(HSerial.crc16(HSerial
+                                    .hexStr2Ints("0103"
+                                            + ParseSerialsUtils.getCalculatedCode(item)
+                                            + "0001")));
+                        }
+
+                        @Override
+                        public void afterSend() {
+
+                        }
+
+                        @Override
+                        public void beforeReceive() {
+
+                        }
+
+                        @Override
+                        public void afterReceive() {
+
+                        }
+
+                        @Override
+                        public Object onParse() {
+                            if (HSerial.isCRC16Valid(getReceivedBuffer())) {
+                                byte[] received = HSerial.trimEnd(getReceivedBuffer());
+                                item.setReceived(received);
+                                return item;
+                            }
+                            return null;
+                        }
+                    };
+                }
+                communicationsLists.add(communications);
             }
             downloadProgressBar.setMax(maxProgress);
             downloadProgressBar.setProgress(0);
             downloadProgressBar.setVisibility(View.VISIBLE);
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    for (ParameterGroupSettings groupItem : parameterGroupLists) {
-                        List<ParameterSettings> detailSettings = groupItem.getParametersettings().getList();
-                        int detailSize = detailSettings.size();
-                        HCommunication[] communications = new HCommunication[detailSize];
-                        for (int i = 0; i < detailSize; i++) {
-                            final ParameterSettings item = detailSettings.get(i);
-                            Log.v(TAG, item.getCode());
-                            communications[i] = new HCommunication() {
-                                @Override
-                                public void beforeSend() {
-                                    this.setSendBuffer(HSerial.crc16(HSerial
-                                            .hexStr2Ints("0103"
-                                                    + ParseSerialsUtils.getCalculatedCode(item)
-                                                    + "0001")));
-                                }
-
-                                @Override
-                                public void afterSend() {
-
-                                }
-
-                                @Override
-                                public void beforeReceive() {
-
-                                }
-
-                                @Override
-                                public void afterReceive() {
-
-                                }
-
-                                @Override
-                                public Object onParse() {
-                                    if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                                        byte[] received = HSerial.trimEnd(getReceivedBuffer());
-                                        item.setReceived(received);
-                                        return item;
-                                    }
-                                    return null;
-                                }
-                            };
-                        }
-                        if (HBluetooth.getInstance(ParameterDownloadActivity.this).isPrepared()) {
-                            HBluetooth.getInstance(ParameterDownloadActivity.this)
-                                    .setHandler(downloadParameterHandler)
-                                    .setCommunications(communications)
-                                    .Start();
-                            try {
-                                // 休眠一段时间等待接受完毕
-                                Thread.sleep(detailSize * 120);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }
-            }).start();
+            ParameterDownloadActivity.this.startCommunication(0);
         } else {
             // 未能保存文件时弹出警告
             AlertDialog.Builder builder = new AlertDialog.Builder(ParameterDownloadActivity.this);
             builder.setTitle(R.string.save_file_failed_title);
             builder.setMessage(R.string.cannot_save_file);
             builder.setPositiveButton(R.string.dialog_btn_ok, null);
+        }
+    }
+
+    /**
+     * 开始发送并且接收参数
+     *
+     * @param position communications Lists Index
+     */
+    private void startCommunication(int position){
+        if (position >= 0 && position < communicationsLists.size()){
+            downloadParameterHandler.index = position;
+            if (HBluetooth.getInstance(this).isPrepared()){
+                HBluetooth.getInstance(this)
+                        .setHandler(downloadParameterHandler)
+                        .setCommunications(communicationsLists.get(position))
+                        .Start();
+            }
         }
     }
 
@@ -211,7 +215,11 @@ public class ParameterDownloadActivity extends Activity {
      */
     private class DownloadParameterHandler extends HHandler {
 
-        private int receiveDataCount = 0;
+        private int index;
+
+        private int receiveCount = 0;
+
+        private List<ParameterSettings> tempParameterSettingsList;
 
         public DownloadParameterHandler(Activity activity) {
             super(activity);
@@ -221,19 +229,46 @@ public class ParameterDownloadActivity extends Activity {
         @Override
         public void onMultiTalkBegin(Message msg) {
             super.onMultiTalkBegin(msg);
+            tempParameterSettingsList = new ArrayList<ParameterSettings>();
         }
 
         @Override
         public void onMultiTalkEnd(Message msg) {
             super.onMultiTalkEnd(msg);
+            HCommunication[] communications = ParameterDownloadActivity.this.communicationsLists.get(index);
+            if (communications.length == receiveCount){
+                int currentProgress = ParameterDownloadActivity.this.downloadProgressBar.getProgress();
+                currentProgress += receiveCount;
+                ParameterDownloadActivity.this.downloadProgressBar.setProgress(currentProgress);
+                if (index < ParameterDownloadActivity.this.communicationsLists.size()){
+                    receiveCount = 0;
+                    index++;
+                    ParameterDownloadActivity.this.startCommunication(index);
+                }
+                ParameterDownloadActivity.this.parameterGroupLists
+                        .get(index)
+                        .getParametersettings()
+                        .setList(tempParameterSettingsList);
+                if (ParameterDownloadActivity.this.downloadProgressBar.getMax() == currentProgress){
+                    if (ParameterDownloadActivity.this.downloadDialog != null){
+                        ParameterDownloadActivity.this.downloadDialog.dismiss();
+                    }
+                    GenerateJSON.getInstance().generateProfileJSON(ParameterDownloadActivity.this.parameterGroupLists);
+                }
+            }
+            else {
+                // 重新获取
+                receiveCount = 0;
+                ParameterDownloadActivity.this.startCommunication(index);
+            }
         }
 
         @Override
         public void onTalkReceive(Message msg) {
             if (msg.obj != null && msg.obj instanceof ParameterSettings) {
                 ParameterSettings detailItem = (ParameterSettings) msg.obj;
-                receiveDataCount++;
-                ParameterDownloadActivity.this.downloadProgressBar.setProgress(receiveDataCount);
+                tempParameterSettingsList.add(detailItem);
+                receiveCount++;
             }
         }
     }

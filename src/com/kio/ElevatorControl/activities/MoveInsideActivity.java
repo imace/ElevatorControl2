@@ -1,5 +1,6 @@
 package com.kio.ElevatorControl.activities;
 
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.Message;
 import android.util.Log;
@@ -17,16 +18,18 @@ import com.hbluetooth.HCommunication;
 import com.hbluetooth.HHandler;
 import com.hbluetooth.HSerial;
 import com.kio.ElevatorControl.R;
+import com.kio.ElevatorControl.config.ApplicationConfig;
+import com.kio.ElevatorControl.daos.ParameterSettingsDao;
 import com.kio.ElevatorControl.daos.RealTimeMonitorDao;
+import com.kio.ElevatorControl.models.ParameterSettings;
 import com.kio.ElevatorControl.models.RealTimeMonitor;
+import com.kio.ElevatorControl.utils.ParseSerialsUtils;
 import com.kio.ElevatorControl.views.TypefaceTextView;
 import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.widget.GridView;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Created by IntelliJ IDEA.
@@ -40,7 +43,7 @@ public class MoveInsideActivity extends Activity {
 
     private static final String codeType = "62";
 
-    private List<RealTimeMonitor> mStateCodes;
+    private List<RealTimeMonitor> realTimeMonitors;
 
     @InjectView(R.id.grid_view)
     GridView mGridView;
@@ -51,9 +54,7 @@ public class MoveInsideActivity extends Activity {
 
     private List<Integer> floors;
 
-    private Timer timer;
-
-    private boolean getFloors;
+    private HCommunication[] getFloorsCommunications;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,22 +64,12 @@ public class MoveInsideActivity extends Activity {
         setContentView(R.layout.activity_move_inside);
         Views.inject(this);
         bindListViewItemClickEvent();
-        getFloors = false;
         mMoveInsideHandler = new MoveInsideHandler(this);
         floorHandler = new FloorHandler(this);
         floors = new ArrayList<Integer>();
-        mStateCodes = RealTimeMonitorDao.findByType(this, codeType);
-        timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                if (!getFloors) {
-                    loadDataAndRenderView();
-                } else {
-                    timer.cancel();
-                }
-            }
-        }, 0, 1000);
+        realTimeMonitors = RealTimeMonitorDao.findByType(this, codeType);
+        createGetFloorsCommunication();
+        loadDataAndRenderView();
     }
 
     @Override
@@ -93,6 +84,56 @@ public class MoveInsideActivity extends Activity {
     }
 
     /**
+     * Create Get Floors Communication
+     */
+    private void createGetFloorsCommunication() {
+        ArrayList<String> names = new ArrayList<String>();
+        names.add(ApplicationConfig.BOTTOM_FLOOR_NAME);
+        names.add(ApplicationConfig.TOP_FLOOR_NAME);
+        List<ParameterSettings> settingsList = ParameterSettingsDao.findByNames(MoveInsideActivity.this, names);
+        int size = settingsList.size();
+        getFloorsCommunications = new HCommunication[size];
+        for (int i = 0; i < size; i++) {
+            final ParameterSettings setting = settingsList.get(i);
+            getFloorsCommunications[i] = new HCommunication() {
+                @Override
+                public void beforeSend() {
+                    this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103"
+                            + setting.getCode()
+                            + "0001")));
+                }
+
+                @Override
+                public void afterSend() {
+
+                }
+
+                @Override
+                public void beforeReceive() {
+
+                }
+
+                @Override
+                public void afterReceive() {
+
+                }
+
+                @Override
+                public Object onParse() {
+                    if (HSerial.isCRC16Valid(getReceivedBuffer())) {
+                        byte[] received = HSerial.trimEnd(getReceivedBuffer());
+                        MoveInsideActivity.this.floors.add(ParseSerialsUtils.getIntFromBytes(received));
+                        Log.v(TAG, HSerial.byte2HexStr(received));
+                        setting.setReceived(received);
+                        return setting;
+                    }
+                    return null;
+                }
+            };
+        }
+    }
+
+    /**
      * 绑定ListView点击事件
      */
     private void bindListViewItemClickEvent() {
@@ -101,64 +142,53 @@ public class MoveInsideActivity extends Activity {
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 // 0103 读取
                 // 0106 写入
-                String condition = getCondition(position);
-                // 召唤指定楼层
-                for (RealTimeMonitor stateCode : mStateCodes) {
-                    if (condition.equalsIgnoreCase(stateCode.getName())) {
-                        final RealTimeMonitor codeObject = stateCode;
-                        HCommunication[] communications = new HCommunication[]{
-                                new HCommunication() {
-                                    @Override
-                                    public void beforeSend() {
-                                        this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0106"
-                                                + codeObject.getCode()
-                                                + "0001")));
-                                    }
+                final String[] condition = getCallCode(position);
+                Log.v(TAG, condition[0]);
+                final RealTimeMonitor monitor = realTimeMonitors.get(Integer.parseInt(condition[1]));
+                HCommunication[] communications = new HCommunication[]{
+                        new HCommunication() {
+                            @Override
+                            public void beforeSend() {
+                                this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0106"
+                                        + condition[0]
+                                        + "0001")));
+                            }
 
-                                    @Override
-                                    public void afterSend() {
+                            @Override
+                            public void afterSend() {
 
-                                    }
+                            }
 
-                                    @Override
-                                    public void beforeReceive() {
+                            @Override
+                            public void beforeReceive() {
 
-                                    }
+                            }
 
-                                    @Override
-                                    public void afterReceive() {
+                            @Override
+                            public void afterReceive() {
 
-                                    }
+                            }
 
-                                    @Override
-                                    public Object onParse() {
-                                        if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                                            byte[] received = HSerial.trimEnd(getReceivedBuffer());
-                                            Log.v(TAG, HSerial.byte2HexStr(received));
-                                            codeObject.setReceived(received);
-                                            return codeObject;
-                                        }
-                                        return null;
-                                    }
+                            @Override
+                            public Object onParse() {
+                                if (HSerial.isCRC16Valid(getReceivedBuffer())) {
+                                    byte[] received = HSerial.trimEnd(getReceivedBuffer());
+                                    Log.v(TAG, HSerial.byte2HexStr(received));
+                                    monitor.setReceived(received);
+                                    return monitor;
                                 }
-                        };
-                        if (HBluetooth.getInstance(MoveInsideActivity.this).isPrepared()) {
-                            HBluetooth.getInstance(MoveInsideActivity.this)
-                                    .setHandler(floorHandler)
-                                    .setCommunications(communications)
-                                    .Start();
+                                return null;
+                            }
                         }
-                    }
+                };
+                if (HBluetooth.getInstance(MoveInsideActivity.this).isPrepared()) {
+                    HBluetooth.getInstance(MoveInsideActivity.this)
+                            .setHandler(floorHandler)
+                            .setCommunications(communications)
+                            .Start();
                 }
             }
         });
-    }
-
-    /**
-     * 同步电梯状态数据
-     */
-    private void syncElevatorStatus() {
-
     }
 
     // 开门
@@ -246,13 +276,14 @@ public class MoveInsideActivity extends Activity {
     }
 
     /**
-     * 取得查询条件
+     * 取得需要发送的Code
      *
-     * @param position index
-     * @return String
+     * @param position GridView Item Index
+     * @return String[]
      */
-    private String getCondition(int position) {
+    private String[] getCallCode(int position) {
         int index = position + 1;
+        int section_location = 0;
         String searchCondition = "";
         String[] conditions = new String[]{"1-8",
                 "9-16",
@@ -264,64 +295,33 @@ public class MoveInsideActivity extends Activity {
             String[] parts = condition.split("-");
             if (index >= Integer.parseInt(parts[0]) && index <= Integer.parseInt(parts[1])) {
                 searchCondition = condition + "层信息";
+                section_location = index - Integer.parseInt(parts[0]);
             }
         }
-        return searchCondition;
+        String code = "";
+        int offset = 0;
+        int location = 0;
+        for (RealTimeMonitor stateCode : realTimeMonitors) {
+            if (searchCondition.equalsIgnoreCase(stateCode.getName())) {
+                code = stateCode.getCode() + ApplicationConfig.MOVE_SIDE_CODE[section_location];
+                location = offset;
+            }
+            offset++;
+        }
+        return new String[]{code, String.valueOf(location)};
     }
 
     /**
      * 取得电梯层数
      */
     private void loadDataAndRenderView() {
-        final String[] codes = new String[]{"F601", "F600"};
-        HCommunication[] communications = new HCommunication[codes.length];
-        int index = 0;
-        for (String code : codes) {
-            final String data = code;
-            communications[index] = new HCommunication() {
-                @Override
-                public void beforeSend() {
-                    this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103" + data + "0001")));
-                }
-
-                @Override
-                public void afterSend() {
-
-                }
-
-                @Override
-                public void beforeReceive() {
-
-                }
-
-                @Override
-                public void afterReceive() {
-
-                }
-
-                @Override
-                public Object onParse() {
-                    if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                        // 校验数据
-                        byte[] received = HSerial.trimEnd(getReceivedBuffer());
-                        if (received.length == 8) {
-                            int value = received[4];
-                            value = value << 8;
-                            value = value | received[5];
-                            floors.add(value);
-                            return floors;
-                        }
-                    }
-                    return null;
-                }
-            };
-            index++;
-        }
-        if (HBluetooth.getInstance(MoveInsideActivity.this).isPrepared()) {
-            HBluetooth.getInstance(MoveInsideActivity.this)
-                    .setHandler(mMoveInsideHandler)
-                    .setCommunications(communications)
-                    .Start();
+        if (getFloorsCommunications != null) {
+            if (HBluetooth.getInstance(MoveInsideActivity.this).isPrepared()) {
+                HBluetooth.getInstance(MoveInsideActivity.this)
+                        .setHandler(mMoveInsideHandler)
+                        .setCommunications(getFloorsCommunications)
+                        .Start();
+            }
         }
     }
 
@@ -394,14 +394,17 @@ public class MoveInsideActivity extends Activity {
         @Override
         public void onMultiTalkEnd(Message msg) {
             super.onMultiTalkEnd(msg);
+            if (MoveInsideActivity.this.floors.size() == 2) {
+                MoveInsideActivity.this.updateGridViewDataSource(MoveInsideActivity.this.floors);
+            } else {
+                MoveInsideActivity.this.floors = new ArrayList<Integer>();
+                MoveInsideActivity.this.loadDataAndRenderView();
+            }
         }
 
         @Override
         public void onTalkReceive(Message msg) {
-            if (MoveInsideActivity.this.floors.size() == 2) {
-                MoveInsideActivity.this.updateGridViewDataSource(MoveInsideActivity.this.floors);
-                MoveInsideActivity.this.getFloors = true;
-            }
+
         }
 
     }

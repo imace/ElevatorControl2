@@ -103,7 +103,7 @@ public class ParameterSettings implements Cloneable {
 
 
     public String getCode() {
-        return code;
+        return code.replace("FR", "D2");
     }
 
     public void setCode(String code) {

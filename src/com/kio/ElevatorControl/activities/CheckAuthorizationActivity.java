@@ -40,8 +40,8 @@ public class CheckAuthorizationActivity extends Activity {
 
     @OnClick(R.id.btn_login)
     public void btnLoginClick(View v) {
-        this.startActivity(new Intent(CheckAuthorizationActivity.this, ChooseDeviceActivity.class));
-        //this.startActivity(new Intent(CheckAuthorizationActivity.this, NavigationTabActivity.class));
+        //this.startActivity(new Intent(CheckAuthorizationActivity.this, ChooseDeviceActivity.class));
+        this.startActivity(new Intent(CheckAuthorizationActivity.this, NavigationTabActivity.class));
     }
 
     /**

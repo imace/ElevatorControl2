@@ -24,29 +24,30 @@
             android:listSelector="#00000000"
             android:numColumns="auto_fit"
             android:layout_height="0dp"/>
-    <RelativeLayout
+    <LinearLayout
+            android:gravity="center"
+            android:orientation="horizontal"
             android:background="@drawable/card_view_background"
             android:layout_marginRight="@dimen/card_view_margin"
             android:layout_marginLeft="@dimen/card_view_margin"
             android:layout_marginBottom="@dimen/card_view_margin"
-            android:paddingRight="50dp"
-            android:paddingLeft="50dp"
+            android:padding="@dimen/card_view_margin"
             android:layout_width="match_parent"
             android:layout_height="100dp">
         <ImageButton
                 android:id="@+id/open_door_button"
                 android:background="#00000000"
-                android:layout_alignParentLeft="true"
-                android:layout_centerVertical="true"
                 android:src="@drawable/open_elevator_door"
                 android:contentDescription="@null"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
         <LinearLayout
+                android:layout_marginLeft="@dimen/card_view_margin"
+                android:layout_marginRight="@dimen/card_view_margin"
                 android:gravity="center"
-                android:layout_centerInParent="true"
                 android:orientation="vertical"
-                android:layout_width="120dp"
+                android:layout_weight="1"
+                android:layout_width="0dp"
                 android:background="@color/highlight_text_color"
                 android:layout_height="60dp">
             <TextView
@@ -59,11 +60,9 @@
         <ImageButton
                 android:id="@+id/close_door_button"
                 android:background="#00000000"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
                 android:src="@drawable/close_elevator_door"
                 android:contentDescription="@null"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
-    </RelativeLayout>
+    </LinearLayout>
 </LinearLayout>

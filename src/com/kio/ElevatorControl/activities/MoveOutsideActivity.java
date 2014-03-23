@@ -15,8 +15,12 @@ import com.hbluetooth.HCommunication;
 import com.hbluetooth.HHandler;
 import com.hbluetooth.HSerial;
 import com.kio.ElevatorControl.R;
+import com.kio.ElevatorControl.config.ApplicationConfig;
+import com.kio.ElevatorControl.daos.ParameterSettingsDao;
 import com.kio.ElevatorControl.daos.RealTimeMonitorDao;
+import com.kio.ElevatorControl.models.ParameterSettings;
 import com.kio.ElevatorControl.models.RealTimeMonitor;
+import com.kio.ElevatorControl.utils.ParseSerialsUtils;
 import com.kio.ElevatorControl.views.TintedImageButton;
 import com.kio.ElevatorControl.views.TypefaceTextView;
 import org.holoeverywhere.app.Activity;
@@ -24,8 +28,6 @@ import org.holoeverywhere.widget.GridView;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Created by IntelliJ IDEA.
@@ -38,19 +40,17 @@ public class MoveOutsideActivity extends Activity {
     @InjectView(R.id.grid_view)
     GridView mGridView;
 
-    private List<Integer> floors;
-
     private static final String codeType = "64";
 
-    private List<RealTimeMonitor> mStateCodes;
+    private List<RealTimeMonitor> realTimeMonitors;
 
     private MoveOutsideHandler mMoveOutsideHandler;
 
     private static final String TAG = MoveOutsideActivity.class.getSimpleName();
 
-    private Timer timer;
+    private List<Integer> floors;
 
-    private boolean getFloors;
+    private HCommunication[] getFloorsCommunications;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,20 +60,10 @@ public class MoveOutsideActivity extends Activity {
         setContentView(R.layout.activity_move_outside);
         Views.inject(this);
         mMoveOutsideHandler = new MoveOutsideHandler(this);
-        getFloors = false;
-        mStateCodes = RealTimeMonitorDao.findByType(this, codeType);
+        realTimeMonitors = RealTimeMonitorDao.findByType(this, codeType);
         floors = new ArrayList<Integer>();
-        timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                if (!getFloors) {
-                    loadDataAndRenderView();
-                } else {
-                    timer.cancel();
-                }
-            }
-        }, 0, 1000);
+        createGetFloorsCommunication();
+        loadDataAndRenderView();
     }
 
     @Override
@@ -88,23 +78,23 @@ public class MoveOutsideActivity extends Activity {
     }
 
     /**
-     * 更新 GridView 数据源
+     * Create Get Floors Communication
      */
-    public void updateGridViewDataSource(List<Integer> floors) {
-        OutsideFloorAdapter adapter = new OutsideFloorAdapter(floors);
-        mGridView.setAdapter(adapter);
-    }
-
-    private void loadDataAndRenderView() {
-        final String[] codes = new String[]{"F601", "F600"};
-        HCommunication[] communications = new HCommunication[codes.length];
-        int index = 0;
-        for (String code : codes) {
-            final String data = code;
-            communications[index] = new HCommunication() {
+    private void createGetFloorsCommunication() {
+        ArrayList<String> names = new ArrayList<String>();
+        names.add(ApplicationConfig.BOTTOM_FLOOR_NAME);
+        names.add(ApplicationConfig.TOP_FLOOR_NAME);
+        List<ParameterSettings> settingsList = ParameterSettingsDao.findByNames(MoveOutsideActivity.this, names);
+        int size = settingsList.size();
+        getFloorsCommunications = new HCommunication[size];
+        for (int i = 0; i < size; i++) {
+            final ParameterSettings setting = settingsList.get(i);
+            getFloorsCommunications[i] = new HCommunication() {
                 @Override
                 public void beforeSend() {
-                    this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103" + data + "0001")));
+                    this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103"
+                            + setting.getCode()
+                            + "0001")));
                 }
 
                 @Override
@@ -125,30 +115,77 @@ public class MoveOutsideActivity extends Activity {
                 @Override
                 public Object onParse() {
                     if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                        // 校验数据
                         byte[] received = HSerial.trimEnd(getReceivedBuffer());
-                        if (received.length == 8) {
-                            int value = received[4];
-                            value = value << 8;
-                            value = value | received[5];
-                            floors.add(value);
-                            return floors;
-                        }
+                        MoveOutsideActivity.this.floors.add(ParseSerialsUtils.getIntFromBytes(received));
+                        setting.setReceived(received);
+                        return setting;
                     }
                     return null;
                 }
             };
-            index++;
         }
-        if (mMoveOutsideHandler == null) {
-            mMoveOutsideHandler = new MoveOutsideHandler(MoveOutsideActivity.this);
+    }
+
+    /**
+     * 更新 GridView 数据源
+     */
+    public void updateGridViewDataSource(List<Integer> floors) {
+        OutsideFloorAdapter adapter = new OutsideFloorAdapter(floors);
+        mGridView.setAdapter(adapter);
+    }
+
+    private void loadDataAndRenderView() {
+        if (getFloorsCommunications != null) {
+            if (HBluetooth.getInstance(MoveOutsideActivity.this).isPrepared()) {
+                HBluetooth.getInstance(MoveOutsideActivity.this)
+                        .setHandler(mMoveOutsideHandler)
+                        .setCommunications(getFloorsCommunications)
+                        .Start();
+            }
         }
-        if (HBluetooth.getInstance(MoveOutsideActivity.this).isPrepared()) {
-            HBluetooth.getInstance(MoveOutsideActivity.this)
-                    .setHandler(mMoveOutsideHandler)
-                    .setCommunications(communications)
-                    .Start();
+    }
+
+    /**
+     * 取得需要发送的Code
+     *
+     * @param position GridView Item Index
+     * @return String[]
+     */
+    private String[] getCallCode(int position, boolean isUp) {
+        int index = position + 1;
+        int section_location = 0;
+        String searchCondition = "";
+        String[] conditions = new String[]{"1~4",
+                "5~8",
+                "9~12",
+                "13~16",
+                "17~20",
+                "21~24",
+                "25~28",
+                "29~32",
+                "33~36",
+                "37~40",
+                "41~44",
+                "45~48"};
+        for (String condition : conditions) {
+            String[] parts = condition.split("~");
+            if (index >= Integer.parseInt(parts[0]) && index <= Integer.parseInt(parts[1])) {
+                searchCondition = condition + "层召唤信息";
+                int minus = index - Integer.parseInt(parts[0]);
+                section_location = isUp ? minus * 2 : (2 * minus + 1);
+            }
         }
+        String code = "";
+        int offset = 0;
+        int location = 0;
+        for (RealTimeMonitor stateCode : realTimeMonitors) {
+            if (searchCondition.equalsIgnoreCase(stateCode.getName())) {
+                code = stateCode.getCode() + ApplicationConfig.MOVE_SIDE_CODE[section_location];
+                location = offset;
+            }
+            offset++;
+        }
+        return new String[]{code, String.valueOf(location)};
     }
 
     // ================================= GridView adapter ========================================== //
@@ -198,90 +235,98 @@ public class MoveOutsideActivity extends Activity {
             holder.mUpButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    String condition = getCondition(index);
-                    for (RealTimeMonitor stateCode : mStateCodes) {
-                        if (condition.equalsIgnoreCase(stateCode.getName())) {
-                            final RealTimeMonitor codeObject = stateCode;
-                            Log.v(TAG, codeObject.getCode());
-                            HCommunication[] communications = new HCommunication[]{
-                                    new HCommunication() {
-                                        @Override
-                                        public void beforeSend() {
+                    final String[] condition = MoveOutsideActivity.this.getCallCode(index, true);
+                    Log.v(TAG, condition[0]);
+                    final RealTimeMonitor monitor = realTimeMonitors.get(Integer.parseInt(condition[1]));
+                    HCommunication[] communications = new HCommunication[]{
+                            new HCommunication() {
+                                @Override
+                                public void beforeSend() {
+                                    this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0106"
+                                            + condition[0]
+                                            + "0001")));
+                                }
 
-                                        }
+                                @Override
+                                public void afterSend() {
 
-                                        @Override
-                                        public void afterSend() {
+                                }
 
-                                        }
+                                @Override
+                                public void beforeReceive() {
 
-                                        @Override
-                                        public void beforeReceive() {
+                                }
 
-                                        }
+                                @Override
+                                public void afterReceive() {
 
-                                        @Override
-                                        public void afterReceive() {
+                                }
 
-                                        }
-
-                                        @Override
-                                        public Object onParse() {
-                                            return null;
-                                        }
+                                @Override
+                                public Object onParse() {
+                                    if (HSerial.isCRC16Valid(getReceivedBuffer())) {
+                                        byte[] received = HSerial.trimEnd(getReceivedBuffer());
+                                        Log.v(TAG, HSerial.byte2HexStr(received));
+                                        monitor.setReceived(received);
+                                        return monitor;
                                     }
-                            };
-                            if (HBluetooth.getInstance(MoveOutsideActivity.this).isPrepared()) {
-                                HBluetooth.getInstance(MoveOutsideActivity.this)
-                                        .setCommunications(communications)
-                                        .Start();
+                                    return null;
+                                }
                             }
-                        }
+                    };
+                    if (HBluetooth.getInstance(MoveOutsideActivity.this).isPrepared()) {
+                        HBluetooth.getInstance(MoveOutsideActivity.this)
+                                .setCommunications(communications)
+                                .Start();
                     }
                 }
             });
             holder.mDownButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    String condition = getCondition(index);
-                    for (RealTimeMonitor stateCode : mStateCodes) {
-                        if (condition.equalsIgnoreCase(stateCode.getName())) {
-                            final RealTimeMonitor codeObject = stateCode;
-                            Log.v(TAG, codeObject.getCode());
-                            HCommunication[] communications = new HCommunication[]{
-                                    new HCommunication() {
-                                        @Override
-                                        public void beforeSend() {
+                    final String[] condition = MoveOutsideActivity.this.getCallCode(index, false);
+                    Log.v(TAG, condition[0]);
+                    final RealTimeMonitor monitor = realTimeMonitors.get(Integer.parseInt(condition[1]));
+                    HCommunication[] communications = new HCommunication[]{
+                            new HCommunication() {
+                                @Override
+                                public void beforeSend() {
+                                    this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0106"
+                                            + condition[0]
+                                            + "0001")));
+                                }
 
-                                        }
+                                @Override
+                                public void afterSend() {
 
-                                        @Override
-                                        public void afterSend() {
+                                }
 
-                                        }
+                                @Override
+                                public void beforeReceive() {
 
-                                        @Override
-                                        public void beforeReceive() {
+                                }
 
-                                        }
+                                @Override
+                                public void afterReceive() {
 
-                                        @Override
-                                        public void afterReceive() {
+                                }
 
-                                        }
-
-                                        @Override
-                                        public Object onParse() {
-                                            return null;
-                                        }
+                                @Override
+                                public Object onParse() {
+                                    if (HSerial.isCRC16Valid(getReceivedBuffer())) {
+                                        byte[] received = HSerial.trimEnd(getReceivedBuffer());
+                                        Log.v(TAG, HSerial.byte2HexStr(received));
+                                        monitor.setReceived(received);
+                                        return monitor;
                                     }
-                            };
-                            if (HBluetooth.getInstance(MoveOutsideActivity.this).isPrepared()) {
-                                HBluetooth.getInstance(MoveOutsideActivity.this)
-                                        .setCommunications(communications)
-                                        .Start();
+                                    return null;
+                                }
                             }
-                        }
+                    };
+                    if (HBluetooth.getInstance(MoveOutsideActivity.this).isPrepared()) {
+                        HBluetooth.getInstance(MoveOutsideActivity.this)
+                                .setCommunications(communications)
+                                .Start();
                     }
                 }
             });
@@ -296,36 +341,6 @@ public class MoveOutsideActivity extends Activity {
                 holder.mDownButton.setVisibility(View.VISIBLE);
             }
             return convertView;
-        }
-
-        /**
-         * 取得查询条件
-         *
-         * @param position index
-         * @return String
-         */
-        private String getCondition(int position) {
-            int index = position + 1;
-            String searchCondition = "";
-            String[] conditions = new String[]{"1~4",
-                    "5~8",
-                    "9~12",
-                    "13~16",
-                    "17~20",
-                    "21~24",
-                    "25~28",
-                    "29~32",
-                    "33~36",
-                    "37~40",
-                    "41~44",
-                    "45~48"};
-            for (String condition : conditions) {
-                String[] parts = condition.split("~");
-                if (index >= Integer.parseInt(parts[0]) && index <= Integer.parseInt(parts[1])) {
-                    searchCondition = condition + "层召唤信息";
-                }
-            }
-            return searchCondition;
         }
 
         // View holder
@@ -356,14 +371,17 @@ public class MoveOutsideActivity extends Activity {
         @Override
         public void onMultiTalkEnd(Message msg) {
             super.onMultiTalkEnd(msg);
+            if (MoveOutsideActivity.this.floors.size() == 2) {
+                MoveOutsideActivity.this.updateGridViewDataSource(MoveOutsideActivity.this.floors);
+            } else {
+                MoveOutsideActivity.this.floors = new ArrayList<Integer>();
+                MoveOutsideActivity.this.loadDataAndRenderView();
+            }
         }
 
         @Override
         public void onTalkReceive(Message msg) {
-            if (MoveOutsideActivity.this.floors.size() == 2) {
-                MoveOutsideActivity.this.updateGridViewDataSource(MoveOutsideActivity.this.floors);
-                MoveOutsideActivity.this.getFloors = true;
-            }
+
         }
 
     }

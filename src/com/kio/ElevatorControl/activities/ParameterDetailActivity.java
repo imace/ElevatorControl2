@@ -81,7 +81,6 @@ public class ParameterDetailActivity extends Activity {
                                         .toString();
                                 String parseData = ParseSerialsUtils
                                         .getHexStringFromUserInputParameterSetting(inputData, setting);
-                                // TODO ////////////////////////////////////////
                                 setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0106"
                                         + setting.getCode()
                                         + parseData

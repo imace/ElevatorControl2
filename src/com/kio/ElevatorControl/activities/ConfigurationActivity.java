@@ -52,6 +52,7 @@ public class ConfigurationActivity extends Activity {
         setContentView(R.layout.activity_configuration);
         Views.inject(this);
         // ConfigurationActivity->ConfigurationAdapter->ConfigurationFragment->按照tabIndex初始化各个标签对应的子页面
+        configurationHandler = new ConfigurationHandler(this);
         mCurrentPageIndex = 0;
         mConfigurationAdapter = new ConfigurationAdapter(this);
         pager.setAdapter(mConfigurationAdapter);
@@ -121,11 +122,9 @@ public class ConfigurationActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (configurationHandler == null)
-            configurationHandler = new ConfigurationHandler(this);
-        HBluetooth.getInstance(this).setHandler(configurationHandler);
-        indicator.setCurrentItem(mCurrentPageIndex);
-        loadMonitorView();
+        if (mCurrentPageIndex == 0){
+            loadMonitorView();
+        }
     }
 
     @Override
@@ -178,8 +177,12 @@ public class ConfigurationActivity extends Activity {
                     }
                 };
             }
-            if (HBluetooth.getInstance(this).isPrepared())
-                HBluetooth.getInstance(this).setCommunications(hCommunications).Start();
+            if (HBluetooth.getInstance(this).isPrepared()){
+                HBluetooth.getInstance(this)
+                        .setHandler(configurationHandler)
+                        .setCommunications(hCommunications)
+                        .Start();
+            }
         }
     }
 

@@ -1,6 +1,7 @@
 package com.hbluetooth;
 
 import android.annotation.SuppressLint;
+import android.util.Log;
 
 /**
  * 16进制值与String/Byte之间的转换
@@ -225,6 +226,7 @@ public class HSerial {
         byte[] trimed = trimEnd(data);
         if (trimed.length <= 2)
             return false;
+        /*
         // 纯指令
         byte[] bcmd = new byte[trimed.length - 2];
         int[] icmd = new int[trimed.length - 2];
@@ -234,11 +236,38 @@ public class HSerial {
         }
         // crc最后两位
         byte[] crced = crc16(icmd);
+
         int[] last1 = new int[]{crced[crced.length - 2] & 0xff,
                 crced[crced.length - 1] & 0xff};
+        int[] last1 = getCRCCheckValue(trimEnd(data), trimEnd(data).length);
+        for (int i = 0; i < last1.length; i ++){
+            Log.v("CRCAAA", Integer.toHexString(last1[i]));
+        }
         // 最后两位
         int[] last2 = getEndFrom(data);
         return (last1[0] == last2[0] && last1[1] == last2[1]);
+        */
+        int value = getCRCCheckValue(trimed, trimed.length);
+        return value == 0;
+    }
+    /**
+     * CRC CHECK
+     *
+     * @param data_value
+     * @param length
+     * @return
+     */
+    private static int getCRCCheckValue(byte[] data_value, int length) {
+        int crc_value = 0xFFFF;
+        for (int i = 0; i < length; i++) {
+            crc_value ^= (data_value[i] & 0xFF);// 默认转为16进制进行异或
+            for (int j = 0; j < 8; j++) {
+                if ((crc_value & 0x0001) > 0) {
+                    crc_value = (crc_value >> 1) ^ 0xa001;
+                } else crc_value = crc_value >> 1;
+            }
+        }
+        return crc_value;
     }
 
     /**
