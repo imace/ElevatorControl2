@@ -1,5 +1,6 @@
 package com.kio.ElevatorControl.activities;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Message;
@@ -27,6 +28,9 @@ import org.holoeverywhere.widget.ProgressBar;
 import org.holoeverywhere.widget.TextView;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -215,7 +219,7 @@ public class ParameterDownloadActivity extends Activity {
      */
     private class DownloadParameterHandler extends HHandler {
 
-        private int index;
+        private int index = 0;
 
         private int receiveCount = 0;
 
@@ -237,23 +241,42 @@ public class ParameterDownloadActivity extends Activity {
             super.onMultiTalkEnd(msg);
             HCommunication[] communications = ParameterDownloadActivity.this.communicationsLists.get(index);
             if (communications.length == receiveCount){
-                int currentProgress = ParameterDownloadActivity.this.downloadProgressBar.getProgress();
-                currentProgress += receiveCount;
-                ParameterDownloadActivity.this.downloadProgressBar.setProgress(currentProgress);
-                if (index < ParameterDownloadActivity.this.communicationsLists.size()){
-                    receiveCount = 0;
-                    index++;
-                    ParameterDownloadActivity.this.startCommunication(index);
-                }
+                ParameterDownloadActivity.this.downloadProgressBar.incrementProgress(receiveCount);
                 ParameterDownloadActivity.this.parameterGroupLists
                         .get(index)
                         .getParametersettings()
                         .setList(tempParameterSettingsList);
-                if (ParameterDownloadActivity.this.downloadProgressBar.getMax() == currentProgress){
+                index++;
+                receiveCount = 0;
+                if (index < ParameterDownloadActivity.this.communicationsLists.size()){
+                    ParameterDownloadActivity.this.startCommunication(index);
+                }
+                if (ParameterDownloadActivity.this.downloadProgressBar.getMax() ==
+                        ParameterDownloadActivity.this.downloadProgressBar.getProgress()){
                     if (ParameterDownloadActivity.this.downloadDialog != null){
                         ParameterDownloadActivity.this.downloadDialog.dismiss();
                     }
-                    GenerateJSON.getInstance().generateProfileJSON(ParameterDownloadActivity.this.parameterGroupLists);
+                    File fileName = new File(getApplicationContext().getExternalCacheDir().getPath()
+                            + "/"
+                            + DIRECTORY_NAME
+                            + "/profile.JSON");
+                    if (!fileName.exists()){
+                        try {
+                            fileName.createNewFile();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                   String JSONString = GenerateJSON
+                           .getInstance()
+                           .generateProfileJSON(ParameterDownloadActivity.this.parameterGroupLists);
+                    try {
+                        FileOutputStream outputStream = new FileOutputStream(fileName);
+                        outputStream.write(JSONString.getBytes());
+                        outputStream.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
             else {

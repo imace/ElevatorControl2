@@ -17,7 +17,9 @@ import com.kio.ElevatorControl.daos.ParameterSettingsDao;
 import com.kio.ElevatorControl.handlers.FailureCurrentHandler;
 import com.kio.ElevatorControl.handlers.HistoryErrorHandler;
 import com.kio.ElevatorControl.models.ErrorHelp;
+import com.kio.ElevatorControl.models.HistoryError;
 import com.kio.ElevatorControl.models.ParameterSettings;
+import com.kio.ElevatorControl.utils.ParseSerialsUtils;
 import com.viewpagerindicator.TabPageIndicator;
 import org.holoeverywhere.app.Activity;
 
@@ -44,11 +46,9 @@ public class TroubleAnalyzeActivity extends Activity {
 
     private FailureCurrentHandler currentErrorHandler;
 
-    private List<ParameterSettings> historyErrorSettingsLists;
-
     private HistoryErrorHandler historyErrorHandler;
 
-    private HCommunication[] historyCommunications;
+    public HCommunication[] historyCommunications;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,19 +119,20 @@ public class TroubleAnalyzeActivity extends Activity {
     private void getHistoryErrorCode() {
         ArrayList<String> names = new ArrayList<String>();
         for (int i = 0; i < 10; i++) {
-            names.add(ApplicationConfig.HISTORY_ERROR_NAME.replace("&", String.valueOf(i + 1)));
+            names.add(ApplicationConfig.HISTORY_ERROR_CODE_NAME.replace("&", String.valueOf(i + 1)));
         }
-        names.add(ApplicationConfig.LAST_HISTORY_ERROR_NAME);
-        historyErrorSettingsLists = ParameterSettingsDao.findByNames(TroubleAnalyzeActivity.this, names);
-        int size = historyErrorSettingsLists.size();
+        names.add(ApplicationConfig.LAST_HISTORY_ERROR_CODE_NAME);
+        List<ParameterSettings> list = ParameterSettingsDao.findByNames(TroubleAnalyzeActivity.this, names);
+        int size = list.size();
         historyCommunications = new HCommunication[size];
         for (int i = 0; i < size; i++) {
-            final ParameterSettings setting = historyErrorSettingsLists.get(i);
+            final ParameterSettings item = list.get(i);
             historyCommunications[i] = new HCommunication() {
                 @Override
                 public void beforeSend() {
                     this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103"
-                            + setting.getCode()
+                            + ParseSerialsUtils.splitAndConvertToHex(item.getCode())
+                            + "0004"
                             + "0001")));
                 }
 
@@ -155,13 +156,9 @@ public class TroubleAnalyzeActivity extends Activity {
                     if (HSerial.isCRC16Valid(getReceivedBuffer())) {
                         byte[] received = HSerial.trimEnd(getReceivedBuffer());
                         Log.v(TAG, HSerial.byte2HexStr(received));
-                        ErrorHelp errorHelp = new ErrorHelp();
-                        try {
-                            errorHelp.setReceived(TroubleAnalyzeActivity.this, received);
-                            return errorHelp;
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        HistoryError historyError = new HistoryError();
+                        historyError.setData(received);
+                        return historyError;
                     }
                     return null;
                 }
@@ -199,7 +196,6 @@ public class TroubleAnalyzeActivity extends Activity {
                         if (HSerial.isCRC16Valid(getReceivedBuffer())) {
                             // 通过验证
                             byte[] received = HSerial.trimEnd(getReceivedBuffer());
-                            Log.v(TAG, HSerial.byte2HexStr(received));
                             ErrorHelp errorHelp = new ErrorHelp();
                             try {
                                 errorHelp.setReceived(TroubleAnalyzeActivity.this, received);
@@ -209,7 +205,6 @@ public class TroubleAnalyzeActivity extends Activity {
                                 return errorHelp;
                             } catch (Exception e) {
                                 // 失败
-                                Log.e(TAG, e.getLocalizedMessage());
                             }
                         }
                         return null;
@@ -231,11 +226,12 @@ public class TroubleAnalyzeActivity extends Activity {
      * 历史故障
      */
     public void loadHistoryTroubleView() {
-        if (HBluetooth.getInstance(this).isPrepared())
+        if (HBluetooth.getInstance(this).isPrepared()) {
             HBluetooth.getInstance(this)
                     .setHandler(historyErrorHandler)
                     .setCommunications(historyCommunications)
                     .Start();
+        }
     }
 
     /**

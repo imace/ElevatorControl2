@@ -16,6 +16,8 @@ import java.util.Date;
 
 public class ParseSerialsUtils {
 
+    private static final String TAG = ParseSerialsUtils.class.getSimpleName();
+
     @SuppressLint("DefaultLocale")
     public static String getValueTextFromRealTimeMonitor(RealTimeMonitor rm) {
         byte[] data = rm.getReceived();
@@ -24,8 +26,7 @@ public class ParseSerialsUtils {
             value = value << 8;
             value = value | data[5];
             Float floatValue = value * Float.parseFloat(rm.getScale());
-            String txt = String.format("%.2f", floatValue);
-            return txt;
+            return String.format("%.2f", floatValue);
         }
         return "Error";
     }
@@ -38,8 +39,7 @@ public class ParseSerialsUtils {
             value = value << 8;
             value = value | data[5];
             Float aFloat = value * Float.parseFloat(rm.getScale());
-            String txt = String.format("%.2f", aFloat);
-            return txt;
+            return String.format("%.2f", aFloat);
         }
         return "Error";
     }
@@ -64,7 +64,7 @@ public class ParseSerialsUtils {
      * @param data byte[]
      * @return int
      */
-    public static int getIntFromBytes(byte[] data){
+    public static int getIntFromBytes(byte[] data) {
         if (data.length == 8) {
             int value = data[4];
             value = value << 8;
@@ -88,6 +88,7 @@ public class ParseSerialsUtils {
             int i = (int) (dt / scale);
             return Integer.toHexString(i);
         } catch (Exception e) {
+            e.printStackTrace();
         }
         return "0000";
     }
@@ -216,4 +217,12 @@ public class ParseSerialsUtils {
         return errorHelpLog;
     }
 
+    public static String splitAndConvertToHex(String code) {
+        if (code.length() == 4) {
+            String prefix = code.substring(0, 2);
+            String suffix = code.substring(2, 4);
+            return prefix + Integer.toHexString(Integer.parseInt(suffix));
+        }
+        return code;
+    }
 }

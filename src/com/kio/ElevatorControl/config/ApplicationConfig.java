@@ -19,9 +19,9 @@ public class ApplicationConfig {
 
     public static final String FC_PROTECTION_FUNCTION_NAME = "FC保护功能参数";
 
-    public static final String HISTORY_ERROR_NAME = "第&次故障信息";
+    public static final String HISTORY_ERROR_CODE_NAME = "第&次故障信息";
 
-    public static final String LAST_HISTORY_ERROR_NAME = "最后一次故障";
+    public static final String LAST_HISTORY_ERROR_CODE_NAME = "最后一次故障";
 
     public static final String F6_LOGIC_PARAMETER_NAME = "F6电梯逻辑参数";
 

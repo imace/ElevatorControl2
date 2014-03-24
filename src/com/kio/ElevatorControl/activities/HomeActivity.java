@@ -120,6 +120,7 @@ public class HomeActivity extends Activity {
                 public Object onParse() {
                     if (HSerial.isCRC16Valid(getReceivedBuffer())) {
                         byte[] received = HSerial.trimEnd(getReceivedBuffer());
+                        Log.v(TAG, HSerial.byte2HexStr(received));
                         RealTimeMonitor monitor = (RealTimeMonitor) monitorLists.get(i).clone();
                         monitor.setReceived(received);
                         return monitor;

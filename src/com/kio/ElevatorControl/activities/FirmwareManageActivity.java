@@ -53,6 +53,8 @@ public class FirmwareManageActivity extends Activity {
 
     private ProgressBar burningProgressBar;
 
+    private Button dlgButton;//固件烧录
+
     private FirmwareManageAdapter mFirmwareManageAdapter;
 
     @Override
@@ -116,20 +118,18 @@ public class FirmwareManageActivity extends Activity {
                 builder.setView(dialogView);
                 builder.setPositiveButton(R.string.burn_firmware_text, null);
 
+                burningProgressBar.setMax(100);
+
                 try {
-                    FileInputStream fileInputStream = new FileInputStream("/storage/emulated/0/Nice3000+_Mcbs.bin");
+                    FileInputStream fileInputStream = new FileInputStream("/storage/sdcard0/Nice3000+_Mcbs-38400解密.bin");
                     if (HBluetooth.getInstance(FirmwareManageActivity.this).isPrepared()) {
                         BurnHandler burnHandler = new BurnHandler();
                         BluetoothSocket socket = HBluetooth.getInstance(FirmwareManageActivity.this).btSocket;
-                        socket.getInputStream().close();
                         IProgram.getInstance().SetProgramPara(socket, fileInputStream, burnHandler);
                         IProgram.getInstance().GetBinFileInfo();
                         firmwareMetaTextView.setText(IProgram.getInstance().GetBinFileInfo());
-                        IProgram.getInstance().StartProgram();
                     }
                 } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
                     e.printStackTrace();
                 }
 
@@ -141,15 +141,22 @@ public class FirmwareManageActivity extends Activity {
                     @Override
                     public void onClick(View view) {
                         dialog.setTitle(R.string.burning_firmware_text);
-                        Button button = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-                        button.setText(R.string.dialog_btn_cancel);
-                        button.setOnClickListener(new View.OnClickListener() {
+                        dlgButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                        dlgButton.setText(R.string.dialog_btn_cancel);
+                        dlgButton.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
                                 dialog.dismiss();
                             }
                         });
-                        button.invalidate();
+                        dlgButton.invalidate();
+                        IProgram.getInstance().StartProgram();//开始烧录
+
+                        firmwareMetaView.setVisibility(View.GONE);
+                        burnView.setVisibility(View.VISIBLE);
+                        burningProgressBar.setVisibility(View.VISIBLE);
+                        dlgButton.setEnabled(false);
+
                     }
                 });
                 return false;
@@ -183,18 +190,28 @@ public class FirmwareManageActivity extends Activity {
             switch (msg.arg1) {
                 case IProgram.ERROR_CODE:
                     //故障码
+                    dlgButton.setEnabled(true);
                     break;
                 case IProgram.PROGRAM_PROGRESS:
                     //烧录进度
                     int percent = msg.arg2;//百分比
+                    burningProgressBar.setProgress(percent);
                     break;
                 case IProgram.PROGRAM_TEXT_INFO:
                     //文字信息
+                    if(msg.obj == null)
+                        break;
                     String str = (String) msg.obj;
+                    burningMessageTextView.setText(str);
                     break;
                 case IProgram.PROGRAM_TIME:
                     //烧录总时间
-                    int millisecond = msg.arg2;
+                    int second = msg.arg2;
+                    String strTime = String.format("烧录用时%d秒", second);
+                    burningMessageTextView.setText(strTime);
+                    dlgButton.setEnabled(true);
+                    dlgButton.setText(R.string.dialog_btn_over);//按钮文字显示为“完成”
+                    burningProgressBar.setVisibility(View.GONE);
                     break;
             }
 

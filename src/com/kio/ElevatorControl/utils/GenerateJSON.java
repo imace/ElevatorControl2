@@ -1,6 +1,9 @@
 package com.kio.ElevatorControl.utils;
 
 import com.kio.ElevatorControl.models.ParameterGroupSettings;
+import com.kio.ElevatorControl.models.ParameterSettings;
+import org.json.JSONException;
+import org.json.JSONStringer;
 
 import java.util.List;
 
@@ -24,10 +27,42 @@ public class GenerateJSON {
     /**
      * Group Parameter Setting List
      *
-     * @param list List
+     * @param groupList Group List
      */
-    public void generateProfileJSON(List<ParameterGroupSettings> list){
-
+    public String generateProfileJSON(List<ParameterGroupSettings> groupList){
+        JSONStringer jsonStringer = new JSONStringer();
+        try {
+            jsonStringer.array();
+            for (ParameterGroupSettings groupSetting : groupList) {
+                jsonStringer.object();
+                jsonStringer.key("groupText").value(groupSetting.getGroupText());
+                jsonStringer.key("groupId").value(groupSetting.getGroupId());
+                // Parameter Settings
+                jsonStringer.key("parameterSettings");
+                jsonStringer.array();
+                for (ParameterSettings detailSetting: groupSetting.getParametersettings().getList()){
+                    jsonStringer.object();
+                    jsonStringer.key("code").value(detailSetting.getCode());
+                    jsonStringer.key("name").value(detailSetting.getName());
+                    jsonStringer.key("productId").value(detailSetting.getProductId());
+                    jsonStringer.key("description").value(detailSetting.getDescription());
+                    jsonStringer.key("childId").value(detailSetting.getChildId());
+                    jsonStringer.key("scope").value(detailSetting.getScope());
+                    jsonStringer.key("defaultValue").value(detailSetting.getDefaultValue());
+                    jsonStringer.key("scale").value(detailSetting.getScale());
+                    jsonStringer.key("unit").value(detailSetting.getUnit());
+                    jsonStringer.key("type").value(detailSetting.getType());
+                    jsonStringer.key("mode").value(detailSetting.getMode());
+                    jsonStringer.endObject();
+                }
+                jsonStringer.endArray();
+                jsonStringer.endObject();
+            }
+            jsonStringer.endArray();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jsonStringer.toString();
     }
 
 }
