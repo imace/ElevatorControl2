@@ -32,6 +32,17 @@ public class ParameterSettings implements Cloneable {
     private String scale;// 最小单位
     private String unit;// 单位名称
     private String type;// 种类
+
+    /**
+     * 用户设定值
+     */
+    private String userValue;
+
+    /**
+     * 16进制值
+     */
+    private String hexValueString;
+
     /**
      * 参数选项说明类型,根据description得出 无<0,数字=count,Bit=100000+bitcount
      * 0=error,100000=error
@@ -44,18 +55,20 @@ public class ParameterSettings implements Cloneable {
     private boolean Valid;
     private Date lasttime;
 
-
     private byte[] received;
 
     private String finalValue;
 
+    /**
+     * 参数写入错误代码
+     */
+    private int writeErrorCode = -1;
 
     @ManyToOne(column = "FKGroupId")
     private ParameterGroupSettings parametergroupsettings;
 
     @OneToMany(manyColumn = "OptExplainId")
     private OneToManyLazyLoader<ParameterOptExplain, ParameterOptExplain> parameteroptexplain;
-
 
     /**
      * 无<0,数字=count,Bit=100000+bitcount 0=error,100000=error
@@ -159,6 +172,23 @@ public class ParameterSettings implements Cloneable {
         this.defaultValue = defaultValue;
     }
 
+    public String getUserValue() {
+        return userValue;
+    }
+
+    public void setUserValue(String userValue) {
+        this.userValue = userValue;
+    }
+
+    public String getHexValueString() {
+        return hexValueString;
+    }
+
+    public void setHexValueString(String hexValueString) {
+        this.hexValueString = hexValueString;
+    }
+
+
     public String getScale() {
         return scale;
     }
@@ -258,9 +288,16 @@ public class ParameterSettings implements Cloneable {
         return finalValue;
     }
 
-
     public void setFinalValue(String finalValue) {
         this.finalValue = finalValue;
+    }
+
+    public int getWriteErrorCode() {
+        return writeErrorCode;
+    }
+
+    public void setWriteErrorCode(int writeErrorCode) {
+        this.writeErrorCode = writeErrorCode;
     }
 
 }

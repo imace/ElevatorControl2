@@ -53,7 +53,7 @@ public class FirmwareManageActivity extends Activity {
 
     private ProgressBar burningProgressBar;
 
-    private Button dlgButton;//固件烧录
+    private Button dlgButton;//固件烧录按钮
 
     private FirmwareManageAdapter mFirmwareManageAdapter;
 
@@ -107,21 +107,17 @@ public class FirmwareManageActivity extends Activity {
                 AlertDialog.Builder builder = new AlertDialog.Builder(FirmwareManageActivity.this);
                 LayoutInflater inflater = FirmwareManageActivity.this.getLayoutInflater();
                 View dialogView = inflater.inflate(R.layout.firmware_burn_dialog, null);
-                // ================= //
                 firmwareMetaView = dialogView.findViewById(R.id.firmware_meta_view);
                 burnView = dialogView.findViewById(R.id.burn_view);
                 firmwareMetaTextView = (TextView) dialogView.findViewById(R.id.firmware_meta);
                 burningMessageTextView = (TextView) dialogView.findViewById(R.id.burning_message);
                 burningProgressBar = (ProgressBar) dialogView.findViewById(R.id.progress_bar);
-                // =============== //
                 builder.setTitle(R.string.will_burn_firmware_text);
                 builder.setView(dialogView);
                 builder.setPositiveButton(R.string.burn_firmware_text, null);
-
                 burningProgressBar.setMax(100);
-
                 try {
-                    FileInputStream fileInputStream = new FileInputStream("/storage/sdcard0/Nice3000+_Mcbs-38400解密.bin");
+                    FileInputStream fileInputStream = new FileInputStream("/storage/emulated/0/Nice3000+_Mcbs.bin");
                     if (HBluetooth.getInstance(FirmwareManageActivity.this).isPrepared()) {
                         BurnHandler burnHandler = new BurnHandler();
                         BluetoothSocket socket = HBluetooth.getInstance(FirmwareManageActivity.this).btSocket;
@@ -132,7 +128,6 @@ public class FirmwareManageActivity extends Activity {
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
-
                 final AlertDialog dialog = builder.create();
                 dialog.setCancelable(false);
                 dialog.setCanceledOnTouchOutside(false);
@@ -199,7 +194,7 @@ public class FirmwareManageActivity extends Activity {
                     break;
                 case IProgram.PROGRAM_TEXT_INFO:
                     //文字信息
-                    if(msg.obj == null)
+                    if (msg.obj == null)
                         break;
                     String str = (String) msg.obj;
                     burningMessageTextView.setText(str);

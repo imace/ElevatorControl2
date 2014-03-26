@@ -10,7 +10,9 @@ import android.widget.TextView;
 import com.hbluetooth.HBluetooth;
 import com.hbluetooth.HSerial;
 import com.kio.ElevatorControl.R;
+import com.kio.ElevatorControl.daos.ErrorHelpDao;
 import com.kio.ElevatorControl.models.ErrorHelp;
+import com.kio.ElevatorControl.models.HistoryError;
 import com.kio.ElevatorControl.models.ParameterSettings;
 import com.kio.ElevatorControl.utils.ParseSerialsUtils;
 import org.holoeverywhere.widget.Switch;
@@ -125,4 +127,25 @@ public class CustomDialog {
                 .setNeutralButton(R.string.dialog_btn_ok, null);
     }
 
+   // ========================================== History Error Dialog ==================================
+   public static AlertDialog.Builder historyErrorDialog(final HistoryError historyError, final Activity activity){
+       final View dialogView = activity.getLayoutInflater().inflate(R.layout.error_detail_dialog, null);
+       assert dialogView != null;
+       TextView errorCode = ((TextView) dialogView.findViewById(R.id.current_error_help_display));
+       TextView level =  ((TextView) dialogView.findViewById(R.id.current_error_help_level));
+       TextView name = ((TextView) dialogView.findViewById(R.id.current_error_help_name));
+       TextView reason = ((TextView) dialogView.findViewById(R.id.current_error_help_reason));
+       TextView solution = ((TextView) dialogView.findViewById(R.id.current_error_help_solution));
+       ErrorHelp errorHelp = ErrorHelpDao.findByDisplay(activity, historyError.getErrorCode());
+       if(errorHelp != null){
+           errorCode.setText(errorHelp.getDisplay());
+           level.setText(errorHelp.getLevel());
+           name.setText(errorHelp.getName());
+           reason.setText(errorHelp.getReason());
+           solution.setText(errorHelp.getSolution());
+       }
+       return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
+               .setView(dialogView)
+               .setNeutralButton(R.string.dialog_btn_ok, null);
+   }
 }

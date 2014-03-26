@@ -1,6 +1,7 @@
 package com.kio.ElevatorControl.daos;
 
 import android.content.Context;
+import com.kio.ElevatorControl.config.ApplicationConfig;
 import com.kio.ElevatorControl.models.RealTimeMonitor;
 import net.tsz.afinal.FinalDb;
 
@@ -14,9 +15,7 @@ public class RealTimeMonitorDao {
     private static final String TAG = RealTimeMonitorDao.class.getSimpleName();
 
     public static List<RealTimeMonitor> findAll(Context context) {
-        FinalDb db = FinalDb.create(context,
-                context.getString(context.getApplicationInfo().labelRes) + ".db",
-                DEBUG);
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         return db.findAll(RealTimeMonitor.class);
     }
 
@@ -28,9 +27,7 @@ public class RealTimeMonitorDao {
      * @return List
      */
     public static List<RealTimeMonitor> findByType(Context context, String type) {
-        FinalDb db = FinalDb.create(context,
-                context.getString(context.getApplicationInfo().labelRes) + ".db",
-                DEBUG);
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         return db.findAllByWhere(RealTimeMonitor.class, " type = '" + type + "'");
     }
 
@@ -42,9 +39,7 @@ public class RealTimeMonitorDao {
      * @return List
      */
     public static List<RealTimeMonitor> findByNames(Context context, String[] names) {
-        FinalDb db = FinalDb.create(context,
-                context.getString(context.getApplicationInfo().labelRes) + ".db",
-                DEBUG);
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         int size = names.length;
         if (size > 0) {
             String condition = "";

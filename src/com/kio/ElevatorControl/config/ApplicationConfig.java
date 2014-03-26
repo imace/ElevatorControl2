@@ -9,6 +9,11 @@ package com.kio.ElevatorControl.config;
  */
 public class ApplicationConfig {
 
+    /**
+     * 数据库名称
+     */
+    public static final String DATABASE_NAME = "ElevatorControl.db";
+
     public static final String RUNNING_SPEED_NAME = "运行速度";
 
     public static final String SYSTEM_STATUS_NAME = "系统状态";
@@ -17,17 +22,16 @@ public class ApplicationConfig {
 
     public static final String CURRENT_FLOOR_NAME = "当前楼层";
 
-    public static final String FC_PROTECTION_FUNCTION_NAME = "FC保护功能参数";
-
     public static final String HISTORY_ERROR_CODE_NAME = "第&次故障信息";
 
     public static final String LAST_HISTORY_ERROR_CODE_NAME = "最后一次故障";
 
-    public static final String F6_LOGIC_PARAMETER_NAME = "F6电梯逻辑参数";
+    public static final String GET_FLOOR_NAME = "最高层";
 
-    public static final String TOP_FLOOR_NAME = "最高层";
-
-    public static final String BOTTOM_FLOOR_NAME = "最低层";
+    /**
+     * 电梯默认最底层和最高层
+     */
+    public static final int[] DEFAULT_FLOORS = new int[]{1, 10};
 
     /**
      * 设备型号
@@ -44,5 +48,35 @@ public class ApplicationConfig {
             "0040", // 召唤七楼 & 四楼上
             "0080"  // 召唤八楼 & 四楼下
     };
+
+    /**
+     * 通讯故障信息描述码
+     */
+   public static final String[] ERROR_CODE_ARRAY = new String[]{
+           "80010000", //　无故障
+           "80010001", //　密码错误
+           "80010002", //　命令码错误
+           "80010003", //　CRC校验错误
+           "80010004", //　无效地址
+           "80010005", //　无效参数
+           "80010006", //　参数更改无效
+           "80010007"  //　系统被锁定
+   };
+
+    /**
+     * 通讯故障信息描述信息
+     */
+    public static final String[] ERROR_NAME_ARRAY = new String[]{
+            "无故障",
+            "密码错误",
+            "命令码错误",
+            "CRC校验错误",
+            "无效地址",
+            "无效参数",
+            "参数更改无效",
+            "系统被锁定"
+    };
+
+    public static final String NO_RESPOND = "未写入";
 
 }

@@ -1,15 +1,20 @@
 package com.kio.ElevatorControl.handlers;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import com.hbluetooth.HHandler;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.models.HistoryError;
+import com.kio.ElevatorControl.views.dialogs.CustomDialog;
+import org.holoeverywhere.widget.LinearLayout;
 import org.holoeverywhere.widget.ListView;
+import org.holoeverywhere.widget.ProgressBar;
 import org.holoeverywhere.widget.TextView;
 
 import java.util.ArrayList;
@@ -27,6 +32,12 @@ public class HistoryErrorHandler extends HHandler {
 
     private List<HistoryError> errorList;
 
+    private ProgressBar progressBar;
+
+    private LinearLayout historyView;
+
+    private HistoryAdapter adapter;
+
     public HistoryErrorHandler(Activity activity) {
         super(activity);
         TAG = FailureLogHandler.class.getSimpleName();
@@ -36,21 +47,52 @@ public class HistoryErrorHandler extends HHandler {
     public void onMultiTalkBegin(Message msg) {
         super.onMultiTalkBegin(msg);
         errorList = new ArrayList<HistoryError>();
+        if (adapter != null){
+            adapter.notifyDataSetChanged();
+        }
+        if (progressBar != null && historyView != null){
+            progressBar.setVisibility(View.VISIBLE);
+            historyView.setVisibility(View.INVISIBLE);
+        }
     }
 
     @Override
     public void onMultiTalkEnd(Message msg) {
         super.onMultiTalkEnd(msg);
+        if (progressBar == null){
+            progressBar = (ProgressBar) activity.findViewById(R.id.load_history_progress_bar);
+        }
+        if (historyView == null){
+            historyView = (LinearLayout) activity.findViewById(R.id.history_view);
+        }
         if (listView == null) {
             listView = (ListView) activity.findViewById(R.id.history_list);
         }
-        listView.setAdapter(new HistoryAdapter());
+        if (listView.getOnItemClickListener() == null){
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    final HistoryError historyError = errorList.get(i);
+                    AlertDialog.Builder builder = CustomDialog.historyErrorDialog(historyError,
+                            HistoryErrorHandler.this.activity);
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                }
+            });
+        }
+        adapter = new HistoryAdapter();
+        listView.setAdapter(adapter);
+        progressBar.setVisibility(View.INVISIBLE);
+        historyView.setVisibility(View.VISIBLE);
     }
 
     @Override
     public void onTalkReceive(Message msg) {
         if (msg.obj != null && (msg.obj instanceof HistoryError)) {
-            errorList.add((HistoryError) msg.obj);
+            HistoryError historyError = (HistoryError)msg.obj;
+            if (!historyError.isNoError()){
+                errorList.add((HistoryError) msg.obj);
+            }
         }
     }
 

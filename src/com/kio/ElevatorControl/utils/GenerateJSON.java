@@ -48,6 +48,8 @@ public class GenerateJSON {
                     jsonStringer.key("description").value(detailSetting.getDescription());
                     jsonStringer.key("childId").value(detailSetting.getChildId());
                     jsonStringer.key("scope").value(detailSetting.getScope());
+                    jsonStringer.key("userValue").value(detailSetting.getUserValue());
+                    jsonStringer.key("hexValue").value(detailSetting.getHexValueString());
                     jsonStringer.key("defaultValue").value(detailSetting.getDefaultValue());
                     jsonStringer.key("scale").value(detailSetting.getScale());
                     jsonStringer.key("unit").value(detailSetting.getUnit());

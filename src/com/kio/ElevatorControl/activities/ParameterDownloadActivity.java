@@ -1,10 +1,8 @@
 package com.kio.ElevatorControl.activities;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Message;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import butterknife.InjectView;
@@ -28,9 +26,9 @@ import org.holoeverywhere.widget.ProgressBar;
 import org.holoeverywhere.widget.TextView;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,7 +50,7 @@ public class ParameterDownloadActivity extends Activity {
 
     private EditText fileNameEditText;
 
-    private List<HCommunication[]> communicationsLists;
+    private List<HCommunication[]> communicationsList;
 
     private AlertDialog downloadDialog;
 
@@ -81,6 +79,11 @@ public class ParameterDownloadActivity extends Activity {
         setContentView(R.layout.activity_parameter_download);
         Views.inject(this);
         downloadParameterHandler = new DownloadParameterHandler(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
 
     @Override
@@ -137,7 +140,7 @@ public class ParameterDownloadActivity extends Activity {
             int maxProgress = 0;
             fileNameEditText.setVisibility(View.GONE);
             parameterGroupLists = ParameterGroupSettingsDao.findAll(ParameterDownloadActivity.this);
-            communicationsLists = new ArrayList<HCommunication[]>();
+            communicationsList = new ArrayList<HCommunication[]>();
             for (ParameterGroupSettings groupItem : parameterGroupLists) {
                 List<ParameterSettings> detailSettings = groupItem.getParametersettings().getList();
                 int detailSize = detailSettings.size();
@@ -180,7 +183,7 @@ public class ParameterDownloadActivity extends Activity {
                         }
                     };
                 }
-                communicationsLists.add(communications);
+                communicationsList.add(communications);
             }
             downloadProgressBar.setMax(maxProgress);
             downloadProgressBar.setProgress(0);
@@ -200,13 +203,13 @@ public class ParameterDownloadActivity extends Activity {
      *
      * @param position communications Lists Index
      */
-    private void startCommunication(int position){
-        if (position >= 0 && position < communicationsLists.size()){
+    private void startCommunication(int position) {
+        if (position >= 0 && position < communicationsList.size()) {
             downloadParameterHandler.index = position;
-            if (HBluetooth.getInstance(this).isPrepared()){
+            if (HBluetooth.getInstance(this).isPrepared()) {
                 HBluetooth.getInstance(this)
                         .setHandler(downloadParameterHandler)
-                        .setCommunications(communicationsLists.get(position))
+                        .setCommunications(communicationsList.get(position))
                         .Start();
             }
         }
@@ -239,8 +242,8 @@ public class ParameterDownloadActivity extends Activity {
         @Override
         public void onMultiTalkEnd(Message msg) {
             super.onMultiTalkEnd(msg);
-            HCommunication[] communications = ParameterDownloadActivity.this.communicationsLists.get(index);
-            if (communications.length == receiveCount){
+            HCommunication[] communications = ParameterDownloadActivity.this.communicationsList.get(index);
+            if (communications.length == receiveCount) {
                 ParameterDownloadActivity.this.downloadProgressBar.incrementProgress(receiveCount);
                 ParameterDownloadActivity.this.parameterGroupLists
                         .get(index)
@@ -248,28 +251,29 @@ public class ParameterDownloadActivity extends Activity {
                         .setList(tempParameterSettingsList);
                 index++;
                 receiveCount = 0;
-                if (index < ParameterDownloadActivity.this.communicationsLists.size()){
+                if (index < ParameterDownloadActivity.this.communicationsList.size()) {
                     ParameterDownloadActivity.this.startCommunication(index);
                 }
                 if (ParameterDownloadActivity.this.downloadProgressBar.getMax() ==
-                        ParameterDownloadActivity.this.downloadProgressBar.getProgress()){
-                    if (ParameterDownloadActivity.this.downloadDialog != null){
+                        ParameterDownloadActivity.this.downloadProgressBar.getProgress()) {
+                    if (ParameterDownloadActivity.this.downloadDialog != null) {
                         ParameterDownloadActivity.this.downloadDialog.dismiss();
                     }
                     File fileName = new File(getApplicationContext().getExternalCacheDir().getPath()
                             + "/"
                             + DIRECTORY_NAME
-                            + "/profile.JSON");
-                    if (!fileName.exists()){
+                            + "/"
+                            + fileNameEditText.getText().toString());
+                    if (!fileName.exists()) {
                         try {
                             fileName.createNewFile();
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
-                   String JSONString = GenerateJSON
-                           .getInstance()
-                           .generateProfileJSON(ParameterDownloadActivity.this.parameterGroupLists);
+                    String JSONString = GenerateJSON
+                            .getInstance()
+                            .generateProfileJSON(ParameterDownloadActivity.this.parameterGroupLists);
                     try {
                         FileOutputStream outputStream = new FileOutputStream(fileName);
                         outputStream.write(JSONString.getBytes());
@@ -278,8 +282,7 @@ public class ParameterDownloadActivity extends Activity {
                         e.printStackTrace();
                     }
                 }
-            }
-            else {
+            } else {
                 // 重新获取
                 receiveCount = 0;
                 ParameterDownloadActivity.this.startCommunication(index);
@@ -290,6 +293,18 @@ public class ParameterDownloadActivity extends Activity {
         public void onTalkReceive(Message msg) {
             if (msg.obj != null && msg.obj instanceof ParameterSettings) {
                 ParameterSettings detailItem = (ParameterSettings) msg.obj;
+                byte[] data = detailItem.getReceived();
+                byte[] lengthArray = {data[2], data[3]};
+                ByteBuffer wrapped = ByteBuffer.wrap(lengthArray);
+                int length = wrapped.getShort();
+                if (length == 2) {
+                    byte[] valueArray = {data[4], data[5]};
+                    ByteBuffer valueWrapped = ByteBuffer.wrap(valueArray);
+                    int decimalValue = valueWrapped.getShort();
+                    String hexValue = HSerial.byte2HexStr(valueArray);
+                    detailItem.setHexValueString(hexValue);
+                    detailItem.setUserValue(String.valueOf(decimalValue));
+                }
                 tempParameterSettingsList.add(detailItem);
                 receiveCount++;
             }

@@ -10,6 +10,8 @@ import com.kio.ElevatorControl.models.ErrorHelpLog;
 import com.kio.ElevatorControl.models.ParameterSettings;
 import com.kio.ElevatorControl.models.RealTimeMonitor;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -134,14 +136,19 @@ public class ParseSerialsUtils {
      * 取得轿厢状态Code Bit 8-11
      *
      * @param monitor RealTimeMonitor
-     * @return code
+     * @return System Status Code
      */
     @SuppressLint("DefaultLocale")
     public static int getSystemStatusCode(RealTimeMonitor monitor) {
         byte[] data = monitor.getReceived();
-        if (data.length == 8) {
-            return data[5] & 0x0F;
+        //String binaryString = String.format("%8s", Integer.toBinaryString(data[5] & 0xFF)).replace(' ', '0');
+        BitInputStream bitInputStream = new BitInputStream(new ByteArrayInputStream(new byte[]{data[5]}));
+        try {
+            return bitInputStream.readBits(4);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        bitInputStream.close();
         return 0;
     }
 

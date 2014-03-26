@@ -1,6 +1,5 @@
 package com.kio.ElevatorControl.activities;
 
-import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.Message;
 import android.util.Log;
@@ -23,13 +22,15 @@ import com.kio.ElevatorControl.daos.ParameterSettingsDao;
 import com.kio.ElevatorControl.daos.RealTimeMonitorDao;
 import com.kio.ElevatorControl.models.ParameterSettings;
 import com.kio.ElevatorControl.models.RealTimeMonitor;
-import com.kio.ElevatorControl.utils.ParseSerialsUtils;
 import com.kio.ElevatorControl.views.TypefaceTextView;
 import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.widget.GridView;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by IntelliJ IDEA.
@@ -52,9 +53,13 @@ public class MoveInsideActivity extends Activity {
 
     private FloorHandler floorHandler;
 
-    private List<Integer> floors;
+    private int[] floors;
+
+    private InsideFloorAdapter insideFloorAdapter;
 
     private HCommunication[] getFloorsCommunications;
+
+    private boolean hasGetFloors = false;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,11 +69,30 @@ public class MoveInsideActivity extends Activity {
         setContentView(R.layout.activity_move_inside);
         Views.inject(this);
         bindListViewItemClickEvent();
+        floors = ApplicationConfig.DEFAULT_FLOORS;
+        insideFloorAdapter = new InsideFloorAdapter();
+        mGridView.setAdapter(insideFloorAdapter);
         mMoveInsideHandler = new MoveInsideHandler(this);
         floorHandler = new FloorHandler(this);
-        floors = new ArrayList<Integer>();
         realTimeMonitors = RealTimeMonitorDao.findByType(this, codeType);
         createGetFloorsCommunication();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        final Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (!MoveInsideActivity.this.hasGetFloors){
+                    MoveInsideActivity.this.loadDataAndRenderView();
+                }
+                else {
+                    timer.cancel();
+                }
+            }
+        }, 0 , 240);
         loadDataAndRenderView();
     }
 
@@ -88,49 +112,42 @@ public class MoveInsideActivity extends Activity {
      */
     private void createGetFloorsCommunication() {
         ArrayList<String> names = new ArrayList<String>();
-        names.add(ApplicationConfig.BOTTOM_FLOOR_NAME);
-        names.add(ApplicationConfig.TOP_FLOOR_NAME);
+        names.add(ApplicationConfig.GET_FLOOR_NAME);
         List<ParameterSettings> settingsList = ParameterSettingsDao.findByNames(MoveInsideActivity.this, names);
-        int size = settingsList.size();
-        getFloorsCommunications = new HCommunication[size];
-        for (int i = 0; i < size; i++) {
-            final ParameterSettings setting = settingsList.get(i);
-            getFloorsCommunications[i] = new HCommunication() {
-                @Override
-                public void beforeSend() {
-                    this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103"
-                            + setting.getCode()
-                            + "0001")));
-                }
-
-                @Override
-                public void afterSend() {
-
-                }
-
-                @Override
-                public void beforeReceive() {
-
-                }
-
-                @Override
-                public void afterReceive() {
-
-                }
-
-                @Override
-                public Object onParse() {
-                    if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                        byte[] received = HSerial.trimEnd(getReceivedBuffer());
-                        MoveInsideActivity.this.floors.add(ParseSerialsUtils.getIntFromBytes(received));
-                        Log.v(TAG, HSerial.byte2HexStr(received));
-                        setting.setReceived(received);
-                        return setting;
+        final String code = settingsList.get(0).getCode() + "0002";
+        getFloorsCommunications = new HCommunication[]{
+                new HCommunication() {
+                    @Override
+                    public void beforeSend() {
+                        this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103"
+                                + code
+                                + "0001")));
                     }
-                    return null;
+
+                    @Override
+                    public void afterSend() {
+
+                    }
+
+                    @Override
+                    public void beforeReceive() {
+
+                    }
+
+                    @Override
+                    public void afterReceive() {
+
+                    }
+
+                    @Override
+                    public Object onParse() {
+                        if (HSerial.isCRC16Valid(getReceivedBuffer())) {
+                            return HSerial.trimEnd(getReceivedBuffer());
+                        }
+                        return null;
+                    }
                 }
-            };
-        }
+        };
     }
 
     /**
@@ -143,7 +160,6 @@ public class MoveInsideActivity extends Activity {
                 // 0103 读取
                 // 0106 写入
                 final String[] condition = getCallCode(position);
-                Log.v(TAG, condition[0]);
                 final RealTimeMonitor monitor = realTimeMonitors.get(Integer.parseInt(condition[1]));
                 HCommunication[] communications = new HCommunication[]{
                         new HCommunication() {
@@ -268,14 +284,6 @@ public class MoveInsideActivity extends Activity {
     }
 
     /**
-     * 更新 GridView 数据源
-     */
-    public void updateGridViewDataSource(List<Integer> floors) {
-        InsideFloorAdapter adapter = new InsideFloorAdapter(floors);
-        mGridView.setAdapter(adapter);
-    }
-
-    /**
      * 取得需要发送的Code
      *
      * @param position GridView Item Index
@@ -332,15 +340,13 @@ public class MoveInsideActivity extends Activity {
      */
     private class InsideFloorAdapter extends BaseAdapter {
 
-        private List<Integer> mFloors;
+        public InsideFloorAdapter() {
 
-        public InsideFloorAdapter(List<Integer> floors) {
-            mFloors = floors;
         }
 
         @Override
         public int getCount() {
-            return Math.abs(mFloors.get(0) - mFloors.get(1)) + 1;
+            return Math.abs( MoveInsideActivity.this.floors[0] -  MoveInsideActivity.this.floors[1]) + 1;
         }
 
         @Override
@@ -365,7 +371,8 @@ public class MoveInsideActivity extends Activity {
             } else {
                 holder = (ViewHolder) convertView.getTag();
             }
-            holder.mFloorTextView.setText(String.valueOf(Math.min(mFloors.get(0), mFloors.get(1)) + position));
+            holder.mFloorTextView.setText(String.valueOf(Math.min(MoveInsideActivity.this.floors[0],
+                    MoveInsideActivity.this.floors[1]) + position));
             return convertView;
         }
 
@@ -394,17 +401,21 @@ public class MoveInsideActivity extends Activity {
         @Override
         public void onMultiTalkEnd(Message msg) {
             super.onMultiTalkEnd(msg);
-            if (MoveInsideActivity.this.floors.size() == 2) {
-                MoveInsideActivity.this.updateGridViewDataSource(MoveInsideActivity.this.floors);
-            } else {
-                MoveInsideActivity.this.floors = new ArrayList<Integer>();
-                MoveInsideActivity.this.loadDataAndRenderView();
-            }
         }
 
         @Override
         public void onTalkReceive(Message msg) {
-
+            if (msg.obj != null && msg.obj instanceof byte[]){
+                byte[] data = (byte[])msg.obj;
+                int length = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
+                if (length == 4){
+                    int top = ByteBuffer.wrap(new byte[]{data[4], data[5]}).getShort();
+                    int bottom = ByteBuffer.wrap(new byte[]{data[6], data[7]}).getShort();
+                    MoveInsideActivity.this.floors = new int[]{bottom, top};
+                    MoveInsideActivity.this.insideFloorAdapter.notifyDataSetChanged();
+                    MoveInsideActivity.this.hasGetFloors = true;
+                }
+            }
         }
 
     }

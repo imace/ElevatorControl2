@@ -3,6 +3,8 @@ package com.kio.ElevatorControl.activities;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Message;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -10,7 +12,13 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import butterknife.InjectView;
 import butterknife.Views;
+import com.hbluetooth.HBluetooth;
+import com.hbluetooth.HCommunication;
+import com.hbluetooth.HHandler;
+import com.hbluetooth.HSerial;
 import com.kio.ElevatorControl.R;
+import com.kio.ElevatorControl.config.ApplicationConfig;
+import com.kio.ElevatorControl.models.ParameterSettings;
 import com.kio.ElevatorControl.models.Profile;
 import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.app.AlertDialog;
@@ -43,6 +51,18 @@ public class ParameterUploadActivity extends Activity {
 
     private LocalProfileAdapter adapter;
 
+    private List<HCommunication[]> communicationsList;
+
+    private List<ParameterSettings> parameterSettingsList;
+
+    private UploadParameterHandler uploadParameterHandler;
+
+    private List<Profile> profileList;
+
+    private AlertDialog uploadDialog;
+
+    private TextView uploadTipsTextView;
+
     private ProgressBar uploadProgressBar;
 
     public void onCreate(Bundle savedInstanceState) {
@@ -52,12 +72,10 @@ public class ParameterUploadActivity extends Activity {
         getActionBar().setHomeButtonEnabled(true);
         setContentView(R.layout.activity_parameter_upload);
         Views.inject(this);
-        List<Profile> lists = new ArrayList<Profile>();
-        Profile profile = new Profile();
-        profile.setVersion("1.2");
-        profile.setUpdateDate("2014-5-12");
-        lists.add(profile);
-        adapter = new LocalProfileAdapter(lists);
+        profileList = new ArrayList<Profile>();
+        getProfileList();
+        uploadParameterHandler = new UploadParameterHandler(this);
+        adapter = new LocalProfileAdapter(profileList);
         listView.setAdapter(adapter);
     }
 
@@ -73,6 +91,30 @@ public class ParameterUploadActivity extends Activity {
     }
 
     /**
+     * Get Profile List
+     */
+    private void getProfileList() {
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            File directory = new File(getApplicationContext().getExternalCacheDir().getPath()
+                    + "/"
+                    + DIRECTORY_NAME);
+            if (!directory.exists()) {
+                directory.mkdir();
+            }
+            File[] files = directory.listFiles();
+            for (File inFile : files) {
+                if (inFile.isFile()) {
+                    Profile profile = new Profile();
+                    profile.setVersion("1.2");
+                    profile.setUpdateDate("2014-5-12");
+                    profile.setFileName(inFile.getName());
+                    profileList.add(profile);
+                }
+            }
+        }
+    }
+
+    /**
      * 上传参数
      *
      * @param position ListView index
@@ -83,7 +125,7 @@ public class ParameterUploadActivity extends Activity {
             File directory = new File(getApplicationContext().getExternalCacheDir().getPath()
                     + "/"
                     + DIRECTORY_NAME);
-            File file = new File(directory, "Profile_001.json");
+            File file = new File(directory, profile.getFileName());
             try {
                 InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(file));
                 BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
@@ -95,8 +137,10 @@ public class ParameterUploadActivity extends Activity {
                 bufferedReader.close();
                 inputStreamReader.close();
                 JSONArray groups = new JSONArray(stringBuilder.toString());
+                // 生成通讯内容
+                generateCommunicationsList(groups);
                 // 开始上传参数
-                ParameterUploadActivity.this.startUploadProfile(groups);
+                ParameterUploadActivity.this.startCommunication(0);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -106,11 +150,11 @@ public class ParameterUploadActivity extends Activity {
             }
         }
         AlertDialog.Builder builder = new AlertDialog.Builder(ParameterUploadActivity.this);
-        org.holoeverywhere.LayoutInflater inflater = ParameterUploadActivity.this.getLayoutInflater();
-        View dialogView = inflater.inflate(R.layout.parameters_duplicate_dialog, null);
+        LayoutInflater inflater = ParameterUploadActivity.this.getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.parameters_upload_dialog, null);
+        uploadTipsTextView = (TextView) dialogView.findViewById(R.id.upload_tips);
         uploadProgressBar = (ProgressBar) dialogView.findViewById(R.id.progress_bar);
-        uploadProgressBar.setVisibility(View.VISIBLE);
-        dialogView.findViewById(R.id.file_name).setVisibility(View.GONE);
+        uploadProgressBar.setMax(parameterSettingsList.size());
         builder.setTitle(R.string.uploading_profile_text);
         builder.setView(dialogView);
         builder.setNegativeButton(R.string.dialog_btn_cancel, new DialogInterface.OnClickListener() {
@@ -119,31 +163,148 @@ public class ParameterUploadActivity extends Activity {
 
             }
         });
-        AlertDialog dialog = builder.create();
-        dialog.setCancelable(false);
-        dialog.setCanceledOnTouchOutside(false);
-        dialog.show();
+        uploadDialog = builder.create();
+        uploadDialog.setCancelable(false);
+        uploadDialog.setCanceledOnTouchOutside(false);
+        uploadDialog.show();
+    }
+
+    /**
+     * Generate Upload Communications List
+     *
+     * @param groupArray JSON Array
+     */
+    private void generateCommunicationsList(JSONArray groupArray) {
+        communicationsList = new ArrayList<HCommunication[]>();
+        parameterSettingsList = new ArrayList<ParameterSettings>();
+        int size = groupArray.length();
+        for (int i = 0; i < size; i++) {
+            try {
+                JSONObject groupsJSONObject = groupArray.getJSONObject(i);
+                JSONArray detailArray = groupsJSONObject.getJSONArray("parameterSettings");
+                int length = detailArray.length();
+                HCommunication[] communications = new HCommunication[length];
+                for (int j = 0; j < length; j++) {
+                    JSONObject jsonObject = detailArray.getJSONObject(j);
+                    final ParameterSettings item = new ParameterSettings();
+                    item.setCode(jsonObject.optString("code"));
+                    item.setName(jsonObject.optString("name"));
+                    item.setProductId(String.valueOf(jsonObject.optInt("productId")));
+                    item.setDescription(jsonObject.optString("description"));
+                    item.setDescriptiontype(ParameterSettings
+                            .ParseDescriptionToType(item.getDescription()));
+                    item.setChildId(jsonObject.optString("childId"));
+                    item.setScope(jsonObject.optString("scope"));
+                    item.setUserValue(jsonObject.optString("userValue"));
+                    item.setHexValueString(jsonObject.optString("hexValue"));
+                    item.setDefaultValue(String.valueOf(jsonObject.optInt("defaultValue")));
+                    item.setScale(String.valueOf(jsonObject.optDouble("scale")));
+                    item.setUnit(jsonObject.optString("unit"));
+                    item.setType(String.valueOf(jsonObject.optInt("type")));
+                    item.setMode(String.valueOf(jsonObject.optInt("mode")));
+                    parameterSettingsList.add(item);
+                    communications[j] = new HCommunication() {
+                        @Override
+                        public void beforeSend() {
+                            this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0106"
+                                    + item.getCode()
+                                    + item.getHexValueString()
+                                    + "0001")));
+                        }
+
+                        @Override
+                        public void afterSend() {
+
+                        }
+
+                        @Override
+                        public void beforeReceive() {
+
+                        }
+
+                        @Override
+                        public void afterReceive() {
+
+                        }
+
+                        @Override
+                        public Object onParse() {
+                            if (HSerial.isCRC16Valid(getReceivedBuffer())) {
+                                byte[] received = HSerial.trimEnd(getReceivedBuffer());
+                                item.setReceived(received);
+                                return item;
+                            }
+                            return null;
+                        }
+                    };
+                }
+                communicationsList.add(communications);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
      * 开始写入参数
      *
-     * @param groups JSONArray
+     * @param position Communications List Index
      */
-    private void startUploadProfile(JSONArray groups) {
-        int size = groups.length();
-        for (int i = 0; i < size; i++) {
-            try {
-                JSONObject groupsJSONObject = groups.getJSONObject(i);
-                JSONArray detailParameters = groupsJSONObject.getJSONArray("parameterSettings");
-                int length = detailParameters.length();
-                for (int j = 0; j < length; j++) {
-                    JSONObject jsonObject = detailParameters.getJSONObject(j);
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
+    private void startCommunication(int position) {
+        if (position >= 0 && position < communicationsList.size()) {
+            uploadParameterHandler.index = position;
+            if (HBluetooth.getInstance(this).isPrepared()) {
+                HBluetooth.getInstance(this)
+                        .setHandler(uploadParameterHandler)
+                        .setCommunications(communicationsList.get(position))
+                        .Start();
             }
         }
+    }
+
+    /**
+     * 处理上传错误
+     *
+     * @param errorList     Error List
+     * @param noRespondList No Respond List
+     */
+    private void handleParameterUploadComplete(List<ParameterSettings> errorList,
+                                               List<ParameterSettings> noRespondList) {
+        uploadDialog.setTitle(R.string.uploading_profile_end);
+        int errorListSize = errorList.size();
+        int noRespondListSize = noRespondList.size();
+        if (errorListSize == 0 && noRespondListSize == 0) {
+            uploadTipsTextView.setText(R.string.uploading_profile_complete);
+        } else {
+            // 错误列表
+            String errorAndWarningMessage = "";
+            for (ParameterSettings settings : errorList) {
+                String errorString = settings.getCode()
+                        + "参数"
+                        + ApplicationConfig.ERROR_NAME_ARRAY[settings.getWriteErrorCode()];
+                errorAndWarningMessage += errorString + "\n";
+            }
+            // 无返回列表
+            for (ParameterSettings settings : noRespondList) {
+                String warningString = settings.getCode()
+                        + "参数"
+                        + ApplicationConfig.NO_RESPOND;
+                errorAndWarningMessage += warningString + "\n";
+            }
+            uploadTipsTextView.setText(errorAndWarningMessage);
+        }
+        uploadDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "结束", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+        uploadDialog.setButton(AlertDialog.BUTTON_POSITIVE, "继续上传", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
     }
 
     // ========================= Local Profile Adapter =====================================
@@ -209,6 +370,69 @@ public class ParameterUploadActivity extends Activity {
             TextView profileVersion;
             TextView profileUpdateDate;
             Button uploadButton;
+        }
+
+    }
+
+    // ====================================== Upload Parameter Handler =========================================
+
+    /**
+     * 上传参数 Handler
+     */
+    private class UploadParameterHandler extends HHandler {
+
+        public int index = 0;
+
+        private int receiveCount = 0;
+
+        public UploadParameterHandler(Activity activity) {
+            super(activity);
+            TAG = UploadParameterHandler.class.getSimpleName();
+        }
+
+        @Override
+        public void onMultiTalkBegin(Message msg) {
+            super.onMultiTalkBegin(msg);
+        }
+
+        @Override
+        public void onMultiTalkEnd(Message msg) {
+            if (index == ParameterUploadActivity.this.communicationsList.size() - 1) {
+                List<ParameterSettings> noRespondList = new ArrayList<ParameterSettings>();
+                List<ParameterSettings> errorList = new ArrayList<ParameterSettings>();
+                for (ParameterSettings settings : ParameterUploadActivity.this.parameterSettingsList) {
+                    // 未写入
+                    if (settings.getReceived() == null) {
+                        noRespondList.add(settings);
+                    }
+                    // 写入出错
+                    if (settings.getWriteErrorCode() != -1) {
+                        errorList.add(settings);
+                    }
+                }
+                ParameterUploadActivity.this.handleParameterUploadComplete(errorList, noRespondList);
+            }
+            index++;
+            if (index < ParameterUploadActivity.this.communicationsList.size()) {
+                ParameterUploadActivity.this.startCommunication(index);
+            }
+        }
+
+        @Override
+        public void onTalkReceive(Message msg) {
+            if (msg.obj != null && msg.obj instanceof ParameterSettings) {
+                receiveCount++;
+                ParameterSettings settings = (ParameterSettings) msg.obj;
+                String hexString = HSerial.byte2HexStr(settings.getReceived());
+                int index = 0;
+                for (String errorCode : ApplicationConfig.ERROR_CODE_ARRAY) {
+                    if (hexString.contains(errorCode)) {
+                        settings.setWriteErrorCode(index);
+                    }
+                    index++;
+                }
+                ParameterUploadActivity.this.uploadProgressBar.setProgress(receiveCount);
+            }
         }
 
     }

@@ -94,10 +94,12 @@
     <string name="profile_version_text">版本</string>
     <string name="profile_update_date_text">发布日期</string>
     <string name="uploading_profile_text">正在写入参数</string>
+    <string name="uploading_profile_end">写入结束</string>
+    <string name="uploading_profile_complete">全部正确写入！</string>
 
     <!-- 参数读取 -->
-    <string name="parameter_upload_text">参数写入</string>
-    <string name="parameter_download_text">参数读取</string>
+    <string name="parameter_upload_text">参数写入 (手机 -> 一体机)</string>
+    <string name="parameter_download_text">参数读取 (一体机 -> 手机)</string>
     <string name="restore_factory_settings_text">恢复出厂设置</string>
     <string name="current_parameters_version_text">当前参数版本</string>
     <string name="parameters_update_date_text">更新日期</string>
@@ -106,11 +108,11 @@
     <string name="save_file_failed_title">保存失败</string>
     <string name="cannot_save_file">未能保存文件，请检查SD卡！</string>
 
-    <!-- 固件申请 -->
+    <!-- 程序申请 -->
     <string name="equipment_manufacturers_text">设备厂家</string>
     <string name="equipment_model_text">设备型号</string>
     <string name="manufacturers_serial_number_text">厂家编号</string>
-    <string name="firmware_version_text">固件版本</string>
+    <string name="firmware_version_text">程序版本</string>
     <string name="remark_text">备注</string>
     <string name="submit_application_text">提交申请</string>
     <string name="dialog_btn_over">完成</string>
@@ -121,20 +123,31 @@
     </string-array>
 
     <string name="burn_firmware_text">烧录</string>
-    <string name="will_burn_firmware_text">烧录固件</string>
-    <string name="burning_firmware_text">正在烧录固件</string>
+    <string name="will_burn_firmware_text">烧录程序</string>
+    <string name="burning_firmware_text">正在烧录程序</string>
 
     <string name="update_date_text">更新时间</string>
     <string name="expire_date_text">过期时间</string>
     <string name="residue_time_text">剩余次数</string>
     <string name="time_unit_text">次</string>
 
+    <!-- 轿厢状态 -->
+    <string-array name="elevator_box_status">
+        <item>保留</item>
+        <item>开门</item>
+        <item>开门维持</item>
+        <item>关门</item>
+        <item>关门维持</item>
+        <item>运行</item>
+        <item>停车</item>
+    </string-array >
+
     <!-- //////////////////////////////////// 标签选项卡 START ////////////////////////////////// -->
     <!-- 主标签页选项卡 -->
     <string-array name="navigation_tab_text">
         <item>故障分析</item>
         <item>电梯调试</item>
-        <item>固件管理</item>
+        <item>程序管理</item>
         <item>帮助</item>
     </string-array>
     <string-array name="navigation_tab_icon">
@@ -187,11 +200,11 @@
         <item>loadSearchTroubleView</item>
     </string-array>
 
-    <!-- 固件管理标签选项卡 -->
+    <!-- 程序管理标签选项卡 -->
     <string-array name="firmware_manage_tab_text">
-        <item>固件申请</item>
-        <item>固件提取</item>
-        <item>固件烧录</item>
+        <item>程序申请</item>
+        <item>程序提取</item>
+        <item>程序烧录</item>
     </string-array>
     <string-array name="firmware_manage_tab_layout">
         <item>firmware_manage_tab_apply</item>

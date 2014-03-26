@@ -1,8 +1,6 @@
 package com.kio.ElevatorControl.models;
 
-import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * Created by IntelliJ IDEA.
@@ -20,39 +18,12 @@ public class HistoryError {
 
     private String errorDateTime = "";
 
+    private boolean noError = false;
+
     private byte[] data;
 
     public HistoryError() {
-        /*
-        int floor = data[4];
-        floor = floor << 8;
-        floor = floor | data[5];
-        floor %= 100;
-        this.errorFloor = String.valueOf(floor);
 
-        // 月日
-        int date = data[8];
-        date = date << 8;
-        date = date | data[9];
-        String pattern = "0000";
-        java.text.DecimalFormat df = new java.text.DecimalFormat(pattern);
-
-        // 时间
-        int time = data[10];
-        time = time << 8;
-        time = time | data[11];
-
-        // 格式化时间
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        String dateTimeString =
-                formatter.format(new Date()).substring(0, 4) + "-" //year
-                        + String.valueOf(df.format(date)).substring(0, 2) + "-"//month
-                        + String.valueOf(df.format(date)).substring(2) + " "//day
-                        + String.valueOf(time * 0.01).split("\\.")[0]//hour
-                        + String.valueOf(time * 0.01).split("\\.")[1];
-        ParsePosition position = new ParsePosition(0);
-        this.errorDateTime = formatter.format(formatter.parse(dateTimeString, position));
-        */
     }
 
     public String getErrorCode() {
@@ -84,28 +55,33 @@ public class HistoryError {
     }
 
     public void setData(byte[] data) {
-        this.data = data;
-        int date = data[8];
-        date = date << 8;
-        date = date | data[9];
-        String pattern = "0000";
-        java.text.DecimalFormat df = new java.text.DecimalFormat(pattern);
+        int nErrorInfo = ((data[4] & 0xFF) << 8) | (data[5] & 0xFF); //故障信息
+        int nErrCode = nErrorInfo % 100;                             //故障码
+        if (nErrCode == 0){
+            this.noError = true;
+        }
+        else {
+            this.noError = false;
+            int nErrFloor = nErrorInfo / 100;                            //故障楼层
+            int nDate = ((data[8] & 0xFF) << 8) | (data[9] & 0xFF);      //故障日期
+            int nMonth = nDate / 100;                                    //故障月
+            int nDay = nDate % 100;                                      //故障日
+            int nTime = ((data[10] & 0xFF) << 8) | (data[11] & 0xFF);    //故障时间
+            int nHour = nTime / 100;                                     //故障时
+            int nMin = nTime % 100;                                      //故障分
 
-        // 时间
-        int time = data[10];
-        time = time << 8;
-        time = time | data[11];
+            this.errorCode = String.format("E%02d", nErrCode);
+            this.errorFloor = String.valueOf(nErrFloor);
+            this.errorDateTime = nMonth + "-" + nDay + " " + nHour + ":" + nMin;
+        }
+    }
 
-        // 格式化时间
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        String dateTimeString =
-                formatter.format(new Date()).substring(0, 4) + "-" //year
-                        + String.valueOf(df.format(date)).substring(0, 2) + "-"//month
-                        + String.valueOf(df.format(date)).substring(2) + " "//day
-                        + String.valueOf(time * 0.01).split("\\.")[0]//hour
-                        + String.valueOf(time * 0.01).split("\\.")[1];
-        ParsePosition position = new ParsePosition(0);
-        this.errorDateTime = formatter.format(formatter.parse(dateTimeString, position));
+    public boolean isNoError() {
+        return noError;
+    }
+
+    public void setNoError(boolean noError) {
+        this.noError = noError;
     }
 
 }

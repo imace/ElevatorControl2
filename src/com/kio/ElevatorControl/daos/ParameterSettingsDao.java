@@ -1,6 +1,7 @@
 package com.kio.ElevatorControl.daos;
 
 import android.content.Context;
+import com.kio.ElevatorControl.config.ApplicationConfig;
 import com.kio.ElevatorControl.models.ParameterSettings;
 import net.tsz.afinal.FinalDb;
 
@@ -12,10 +13,7 @@ public class ParameterSettingsDao {
     private static final boolean DEBUG = true;
 
     public static ParameterSettings findById(Context context, int id) {
-        // (android:label).db
-        FinalDb db = FinalDb.create(context,
-                context.getString(context.getApplicationInfo().labelRes) + ".db",
-                DEBUG);
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         return db.findById(id, ParameterSettings.class);
     }
 
@@ -27,9 +25,7 @@ public class ParameterSettingsDao {
      * @return List<ParameterSettings>
      */
     public static List<ParameterSettings> findByNames(Context context, ArrayList<String>  names) {
-        FinalDb db = FinalDb.create(context,
-                context.getString(context.getApplicationInfo().labelRes) + ".db",
-                DEBUG);
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         int size = names.size();
         if (size > 0) {
             String condition = "";

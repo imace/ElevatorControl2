@@ -20,6 +20,8 @@ public class LruCacheTool {
 
     private static final int cacheMaxSize = 10485760;
 
+    private static final String cacheDir = "localCache";
+
     private static final int versionCode = 1;
 
     private static LruCacheTool ourInstance = new LruCacheTool();
@@ -40,7 +42,7 @@ public class LruCacheTool {
     public void initCache(Context context) {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             if (context.getExternalCacheDir() != null) {
-                File cacheDirectory = new File(context.getExternalCacheDir().getPath() + "/localCache");
+                File cacheDirectory = new File(context.getExternalCacheDir().getPath() + "/" + cacheDir);
                 try {
                     diskCache = SimpleDiskCache.open(cacheDirectory, versionCode, cacheMaxSize);
                 } catch (IOException e) {

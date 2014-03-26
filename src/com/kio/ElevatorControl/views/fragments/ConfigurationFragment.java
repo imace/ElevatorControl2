@@ -205,6 +205,7 @@ public class ConfigurationFragment extends Fragment {
                     break;
                     case 2: {
                         // 恢复出厂参数设置
+                        /*
                         HCommunication[] communications = new HCommunication[1];
                         communications[0] = new HCommunication() {
                             @Override
@@ -243,6 +244,7 @@ public class ConfigurationFragment extends Fragment {
                                     .setCommunications(communications)
                                     .Start();
                         }
+                        */
                     }
                     break;
                 }

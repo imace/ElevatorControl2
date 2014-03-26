@@ -2,6 +2,7 @@ package com.kio.ElevatorControl.daos;
 
 import android.content.Context;
 import android.util.Log;
+import com.kio.ElevatorControl.config.ApplicationConfig;
 import com.kio.ElevatorControl.models.ErrorHelp;
 import com.kio.ElevatorControl.models.ParameterGroupSettings;
 import com.kio.ElevatorControl.models.ParameterSettings;
@@ -29,21 +30,15 @@ public class RestoreFactoryDao {
      * @param ctx context
      * @return boolean
      */
-    public static boolean dbEmpty(Context ctx) {
-        // (android:label).db
-        FinalDb db = FinalDb.create(ctx,
-                ctx.getString(ctx.getApplicationInfo().labelRes) + ".db",
-                DEBUG);
+    public static boolean dbEmpty(Context context) {
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         int parameterSettingsSize = db.findAll(ParameterSettings.class).size();
         int parameterGroupSettingsSize = db.findAll(
                 ParameterGroupSettings.class).size();
         int realTimeMonitorSize = db.findAll(RealTimeMonitor.class).size();
         int errorHelpSize = db.findAll(ErrorHelp.class).size();
-        if (parameterSettingsSize == 0 || parameterGroupSettingsSize == 0
-                || realTimeMonitorSize == 0 || errorHelpSize == 0) {
-            return true;
-        }
-        return false;
+        return parameterSettingsSize == 0 || parameterGroupSettingsSize == 0
+                || realTimeMonitorSize == 0 || errorHelpSize == 0;
     }
 
     /**
@@ -60,18 +55,14 @@ public class RestoreFactoryDao {
      *
      * @param ctx context
      */
-    public static void restoreFactoryParameterGroupSettings(Context ctx) {
-        // (android:label).db
-        FinalDb db = FinalDb.create(ctx,
-                ctx.getString(ctx.getApplicationInfo().labelRes) + ".db",
-                DEBUG);
+    public static void restoreFactoryParameterGroupSettings(Context context) {
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         // 清理数据
         db.deleteAll(ParameterSettings.class);
         db.deleteAll(ParameterGroupSettings.class);
 
         // 读取NICE3000+_FunCode.json
-        String JSON = AssetUtils.readDefaultFunCode(ctx,
-                "NICE3000+_FunCode.json");
+        String JSON = AssetUtils.readDefaultFunCode(context, "NICE3000+_FunCode.json");
 
         // 解析出厂设置
         try {
@@ -127,16 +118,12 @@ public class RestoreFactoryDao {
      *
      * @param ctx Context
      */
-    public static void restoreFactoryRealTimeMonitor(Context ctx) {
-        // (android:label).db
-        FinalDb db = FinalDb.create(ctx,
-                ctx.getString(ctx.getApplicationInfo().labelRes) + ".db",
-                DEBUG);
+    public static void restoreFactoryRealTimeMonitor(Context context) {
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         db.deleteAll(RealTimeMonitor.class);
 
         // 读取NICE3000+_State.json
-        String JSON = AssetUtils
-                .readDefaultFunCode(ctx, "NICE3000+_State.json");
+        String JSON = AssetUtils.readDefaultFunCode(context, "NICE3000+_State.json");
         try {
             JSONArray monitors = new JSONArray(JSON);
             for (int i = 0; i < monitors.length(); i++) {
@@ -169,15 +156,11 @@ public class RestoreFactoryDao {
      *
      * @param ctx Context
      */
-    public static void restoreFactoryErrorHelp(Context ctx) {
-        // (android:label).db
-        FinalDb db = FinalDb.create(ctx,
-                ctx.getString(ctx.getApplicationInfo().labelRes) + ".db",
-                DEBUG);
+    public static void restoreFactoryErrorHelp(Context context) {
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         db.deleteAll(ErrorHelp.class);
         // 读取NICE3000+_State.json
-        String JSON = AssetUtils.readDefaultFunCode(ctx,
-                "NICE3000+_ErrHelp.json");
+        String JSON = AssetUtils.readDefaultFunCode(context, "NICE3000+_ErrHelp.json");
         try {
             JSONArray errHelpList = new JSONArray(JSON);
             for (int i = 0; i < errHelpList.length(); i++) {

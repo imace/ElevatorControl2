@@ -57,7 +57,6 @@ public class ParameterDetailActivity extends Activity {
         parameterHandler = new ParameterHandler(this);
         updateHandler = new UpdateHandler(this);
         bindListViewItemClickListener();
-
     }
 
     private void bindListViewItemClickListener() {
@@ -157,14 +156,17 @@ public class ParameterDetailActivity extends Activity {
 
                 @Override
                 public void afterSend() {
+
                 }
 
                 @Override
                 public void beforeReceive() {
+
                 }
 
                 @Override
                 public void afterReceive() {
+
                 }
 
                 @Override
@@ -221,6 +223,16 @@ public class ParameterDetailActivity extends Activity {
         }
 
         @Override
+        public void onMultiTalkBegin(Message msg) {
+
+        }
+
+        @Override
+        public void onMultiTalkEnd(Message msg) {
+
+        }
+
+        @Override
         public void onTalkReceive(Message msg) {
             if (msg.obj instanceof ParameterSettings) {
                 ParameterSettings settings = (ParameterSettings) msg.obj;
@@ -230,15 +242,6 @@ public class ParameterDetailActivity extends Activity {
             }
         }
 
-        @Override
-        public void onMultiTalkBegin(Message msg) {
-
-        }
-
-        @Override
-        public void onMultiTalkEnd(Message msg) {
-
-        }
     }
 
 }

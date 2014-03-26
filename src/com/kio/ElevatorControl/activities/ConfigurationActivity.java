@@ -71,25 +71,6 @@ public class ConfigurationActivity extends Activity {
             @Override
             public void onPageSelected(int index) {
                 mCurrentPageIndex = index;
-                /*
-                HBluetooth.getInstance(ConfigurationActivity.this).setHandler(configurationHandler);
-                try {
-                    // 反射执行
-                    String mName = MenuValuesDao.getConfigurationLoadMethodName(index, ConfigurationActivity.this);
-                    Log.v(TAG, String.valueOf(index) + " : " + mName);
-                    ConfigurationActivity.this.getClass().getMethod(mName).invoke(ConfigurationActivity.this);
-                } catch (NoSuchMethodException e) {
-                    Log.e(TAG, e.getMessage());
-                } catch (IllegalArgumentException e) {
-                    Log.e(TAG, e.getMessage());
-                } catch (IllegalAccessException e) {
-                    Log.e(TAG, e.getMessage());
-                } catch (InvocationTargetException e) {
-                    Log.e(TAG, "InvocationTargetException");
-                } finally {
-
-                }
-                */
                 Runnable runnable = new Runnable() {
                     @Override
                     public void run() {
@@ -107,8 +88,6 @@ public class ConfigurationActivity extends Activity {
                             Log.e(TAG, e.getMessage());
                         } catch (InvocationTargetException e) {
                             Log.e(TAG, "InvocationTargetException");
-                        } finally {
-
                         }
                     }
                 };

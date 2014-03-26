@@ -1,6 +1,7 @@
 package com.kio.ElevatorControl.daos;
 
 import android.content.Context;
+import com.kio.ElevatorControl.config.ApplicationConfig;
 import com.kio.ElevatorControl.models.ErrorHelp;
 import com.kio.ElevatorControl.models.ErrorHelpLog;
 import net.tsz.afinal.FinalDb;
@@ -8,45 +9,37 @@ import net.tsz.afinal.FinalDb;
 import java.util.List;
 
 public class ErrorHelpLogDao {
+
     private static final boolean DEBUG = true;
 
     /**
      * 失败返回-1
      *
-     * @param ctx
-     * @param entity
-     * @return
+     * @param context Context
+     * @param entity ErrorHelpLog
+     * @return int
      */
-    public static int Insert(Context ctx, ErrorHelpLog entity) {
-        // (android:label).db
-        FinalDb db = FinalDb.create(ctx,
-                ctx.getString(ctx.getApplicationInfo().labelRes) + ".db",
-                DEBUG);
+    public static int Insert(Context context, ErrorHelpLog entity) {
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         if (db.saveBindId(entity)) {
             return entity.getId();
         }
         return -1;
     }
 
-    public static List<ErrorHelpLog> findAll(Context ctx) {
-        // (android:label).db
-        FinalDb db = FinalDb.create(ctx,
-                ctx.getString(ctx.getApplicationInfo().labelRes) + ".db",
-                DEBUG);
+    public static List<ErrorHelpLog> findAll(Context context) {
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         List<ErrorHelpLog> result = db.findAll(ErrorHelpLog.class);
         if (result != null) {
             for (ErrorHelpLog lg : result) {
-                lg.setCtx(ctx);
+                lg.setCtx(context);
             }
         }
         return result;
     }
 
-    public static ErrorHelp findErrorHelp(Context ctx, int id) {
-        // (android:label).db
-        FinalDb db = FinalDb.create(ctx,
-                ctx.getString(ctx.getApplicationInfo().labelRes) + ".db",
-                DEBUG);
+    public static ErrorHelp findErrorHelp(Context context, int id) {
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         return db.findById(id, ErrorHelp.class);
     }
 

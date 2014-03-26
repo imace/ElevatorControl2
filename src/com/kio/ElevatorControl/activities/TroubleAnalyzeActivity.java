@@ -181,6 +181,7 @@ public class TroubleAnalyzeActivity extends Activity {
 
                     @Override
                     public void afterSend() {
+
                     }
 
                     @Override

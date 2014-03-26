@@ -35,9 +35,9 @@ public class TroubleAnalyzeFragment extends Fragment {
     /**
      * 记录下当前选中的tabIndex
      *
-     * @param tabIndex
-     * @param ctx
-     * @return
+     * @param tabIndex Tab Index
+     * @param ctx      Context
+     * @return Fragment
      */
     public static TroubleAnalyzeFragment newInstance(int tabIndex, Context ctx) {
         TroubleAnalyzeFragment troubleAnalyzeFragment = new TroubleAnalyzeFragment();
@@ -58,7 +58,10 @@ public class TroubleAnalyzeFragment extends Fragment {
         super.onResume();
         try {
             // 反射执行
-            ((Object) this).getClass().getMethod(MenuValuesDao.getTroubleAnalyzeTabsLoadMethodName(tabIndex, context)).invoke(this);
+            ((Object) this).getClass()
+                    .getMethod(MenuValuesDao
+                    .getTroubleAnalyzeTabsLoadMethodName(tabIndex, context))
+                    .invoke(this);
         } catch (NoSuchMethodException e) {
             Log.e(TAG, e.getMessage());
         } catch (IllegalArgumentException e) {
@@ -81,19 +84,7 @@ public class TroubleAnalyzeFragment extends Fragment {
      * 历史故障
      */
     public void loadHistoryTroubleView() {
-//		// 数据,自带context
-//		final List<ErrorHelpLog> loglist = ErrorHelpLogDao.findAll(getActivity());
-//		// 我们要操作的列表控件
-//		ListView lstv = (ListView) getActivity().findViewById(R.id.failurehistorylist);
-//		InstantAdapter<ErrorHelpLog> itadp = new InstantAdapter<ErrorHelpLog>(getActivity().getApplicationContext(), R.layout.list_trouble_history_item, ErrorHelpLog.class,
-//				loglist);
-//		lstv.setAdapter(itadp);
-//		lstv.setOnItemClickListener(new OnItemClickListener() {
-//			@Override
-//			public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long arg3) {
-//				CustomDialog.failureHistoryDialog(loglist.get(pos).getErrorHelp(),getActivity()).show();
-//			}
-//		});
+
     }
 
     /**
@@ -111,7 +102,16 @@ public class TroubleAnalyzeFragment extends Fragment {
             @Override
             public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                    String searchCode = searchEditText.getText().toString().trim().replaceAll("'", "");
+                    String inputText = searchEditText.getText().toString().trim();
+                    String searchCode = "";
+                    if (inputText.contains("E") || inputText.contains("e")) {
+                        searchCode = String.format("E%02d",
+                                Integer.parseInt(inputText.substring(1, inputText.length())));
+                    } else {
+                        if (isNumeric(inputText)) {
+                            searchCode = String.format("E%02d", Integer.parseInt(inputText));
+                        }
+                    }
                     ErrorHelp errorHelp = ErrorHelpDao.findByDisplay(getActivity(), searchCode);
                     if (errorHelp != null) {
                         errorCode.setText(errorHelp.getDisplay());
@@ -139,6 +139,21 @@ public class TroubleAnalyzeFragment extends Fragment {
                 return false;
             }
         });
+    }
+
+    /**
+     * Check String
+     *
+     * @param str Number String
+     * @return True Or False
+     */
+    public static boolean isNumeric(String str) {
+        try {
+            double d = Double.parseDouble(str);
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+        return true;
     }
 
     @Override

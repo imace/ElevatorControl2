@@ -63,6 +63,8 @@ public class HomeActivity extends Activity {
 
     private List<RealTimeMonitor> monitorLists;
 
+    private String[] elevatorBoxStatus;
+
     /**
      * 同步间隔
      */
@@ -73,6 +75,7 @@ public class HomeActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         Views.inject(this);
+        elevatorBoxStatus = getResources().getStringArray(R.array.elevator_box_status);
         threadPause = false;
         mSyncStatusHandler = new SyncStatusHandler(HomeActivity.this);
         setListViewDataSource();
@@ -120,7 +123,6 @@ public class HomeActivity extends Activity {
                 public Object onParse() {
                     if (HSerial.isCRC16Valid(getReceivedBuffer())) {
                         byte[] received = HSerial.trimEnd(getReceivedBuffer());
-                        Log.v(TAG, HSerial.byte2HexStr(received));
                         RealTimeMonitor monitor = (RealTimeMonitor) monitorLists.get(i).clone();
                         monitor.setReceived(received);
                         return monitor;
@@ -133,7 +135,46 @@ public class HomeActivity extends Activity {
 
     @OnClick(R.id.door_button)
     void openDoor() {
-        doorAnimationView.openDoor();
+        //doorAnimationView.openDoor();
+        HCommunication[] communications = new HCommunication[]{
+                new HCommunication() {
+                    @Override
+                    public void beforeSend() {
+                        this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103"
+                                + "10101018101D0003"
+                                + "0001")));
+                    }
+
+                    @Override
+                    public void afterSend() {
+
+                    }
+
+                    @Override
+                    public void beforeReceive() {
+
+                    }
+
+                    @Override
+                    public void afterReceive() {
+
+                    }
+
+                    @Override
+                    public Object onParse() {
+                        if (HSerial.isCRC16Valid(getReceivedBuffer())) {
+                            byte[] received = HSerial.trimEnd(getReceivedBuffer());
+                            Log.v(TAG, HSerial.byte2HexStr(received));
+                        }
+                        return null;
+                    }
+                }
+        };
+        if (HBluetooth.getInstance(HomeActivity.this).isPrepared()) {
+            HBluetooth.getInstance(HomeActivity.this)
+                    .setCommunications(communications)
+                    .Start();
+        }
     }
 
     @OnClick(R.id.close_door_button)
@@ -291,17 +332,13 @@ public class HomeActivity extends Activity {
                     HomeActivity.this.currentFloorTextView
                             .setText(ParseSerialsUtils.getIntString(monitor));
                 } else if (monitor.getName().equalsIgnoreCase(ApplicationConfig.SYSTEM_STATUS_NAME)) {
-                    switch (ParseSerialsUtils.getSystemStatusCode(monitor)){
-                        case 1:
-                            HomeActivity.this.lockStatusTextView
-                                    .setText("开门");
-                            HomeActivity.this.doorAnimationView.openDoor();
-                            break;
-                        case 3:
-                            HomeActivity.this.lockStatusTextView
-                                    .setText("关门");
-                            HomeActivity.this.doorAnimationView.closeDoor();
-                            break;
+                    int statusCode = ParseSerialsUtils.getSystemStatusCode(monitor);
+                    HomeActivity.this.lockStatusTextView.setText(HomeActivity.this.elevatorBoxStatus[statusCode]);
+                    if (statusCode == 1 || statusCode == 2) {
+                        HomeActivity.this.doorAnimationView.openDoor();
+                    }
+                    if (statusCode == 3 || statusCode == 4) {
+                        HomeActivity.this.doorAnimationView.closeDoor();
                     }
                 }
             }
