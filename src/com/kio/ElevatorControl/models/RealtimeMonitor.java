@@ -1,14 +1,17 @@
 package com.kio.ElevatorControl.models;
 
 import android.annotation.SuppressLint;
+import android.util.Log;
 import com.kio.ElevatorControl.R;
+import com.kio.ElevatorControl.config.ApplicationConfig;
 import com.kio.ElevatorControl.utils.ParseSerialsUtils;
 import com.mobsandgeeks.adapters.InstantText;
 import net.tsz.afinal.annotation.sqlite.Id;
 import net.tsz.afinal.annotation.sqlite.Transient;
+import org.json.JSONException;
+import org.json.JSONStringer;
 
-import java.util.Date;
-import java.util.regex.Matcher;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -31,11 +34,20 @@ public class RealTimeMonitor implements Cloneable {
     private String unit;// 单位名称
     private String type;// 种类
     private boolean showBit = false;// 是否详细描述每一位上的值,默认是false
+
     /**
-     * 参数选项说明类型,根据description得出 无<0,数字=count,Bit=100000+bitcount
-     * 0=error,100000=error
+     * 无描述返回     0
+     * 数值计算匹配   1
+     * Bit位值匹配    2
+     * Bit多位值匹配  3
      */
     private int descriptionType;
+
+    /**
+     * 解析后的JSON Array String
+     */
+    private String JSONDescription;
+
     private boolean isValid;
     private Date lastTime;
 
@@ -52,47 +64,43 @@ public class RealTimeMonitor implements Cloneable {
     private String listViewItemText;
 
     public RealTimeMonitor() {
+
     }
 
     /**
-     * 无<0,数字=count,Bit=100000+bitcount 0=error,100000=error
+     * 无描述返回     0
+     * 数值计算匹配   1
+     * Bit位值匹配    2
+     * Bit多位值匹配  3
      *
-     * @return
+     * @param description Description String
+     * @return Type
      */
     @SuppressLint("DefaultLocale")
-    public static int ParseDescriptionToType(String des) {
-        if (des != null && des.length() > 0) {
-            // 不区分大小写
-            String source = des.toUpperCase();
-            String part = "bit".toUpperCase();
-            // Bit=100000000+bitcount
-            if (source.contains(part)) {
-                String pattern = "#bit";// 正则表达式
-                Matcher m = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE).matcher(source);
-                int c = 0;
-                while (m.find()) {
-                    c++;
+    public static int ParseDescriptionToType(String description) {
+        if (description != null) {
+            if (description.length() > 0 && !description.contains("null")) {
+                if (description.contains("Bit") || description.contains("bit")) {
+                    if (description.contains("|")) {
+                        return ApplicationConfig.DESCRIPTION_TYPE[3];
+                    } else {
+                        return ApplicationConfig.DESCRIPTION_TYPE[2];
+                    }
+                } else {
+                    return ApplicationConfig.DESCRIPTION_TYPE[1];
                 }
-                return 100000000 + c;
             } else {
-                String pattern = "#[0-7]+";// 正则表达式
-                Matcher m = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE).matcher(source);
-                int c = 0;
-                while (m.find()) {
-                    c++;
-                }
-                return c;
+                return ApplicationConfig.DESCRIPTION_TYPE[0];
             }
         } else {
-            // 无<0
-            return -1;
+            return ApplicationConfig.DESCRIPTION_TYPE[0];
         }
     }
 
     /**
      * 显示到ListView上的内容
      *
-     * @return
+     * @return String
      */
     @InstantText(viewId = R.id.value_monitor_item)
     public String getListViewItemText() {
@@ -163,7 +171,11 @@ public class RealTimeMonitor implements Cloneable {
 
     @InstantText(viewId = R.id.unit_monitor_item)
     public String getUnit() {
-        return (unit == null || unit.length() <= 0 || unit.equalsIgnoreCase("null")) ? "(-)" : "(" + unit + ")";
+        if (unit != null && unit.length() > 0 && !unit.equalsIgnoreCase("null")) {
+            return unit;
+        } else {
+            return "";
+        }
     }
 
     public void setUnit(String unit) {
@@ -226,7 +238,95 @@ public class RealTimeMonitor implements Cloneable {
         this.received = received;
     }
 
-    public Object clone() {
+    /**
+     * 生成 JSON Description Array String
+     *
+     * @param description Description String
+     * @return JSON String
+     */
+    @SuppressLint("DefaultLocale")
+    public static String GenerateJSONDescription(String description) {
+        if (description != null) {
+            if (description.length() > 0 && !description.contains("null")) {
+                JSONStringer jsonStringer = new JSONStringer();
+                try {
+                    if (description.contains("|")) {
+                        String[] part = description.split("\\|");
+                        List<String> tempList = new ArrayList<String>();
+                        Pattern pattern = Pattern.compile("^Bit\\d*\\-\\d*:.*", Pattern.CASE_INSENSITIVE);
+                        for (String item : part) {
+                            if (pattern.matcher(item).matches()) {
+                                tempList.add(item);
+                            } else {
+                                Collections.addAll(tempList, item.split("#"));
+                            }
+                        }
+                        jsonStringer.array();
+                        for (String unit : tempList) {
+                            if (pattern.matcher(unit).matches()) {
+                                String[] entity = unit.split("#");
+                                jsonStringer.object();
+                                jsonStringer.key(entity[0]
+                                        .replace("Bit", "")
+                                        .replace("bit", "")
+                                        .replaceFirst("^0+(?!$)", ""));
+                                jsonStringer.array();
+                                for (int i = 1; i < entity.length; i++) {
+                                    String[] sub = entity[i].split(":");
+                                    jsonStringer.object();
+                                    jsonStringer.key("id").value(sub.length > 0 ? sub[0] : "");
+                                    jsonStringer.key("value").value(sub.length > 1 ? sub[1] : "");
+                                    jsonStringer.endObject();
+                                }
+                                jsonStringer.endArray();
+                                jsonStringer.endObject();
+                            } else {
+                                String[] entity = unit.split(":");
+                                jsonStringer.object();
+                                jsonStringer.key("id").value(entity.length > 0 ? entity[0]
+                                        .replace("Bit", "")
+                                        .replace("bit", "")
+                                        .replaceFirst("^0+(?!$)", "") : "");
+                                jsonStringer.key("value").value(entity.length > 1 ? entity[1] : "");
+                                jsonStringer.endObject();
+                            }
+                        }
+                        jsonStringer.endArray();
+                    } else {
+                        jsonStringer.array();
+                        for (String item : description.split("#")) {
+                            String[] part = item.split(":");
+                            jsonStringer.object();
+                            jsonStringer.key("id").value(part.length > 0 ? part[0]
+                                    .replace("Bit", "")
+                                    .replace("bit", "")
+                                    .replaceFirst("^0+(?!$)", "") : "");
+                            jsonStringer.key("value").value(part.length > 1 ? part[1] : "");
+                            jsonStringer.endObject();
+                        }
+                        jsonStringer.endArray();
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return jsonStringer.toString();
+            } else {
+                return "";
+            }
+        } else {
+            return "";
+        }
+    }
+
+    public String getJSONDescription() {
+        return JSONDescription;
+    }
+
+    public void setJSONDescription(String JSONDescription) {
+        this.JSONDescription = JSONDescription;
+    }
+
+    public Object clone() throws CloneNotSupportedException {
         RealTimeMonitor o = null;
         try {
             o = (RealTimeMonitor) super.clone();

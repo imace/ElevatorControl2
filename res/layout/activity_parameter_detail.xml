@@ -1,12 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:background="@color/main_background"
               android:orientation="vertical">
-    <ListView
-            android:id="@+id/parameter_group_settings_list"
+    <org.holoeverywhere.widget.ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_centerInParent="true"
+            style="@style/Holo.ProgressBar.Large"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    <org.holoeverywhere.widget.ListView
+            android:visibility="invisible"
+            android:id="@+id/parameter_detail_list_view"
+            android:layout_centerInParent="true"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:listSelector="@android:color/transparent"
@@ -14,5 +22,4 @@
             android:scrollbarStyle="outsideOverlay"
             android:divider="@android:color/transparent"
             android:padding="@dimen/card_view_margin"/>
-
-</LinearLayout>
+</RelativeLayout>

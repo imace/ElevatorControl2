@@ -29,7 +29,7 @@ public class GenerateJSON {
      *
      * @param groupList Group List
      */
-    public String generateProfileJSON(List<ParameterGroupSettings> groupList){
+    public String generateProfileJSON(List<ParameterGroupSettings> groupList) {
         JSONStringer jsonStringer = new JSONStringer();
         try {
             jsonStringer.array();
@@ -40,7 +40,7 @@ public class GenerateJSON {
                 // Parameter Settings
                 jsonStringer.key("parameterSettings");
                 jsonStringer.array();
-                for (ParameterSettings detailSetting: groupSetting.getParametersettings().getList()){
+                for (ParameterSettings detailSetting : groupSetting.getParametersettings().getList()) {
                     jsonStringer.object();
                     jsonStringer.key("code").value(detailSetting.getCode());
                     jsonStringer.key("name").value(detailSetting.getName());

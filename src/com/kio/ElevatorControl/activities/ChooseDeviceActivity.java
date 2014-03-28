@@ -88,7 +88,7 @@ public class ChooseDeviceActivity extends Activity {
     }
 
     @OnClick(R.id.research_devices)
-    void researchButtonClick(){
+    void researchButtonClick() {
         ChooseDeviceActivity.this.listView.setVisibility(View.INVISIBLE);
         ChooseDeviceActivity.this.progressBar.setVisibility(View.VISIBLE);
         researchDevices();

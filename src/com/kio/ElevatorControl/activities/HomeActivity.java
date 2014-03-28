@@ -26,7 +26,9 @@ import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.widget.ListView;
 import org.holoeverywhere.widget.TextView;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class HomeActivity extends Activity {
 
@@ -75,7 +77,6 @@ public class HomeActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         Views.inject(this);
-        elevatorBoxStatus = getResources().getStringArray(R.array.elevator_box_status);
         threadPause = false;
         mSyncStatusHandler = new SyncStatusHandler(HomeActivity.this);
         setListViewDataSource();
@@ -123,9 +124,14 @@ public class HomeActivity extends Activity {
                 public Object onParse() {
                     if (HSerial.isCRC16Valid(getReceivedBuffer())) {
                         byte[] received = HSerial.trimEnd(getReceivedBuffer());
-                        RealTimeMonitor monitor = (RealTimeMonitor) monitorLists.get(i).clone();
-                        monitor.setReceived(received);
-                        return monitor;
+                        RealTimeMonitor monitor = null;
+                        try {
+                            monitor = (RealTimeMonitor) monitorLists.get(i).clone();
+                            monitor.setReceived(received);
+                            return monitor;
+                        } catch (CloneNotSupportedException e) {
+                            e.printStackTrace();
+                        }
                     }
                     return null;
                 }
@@ -332,13 +338,29 @@ public class HomeActivity extends Activity {
                     HomeActivity.this.currentFloorTextView
                             .setText(ParseSerialsUtils.getIntString(monitor));
                 } else if (monitor.getName().equalsIgnoreCase(ApplicationConfig.SYSTEM_STATUS_NAME)) {
-                    int statusCode = ParseSerialsUtils.getSystemStatusCode(monitor);
-                    HomeActivity.this.lockStatusTextView.setText(HomeActivity.this.elevatorBoxStatus[statusCode]);
-                    if (statusCode == 1 || statusCode == 2) {
-                        HomeActivity.this.doorAnimationView.openDoor();
+                    int elevatorBoxStatusCode = ParseSerialsUtils.getElevatorBoxStatusCode(monitor);
+                    if (HomeActivity.this.elevatorBoxStatus == null) {
+                        Pattern pattern = Pattern.compile("Bit\\d*:");
+                        String[] splitArray = pattern.split(monitor.getDescription());
+                        String[] nameArray = Arrays.copyOfRange(splitArray, 1, splitArray.length);
+                        pattern = Pattern.compile("Bit\\d*-\\d*:");
+                        String[] splitPartArray = pattern.split(nameArray[3]);
+                        String[] part3Array = splitPartArray[2].split("#");
+                        HomeActivity.this.elevatorBoxStatus = Arrays.copyOfRange(part3Array, 1, part3Array.length);
                     }
-                    if (statusCode == 3 || statusCode == 4) {
-                        HomeActivity.this.doorAnimationView.closeDoor();
+                    if (elevatorBoxStatusCode < HomeActivity.this.elevatorBoxStatus.length) {
+                        if (!HomeActivity.this.elevatorBoxStatus[elevatorBoxStatusCode]
+                                .contains(ApplicationConfig.RETAIN_NAME)) {
+                            HomeActivity.this.lockStatusTextView
+                                    .setText(HomeActivity.this.elevatorBoxStatus[elevatorBoxStatusCode]
+                                            .replaceAll("\\d*:", ""));
+                        }
+                        if (elevatorBoxStatusCode == 1 || elevatorBoxStatusCode == 2) {
+                            HomeActivity.this.doorAnimationView.openDoor();
+                        }
+                        if (elevatorBoxStatusCode == 3 || elevatorBoxStatusCode == 4) {
+                            HomeActivity.this.doorAnimationView.closeDoor();
+                        }
                     }
                 }
             }

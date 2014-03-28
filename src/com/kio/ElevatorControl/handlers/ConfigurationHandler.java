@@ -11,6 +11,7 @@ import android.widget.ListView;
 import com.hbluetooth.HHandler;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.activities.ConfigurationActivity;
+import com.kio.ElevatorControl.config.ApplicationConfig;
 import com.kio.ElevatorControl.daos.MenuValuesDao;
 import com.kio.ElevatorControl.models.RealTimeMonitor;
 import com.kio.ElevatorControl.views.dialogs.CustomDialog;
@@ -92,11 +93,9 @@ public class ConfigurationHandler extends HHandler {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view,
                                         int position, long id) {
-                    Log.v(TAG, "position:" + position + ",id:" + id);
-                    if (monitorList.get(position).isShowBit()) {
-                        AlertDialog dialog = CustomDialog.switchersDialog(activity,
-                                (byte) 0x11,
-                                (byte) 0x22).create();
+                    RealTimeMonitor monitor = monitorList.get(position);
+                    if (monitor.getDescriptionType() != ApplicationConfig.DESCRIPTION_TYPE[0]){
+                        AlertDialog dialog = CustomDialog.terminalDetailDialog(activity, monitor).create();
                         dialog.setInverseBackgroundForced(true);
                         dialog.show();
                     }

@@ -85,14 +85,13 @@ public class MoveInsideActivity extends Activity {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                if (!MoveInsideActivity.this.hasGetFloors){
+                if (!MoveInsideActivity.this.hasGetFloors) {
                     MoveInsideActivity.this.loadDataAndRenderView();
-                }
-                else {
+                } else {
                     timer.cancel();
                 }
             }
-        }, 0 , 240);
+        }, 0, 240);
         loadDataAndRenderView();
     }
 
@@ -346,7 +345,7 @@ public class MoveInsideActivity extends Activity {
 
         @Override
         public int getCount() {
-            return Math.abs( MoveInsideActivity.this.floors[0] -  MoveInsideActivity.this.floors[1]) + 1;
+            return Math.abs(MoveInsideActivity.this.floors[0] - MoveInsideActivity.this.floors[1]) + 1;
         }
 
         @Override
@@ -405,10 +404,10 @@ public class MoveInsideActivity extends Activity {
 
         @Override
         public void onTalkReceive(Message msg) {
-            if (msg.obj != null && msg.obj instanceof byte[]){
-                byte[] data = (byte[])msg.obj;
+            if (msg.obj != null && msg.obj instanceof byte[]) {
+                byte[] data = (byte[]) msg.obj;
                 int length = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
-                if (length == 4){
+                if (length == 4) {
                     int top = ByteBuffer.wrap(new byte[]{data[4], data[5]}).getShort();
                     int bottom = ByteBuffer.wrap(new byte[]{data[6], data[7]}).getShort();
                     MoveInsideActivity.this.floors = new int[]{bottom, top};

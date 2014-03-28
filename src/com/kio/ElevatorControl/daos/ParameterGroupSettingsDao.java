@@ -25,10 +25,10 @@ public class ParameterGroupSettingsDao {
      * Find By Name
      *
      * @param context context
-     * @param name Name
+     * @param name    Name
      * @return ParameterGroupSettings
      */
-    public static ParameterGroupSettings findByName(Context context, String name){
+    public static ParameterGroupSettings findByName(Context context, String name) {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         List<ParameterGroupSettings> lists = db.findAllByWhere(ParameterGroupSettings.class,
                 " groupText = '" + name + "'");

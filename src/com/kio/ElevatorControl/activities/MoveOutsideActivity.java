@@ -80,14 +80,13 @@ public class MoveOutsideActivity extends Activity {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                if (!MoveOutsideActivity.this.hasGetFloors){
+                if (!MoveOutsideActivity.this.hasGetFloors) {
                     MoveOutsideActivity.this.loadDataAndRenderView();
-                }
-                else {
+                } else {
                     timer.cancel();
                 }
             }
-        }, 0 , 240);
+        }, 0, 240);
         loadDataAndRenderView();
     }
 

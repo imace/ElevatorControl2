@@ -27,7 +27,7 @@ public class RestoreFactoryDao {
     /**
      * 记录是否为空
      *
-     * @param ctx context
+     * @param context context
      * @return boolean
      */
     public static boolean dbEmpty(Context context) {
@@ -60,17 +60,14 @@ public class RestoreFactoryDao {
         // 清理数据
         db.deleteAll(ParameterSettings.class);
         db.deleteAll(ParameterGroupSettings.class);
-
         // 读取NICE3000+_FunCode.json
         String JSON = AssetUtils.readDefaultFunCode(context, "NICE3000+_FunCode.json");
-
         // 解析出厂设置
         try {
             JSONArray groups = new JSONArray(JSON);
             // 遍历group
             int size = groups.length();
             for (int i = 0; i < size; i++) {
-
                 JSONObject groupsJSONObject = groups.getJSONObject(i);
                 ParameterGroupSettings parameterGroupSetting = new ParameterGroupSettings();
                 parameterGroupSetting.setGroupText(groupsJSONObject.optString("groupText"));
@@ -79,9 +76,7 @@ public class RestoreFactoryDao {
                 parameterGroupSetting.setLasttime(new Date());
                 // 保存groupEntity并且id设置为插入后的值
                 db.saveBindId(parameterGroupSetting);
-
                 String groupID = groupsJSONObject.optString("groupId");
-
                 JSONArray settingJson = groupsJSONObject
                         .getJSONArray("parameterSettings");
                 // 遍历settings
@@ -95,6 +90,8 @@ public class RestoreFactoryDao {
                     parameterSetting.setDescription(jsonObject.optString("description"));
                     parameterSetting.setDescriptiontype(ParameterSettings
                             .ParseDescriptionToType(parameterSetting.getDescription()));
+                    parameterSetting.setJSONDescription(ParameterSettings
+                            .GenerateJSONDescription(parameterSetting.getDescription()));
                     parameterSetting.setChildId(jsonObject.optString("childId"));
                     parameterSetting.setScope(jsonObject.optString("scope"));
                     parameterSetting.setDefaultValue(String.valueOf(jsonObject.optInt("defaultValue")));
@@ -121,7 +118,6 @@ public class RestoreFactoryDao {
     public static void restoreFactoryRealTimeMonitor(Context context) {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         db.deleteAll(RealTimeMonitor.class);
-
         // 读取NICE3000+_State.json
         String JSON = AssetUtils.readDefaultFunCode(context, "NICE3000+_State.json");
         try {
@@ -137,6 +133,8 @@ public class RestoreFactoryDao {
                 realTimeMonitor.setDescription(jsonObject.optString("description"));
                 realTimeMonitor.setDescriptionType(RealTimeMonitor
                         .ParseDescriptionToType(realTimeMonitor.getDescription()));
+                realTimeMonitor.setJSONDescription(RealTimeMonitor
+                        .GenerateJSONDescription(realTimeMonitor.getDescription()));
                 realTimeMonitor.setProductId(String.valueOf(jsonObject.optInt("productId")));
                 realTimeMonitor.setScale(String.valueOf(jsonObject.optDouble("scale")));
                 realTimeMonitor.setScope(jsonObject.optString("scope"));

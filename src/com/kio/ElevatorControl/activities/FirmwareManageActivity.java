@@ -25,7 +25,6 @@ import org.holoeverywhere.widget.TextView;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 
 /**
  * 固件管理

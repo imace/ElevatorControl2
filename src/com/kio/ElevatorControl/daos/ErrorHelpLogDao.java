@@ -16,7 +16,7 @@ public class ErrorHelpLogDao {
      * 失败返回-1
      *
      * @param context Context
-     * @param entity ErrorHelpLog
+     * @param entity  ErrorHelpLog
      * @return int
      */
     public static int Insert(Context context, ErrorHelpLog entity) {

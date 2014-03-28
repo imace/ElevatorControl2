@@ -47,10 +47,10 @@ public class HistoryErrorHandler extends HHandler {
     public void onMultiTalkBegin(Message msg) {
         super.onMultiTalkBegin(msg);
         errorList = new ArrayList<HistoryError>();
-        if (adapter != null){
+        if (adapter != null) {
             adapter.notifyDataSetChanged();
         }
-        if (progressBar != null && historyView != null){
+        if (progressBar != null && historyView != null) {
             progressBar.setVisibility(View.VISIBLE);
             historyView.setVisibility(View.INVISIBLE);
         }
@@ -59,16 +59,16 @@ public class HistoryErrorHandler extends HHandler {
     @Override
     public void onMultiTalkEnd(Message msg) {
         super.onMultiTalkEnd(msg);
-        if (progressBar == null){
+        if (progressBar == null) {
             progressBar = (ProgressBar) activity.findViewById(R.id.load_history_progress_bar);
         }
-        if (historyView == null){
+        if (historyView == null) {
             historyView = (LinearLayout) activity.findViewById(R.id.history_view);
         }
         if (listView == null) {
             listView = (ListView) activity.findViewById(R.id.history_list);
         }
-        if (listView.getOnItemClickListener() == null){
+        if (listView.getOnItemClickListener() == null) {
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -89,8 +89,8 @@ public class HistoryErrorHandler extends HHandler {
     @Override
     public void onTalkReceive(Message msg) {
         if (msg.obj != null && (msg.obj instanceof HistoryError)) {
-            HistoryError historyError = (HistoryError)msg.obj;
-            if (!historyError.isNoError()){
+            HistoryError historyError = (HistoryError) msg.obj;
+            if (!historyError.isNoError()) {
                 errorList.add((HistoryError) msg.obj);
             }
         }

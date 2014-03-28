@@ -126,7 +126,7 @@ public class FirmwareManageFragment extends Fragment {
         GridView gridView = (GridView) getActivity().findViewById(R.id.firmware_list);
         List<Firmware> firmwareLists = new ArrayList<Firmware>();
 
-        for (int i = 0; i < 10; i++){
+        for (int i = 0; i < 10; i++) {
             Firmware firmware = new Firmware(getActivity());
             firmware.setName("固件1");
             firmware.setVersion("0.1");
@@ -137,7 +137,7 @@ public class FirmwareManageFragment extends Fragment {
             firmwareLists.add(firmware);
         }
 
-        FirmwareBurnAdapter adapter = new FirmwareBurnAdapter((FirmwareManageActivity)getActivity(),
+        FirmwareBurnAdapter adapter = new FirmwareBurnAdapter((FirmwareManageActivity) getActivity(),
                 firmwareLists);
         gridView.setAdapter(adapter);
     }

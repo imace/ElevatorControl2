@@ -1,17 +1,13 @@
 package com.kio.ElevatorControl.activities;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Message;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.EditText;
-import android.widget.ListView;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.hbluetooth.HBluetooth;
@@ -19,13 +15,19 @@ import com.hbluetooth.HCommunication;
 import com.hbluetooth.HHandler;
 import com.hbluetooth.HSerial;
 import com.kio.ElevatorControl.R;
+import com.kio.ElevatorControl.adapters.DialogSwitchListViewAdapter;
+import com.kio.ElevatorControl.config.ApplicationConfig;
 import com.kio.ElevatorControl.daos.ParameterGroupSettingsDao;
 import com.kio.ElevatorControl.handlers.ParameterHandler;
 import com.kio.ElevatorControl.models.ParameterGroupSettings;
 import com.kio.ElevatorControl.models.ParameterSettings;
+import com.kio.ElevatorControl.models.ParameterStatusItem;
 import com.kio.ElevatorControl.utils.ParseSerialsUtils;
 import com.kio.ElevatorControl.views.dialogs.CustomDialog;
 import org.holoeverywhere.app.Activity;
+import org.holoeverywhere.widget.EditText;
+import org.holoeverywhere.widget.ListView;
+import org.holoeverywhere.widget.ProgressBar;
 
 import java.util.List;
 
@@ -39,18 +41,24 @@ public class ParameterDetailActivity extends Activity {
 
     private UpdateHandler updateHandler;
 
-    private int currentUpdateIndex = -1;
+    private AlertDialog detailDialog;
 
     /**
-     * 页面元素注入
+     * 加载指示器
      */
-    @InjectView(R.id.parameter_group_settings_list)
-    public ListView parameterGroupSettingsList;
+    @InjectView(R.id.progress_bar)
+    public ProgressBar progressBar;
+
+    /**
+     * 功能参数详细列表
+     */
+    @InjectView(R.id.parameter_detail_list_view)
+    public ListView parameterDetailListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_parameter_group);
+        setContentView(R.layout.activity_parameter_detail);
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
         Views.inject(this);
@@ -59,69 +67,72 @@ public class ParameterDetailActivity extends Activity {
         bindListViewItemClickListener();
     }
 
+    /**
+     * 绑定ListView Item点击时间
+     */
     private void bindListViewItemClickListener() {
-        parameterGroupSettingsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        parameterDetailListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                final ParameterSettings setting = parameterHandler.parameters.get(position);
-                AlertDialog.Builder dialog = CustomDialog.parameterSettingDialog(ParameterDetailActivity.this,
-                        setting);
-                dialog.setPositiveButton(R.string.dialog_btn_ok, new DialogInterface.OnClickListener() {
+                final int index = position;
+                final ParameterSettings settings = parameterHandler.parameters.get(position);
+                AlertDialog.Builder builder = CustomDialog.parameterDetailDialog(ParameterDetailActivity.this,
+                        settings);
+                builder.setPositiveButton(R.string.dialog_btn_ok, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialogInterface, int position) {
-                        currentUpdateIndex = position;
-                        final Dialog dialogView = Dialog.class.cast(dialogInterface);
-                        HCommunication[] communications = new HCommunication[1];
-                        communications[0] = new HCommunication() {
-                            @Override
-                            public void beforeSend() {
-                                String inputData = ((EditText) dialogView.findViewById(R.id.parameter_setting_value))
-                                        .getText()
-                                        .toString();
-                                String parseData = ParseSerialsUtils
-                                        .getHexStringFromUserInputParameterSetting(inputData, setting);
-                                setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0106"
-                                        + setting.getCode()
-                                        + parseData
-                                        + "0001")));
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        final AlertDialog dialogView = AlertDialog.class.cast(dialogInterface);
+                        if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[0]) {
+                            final String inputValue = ((EditText) dialogView.findViewById(R.id.setting_value))
+                                    .getText()
+                                    .toString();
+                            if (ParseSerialsUtils.validateUserInputValue(ParameterDetailActivity.this,
+                                    settings,
+                                    inputValue)) {
+                                startSetNewValueCommunications(index,
+                                        ParseSerialsUtils
+                                                .getHexStringFromUserInputParameterSetting(inputValue, settings));
                             }
-
-                            @Override
-                            public void afterSend() {
-
+                        }
+                        if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[1]) {
+                            int checkedIndex = dialogView.getListView().getCheckedItemPosition();
+                            if (checkedIndex != ParseSerialsUtils.getIntFromBytes(settings.getReceived())) {
+                                startSetNewValueCommunications(index, String.format("%04x ", checkedIndex));
                             }
-
-                            @Override
-                            public void beforeReceive() {
-
-                            }
-
-                            @Override
-                            public void afterReceive() {
-
-                            }
-
-                            @Override
-                            public Object onParse() {
-                                if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                                    byte[] received = HSerial
-                                            .trimEnd(getReceivedBuffer());
-                                    setting.setReceived(received);
-                                    Log.v(TAG, HSerial.byte2HexStr(received));
-                                    return setting;
+                        }
+                        if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[2]) {
+                            ListView listView = (ListView) dialogView.findViewById(R.id.switch_list);
+                            DialogSwitchListViewAdapter adapter = (DialogSwitchListViewAdapter) listView.getAdapterSource();
+                            List<ParameterStatusItem> list = adapter.getItemList();
+                            byte[] data = settings.getReceived();
+                            boolean[] booleans = HSerial.byte2BoolArr(data[4], data[5]);
+                            int size = booleans.length;
+                            String binaryString = "";
+                            for (int j = 0; j < size; j++) {
+                                boolean hasValue = false;
+                                boolean settingValue = false;
+                                for (ParameterStatusItem item : list) {
+                                    if (Integer.parseInt(item.id) == j) {
+                                        hasValue = true;
+                                        settingValue = item.status;
+                                    }
                                 }
-                                return null;
+                                if (hasValue) {
+                                    binaryString += settingValue ? 1 : 0;
+                                } else {
+                                    binaryString += booleans[j] ? 1 : 0;
+                                }
                             }
-                        };
-                        if (HBluetooth.getInstance(ParameterDetailActivity.this).isPrepared()) {
-                            HBluetooth.getInstance(ParameterDetailActivity.this)
-                                    .setHandler(updateHandler)
-                                    .setCommunications(communications)
-                                    .Start();
+                            startSetNewValueCommunications(index,
+                                    String.format("%04x ", Integer.parseInt(binaryString, 2)));
+                        }
+                        if (detailDialog != null) {
+                            detailDialog.dismiss();
                         }
                     }
                 });
-                dialog.show();
+                detailDialog = builder.create();
+                detailDialog.show();
             }
         });
     }
@@ -135,6 +146,60 @@ public class ParameterDetailActivity extends Activity {
         this.setTitle(parameterGroupSettings.getGroupText());
         parameterSettings = parameterGroupSettings.getParametersettings().getList();
         initBluetooth();
+    }
+
+    /**
+     * Start Set New Value Communications
+     *
+     * @param position ListView Item Position
+     * @param value    New Setting value (Hex String)
+     */
+    private void startSetNewValueCommunications(int position, String value) {
+        final String newSettingValue = value;
+        final ParameterSettings settings = parameterHandler.parameters.get(position);
+        HCommunication[] communications = new HCommunication[]{
+                new HCommunication() {
+                    @Override
+                    public void beforeSend() {
+                        this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0106"
+                                + settings.getCode()
+                                + newSettingValue
+                                + "0001")));
+                    }
+
+                    @Override
+                    public void afterSend() {
+
+                    }
+
+                    @Override
+                    public void beforeReceive() {
+
+                    }
+
+                    @Override
+                    public void afterReceive() {
+
+                    }
+
+                    @Override
+                    public Object onParse() {
+                        if (HSerial.isCRC16Valid(getReceivedBuffer())) {
+                            byte[] received = HSerial.trimEnd(getReceivedBuffer());
+                            settings.setReceived(received);
+                            return settings;
+                        }
+                        return null;
+                    }
+                }
+        };
+        if (HBluetooth.getInstance(ParameterDetailActivity.this).isPrepared()) {
+            updateHandler.index = position;
+            HBluetooth.getInstance(ParameterDetailActivity.this)
+                    .setHandler(updateHandler)
+                    .setCommunications(communications)
+                    .Start();
+        }
     }
 
     private void initBluetooth() {
@@ -172,10 +237,8 @@ public class ParameterDetailActivity extends Activity {
                 @Override
                 public Object onParse() {
                     if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                        byte[] received = HSerial
-                                .trimEnd(getReceivedBuffer());
-                        ParameterSettings settings = (ParameterSettings) this
-                                .getItem();
+                        byte[] received = HSerial.trimEnd(getReceivedBuffer());
+                        ParameterSettings settings = (ParameterSettings) this.getItem();
                         settings.setReceived(received);
                         return settings;
                     }
@@ -217,6 +280,8 @@ public class ParameterDetailActivity extends Activity {
      */
     private class UpdateHandler extends HHandler {
 
+        private int index;
+
         public UpdateHandler(android.app.Activity activity) {
             super(activity);
             TAG = UpdateHandler.class.getSimpleName();
@@ -236,9 +301,8 @@ public class ParameterDetailActivity extends Activity {
         public void onTalkReceive(Message msg) {
             if (msg.obj instanceof ParameterSettings) {
                 ParameterSettings settings = (ParameterSettings) msg.obj;
-                parameterHandler.parameters.set(currentUpdateIndex, settings);
+                parameterHandler.parameters.set(index, settings);
                 parameterHandler.parameterSettingsAdapter.notifyDataSetChanged();
-                ParameterDetailActivity.this.currentUpdateIndex = -1;
             }
         }
 

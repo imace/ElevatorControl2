@@ -158,6 +158,14 @@ public class BitInputStream extends InputStream {
         return retval;
     }
 
+    public int readBitsFormTo(int from, int to) throws IOException {
+        int retval = 0;
+        if (myInput == null) {
+            return -1;
+        }
+        return retval;
+    }
+
     /**
      * Required by classes extending InputStream, returns
      * the next byte from this stream as an int value.

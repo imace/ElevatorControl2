@@ -101,7 +101,7 @@ public class ConfigurationActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (mCurrentPageIndex == 0){
+        if (mCurrentPageIndex == 0) {
             loadMonitorView();
         }
     }
@@ -148,15 +148,20 @@ public class ConfigurationActivity extends Activity {
                         if (HSerial.isCRC16Valid(getReceivedBuffer())) {
                             // 通过验证
                             byte[] received = HSerial.trimEnd(getReceivedBuffer());
-                            RealTimeMonitor monitor = (RealTimeMonitor) realTimeMonitor.clone();
-                            monitor.setReceived(received);
-                            return monitor;
+                            RealTimeMonitor monitor = null;
+                            try {
+                                monitor = (RealTimeMonitor) realTimeMonitor.clone();
+                                monitor.setReceived(received);
+                                return monitor;
+                            } catch (CloneNotSupportedException e) {
+                                e.printStackTrace();
+                            }
                         }
                         return null;
                     }
                 };
             }
-            if (HBluetooth.getInstance(this).isPrepared()){
+            if (HBluetooth.getInstance(this).isPrepared()) {
                 HBluetooth.getInstance(this)
                         .setHandler(configurationHandler)
                         .setCommunications(hCommunications)

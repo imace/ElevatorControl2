@@ -131,16 +131,11 @@
     <string name="residue_time_text">剩余次数</string>
     <string name="time_unit_text">次</string>
 
-    <!-- 轿厢状态 -->
-    <string-array name="elevator_box_status">
-        <item>保留</item>
-        <item>开门</item>
-        <item>开门维持</item>
-        <item>关门</item>
-        <item>关门维持</item>
-        <item>运行</item>
-        <item>停车</item>
-    </string-array >
+    <!-- 功能参数组详细 -->
+    <string name="parameter_value_scope_text">取值范围</string>
+    <string name="parameter_default_value_text">默认值</string>
+    <string name="parameter_scale_text">比例</string>
+    <string name="not_validated_input_value_text">输入值范围错误，请重新输入！</string>
 
     <!-- //////////////////////////////////// 标签选项卡 START ////////////////////////////////// -->
     <!-- 主标签页选项卡 -->

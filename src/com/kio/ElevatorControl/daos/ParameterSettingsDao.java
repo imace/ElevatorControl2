@@ -21,10 +21,10 @@ public class ParameterSettingsDao {
      * Find By Names Array
      *
      * @param context context
-     * @param names Names Array
+     * @param names   Names Array
      * @return List<ParameterSettings>
      */
-    public static List<ParameterSettings> findByNames(Context context, ArrayList<String>  names) {
+    public static List<ParameterSettings> findByNames(Context context, ArrayList<String> names) {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         int size = names.size();
         if (size > 0) {
@@ -36,9 +36,9 @@ public class ParameterSettingsDao {
                     if (i == 0) {
                         condition += " name = '" + names.get(i);
                     } else if (i == size - 1) {
-                        condition += "' or name = '" +  names.get(i) + "'";
+                        condition += "' or name = '" + names.get(i) + "'";
                     } else {
-                        condition += "' or name = '" +  names.get(i);
+                        condition += "' or name = '" + names.get(i);
                     }
                 }
             }

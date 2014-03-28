@@ -1,7 +1,5 @@
 package com.kio.ElevatorControl.models;
 
-import java.text.SimpleDateFormat;
-
 /**
  * Created by IntelliJ IDEA.
  * User: keith.
@@ -57,10 +55,9 @@ public class HistoryError {
     public void setData(byte[] data) {
         int nErrorInfo = ((data[4] & 0xFF) << 8) | (data[5] & 0xFF); //故障信息
         int nErrCode = nErrorInfo % 100;                             //故障码
-        if (nErrCode == 0){
+        if (nErrCode == 0) {
             this.noError = true;
-        }
-        else {
+        } else {
             this.noError = false;
             int nErrFloor = nErrorInfo / 100;                            //故障楼层
             int nDate = ((data[8] & 0xFF) << 8) | (data[9] & 0xFF);      //故障日期

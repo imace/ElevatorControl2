@@ -28,6 +28,8 @@ public class ApplicationConfig {
 
     public static final String GET_FLOOR_NAME = "最高层";
 
+    public static final String RETAIN_NAME = "保留";
+
     /**
      * 电梯默认最底层和最高层
      */
@@ -52,16 +54,16 @@ public class ApplicationConfig {
     /**
      * 通讯故障信息描述码
      */
-   public static final String[] ERROR_CODE_ARRAY = new String[]{
-           "80010000", //　无故障
-           "80010001", //　密码错误
-           "80010002", //　命令码错误
-           "80010003", //　CRC校验错误
-           "80010004", //　无效地址
-           "80010005", //　无效参数
-           "80010006", //　参数更改无效
-           "80010007"  //　系统被锁定
-   };
+    public static final String[] ERROR_CODE_ARRAY = new String[]{
+            "80010000", //　无故障
+            "80010001", //　密码错误
+            "80010002", //　命令码错误
+            "80010003", //　CRC校验错误
+            "80010004", //　无效地址
+            "80010005", //　无效参数
+            "80010006", //　参数更改无效
+            "80010007"  //　系统被锁定
+    };
 
     /**
      * 通讯故障信息描述信息
@@ -78,5 +80,13 @@ public class ApplicationConfig {
     };
 
     public static final String NO_RESPOND = "未写入";
+
+    /**
+     * 无描述返回     0
+     * 数值计算匹配   1
+     * Bit位值匹配    2
+     * Bit多位值匹配  3
+     */
+    public static final int[] DESCRIPTION_TYPE = new int[]{0, 1, 2, 3};
 
 }
