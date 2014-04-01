@@ -86,7 +86,7 @@ public class RestoreFactoryDao {
                     ParameterSettings parameterSetting = new ParameterSettings();
                     parameterSetting.setCode(jsonObject.optString("code"));
                     parameterSetting.setName(jsonObject.optString("name"));
-                    parameterSetting.setProductId(String.valueOf(jsonObject.optInt("productId")));
+                    parameterSetting.setProductId(jsonObject.optString("productId"));
                     parameterSetting.setDescription(jsonObject.optString("description"));
                     parameterSetting.setDescriptiontype(ParameterSettings
                             .ParseDescriptionToType(parameterSetting.getDescription()));
@@ -94,11 +94,11 @@ public class RestoreFactoryDao {
                             .GenerateJSONDescription(parameterSetting.getDescription()));
                     parameterSetting.setChildId(jsonObject.optString("childId"));
                     parameterSetting.setScope(jsonObject.optString("scope"));
-                    parameterSetting.setDefaultValue(String.valueOf(jsonObject.optInt("defaultValue")));
-                    parameterSetting.setScale(String.valueOf(jsonObject.optDouble("scale")));
+                    parameterSetting.setDefaultValue(jsonObject.optString("defaultValue"));
+                    parameterSetting.setScale(jsonObject.optString("scale"));
                     parameterSetting.setUnit(jsonObject.optString("unit"));
-                    parameterSetting.setType(String.valueOf(jsonObject.optInt("type")));
-                    parameterSetting.setMode(String.valueOf(jsonObject.optInt("mode")));
+                    parameterSetting.setType(jsonObject.optString("type"));
+                    parameterSetting.setMode(jsonObject.optString("mode"));
                     parameterSetting.setParametergroupsettings(parameterGroupSetting);
                     // 保存setting
                     db.save(parameterSetting);
@@ -135,8 +135,8 @@ public class RestoreFactoryDao {
                         .ParseDescriptionToType(realTimeMonitor.getDescription()));
                 realTimeMonitor.setJSONDescription(RealTimeMonitor
                         .GenerateJSONDescription(realTimeMonitor.getDescription()));
-                realTimeMonitor.setProductId(String.valueOf(jsonObject.optInt("productId")));
-                realTimeMonitor.setScale(String.valueOf(jsonObject.optDouble("scale")));
+                realTimeMonitor.setProductId(jsonObject.optString("productId"));
+                realTimeMonitor.setScale(jsonObject.optString("scale"));
                 realTimeMonitor.setScope(jsonObject.optString("scope"));
                 realTimeMonitor.setShowBit(Boolean.parseBoolean(jsonObject.optString("showBit")));
                 realTimeMonitor.setValid(true);

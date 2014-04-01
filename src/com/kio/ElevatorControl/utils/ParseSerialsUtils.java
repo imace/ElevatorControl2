@@ -3,7 +3,6 @@ package com.kio.ElevatorControl.utils;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.widget.Toast;
 import com.hbluetooth.HSerial;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.config.ApplicationConfig;
@@ -11,9 +10,12 @@ import com.kio.ElevatorControl.daos.ErrorHelpDao;
 import com.kio.ElevatorControl.models.ErrorHelp;
 import com.kio.ElevatorControl.models.ParameterSettings;
 import com.kio.ElevatorControl.models.RealTimeMonitor;
+import org.holoeverywhere.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.nio.ByteBuffer;
 
 public class ParseSerialsUtils {
 
@@ -32,9 +34,7 @@ public class ParseSerialsUtils {
             if (monitor.isShowBit()) {
                 return "查看详细->";
             }
-            int value = data[4];
-            value = value << 8;
-            value = value | data[5];
+            short value = getIntFromBytes(data);
             if (monitor.getUnit() == null || monitor.getUnit().length() <= 0) {
                 if (monitor.getCode().equalsIgnoreCase("8000")) {
                     return String.format("E%02d", value);
@@ -57,12 +57,13 @@ public class ParseSerialsUtils {
     public static String getValueTextFromParameterSetting(ParameterSettings settings) {
         byte[] data = settings.getReceived();
         if (data.length == 8) {
-            int value = data[4];
-            value = value << 8;
-            value = value | data[5];
-            Float aFloat = value * Float.parseFloat(settings.getScale());
+            short value = getIntFromBytes(data);
             if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[0]) {
-                return String.format("%.2f", aFloat);
+                try {
+                    return "" + value * Integer.parseInt(settings.getScale());
+                } catch (Exception e) {
+                    return "" + value * Float.parseFloat(settings.getScale());
+                }
             }
             if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[1]) {
                 try {
@@ -95,10 +96,12 @@ public class ParseSerialsUtils {
      */
     @SuppressLint("ValidateUserInputValue")
     public static boolean validateUserInputValue(Activity activity, ParameterSettings settings, String userValue) {
-        Float settingValue = Float.parseFloat(userValue);
         String[] scopeArray = settings.getScope().split("-");
-        if (Math.max(settingValue, Float.parseFloat(scopeArray[0])) == settingValue &&
-                Math.min(settingValue, Float.parseFloat(scopeArray[1])) == settingValue) {
+        double[] array = new double[2];
+        array[0] = Double.parseDouble(scopeArray[0]) / Double.parseDouble(settings.getScale());
+        array[1] = Double.parseDouble(scopeArray[1]) / Double.parseDouble(settings.getScale());
+        Double newValue = Double.parseDouble(userValue);
+        if (Math.max(newValue, array[0]) == newValue && Math.min(newValue, array[1]) == newValue) {
             return true;
         } else {
             Toast.makeText(activity,
@@ -126,17 +129,15 @@ public class ParseSerialsUtils {
      * 取得十进制数
      *
      * @param data byte[]
-     * @return int
+     * @return short
      */
     @SuppressLint("GetIntFromBytes")
-    public static int getIntFromBytes(byte[] data) {
+    public static short getIntFromBytes(byte[] data) {
         if (data.length == 8) {
-            int value = data[4];
-            value = value << 8;
-            value = value | data[5];
-            return value;
+            ByteBuffer wrapped = ByteBuffer.wrap(new byte[]{data[4], data[5]});
+            return wrapped.getShort();
         }
-        return 0;
+        return -1;
     }
 
     /**
@@ -164,25 +165,6 @@ public class ParseSerialsUtils {
     }
 
     /**
-     * 根据单位换算,把用户输入转换成二位16进制
-     *
-     * @param string String
-     * @return String
-     */
-    @SuppressLint("GetHexStringFromUserInputParameterSetting")
-    public static String getHexStringFromUserInputParameterSetting(String string, ParameterSettings settings) {
-        try {
-            double dt = Double.parseDouble(string);
-            double scale = Double.parseDouble(settings.getScale());
-            int i = (int) (dt / scale);
-            return Integer.toHexString(i);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return "0000";
-    }
-
-    /**
      * 取得Error Code
      *
      * @param data byte[]
@@ -191,30 +173,8 @@ public class ParseSerialsUtils {
     @SuppressLint("GetErrorCode")
     public static String getErrorCode(byte[] data) {
         if (data.length == 8) {
-            int value = data[4];
-            value = value << 8;
-            value = value | data[5];
-            // 2位整数
+            short value = getIntFromBytes(data);
             return String.format("E%02d", value);
-        }
-        return null;
-    }
-
-    /**
-     * 取得十进制数据
-     *
-     * @param monitor RealTimeMonitor
-     * @return Int String
-     */
-    @SuppressLint("GetIntString")
-    public static String getIntString(RealTimeMonitor monitor) {
-        byte[] data = monitor.getReceived();
-        if (data.length == 8) {
-            int value = data[4];
-            value = value << 8;
-            value = value | data[5];
-            // 2位整数
-            return String.valueOf(value);
         }
         return null;
     }
@@ -266,10 +226,7 @@ public class ParseSerialsUtils {
     public static ErrorHelp getErrorHelpFromErrorHelp(Context ctx, ErrorHelp errorHelp) {
         byte[] data = errorHelp.getReceived();
         if (data.length == 8) {
-            int value = data[4];
-            value = value << 8;
-            value = value | data[5];
-            // 2位整数
+            short value = getIntFromBytes(data);
             String display = String.format("E%02d", value);
             return ErrorHelpDao.findByDisplay(ctx, display);
         }

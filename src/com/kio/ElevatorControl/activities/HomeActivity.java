@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import butterknife.InjectView;
-import butterknife.OnClick;
 import butterknife.Views;
 import com.hbluetooth.HBluetooth;
 import com.hbluetooth.HCommunication;
@@ -18,15 +17,20 @@ import com.hbluetooth.HSerial;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.config.ApplicationConfig;
 import com.kio.ElevatorControl.daos.RealTimeMonitorDao;
+import com.kio.ElevatorControl.daos.ShortcutDao;
 import com.kio.ElevatorControl.models.RealTimeMonitor;
+import com.kio.ElevatorControl.models.Shortcut;
 import com.kio.ElevatorControl.utils.ParseSerialsUtils;
 import com.kio.ElevatorControl.views.DoorAnimationView;
 import com.kio.ElevatorControl.views.TypefaceTextView;
 import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.widget.ListView;
 import org.holoeverywhere.widget.TextView;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -66,6 +70,8 @@ public class HomeActivity extends Activity {
     private List<RealTimeMonitor> monitorLists;
 
     private String[] elevatorBoxStatus;
+
+    private List<Shortcut> shortcutList;
 
     /**
      * 同步间隔
@@ -139,55 +145,6 @@ public class HomeActivity extends Activity {
         }
     }
 
-    @OnClick(R.id.door_button)
-    void openDoor() {
-        //doorAnimationView.openDoor();
-        HCommunication[] communications = new HCommunication[]{
-                new HCommunication() {
-                    @Override
-                    public void beforeSend() {
-                        this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103"
-                                + "10101018101D0003"
-                                + "0001")));
-                    }
-
-                    @Override
-                    public void afterSend() {
-
-                    }
-
-                    @Override
-                    public void beforeReceive() {
-
-                    }
-
-                    @Override
-                    public void afterReceive() {
-
-                    }
-
-                    @Override
-                    public Object onParse() {
-                        if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                            byte[] received = HSerial.trimEnd(getReceivedBuffer());
-                            Log.v(TAG, HSerial.byte2HexStr(received));
-                        }
-                        return null;
-                    }
-                }
-        };
-        if (HBluetooth.getInstance(HomeActivity.this).isPrepared()) {
-            HBluetooth.getInstance(HomeActivity.this)
-                    .setCommunications(communications)
-                    .Start();
-        }
-    }
-
-    @OnClick(R.id.close_door_button)
-    void closeDoor() {
-        doorAnimationView.closeDoor();
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -249,6 +206,7 @@ public class HomeActivity extends Activity {
     }
 
     public void setListViewDataSource() {
+        shortcutList = ShortcutDao.findAll(this);
         ShortcutListViewAdapter adapter = new ShortcutListViewAdapter();
         mListView.setAdapter(adapter);
     }
@@ -266,12 +224,12 @@ public class HomeActivity extends Activity {
 
         @Override
         public int getCount() {
-            return 5;
+            return HomeActivity.this.shortcutList.size();
         }
 
         @Override
-        public Object getItem(int position) {
-            return null;
+        public Shortcut getItem(int position) {
+            return HomeActivity.this.shortcutList.get(position);
         }
 
         @Override
@@ -291,7 +249,8 @@ public class HomeActivity extends Activity {
             } else {
                 holder = (ViewHolder) convertView.getTag();
             }
-            holder.mShortcutName.setText("快捷菜单");
+            Shortcut item = getItem(position);
+            holder.mShortcutName.setText(item.getName());
             return convertView;
         }
 
@@ -336,24 +295,42 @@ public class HomeActivity extends Activity {
                             .setText(ParseSerialsUtils.getErrorCode(monitor.getReceived()));
                 } else if (monitor.getName().equalsIgnoreCase(ApplicationConfig.CURRENT_FLOOR_NAME)) {
                     HomeActivity.this.currentFloorTextView
-                            .setText(ParseSerialsUtils.getIntString(monitor));
+                            .setText(String.valueOf(ParseSerialsUtils.getIntFromBytes(monitor.getReceived())));
                 } else if (monitor.getName().equalsIgnoreCase(ApplicationConfig.SYSTEM_STATUS_NAME)) {
                     int elevatorBoxStatusCode = ParseSerialsUtils.getElevatorBoxStatusCode(monitor);
                     if (HomeActivity.this.elevatorBoxStatus == null) {
-                        Pattern pattern = Pattern.compile("Bit\\d*:");
-                        String[] splitArray = pattern.split(monitor.getDescription());
-                        String[] nameArray = Arrays.copyOfRange(splitArray, 1, splitArray.length);
-                        pattern = Pattern.compile("Bit\\d*-\\d*:");
-                        String[] splitPartArray = pattern.split(nameArray[3]);
-                        String[] part3Array = splitPartArray[2].split("#");
-                        HomeActivity.this.elevatorBoxStatus = Arrays.copyOfRange(part3Array, 1, part3Array.length);
+                        try {
+                            JSONArray jsonArray = new JSONArray(monitor.getJSONDescription());
+                            Pattern pattern = Pattern.compile("^\\d*\\-\\d*:.*", Pattern.CASE_INSENSITIVE);
+                            int size = jsonArray.length();
+                            for (int i = 0; i < size; i++) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                for (Iterator iterator = jsonObject.keys(); iterator.hasNext(); ) {
+                                    String name = (String) iterator.next();
+                                    if (pattern.matcher(name).matches()) {
+                                        if (name.replaceAll("\\d*\\-\\d*:", "")
+                                                .equalsIgnoreCase(ApplicationConfig.ELEVATOR_BOX_STATUS_NAME)) {
+                                            JSONArray subArray = jsonObject.optJSONArray(name);
+                                            int subArraySize = subArray.length();
+                                            HomeActivity.this.elevatorBoxStatus = new String[subArraySize];
+                                            for (int j = 0; j < subArraySize; j++) {
+                                                HomeActivity.this.elevatorBoxStatus[j] = subArray
+                                                        .getJSONObject(j)
+                                                        .optString("value");
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     }
                     if (elevatorBoxStatusCode < HomeActivity.this.elevatorBoxStatus.length) {
                         if (!HomeActivity.this.elevatorBoxStatus[elevatorBoxStatusCode]
                                 .contains(ApplicationConfig.RETAIN_NAME)) {
                             HomeActivity.this.lockStatusTextView
-                                    .setText(HomeActivity.this.elevatorBoxStatus[elevatorBoxStatusCode]
-                                            .replaceAll("\\d*:", ""));
+                                    .setText(HomeActivity.this.elevatorBoxStatus[elevatorBoxStatusCode]);
                         }
                         if (elevatorBoxStatusCode == 1 || elevatorBoxStatusCode == 2) {
                             HomeActivity.this.doorAnimationView.openDoor();

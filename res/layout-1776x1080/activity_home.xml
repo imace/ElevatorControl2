@@ -39,13 +39,14 @@
             </LinearLayout>
             <!-- 运行速度 -->
             <LinearLayout
-                    android:orientation="horizontal"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="3dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                 <org.holoeverywhere.widget.TextView
                         android:textSize="16sp"
                         android:textColor="#515151"
-                        android:layout_marginRight="5dp"
+                        android:layout_marginBottom="2dp"
                         android:text="@string/running_speed_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
@@ -58,13 +59,14 @@
             </LinearLayout>
             <!-- 轿厢状态 -->
             <LinearLayout
-                    android:orientation="horizontal"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="3dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                 <org.holoeverywhere.widget.TextView
                         android:textSize="16sp"
                         android:textColor="#515151"
-                        android:layout_marginRight="5dp"
+                        android:layout_marginBottom="2dp"
                         android:text="@string/lock_elevator_status_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
@@ -77,13 +79,14 @@
             </LinearLayout>
             <!-- 故障代码 -->
             <LinearLayout
-                    android:orientation="horizontal"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="3dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                 <org.holoeverywhere.widget.TextView
                         android:textSize="16sp"
                         android:textColor="#515151"
-                        android:layout_marginRight="5dp"
+                        android:layout_marginBottom="2dp"
                         android:text="@string/error_code_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
@@ -97,10 +100,10 @@
             </LinearLayout>
             <!-- ///////////////////////////// 状态信息 - 图形  //////////////////////////// -->
             <LinearLayout
+                    android:orientation="vertical"
                     android:gravity="center_vertical"
-                    android:orientation="horizontal"
                     android:layout_width="match_parent"
-                    android:layout_height="80dp">
+                    android:layout_height="wrap_content">
                 <ImageView
                         android:id="@+id/current_direction"
                         android:contentDescription="@null"

@@ -13,7 +13,9 @@ import com.hbluetooth.HCommunication;
 import com.hbluetooth.HHandler;
 import com.hbluetooth.HSerial;
 import com.kio.ElevatorControl.R;
+import com.kio.ElevatorControl.config.ApplicationConfig;
 import com.kio.ElevatorControl.daos.ParameterGroupSettingsDao;
+import com.kio.ElevatorControl.models.ListHolder;
 import com.kio.ElevatorControl.models.ParameterGroupSettings;
 import com.kio.ElevatorControl.models.ParameterSettings;
 import com.kio.ElevatorControl.utils.GenerateJSON;
@@ -143,46 +145,8 @@ public class ParameterDownloadActivity extends Activity {
             communicationsList = new ArrayList<HCommunication[]>();
             for (ParameterGroupSettings groupItem : parameterGroupLists) {
                 List<ParameterSettings> detailSettings = groupItem.getParametersettings().getList();
-                int detailSize = detailSettings.size();
-                maxProgress += detailSize;
-                HCommunication[] communications = new HCommunication[detailSize];
-                for (int i = 0; i < detailSize; i++) {
-                    final ParameterSettings item = detailSettings.get(i);
-                    communications[i] = new HCommunication() {
-                        @Override
-                        public void beforeSend() {
-                            this.setSendBuffer(HSerial.crc16(HSerial
-                                    .hexStr2Ints("0103"
-                                            + ParseSerialsUtils.getCalculatedCode(item)
-                                            + "0001")));
-                        }
-
-                        @Override
-                        public void afterSend() {
-
-                        }
-
-                        @Override
-                        public void beforeReceive() {
-
-                        }
-
-                        @Override
-                        public void afterReceive() {
-
-                        }
-
-                        @Override
-                        public Object onParse() {
-                            if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                                byte[] received = HSerial.trimEnd(getReceivedBuffer());
-                                item.setReceived(received);
-                                return item;
-                            }
-                            return null;
-                        }
-                    };
-                }
+                HCommunication[] communications = combinationCommunications(detailSettings);
+                maxProgress += communications.length;
                 communicationsList.add(communications);
             }
             downloadProgressBar.setMax(maxProgress);
@@ -196,6 +160,71 @@ public class ParameterDownloadActivity extends Activity {
             builder.setMessage(R.string.cannot_save_file);
             builder.setPositiveButton(R.string.dialog_btn_ok, null);
         }
+    }
+
+    /**
+     * Combination Communications
+     *
+     * @param list ParameterSettings List
+     * @return HCommunication[]
+     */
+    private HCommunication[] combinationCommunications(final List<ParameterSettings> list) {
+        final int size = list.size();
+        final int count = size <= 10 ? 1 : ((size - size % 10) / 10 + (size % 10 == 0 ? 0 : 1));
+        HCommunication[] communications = new HCommunication[count];
+        for (int i = 0; i < count; i++) {
+            final int position = i;
+            final ParameterSettings firstItem = list.get(position * 10);
+            final int length = size <= 10 ? size : (size % 10 == 0 ? 10 : ((position == count - 1) ? size % 10 : 10));
+            communications[i] = new HCommunication() {
+                @Override
+                public void beforeSend() {
+                    this.setSendBuffer(HSerial.crc16(HSerial
+                            .hexStr2Ints("0103"
+                                    + ParseSerialsUtils.getCalculatedCode(firstItem)
+                                    + String.format("%04x ", length)
+                                    + "0001")));
+                }
+
+                @Override
+                public void afterSend() {
+
+                }
+
+                @Override
+                public void beforeReceive() {
+
+                }
+
+                @Override
+                public void afterReceive() {
+
+                }
+
+                @Override
+                public Object onParse() {
+                    if (HSerial.isCRC16Valid(getReceivedBuffer())) {
+                        byte[] data = HSerial.trimEnd(getReceivedBuffer());
+                        short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
+                        if (length * 2 == bytesLength) {
+                            List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
+                            for (int j = 0; j < length; j++) {
+                                ParameterSettings item = list.get(position * 10 + j);
+                                byte[] tempData = HSerial.crc16(HSerial.hexStr2Ints("01030002"
+                                        + HSerial.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
+                                item.setReceived(tempData);
+                                tempList.add(item);
+                            }
+                            ListHolder holder = new ListHolder();
+                            holder.setParameterSettingsList(tempList);
+                            return holder;
+                        }
+                    }
+                    return null;
+                }
+            };
+        }
+        return communications;
     }
 
     /**
@@ -291,21 +320,13 @@ public class ParameterDownloadActivity extends Activity {
 
         @Override
         public void onTalkReceive(Message msg) {
-            if (msg.obj != null && msg.obj instanceof ParameterSettings) {
-                ParameterSettings detailItem = (ParameterSettings) msg.obj;
-                byte[] data = detailItem.getReceived();
-                byte[] lengthArray = {data[2], data[3]};
-                ByteBuffer wrapped = ByteBuffer.wrap(lengthArray);
-                int length = wrapped.getShort();
-                if (length == 2) {
-                    byte[] valueArray = {data[4], data[5]};
-                    ByteBuffer valueWrapped = ByteBuffer.wrap(valueArray);
-                    int decimalValue = valueWrapped.getShort();
-                    String hexValue = HSerial.byte2HexStr(valueArray);
-                    detailItem.setHexValueString(hexValue);
-                    detailItem.setUserValue(String.valueOf(decimalValue));
+            if (msg.obj != null && msg.obj instanceof ListHolder) {
+                ListHolder holder = (ListHolder) msg.obj;
+                for (ParameterSettings item : holder.getParameterSettingsList()) {
+                    if (!item.getName().contains(ApplicationConfig.RETAIN_NAME)) {
+                        tempParameterSettingsList.add(item);
+                    }
                 }
-                tempParameterSettingsList.add(detailItem);
                 receiveCount++;
             }
         }

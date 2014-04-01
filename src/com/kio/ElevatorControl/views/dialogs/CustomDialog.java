@@ -123,11 +123,13 @@ public class CustomDialog {
         if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[0]) {
             View dialogView = activity.getLayoutInflater().inflate(R.layout.parameter_edit_dialog, null);
             EditText settingValueEditText = (EditText) dialogView.findViewById(R.id.setting_value);
+            TextView scaleNewValue = (TextView) dialogView.findViewById(R.id.scale_new_value);
             TextView unitTextView = (TextView) dialogView.findViewById(R.id.unit);
             TextView defaultValueTextView = (TextView) dialogView.findViewById(R.id.default_value);
             TextView valueScopeTextView = (TextView) dialogView.findViewById(R.id.value_scope);
             TextView scaleTextView = (TextView) dialogView.findViewById(R.id.scale);
-            settingValueEditText.setText(ParseSerialsUtils.getValueTextFromParameterSetting(settings));
+            settingValueEditText.setText(String.valueOf(ParseSerialsUtils.getIntFromBytes(settings.getReceived())));
+            scaleNewValue.setText(settings.getScale());
             defaultValueTextView.setText(settings.getDefaultValue());
             unitTextView.setText(settings.getUnit());
             valueScopeTextView.setText(settings.getScope());

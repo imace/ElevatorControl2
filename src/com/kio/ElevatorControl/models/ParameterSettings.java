@@ -252,7 +252,8 @@ public class ParameterSettings implements Cloneable {
         return parameteroptexplain;
     }
 
-    public void setParameteroptexplain(OneToManyLazyLoader<ParameterOptExplain, ParameterOptExplain> parameteroptexplain) {
+    public void setParameteroptexplain(OneToManyLazyLoader<ParameterOptExplain, ParameterOptExplain>
+                                               parameteroptexplain) {
         this.parameteroptexplain = parameteroptexplain;
     }
 

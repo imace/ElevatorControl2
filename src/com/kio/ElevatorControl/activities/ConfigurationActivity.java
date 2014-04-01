@@ -20,6 +20,7 @@ import com.viewpagerindicator.TabPageIndicator;
 import org.holoeverywhere.app.Activity;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -77,9 +78,10 @@ public class ConfigurationActivity extends Activity {
                         HBluetooth.getInstance(ConfigurationActivity.this).setHandler(configurationHandler);
                         try {
                             // 反射执行
-                            String mName = MenuValuesDao.getConfigurationLoadMethodName(mCurrentPageIndex, ConfigurationActivity.this);
-                            Log.v(TAG, String.valueOf(mCurrentPageIndex) + " : " + mName);
-                            ((Object) ConfigurationActivity.this).getClass().getMethod(mName).invoke(ConfigurationActivity.this);
+                            String mName = MenuValuesDao
+                                    .getConfigurationLoadMethodName(mCurrentPageIndex, ConfigurationActivity.this);
+                            ((Object) ConfigurationActivity.this).getClass().getMethod(mName)
+                                    .invoke(ConfigurationActivity.this);
                         } catch (NoSuchMethodException e) {
                             Log.e(TAG, e.getMessage());
                         } catch (IllegalArgumentException e) {
@@ -117,6 +119,7 @@ public class ConfigurationActivity extends Activity {
      */
     public void loadMonitorView() {
         // 连接成功的情况下
+        /*
         if (HBluetooth.getInstance(null).isPrepared()) {
             List<RealTimeMonitor> monitorList = RealTimeMonitorDao.findAll(this);
             HCommunication[] hCommunications = new HCommunication[monitorList.size()];
@@ -133,14 +136,17 @@ public class ConfigurationActivity extends Activity {
 
                     @Override
                     public void afterSend() {
+
                     }
 
                     @Override
                     public void beforeReceive() {
+
                     }
 
                     @Override
                     public void afterReceive() {
+
                     }
 
                     @Override
@@ -167,6 +173,84 @@ public class ConfigurationActivity extends Activity {
                         .setCommunications(hCommunications)
                         .Start();
             }
+        }
+        */
+        combinationCommunicationsAndSend();
+    }
+
+    /**
+     * Combination Communications And Send
+     */
+    private void combinationCommunicationsAndSend() {
+        List<RealTimeMonitor> monitorList = RealTimeMonitorDao.findAll(this);
+        final int size = monitorList.size();
+        List<int[]> sections = new ArrayList<int[]>();
+        int startIndex = 0;
+        for (int index = 0; index < size; index++) {
+            int startPrefix = Integer.parseInt(monitorList.get(startIndex).getCode().substring(0, 1));
+            int prefix = Integer.parseInt(monitorList.get(index).getCode().substring(0, 1));
+            int nextPrefix = index < size - 1
+                    ? Integer.parseInt(monitorList.get(index + 1).getCode().substring(0, 1))
+                    : prefix;
+            if (index - startIndex < 9) {
+                if (prefix != startPrefix) {
+                    sections.add(new int[]{startIndex, index - 1});
+                    startIndex = index + 1;
+                    if (prefix != nextPrefix || index == size - 1) {
+                        sections.add(new int[]{index, index});
+                    }
+                }
+            } else if (index - startIndex == 9) {
+                sections.add(new int[]{startIndex, index});
+                startIndex = index + 1;
+            }
+        }
+        int sectionSize = sections.size();
+        HCommunication[] communications = new HCommunication[sectionSize];
+        for (int position = 0; position < sectionSize; position++) {
+            final int[] section = sections.get(position);
+            final RealTimeMonitor firstItem = monitorList.get(section[0]);
+            final int length = section[1] - section[0] + 1;
+            Log.v("AAABBB", firstItem.getCode() + ":" + length);
+            communications[position] = new HCommunication() {
+                @Override
+                public void beforeSend() {
+                    this.setSendBuffer(HSerial.crc16(HSerial
+                            .hexStr2Ints("0103"
+                                    + firstItem.getCode()
+                                    + String.format("%04x ", length)
+                                    + "0001")));
+                }
+
+                @Override
+                public void afterSend() {
+
+                }
+
+                @Override
+                public void beforeReceive() {
+
+                }
+
+                @Override
+                public void afterReceive() {
+
+                }
+
+                @Override
+                public Object onParse() {
+                    if (HSerial.isCRC16Valid(getReceivedBuffer())) {
+                        byte[] data = HSerial.trimEnd(getReceivedBuffer());
+                        Log.v("AAABBB", HSerial.byte2HexStr(data));
+                    }
+                    return null;
+                }
+            };
+        }
+        if (HBluetooth.getInstance(this).isPrepared()) {
+            HBluetooth.getInstance(this)
+                    .setCommunications(communications)
+                    .Start();
         }
     }
 

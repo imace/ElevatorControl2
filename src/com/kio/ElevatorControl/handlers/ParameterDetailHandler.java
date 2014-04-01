@@ -8,6 +8,7 @@ import com.hbluetooth.HHandler;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.activities.ParameterDetailActivity;
 import com.kio.ElevatorControl.config.ApplicationConfig;
+import com.kio.ElevatorControl.models.ListHolder;
 import com.kio.ElevatorControl.models.ParameterSettings;
 import com.mobsandgeeks.adapters.InstantAdapter;
 import org.holoeverywhere.widget.ListView;
@@ -16,27 +17,28 @@ import org.holoeverywhere.widget.ProgressBar;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ParameterHandler extends HHandler {
+public class ParameterDetailHandler extends HHandler {
 
     private boolean talkingSuccess = false;
 
     private ListView listView;
 
-    public List<ParameterSettings> parameters = new ArrayList<ParameterSettings>();
+    public List<ParameterSettings> parametersList;
 
     public InstantAdapter<ParameterSettings> parameterSettingsAdapter;
 
     private ProgressBar progressBar;
 
-    public ParameterHandler(Activity activity) {
+    public ParameterDetailHandler(Activity activity) {
         super(activity);
-        TAG = ParameterHandler.class.getSimpleName();
+        TAG = ParameterDetailHandler.class.getSimpleName();
     }
 
     @Override
     public void onMultiTalkBegin(Message msg) {
         super.onMultiTalkBegin(msg);
         talkingSuccess = false;
+        parametersList = new ArrayList<ParameterSettings>();
         if (parameterSettingsAdapter != null) {
             parameterSettingsAdapter.clear();
         }
@@ -60,7 +62,7 @@ public class ParameterHandler extends HHandler {
                 parameterSettingsAdapter = new InstantAdapter<ParameterSettings>(activity,
                         R.layout.list_parameter_group_item,
                         ParameterSettings.class,
-                        parameters);
+                        parametersList);
             }
             listView.setAdapter(parameterSettingsAdapter);
             progressBar.setVisibility(View.INVISIBLE);
@@ -71,10 +73,20 @@ public class ParameterHandler extends HHandler {
     @Override
     public void onTalkReceive(Message msg) {
         talkingSuccess = true;
-        if (msg.obj instanceof ParameterSettings) {
-            ParameterSettings settings = (ParameterSettings) msg.obj;
-            if (!settings.getName().contains(ApplicationConfig.RETAIN_NAME)) {
-                parameters.add(settings);
+        if (msg.obj != null) {
+            if (msg.obj instanceof ParameterSettings) {
+                ParameterSettings item = (ParameterSettings) msg.obj;
+                if (!item.getName().contains(ApplicationConfig.RETAIN_NAME)) {
+                    parametersList.add(item);
+                }
+            }
+            if (msg.obj instanceof ListHolder) {
+                ListHolder holder = (ListHolder) msg.obj;
+                for (ParameterSettings item : holder.getParameterSettingsList()) {
+                    if (!item.getName().contains(ApplicationConfig.RETAIN_NAME)) {
+                        parametersList.add(item);
+                    }
+                }
             }
         }
     }

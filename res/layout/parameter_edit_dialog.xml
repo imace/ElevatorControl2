@@ -12,29 +12,36 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
         <!-- 设置新值 -->
-        <RelativeLayout
+        <LinearLayout
                 android:minHeight="35dp"
                 android:layout_marginTop="5dp"
                 android:orientation="horizontal"
+                android:gravity="center_vertical"
                 android:layout_marginRight="@dimen/card_view_margin"
                 android:layout_marginLeft="@dimen/card_view_margin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
             <org.holoeverywhere.widget.EditText
                     android:id="@+id/setting_value"
-                    android:layout_centerVertical="true"
-                    android:layout_alignParentLeft="true"
                     android:layout_marginRight="@dimen/card_view_margin"
-                    android:minWidth="200dp"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"/>
+            <org.holoeverywhere.widget.TextView
+                    android:text="x"
+                    android:layout_marginRight="@dimen/card_view_margin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            <org.holoeverywhere.widget.TextView
+                    android:id="@+id/scale_new_value"
+                    android:layout_marginRight="@dimen/card_view_margin"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
             <org.holoeverywhere.widget.TextView
                     android:id="@+id/unit"
-                    android:layout_centerVertical="true"
-                    android:layout_alignParentRight="true"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
-        </RelativeLayout>
+        </LinearLayout>
         <View
                 android:background="@android:drawable/divider_horizontal_bright"
                 android:layout_marginTop="5dp"

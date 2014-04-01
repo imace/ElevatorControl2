@@ -18,6 +18,8 @@ public class ApplicationConfig {
 
     public static final String SYSTEM_STATUS_NAME = "系统状态";
 
+    public static final String ELEVATOR_BOX_STATUS_NAME = "轿厢状态";
+
     public static final String ERROR_CODE_NAME = "故障信息";
 
     public static final String CURRENT_FLOOR_NAME = "当前楼层";

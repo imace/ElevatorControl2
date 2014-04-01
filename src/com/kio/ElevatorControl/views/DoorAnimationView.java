@@ -37,7 +37,7 @@ public class DoorAnimationView extends RelativeLayout {
 
     public DoorAnimationView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        LayoutInflater.from(context).inflate(R.layout.animation_view, this, true);
+        LayoutInflater.from(context).inflate(R.layout.door_animation_view, this, true);
         leftDoor = (ImageView) findViewById(R.id.left_door);
         rightDoor = (ImageView) findViewById(R.id.right_door);
         animating = false;
