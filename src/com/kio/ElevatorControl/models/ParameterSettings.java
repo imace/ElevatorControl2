@@ -1,6 +1,7 @@
 package com.kio.ElevatorControl.models;
 
 import android.annotation.SuppressLint;
+import com.hbluetooth.HSerial;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.config.ApplicationConfig;
 import com.kio.ElevatorControl.utils.ParseSerialsUtils;
@@ -186,7 +187,6 @@ public class ParameterSettings implements Cloneable {
         this.hexValueString = hexValueString;
     }
 
-
     public String getScale() {
         return scale;
     }
@@ -278,8 +278,12 @@ public class ParameterSettings implements Cloneable {
         return received;
     }
 
-    public void setReceived(byte[] received) {
-        this.received = received;
+    public void setReceived(byte[] data) {
+        this.received = data;
+        if (data.length == 8){
+            this.userValue = String.valueOf(ParseSerialsUtils.getIntFromBytes(data));
+            this.hexValueString = HSerial.byte2HexStr(new byte[]{data[4], data[5]});
+        }
     }
 
     @InstantText(viewId = R.id.value_parameter_setting)

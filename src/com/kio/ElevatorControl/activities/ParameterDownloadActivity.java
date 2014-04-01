@@ -3,6 +3,7 @@ package com.kio.ElevatorControl.activities;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Message;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import butterknife.InjectView;
@@ -144,8 +145,7 @@ public class ParameterDownloadActivity extends Activity {
             parameterGroupLists = ParameterGroupSettingsDao.findAll(ParameterDownloadActivity.this);
             communicationsList = new ArrayList<HCommunication[]>();
             for (ParameterGroupSettings groupItem : parameterGroupLists) {
-                List<ParameterSettings> detailSettings = groupItem.getParametersettings().getList();
-                HCommunication[] communications = combinationCommunications(detailSettings);
+                HCommunication[] communications = createCommunications(groupItem.getParametersettings().getList());
                 maxProgress += communications.length;
                 communicationsList.add(communications);
             }
@@ -163,12 +163,12 @@ public class ParameterDownloadActivity extends Activity {
     }
 
     /**
-     * Combination Communications
+     * Create Communications
      *
      * @param list ParameterSettings List
      * @return HCommunication[]
      */
-    private HCommunication[] combinationCommunications(final List<ParameterSettings> list) {
+    private HCommunication[] createCommunications(final List<ParameterSettings> list) {
         final int size = list.size();
         final int count = size <= 10 ? 1 : ((size - size % 10) / 10 + (size % 10 == 0 ? 0 : 1));
         HCommunication[] communications = new HCommunication[count];
@@ -205,6 +205,7 @@ public class ParameterDownloadActivity extends Activity {
                 public Object onParse() {
                     if (HSerial.isCRC16Valid(getReceivedBuffer())) {
                         byte[] data = HSerial.trimEnd(getReceivedBuffer());
+                        Log.v("AAABBB", HSerial.byte2HexStr(data));
                         short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
                         if (length * 2 == bytesLength) {
                             List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
@@ -212,6 +213,7 @@ public class ParameterDownloadActivity extends Activity {
                                 ParameterSettings item = list.get(position * 10 + j);
                                 byte[] tempData = HSerial.crc16(HSerial.hexStr2Ints("01030002"
                                         + HSerial.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
+                                Log.v("AAABBB", HSerial.byte2HexStr(tempData));
                                 item.setReceived(tempData);
                                 tempList.add(item);
                             }
@@ -323,9 +325,7 @@ public class ParameterDownloadActivity extends Activity {
             if (msg.obj != null && msg.obj instanceof ListHolder) {
                 ListHolder holder = (ListHolder) msg.obj;
                 for (ParameterSettings item : holder.getParameterSettingsList()) {
-                    if (!item.getName().contains(ApplicationConfig.RETAIN_NAME)) {
-                        tempParameterSettingsList.add(item);
-                    }
+                    tempParameterSettingsList.add(item);
                 }
                 receiveCount++;
             }
