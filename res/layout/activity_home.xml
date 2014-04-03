@@ -117,7 +117,7 @@
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
-    <ListView
+    <org.holoeverywhere.widget.ListView
             android:id="@+id/list_view"
             android:layout_weight="1"
             android:dividerHeight="8dp"
@@ -129,5 +129,4 @@
             android:layout_marginBottom="@dimen/card_view_margin"
             android:layout_width="match_parent"
             android:layout_height="0dp"/>
-
 </LinearLayout>

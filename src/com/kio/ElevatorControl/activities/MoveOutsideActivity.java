@@ -2,12 +2,7 @@ package com.kio.ElevatorControl.activities;
 
 import android.os.Bundle;
 import android.os.Message;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.hbluetooth.HBluetooth;
@@ -15,15 +10,14 @@ import com.hbluetooth.HCommunication;
 import com.hbluetooth.HHandler;
 import com.hbluetooth.HSerial;
 import com.kio.ElevatorControl.R;
+import com.kio.ElevatorControl.adapters.MoveSidePagerAdapter;
 import com.kio.ElevatorControl.config.ApplicationConfig;
 import com.kio.ElevatorControl.daos.ParameterSettingsDao;
 import com.kio.ElevatorControl.daos.RealTimeMonitorDao;
 import com.kio.ElevatorControl.models.ParameterSettings;
 import com.kio.ElevatorControl.models.RealTimeMonitor;
-import com.kio.ElevatorControl.views.TintedImageButton;
-import com.kio.ElevatorControl.views.TypefaceTextView;
+import com.kio.ElevatorControl.views.viewpager.VerticalViewPager;
 import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.widget.GridView;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -39,8 +33,10 @@ import java.util.TimerTask;
  */
 public class MoveOutsideActivity extends Activity {
 
-    @InjectView(R.id.grid_view)
-    GridView mGridView;
+    private static final String TAG = MoveOutsideActivity.class.getSimpleName();
+
+    @InjectView(R.id.vertical_view_pager)
+    VerticalViewPager viewPager;
 
     private static final String codeType = "64";
 
@@ -48,13 +44,7 @@ public class MoveOutsideActivity extends Activity {
 
     private MoveOutsideHandler mMoveOutsideHandler;
 
-    private static final String TAG = MoveOutsideActivity.class.getSimpleName();
-
-    private int[] floors;
-
     private HCommunication[] getFloorsCommunications;
-
-    private OutsideFloorAdapter outsideFloorAdapter;
 
     private boolean hasGetFloors = false;
 
@@ -65,9 +55,7 @@ public class MoveOutsideActivity extends Activity {
         getActionBar().setHomeButtonEnabled(true);
         setContentView(R.layout.activity_move_outside);
         Views.inject(this);
-        floors = ApplicationConfig.DEFAULT_FLOORS;
-        outsideFloorAdapter = new OutsideFloorAdapter();
-        mGridView.setAdapter(outsideFloorAdapter);
+        viewPager.setAdapter(new MoveSidePagerAdapter(MoveOutsideActivity.this, ApplicationConfig.DEFAULT_FLOORS));
         mMoveOutsideHandler = new MoveOutsideHandler(this);
         realTimeMonitors = RealTimeMonitorDao.findByType(this, codeType);
         createGetFloorsCommunication();
@@ -203,6 +191,7 @@ public class MoveOutsideActivity extends Activity {
     /**
      * 电梯层数 GridView adapter
      */
+    /*
     private class OutsideFloorAdapter extends BaseAdapter {
 
         public OutsideFloorAdapter() {
@@ -359,6 +348,7 @@ public class MoveOutsideActivity extends Activity {
             TintedImageButton mDownButton;
         }
     }
+    */
 
     // =================================== MoveOutside Handler ==============================
 
@@ -390,8 +380,9 @@ public class MoveOutsideActivity extends Activity {
                 if (length == 4) {
                     int top = ByteBuffer.wrap(new byte[]{data[4], data[5]}).getShort();
                     int bottom = ByteBuffer.wrap(new byte[]{data[6], data[7]}).getShort();
-                    MoveOutsideActivity.this.floors = new int[]{bottom, top};
-                    MoveOutsideActivity.this.outsideFloorAdapter.notifyDataSetChanged();
+                    MoveSidePagerAdapter adapter = new MoveSidePagerAdapter(MoveOutsideActivity.this,
+                            new int[]{bottom, top});
+                    MoveOutsideActivity.this.viewPager.setAdapter(adapter);
                     MoveOutsideActivity.this.hasGetFloors = true;
                 }
             }

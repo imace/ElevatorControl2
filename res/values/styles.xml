@@ -6,14 +6,18 @@
         <item name="android:actionBarStyle">@style/CustomActionBarStyle</item>
         <!-- Support library compatibility -->
         <item name="actionBarStyle">@style/CustomActionBarStyle</item>
+        <item name="numberPickerStyle">@style/CustomNumberPickerStyle</item>
     </style>
 
     <!-- ActionBar 样式 -->
-    <style name="CustomActionBarStyle"
-           parent="@style/Widget.AppCompat.Light.ActionBar.Solid.Inverse">
+    <style name="CustomActionBarStyle" parent="@style/Widget.AppCompat.Light.ActionBar.Solid.Inverse">
         <item name="android:background">@drawable/actionbar_blue</item>
         <!-- Support library compatibility -->
         <item name="background">@drawable/actionbar_blue</item>
+    </style>
+
+    <style name="CustomNumberPickerStyle" parent="Holo.NumberPicker">
+
     </style>
 
     <style name="CustomSpinnerItemStyle" parent="android:TextAppearance.Widget.TextView.SpinnerItem">

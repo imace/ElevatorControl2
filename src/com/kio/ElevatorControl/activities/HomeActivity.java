@@ -3,10 +3,6 @@ package com.kio.ElevatorControl.activities;
 import android.os.Bundle;
 import android.os.Message;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import butterknife.InjectView;
 import butterknife.Views;
@@ -15,6 +11,7 @@ import com.hbluetooth.HCommunication;
 import com.hbluetooth.HHandler;
 import com.hbluetooth.HSerial;
 import com.kio.ElevatorControl.R;
+import com.kio.ElevatorControl.adapters.ShortcutListViewAdapter;
 import com.kio.ElevatorControl.config.ApplicationConfig;
 import com.kio.ElevatorControl.daos.RealTimeMonitorDao;
 import com.kio.ElevatorControl.daos.ShortcutDao;
@@ -85,7 +82,6 @@ public class HomeActivity extends Activity {
         Views.inject(this);
         threadPause = false;
         mSyncStatusHandler = new SyncStatusHandler(HomeActivity.this);
-        setListViewDataSource();
         readMonitorStateCode();
     }
 
@@ -148,6 +144,7 @@ public class HomeActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        setListViewDataSource();
         threadPause = false;
     }
 
@@ -207,57 +204,8 @@ public class HomeActivity extends Activity {
 
     public void setListViewDataSource() {
         shortcutList = ShortcutDao.findAll(this);
-        ShortcutListViewAdapter adapter = new ShortcutListViewAdapter();
+        ShortcutListViewAdapter adapter = new ShortcutListViewAdapter(HomeActivity.this, shortcutList);
         mListView.setAdapter(adapter);
-    }
-
-    // ==================================== Shortcut ListView Adapter =====================================
-
-    /**
-     * 快捷菜单 Adapter
-     */
-    private class ShortcutListViewAdapter extends BaseAdapter {
-
-        public ShortcutListViewAdapter() {
-
-        }
-
-        @Override
-        public int getCount() {
-            return HomeActivity.this.shortcutList.size();
-        }
-
-        @Override
-        public Shortcut getItem(int position) {
-            return HomeActivity.this.shortcutList.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return 0;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder holder = null;
-            LayoutInflater mInflater = LayoutInflater.from(HomeActivity.this);
-            if (convertView == null) {
-                convertView = mInflater.inflate(R.layout.home_list_view_item, null);
-                holder = new ViewHolder();
-                holder.mShortcutName = (TextView) convertView.findViewById(R.id.shortcut);
-                convertView.setTag(holder);
-            } else {
-                holder = (ViewHolder) convertView.getTag();
-            }
-            Shortcut item = getItem(position);
-            holder.mShortcutName.setText(item.getName());
-            return convertView;
-        }
-
-        private class ViewHolder {
-            TextView mShortcutName;
-        }
-
     }
 
     // ==================================== HomeActivity Bluetooth Handler ===================================

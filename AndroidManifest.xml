@@ -123,5 +123,9 @@
         <activity
                 android:screenOrientation="portrait"
                 android:name=".activities.ParameterDownloadActivity"/>
+        <!-- 快捷菜单设置 -->
+        <activity
+                android:screenOrientation="portrait"
+                android:name=".activities.ShortcutSettingActivity"/>
     </application>
 </manifest>

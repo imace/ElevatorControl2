@@ -2,13 +2,7 @@ package com.kio.ElevatorControl.activities;
 
 import android.os.Bundle;
 import android.os.Message;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
 import butterknife.InjectView;
 import butterknife.OnClick;
 import butterknife.Views;
@@ -17,14 +11,14 @@ import com.hbluetooth.HCommunication;
 import com.hbluetooth.HHandler;
 import com.hbluetooth.HSerial;
 import com.kio.ElevatorControl.R;
+import com.kio.ElevatorControl.adapters.MoveSidePagerAdapter;
 import com.kio.ElevatorControl.config.ApplicationConfig;
 import com.kio.ElevatorControl.daos.ParameterSettingsDao;
 import com.kio.ElevatorControl.daos.RealTimeMonitorDao;
 import com.kio.ElevatorControl.models.ParameterSettings;
 import com.kio.ElevatorControl.models.RealTimeMonitor;
-import com.kio.ElevatorControl.views.TypefaceTextView;
+import com.kio.ElevatorControl.views.viewpager.VerticalViewPager;
 import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.widget.GridView;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -46,18 +40,14 @@ public class MoveInsideActivity extends Activity {
 
     private List<RealTimeMonitor> realTimeMonitors;
 
-    @InjectView(R.id.grid_view)
-    GridView mGridView;
+    @InjectView(R.id.vertical_view_pager)
+    VerticalViewPager viewPager;
 
     private MoveInsideHandler mMoveInsideHandler;
 
     private FloorHandler floorHandler;
 
-    private int[] floors;
-
-    private InsideFloorAdapter insideFloorAdapter;
-
-    private HCommunication[] getFloorsCommunications;
+    private HCommunication[] communications;
 
     private boolean hasGetFloors = false;
 
@@ -69,9 +59,7 @@ public class MoveInsideActivity extends Activity {
         setContentView(R.layout.activity_move_inside);
         Views.inject(this);
         bindListViewItemClickEvent();
-        floors = ApplicationConfig.DEFAULT_FLOORS;
-        insideFloorAdapter = new InsideFloorAdapter();
-        mGridView.setAdapter(insideFloorAdapter);
+        viewPager.setAdapter(new MoveSidePagerAdapter(MoveInsideActivity.this, ApplicationConfig.DEFAULT_FLOORS));
         mMoveInsideHandler = new MoveInsideHandler(this);
         floorHandler = new FloorHandler(this);
         realTimeMonitors = RealTimeMonitorDao.findByType(this, codeType);
@@ -114,7 +102,7 @@ public class MoveInsideActivity extends Activity {
         names.add(ApplicationConfig.GET_FLOOR_NAME);
         List<ParameterSettings> settingsList = ParameterSettingsDao.findByNames(MoveInsideActivity.this, names);
         final String code = settingsList.get(0).getCode() + "0002";
-        getFloorsCommunications = new HCommunication[]{
+        communications = new HCommunication[]{
                 new HCommunication() {
                     @Override
                     public void beforeSend() {
@@ -153,6 +141,7 @@ public class MoveInsideActivity extends Activity {
      * 绑定ListView点击事件
      */
     private void bindListViewItemClickEvent() {
+        /*
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
@@ -204,6 +193,7 @@ public class MoveInsideActivity extends Activity {
                 }
             }
         });
+        */
     }
 
     // 开门
@@ -322,61 +312,13 @@ public class MoveInsideActivity extends Activity {
      * 取得电梯层数
      */
     private void loadDataAndRenderView() {
-        if (getFloorsCommunications != null) {
+        if (communications != null) {
             if (HBluetooth.getInstance(MoveInsideActivity.this).isPrepared()) {
                 HBluetooth.getInstance(MoveInsideActivity.this)
                         .setHandler(mMoveInsideHandler)
-                        .setCommunications(getFloorsCommunications)
+                        .setCommunications(communications)
                         .Start();
             }
-        }
-    }
-
-    // ================================= GridView adapter ========================================== //
-
-    /**
-     * 电梯层数 GridView adapter
-     */
-    private class InsideFloorAdapter extends BaseAdapter {
-
-        public InsideFloorAdapter() {
-
-        }
-
-        @Override
-        public int getCount() {
-            return Math.abs(MoveInsideActivity.this.floors[0] - MoveInsideActivity.this.floors[1]) + 1;
-        }
-
-        @Override
-        public Object getItem(int i) {
-            return null;
-        }
-
-        @Override
-        public long getItemId(int i) {
-            return 0;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup viewGroup) {
-            ViewHolder holder = null;
-            LayoutInflater mInflater = LayoutInflater.from(MoveInsideActivity.this);
-            if (convertView == null) {
-                convertView = mInflater.inflate(R.layout.move_inside_row_item, null);
-                holder = new ViewHolder();
-                holder.mFloorTextView = (TypefaceTextView) convertView.findViewById(R.id.floor_text);
-                convertView.setTag(holder);
-            } else {
-                holder = (ViewHolder) convertView.getTag();
-            }
-            holder.mFloorTextView.setText(String.valueOf(Math.min(MoveInsideActivity.this.floors[0],
-                    MoveInsideActivity.this.floors[1]) + position));
-            return convertView;
-        }
-
-        private class ViewHolder {
-            TypefaceTextView mFloorTextView;
         }
     }
 
@@ -410,8 +352,9 @@ public class MoveInsideActivity extends Activity {
                 if (length == 4) {
                     int top = ByteBuffer.wrap(new byte[]{data[4], data[5]}).getShort();
                     int bottom = ByteBuffer.wrap(new byte[]{data[6], data[7]}).getShort();
-                    MoveInsideActivity.this.floors = new int[]{bottom, top};
-                    MoveInsideActivity.this.insideFloorAdapter.notifyDataSetChanged();
+                    MoveSidePagerAdapter adapter = new MoveSidePagerAdapter(MoveInsideActivity.this,
+                            new int[]{bottom, top});
+                    MoveInsideActivity.this.viewPager.setAdapter(adapter);
                     MoveInsideActivity.this.hasGetFloors = true;
                 }
             }

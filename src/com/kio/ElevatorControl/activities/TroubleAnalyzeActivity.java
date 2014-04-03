@@ -14,7 +14,7 @@ import com.kio.ElevatorControl.adapters.TroubleAnalyzeAdapter;
 import com.kio.ElevatorControl.config.ApplicationConfig;
 import com.kio.ElevatorControl.daos.MenuValuesDao;
 import com.kio.ElevatorControl.daos.ParameterSettingsDao;
-import com.kio.ElevatorControl.handlers.FailureCurrentHandler;
+import com.kio.ElevatorControl.handlers.CurrentErrorHandler;
 import com.kio.ElevatorControl.handlers.HistoryErrorHandler;
 import com.kio.ElevatorControl.models.ErrorHelp;
 import com.kio.ElevatorControl.models.HistoryError;
@@ -44,24 +44,24 @@ public class TroubleAnalyzeActivity extends Activity {
     @InjectView(R.id.indicator)
     public TabPageIndicator indicator;
 
-    private FailureCurrentHandler currentErrorHandler;
+    private CurrentErrorHandler currentErrorHandler;
 
     private HistoryErrorHandler historyErrorHandler;
 
     public HCommunication[] historyCommunications;
 
+    private int pageIndex = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_trouble_analyze);
-
-        // 注入以后才能使用@InjectView定义的对象
         Views.inject(this);
-
-        // TroubleAnalyzeActivity --> TroubleAnalyzeAdapter --> TroubleAnalyzeFragment
         pager.setAdapter(new TroubleAnalyzeAdapter(this));
         pager.setOffscreenPageLimit(3);
         indicator.setViewPager(pager);
+        getHistoryErrorCode();
+        historyErrorHandler = new HistoryErrorHandler(TroubleAnalyzeActivity.this);
         indicator.setOnPageChangeListener(new OnPageChangeListener() {
 
             @Override
@@ -74,14 +74,13 @@ public class TroubleAnalyzeActivity extends Activity {
 
             @Override
             public void onPageSelected(int index) {
-                final int currentPageIndex = index;
+                pageIndex = index;
                 Runnable runnable = new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            // 反射执行
-                            String mName = MenuValuesDao.getTroubleAnalyzeTabsLoadMethodName(currentPageIndex,
-                                    TroubleAnalyzeActivity.this);
+                            String mName = MenuValuesDao
+                                    .getTroubleAnalyzeTabsLoadMethodName(pageIndex, TroubleAnalyzeActivity.this);
                             ((Object) TroubleAnalyzeActivity.this)
                                     .getClass()
                                     .getMethod(mName)
@@ -94,8 +93,6 @@ public class TroubleAnalyzeActivity extends Activity {
                             Log.e(TAG, e.getMessage());
                         } catch (InvocationTargetException e) {
                             Log.e(TAG, "InvocationTargetException");
-                        } finally {
-
                         }
                     }
                 };
@@ -103,14 +100,14 @@ public class TroubleAnalyzeActivity extends Activity {
                 thread.start();
             }
         });
-        getHistoryErrorCode();
-        historyErrorHandler = new HistoryErrorHandler(TroubleAnalyzeActivity.this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        loadCurrentTroubleView();
+        if (pageIndex == 0) {
+            loadCurrentTroubleView();
+        }
     }
 
     /**
@@ -155,7 +152,6 @@ public class TroubleAnalyzeActivity extends Activity {
                 public Object onParse() {
                     if (HSerial.isCRC16Valid(getReceivedBuffer())) {
                         byte[] received = HSerial.trimEnd(getReceivedBuffer());
-                        Log.v(TAG, HSerial.byte2HexStr(received));
                         HistoryError historyError = new HistoryError();
                         historyError.setData(received);
                         return historyError;
@@ -170,8 +166,8 @@ public class TroubleAnalyzeActivity extends Activity {
      * 当前故障
      */
     public void loadCurrentTroubleView() {
-        currentErrorHandler = new FailureCurrentHandler(this);
-        HCommunication[] hCommunications = new HCommunication[]{
+        Log.v("AAABBB", "Start");
+        HCommunication[] communications = new HCommunication[]{
                 new HCommunication() {
 
                     @Override
@@ -195,30 +191,27 @@ public class TroubleAnalyzeActivity extends Activity {
                     @Override
                     public Object onParse() {
                         if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                            // 通过验证
                             byte[] received = HSerial.trimEnd(getReceivedBuffer());
+                            Log.v("AAABBB", HSerial.byte2HexStr(received));
                             ErrorHelp errorHelp = new ErrorHelp();
                             try {
                                 errorHelp.setReceived(TroubleAnalyzeActivity.this, received);
-                                // 将ep存入数据库
-                                // ErrorHelpLogDao.Insert(TroubleAnalyzeActivity.this,
-                                // ErrorHelpLog.Instance(ep));
                                 return errorHelp;
                             } catch (Exception e) {
-                                // 失败
+                                e.printStackTrace();
                             }
                         }
                         return null;
                     }
                 }
         };
-
         if (currentErrorHandler == null)
-            currentErrorHandler = new FailureCurrentHandler(this);
+            currentErrorHandler = new CurrentErrorHandler(this);
         if (HBluetooth.getInstance(this).isPrepared())
+            Log.v("AAABBB", "Start11");
             HBluetooth.getInstance(this)
                     .setHandler(currentErrorHandler)
-                    .setCommunications(hCommunications)
+                    .setCommunications(communications)
                     .Start();
     }
 

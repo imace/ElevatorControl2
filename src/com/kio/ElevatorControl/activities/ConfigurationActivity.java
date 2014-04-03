@@ -20,7 +20,6 @@ import com.viewpagerindicator.TabPageIndicator;
 import org.holoeverywhere.app.Activity;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -32,7 +31,11 @@ public class ConfigurationActivity extends Activity {
 
     private static final String TAG = ConfigurationActivity.class.getSimpleName();
 
-    private int mCurrentPageIndex;
+    private int mCurrentPageIndex = 0;
+
+    private ConfigurationHandler configurationHandler;
+
+    private HCommunication[] communications;
 
     /**
      * 注入页面元素
@@ -43,8 +46,6 @@ public class ConfigurationActivity extends Activity {
     @InjectView(R.id.indicator)
     protected TabPageIndicator indicator;
 
-    private ConfigurationHandler configurationHandler;
-
     public ConfigurationAdapter mConfigurationAdapter;
 
     @Override
@@ -52,9 +53,6 @@ public class ConfigurationActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_configuration);
         Views.inject(this);
-        // ConfigurationActivity->ConfigurationAdapter->ConfigurationFragment->按照tabIndex初始化各个标签对应的子页面
-        configurationHandler = new ConfigurationHandler(this);
-        mCurrentPageIndex = 0;
         mConfigurationAdapter = new ConfigurationAdapter(this);
         pager.setAdapter(mConfigurationAdapter);
         pager.setOffscreenPageLimit(3);
@@ -75,9 +73,7 @@ public class ConfigurationActivity extends Activity {
                 Runnable runnable = new Runnable() {
                     @Override
                     public void run() {
-                        HBluetooth.getInstance(ConfigurationActivity.this).setHandler(configurationHandler);
                         try {
-                            // 反射执行
                             String mName = MenuValuesDao
                                     .getConfigurationLoadMethodName(mCurrentPageIndex, ConfigurationActivity.this);
                             ((Object) ConfigurationActivity.this).getClass().getMethod(mName)
@@ -96,7 +92,6 @@ public class ConfigurationActivity extends Activity {
                 Thread thread = new Thread(runnable);
                 thread.start();
             }
-
         });
     }
 
@@ -118,17 +113,14 @@ public class ConfigurationActivity extends Activity {
      * 于是放在activity中加载,另外三个标签都是静态内容放在Fragment中加载
      */
     public void loadMonitorView() {
-        // 连接成功的情况下
-        /*
-        if (HBluetooth.getInstance(null).isPrepared()) {
+        if (communications == null) {
             List<RealTimeMonitor> monitorList = RealTimeMonitorDao.findAll(this);
-            HCommunication[] hCommunications = new HCommunication[monitorList.size()];
+            communications = new HCommunication[monitorList.size()];
             int commandSize = monitorList.size();
             for (int index = 0; index < commandSize; index++) {
                 final String code = monitorList.get(index).getCode();
-                final RealTimeMonitor realTimeMonitor = monitorList.get(index);
-                // 生成发送的指令,逐个读取各个参数
-                hCommunications[index] = new HCommunication() {
+                final RealTimeMonitor monitor = monitorList.get(index);
+                communications[index] = new HCommunication() {
                     @Override
                     public void beforeSend() {
                         this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103" + code + "0001")));
@@ -152,103 +144,22 @@ public class ConfigurationActivity extends Activity {
                     @Override
                     public Object onParse() {
                         if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                            // 通过验证
                             byte[] received = HSerial.trimEnd(getReceivedBuffer());
-                            RealTimeMonitor monitor = null;
-                            try {
-                                monitor = (RealTimeMonitor) realTimeMonitor.clone();
-                                monitor.setReceived(received);
-                                return monitor;
-                            } catch (CloneNotSupportedException e) {
-                                e.printStackTrace();
-                            }
+                            monitor.setReceived(received);
+                            return monitor;
                         }
                         return null;
                     }
                 };
             }
-            if (HBluetooth.getInstance(this).isPrepared()) {
-                HBluetooth.getInstance(this)
-                        .setHandler(configurationHandler)
-                        .setCommunications(hCommunications)
-                        .Start();
-            }
-        }
-        */
-        combinationCommunicationsAndSend();
-    }
-
-    /**
-     * Combination Communications And Send
-     */
-    private void combinationCommunicationsAndSend() {
-        List<RealTimeMonitor> monitorList = RealTimeMonitorDao.findAll(this);
-        final int size = monitorList.size();
-        List<int[]> sections = new ArrayList<int[]>();
-        int startIndex = 0;
-        for (int index = 0; index < size; index++) {
-            int startPrefix = Integer.parseInt(monitorList.get(startIndex).getCode().substring(0, 1));
-            int prefix = Integer.parseInt(monitorList.get(index).getCode().substring(0, 1));
-            int nextPrefix = index < size - 1
-                    ? Integer.parseInt(monitorList.get(index + 1).getCode().substring(0, 1))
-                    : prefix;
-            if (index - startIndex < 9) {
-                if (prefix != startPrefix) {
-                    sections.add(new int[]{startIndex, index - 1});
-                    startIndex = index + 1;
-                    if (prefix != nextPrefix || index == size - 1) {
-                        sections.add(new int[]{index, index});
-                    }
-                }
-            } else if (index - startIndex == 9) {
-                sections.add(new int[]{startIndex, index});
-                startIndex = index + 1;
-            }
-        }
-        int sectionSize = sections.size();
-        HCommunication[] communications = new HCommunication[sectionSize];
-        for (int position = 0; position < sectionSize; position++) {
-            final int[] section = sections.get(position);
-            final RealTimeMonitor firstItem = monitorList.get(section[0]);
-            final int length = section[1] - section[0] + 1;
-            Log.v("AAABBB", firstItem.getCode() + ":" + length);
-            communications[position] = new HCommunication() {
-                @Override
-                public void beforeSend() {
-                    this.setSendBuffer(HSerial.crc16(HSerial
-                            .hexStr2Ints("0103"
-                                    + firstItem.getCode()
-                                    + String.format("%04x ", length)
-                                    + "0001")));
-                }
-
-                @Override
-                public void afterSend() {
-
-                }
-
-                @Override
-                public void beforeReceive() {
-
-                }
-
-                @Override
-                public void afterReceive() {
-
-                }
-
-                @Override
-                public Object onParse() {
-                    if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                        byte[] data = HSerial.trimEnd(getReceivedBuffer());
-                        Log.v("AAABBB", HSerial.byte2HexStr(data));
-                    }
-                    return null;
-                }
-            };
         }
         if (HBluetooth.getInstance(this).isPrepared()) {
+            if (configurationHandler == null) {
+                configurationHandler = new ConfigurationHandler(this);
+            }
+            configurationHandler.sendCount = communications.length;
             HBluetooth.getInstance(this)
+                    .setHandler(configurationHandler)
                     .setCommunications(communications)
                     .Start();
         }
@@ -259,17 +170,17 @@ public class ConfigurationActivity extends Activity {
      */
     public void loadSettingView() {
         // 停止串口通信
-        HBluetooth.getInstance(this).setHandler(configurationHandler);
+        HBluetooth.getInstance(this).setHandler(null);
     }
 
     public void loadDebugView() {
         // 停止串口通信
-        HBluetooth.getInstance(this).setHandler(configurationHandler);
+        HBluetooth.getInstance(this).setHandler(null);
     }
 
     public void loadDuplicateView() {
         // 停止串口通信
-        HBluetooth.getInstance(this).setHandler(configurationHandler);
+        HBluetooth.getInstance(this).setHandler(null);
     }
 
 }

@@ -181,7 +181,7 @@
     },
     {
         "code": "101F",
-        "name": "额定梯速减速距离",
+        "name": "减速距离",
         "productId": 750,
         "description": null,
         "childId": null,

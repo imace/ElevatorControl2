@@ -14,7 +14,6 @@ import com.hbluetooth.HCommunication;
 import com.hbluetooth.HHandler;
 import com.hbluetooth.HSerial;
 import com.kio.ElevatorControl.R;
-import com.kio.ElevatorControl.config.ApplicationConfig;
 import com.kio.ElevatorControl.daos.ParameterGroupSettingsDao;
 import com.kio.ElevatorControl.models.ListHolder;
 import com.kio.ElevatorControl.models.ParameterGroupSettings;

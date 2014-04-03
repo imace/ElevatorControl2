@@ -65,7 +65,6 @@ public class FirmwareManageFragment extends Fragment {
     public void onResume() {
         super.onResume();
         try {
-            // 反射执行
             ((Object) this).getClass().getMethod(MenuValuesDao.getFirmwareManageTabsLoadMethodName(tabIndex, context))
                     .invoke(this);
         } catch (NoSuchMethodException e) {
@@ -83,7 +82,8 @@ public class FirmwareManageFragment extends Fragment {
      * 固件申请
      */
     public void loadFirmwareApplyView() {
-        AutoCompleteTextView equipmentManufacturers = (AutoCompleteTextView) getActivity().findViewById(R.id.equipment_manufacturers);
+        AutoCompleteTextView equipmentManufacturers = (AutoCompleteTextView) getActivity()
+                .findViewById(R.id.equipment_manufacturers);
         NoDefaultSpinner equipmentModel = (NoDefaultSpinner) getActivity().findViewById(R.id.equipment_model);
         NoDefaultSpinner firmwareVersion = (NoDefaultSpinner) getActivity().findViewById(R.id.firmware_version);
         EditText remark = (EditText) getActivity().findViewById(R.id.remark);

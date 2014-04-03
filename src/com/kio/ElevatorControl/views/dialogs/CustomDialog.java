@@ -3,6 +3,8 @@ package com.kio.ElevatorControl.views.dialogs;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
 import com.hbluetooth.HBluetooth;
 import com.hbluetooth.HSerial;
@@ -13,9 +15,7 @@ import com.kio.ElevatorControl.daos.ErrorHelpDao;
 import com.kio.ElevatorControl.models.*;
 import com.kio.ElevatorControl.utils.ParseSerialsUtils;
 import com.mobsandgeeks.adapters.InstantAdapter;
-import org.holoeverywhere.widget.EditText;
-import org.holoeverywhere.widget.ListView;
-import org.holoeverywhere.widget.TextView;
+import org.holoeverywhere.widget.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -121,6 +121,69 @@ public class CustomDialog {
     public static AlertDialog.Builder parameterDetailDialog(final Activity activity,
                                                             final ParameterSettings settings) {
         if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[0]) {
+            View dialogView = activity.getLayoutInflater().inflate(R.layout.parameter_picker_dialog, null);
+            LinearLayout containView = (LinearLayout) dialogView.findViewById(R.id.picker_view);
+            // 滑动数值选择器
+            final SeekBar seekBar = (SeekBar) dialogView.findViewById(R.id.seek_bar);
+            String maxValueString = settings.getScope().split("-")[1];
+            int totals = maxValueString.length();
+            String[] hexValue = new String[]{"0", "1", "2", "3", "4", "5", "6", "7",
+                    "8", "9", "A", "B", "C", "D", "E", "F"};
+            // 数值滚动选择器
+            for (int i = 0; i < totals; i++) {
+                String valueChar = Character.toString(maxValueString.charAt(i));
+                NumberPicker picker = new NumberPicker(activity);
+                picker.setWrapSelectorWheel(false);
+                picker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
+                if (ParseSerialsUtils.isInteger(valueChar)) {
+                    picker.setMinValue(0);
+                    picker.setMaxValue(Integer.parseInt(valueChar));
+                }
+                if (valueChar.equalsIgnoreCase(".")) {
+                    picker.setMinValue(0);
+                    picker.setMaxValue(0);
+                    picker.setDisplayedValues(new String[]{"."});
+                }
+                picker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+                    @Override
+                    public void onValueChange(NumberPicker picker, int oldValue, int newValue) {
+
+                    }
+                });
+                int margin = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5,
+                        activity.getResources().getDisplayMetrics()));
+                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
+                layoutParams.setMargins(0, 0, margin, 0);
+                containView.addView(picker, layoutParams);
+            }
+            Long maxValueLong = Math.round(Double.parseDouble(maxValueString)
+                    / (Double.parseDouble(settings.getScale())));
+            int maxValueInt = maxValueLong.intValue();
+            seekBar.setMax(maxValueInt);
+            seekBar.setProgress(1);
+            seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    Log.v("AAABBB", String.valueOf(seekBar.getProgress()));
+                }
+
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+
+                }
+
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
+
+                }
+            });
+            return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
+                    .setView(dialogView)
+                    .setTitle(settings.getName())
+                    .setNeutralButton(R.string.dialog_btn_cancel, null);
+            /*
             View dialogView = activity.getLayoutInflater().inflate(R.layout.parameter_edit_dialog, null);
             EditText settingValueEditText = (EditText) dialogView.findViewById(R.id.setting_value);
             TextView scaleNewValue = (TextView) dialogView.findViewById(R.id.scale_new_value);
@@ -138,6 +201,7 @@ public class CustomDialog {
                     .setView(dialogView)
                     .setTitle(settings.getName())
                     .setNeutralButton(R.string.dialog_btn_cancel, null);
+                    */
         }
         if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[1]) {
             try {

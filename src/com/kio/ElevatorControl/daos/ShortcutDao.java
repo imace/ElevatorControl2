@@ -22,4 +22,18 @@ public class ShortcutDao {
         return db.findAll(Shortcut.class);
     }
 
+    public static void saveItem(Context context, Shortcut shortcut) {
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
+        db.save(shortcut);
+    }
+
+    public static void deleteItem(Context context, Shortcut shortcut) {
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
+        db.delete(shortcut);
+    }
+
+    public static void updateItem(Context context, Shortcut shortcut){
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
+        db.update(shortcut);
+    }
 }

@@ -11,6 +11,16 @@
                 android:targetPackage="com.kio.ElevatorControl"
                 android:targetClass="com.kio.ElevatorControl.activities.HelpSystemRemoteHelpActivity"/>
     </PreferenceScreen>
+    <!-- 用户快捷菜单设置 -->
+    <PreferenceScreen
+            android:key="shortcut"
+            android:title="@string/shortcut_setting_text"
+            android:summary="@null">
+        <intent
+                android:action="android.intent.action.MAIN"
+                android:targetPackage="com.kio.ElevatorControl"
+                android:targetClass="com.kio.ElevatorControl.activities.ShortcutSettingActivity"/>
+    </PreferenceScreen>
     <!-- 软件更新 -->
     <PreferenceScreen
             android:key="application_config"

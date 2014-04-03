@@ -6,25 +6,15 @@
               android:background="@color/main_background"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
-    <GridView
-            android:id="@+id/grid_view"
+    <com.kio.ElevatorControl.views.viewpager.VerticalViewPager
+            android:id="@+id/vertical_view_pager"
             android:layout_weight="1"
-            android:layout_width="match_parent"
-            android:gravity="center"
-            android:verticalSpacing="10dp"
-            android:horizontalSpacing="10dp"
-            android:columnWidth="120dp"
-            android:scrollbarStyle="outsideOverlay"
-            android:stretchMode="columnWidth"
-            android:listSelector="#00000000"
+            android:scrollbars="none"
+            android:layout_margin="@dimen/card_view_margin"
             android:background="@drawable/card_view_background"
-            android:padding="@dimen/card_view_margin"
-            android:layout_marginBottom="8dp"
-            android:layout_marginTop="@dimen/card_view_margin"
-            android:layout_marginLeft="@dimen/card_view_margin"
-            android:layout_marginRight="@dimen/card_view_margin"
-            android:numColumns="auto_fit"
+            android:layout_width="match_parent"
             android:layout_height="0dp"/>
+    <!-- 底部操作按钮 -->
     <LinearLayout
             android:gravity="center"
             android:orientation="horizontal"

@@ -15,8 +15,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.nio.ByteBuffer;
-
 public class ParseSerialsUtils {
 
     private static final String TAG = ParseSerialsUtils.class.getSimpleName();
@@ -34,7 +32,7 @@ public class ParseSerialsUtils {
             if (monitor.isShowBit()) {
                 return "查看详细->";
             }
-            short value = getIntFromBytes(data);
+            int value = getIntFromBytes(data);
             if (monitor.getUnit() == null || monitor.getUnit().length() <= 0) {
                 if (monitor.getCode().equalsIgnoreCase("8000")) {
                     return String.format("E%02d", value);
@@ -57,7 +55,7 @@ public class ParseSerialsUtils {
     public static String getValueTextFromParameterSetting(ParameterSettings settings) {
         byte[] data = settings.getReceived();
         if (data.length == 8) {
-            short value = getIntFromBytes(data);
+            int value = getIntFromBytes(data);
             if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[0]) {
                 try {
                     return "" + value * Integer.parseInt(settings.getScale());
@@ -132,10 +130,9 @@ public class ParseSerialsUtils {
      * @return short
      */
     @SuppressLint("GetIntFromBytes")
-    public static short getIntFromBytes(byte[] data) {
+    public static int getIntFromBytes(byte[] data) {
         if (data.length == 8) {
-            ByteBuffer wrapped = ByteBuffer.wrap(new byte[]{data[4], data[5]});
-            return wrapped.getShort();
+            return data[4] << 8 & 0xFF00 | data[5] & 0xFF;
         }
         return -1;
     }
@@ -173,7 +170,7 @@ public class ParseSerialsUtils {
     @SuppressLint("GetErrorCode")
     public static String getErrorCode(byte[] data) {
         if (data.length == 8) {
-            short value = getIntFromBytes(data);
+            int value = getIntFromBytes(data);
             return String.format("E%02d", value);
         }
         return null;
@@ -226,13 +223,20 @@ public class ParseSerialsUtils {
     public static ErrorHelp getErrorHelpFromErrorHelp(Context ctx, ErrorHelp errorHelp) {
         byte[] data = errorHelp.getReceived();
         if (data.length == 8) {
-            short value = getIntFromBytes(data);
+            int value = getIntFromBytes(data);
             String display = String.format("E%02d", value);
             return ErrorHelpDao.findByDisplay(ctx, display);
         }
         return null;
     }
 
+    /**
+     * 将后两位字符int值转换为16进制字符串
+     *
+     * @param code Code String
+     * @return String
+     */
+    @SuppressLint("SplitAndConvertToHex")
     public static String splitAndConvertToHex(String code) {
         if (code.length() == 4) {
             String prefix = code.substring(0, 2);
@@ -240,5 +244,21 @@ public class ParseSerialsUtils {
             return prefix + Integer.toHexString(Integer.parseInt(suffix));
         }
         return code;
+    }
+
+    /**
+     * 判读字符是否是数字
+     *
+     * @param string Char String
+     * @return Is Integer
+     */
+    @SuppressLint("IsInteger")
+    public static boolean isInteger(String string) {
+        try {
+            Integer.parseInt(string);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+        return true;
     }
 }

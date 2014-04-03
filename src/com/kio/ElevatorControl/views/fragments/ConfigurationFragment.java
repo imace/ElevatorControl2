@@ -10,15 +10,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ListView;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.activities.*;
 import com.kio.ElevatorControl.daos.MenuValuesDao;
 import com.kio.ElevatorControl.daos.ParameterGroupSettingsDao;
+import com.kio.ElevatorControl.daos.RealTimeMonitorDao;
 import com.kio.ElevatorControl.models.MoveInsideOutside;
 import com.kio.ElevatorControl.models.ParameterDuplicate;
 import com.kio.ElevatorControl.models.ParameterGroupSettings;
+import com.kio.ElevatorControl.models.RealTimeMonitor;
 import com.mobsandgeeks.adapters.InstantAdapter;
+import org.holoeverywhere.widget.ListView;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -39,9 +41,6 @@ public class ConfigurationFragment extends Fragment {
     private int layoutId;
 
     private Context context;
-
-    // 内容数据源
-    private List<ParameterGroupSettings> settingsList;
 
     /**
      * 记录下当前选中的tabIndex
@@ -67,7 +66,6 @@ public class ConfigurationFragment extends Fragment {
     @Override
     public void onResume() {
         try {
-            // 反射执行
             ((Object) this).getClass()
                     .getMethod(
                             MenuValuesDao.getConfigurationLoadMethodName(
@@ -102,24 +100,28 @@ public class ConfigurationFragment extends Fragment {
      * 实时监控,加载内容
      */
     public void loadMonitorView() {
-
+        ListView listView = (ListView) getActivity().findViewById(R.id.monitor_list);
+        List<RealTimeMonitor> monitorList = RealTimeMonitorDao.findAll(getActivity());
+        InstantAdapter<RealTimeMonitor> instantAdapter = new InstantAdapter<RealTimeMonitor>(
+                getActivity().getBaseContext(),
+                R.layout.list_configuration_monitor_item,
+                RealTimeMonitor.class,
+                monitorList);
+        listView.setAdapter(instantAdapter);
     }
 
     /**
      * 参数设置,加载内容
      */
     public void loadSettingView() {
-        // 列表值绑定到ParameterSettings对象 获取ParameterSettings对象列表,数据源
-        settingsList = ParameterGroupSettingsDao.findAll(context);
-        // 我们要操作的列表控件
-        ListView lstView = (ListView) getActivity()
-                .findViewById(R.id.settings_list);
+        final List<ParameterGroupSettings> settingsList = ParameterGroupSettingsDao.findAll(context);
+        ListView listView = (ListView) getActivity().findViewById(R.id.settings_list);
         InstantAdapter<ParameterGroupSettings> instantAdapter = new InstantAdapter<ParameterGroupSettings>(
                 getActivity().getApplicationContext(),
                 R.layout.list_configuration_setting_item,
                 ParameterGroupSettings.class, settingsList);
-        lstView.setAdapter(instantAdapter);
-        lstView.setOnItemClickListener(new OnItemClickListener() {
+        listView.setAdapter(instantAdapter);
+        listView.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
@@ -136,17 +138,14 @@ public class ConfigurationFragment extends Fragment {
      * 测试功能，加载内容，内召和外召。
      */
     public void loadDebugView() {
-        // 列表值绑定到InsideOut对象 获取InsideOut对象列表,数据源
         final List<MoveInsideOutside> insideOut = MoveInsideOutside
                 .getInsideOutLists(ConfigurationFragment.this.getActivity());
-        // 我们要操作的列表控件
-        ListView lstView = (ListView) this.getActivity().findViewById(
-                R.id.test_list);
+        ListView listView = (ListView) this.getActivity().findViewById(R.id.test_list);
         InstantAdapter<MoveInsideOutside> instantAdapter = new InstantAdapter<MoveInsideOutside>(
                 getActivity().getApplicationContext(),
                 R.layout.list_configuration_debug_item, MoveInsideOutside.class, insideOut);
-        lstView.setAdapter(instantAdapter);
-        lstView.setOnItemClickListener(new OnItemClickListener() {
+        listView.setAdapter(instantAdapter);
+        listView.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
@@ -172,18 +171,15 @@ public class ConfigurationFragment extends Fragment {
      * 参数拷贝,加载内容
      */
     public void loadDuplicateView() {
-        // 列表值绑定到InsideOut对象 获取InsideOut对象列表,数据源
         final List<ParameterDuplicate> paramDuplicate = ParameterDuplicate
                 .getParamDuplicateLists(ConfigurationFragment.this.getActivity());
-        // 我们要操作的列表控件
-        ListView lstView = (ListView) this.getActivity().findViewById(
-                R.id.copy_list);
+        ListView listView = (ListView) this.getActivity().findViewById(R.id.copy_list);
         InstantAdapter<ParameterDuplicate> instantAdapter = new InstantAdapter<ParameterDuplicate>(
                 getActivity().getApplicationContext(),
                 R.layout.list_configuration_duplicate_item, ParameterDuplicate.class,
                 paramDuplicate);
-        lstView.setAdapter(instantAdapter);
-        lstView.setOnItemClickListener(new OnItemClickListener() {
+        listView.setAdapter(instantAdapter);
+        listView.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {

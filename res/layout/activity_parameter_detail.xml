@@ -5,14 +5,7 @@
               android:layout_height="match_parent"
               android:background="@color/main_background"
               android:orientation="vertical">
-    <org.holoeverywhere.widget.ProgressBar
-            android:id="@+id/progress_bar"
-            android:layout_centerInParent="true"
-            style="@style/Holo.ProgressBar.Large"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
     <org.holoeverywhere.widget.ListView
-            android:visibility="invisible"
             android:id="@+id/parameter_detail_list_view"
             android:layout_centerInParent="true"
             android:layout_width="match_parent"
