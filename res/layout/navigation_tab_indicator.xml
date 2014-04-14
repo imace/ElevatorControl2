@@ -1,23 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="0dip"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:background="#00000000"
-                android:paddingTop="10dp"
-                android:paddingBottom="3dp">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:gravity="center"
+              android:layout_weight="1"
+              android:layout_width="0dp"
+              android:layout_height="@dimen/navigation_bar_height"
+              android:background="#00000000">
     <ImageView android:id="@+id/icon"
                android:layout_width="wrap_content"
                android:layout_height="wrap_content"
-               android:layout_centerHorizontal="true"
-               android:layout_marginBottom="6dp"
                android:contentDescription="@null"/>
-    <TextView android:id="@+id/title"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:textSize="15sp"
-              android:textColor="#2f2f2f"
-              android:layout_alignParentBottom="true"
-              android:layout_centerHorizontal="true"/>
-</RelativeLayout>
+    <org.holoeverywhere.widget.TextView
+            android:id="@+id/title"
+            android:textSize="15sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/tab_indicator_text"/>
+</LinearLayout>

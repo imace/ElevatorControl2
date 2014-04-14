@@ -68,7 +68,7 @@ public class HomeActivity extends Activity {
 
     private String[] elevatorBoxStatus;
 
-    private List<Shortcut> shortcutList;
+    private ShortcutListViewAdapter adapter;
 
     /**
      * 同步间隔
@@ -203,9 +203,13 @@ public class HomeActivity extends Activity {
     }
 
     public void setListViewDataSource() {
-        shortcutList = ShortcutDao.findAll(this);
-        ShortcutListViewAdapter adapter = new ShortcutListViewAdapter(HomeActivity.this, shortcutList);
-        mListView.setAdapter(adapter);
+        List<Shortcut> shortcutList = ShortcutDao.findAll(this);
+        if (adapter == null) {
+            adapter = new ShortcutListViewAdapter(HomeActivity.this, shortcutList);
+            mListView.setAdapter(adapter);
+        } else {
+            adapter.setShortcutList(shortcutList);
+        }
     }
 
     // ==================================== HomeActivity Bluetooth Handler ===================================

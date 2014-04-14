@@ -3,7 +3,7 @@ package com.kio.ElevatorControl.adapters;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import com.kio.ElevatorControl.daos.MenuValuesDao;
+import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.views.fragments.FirmwareManageFragment;
 
 import java.util.ArrayList;
@@ -20,6 +20,8 @@ public class FirmwareManageAdapter extends FragmentPagerAdapter {
     private FragmentActivity fragmentActivity;
 
     private List<FirmwareManageFragment> mFragments;
+
+    private String[] titleArray;
 
     public FragmentActivity getFragmentActivity() {
         return fragmentActivity;
@@ -43,9 +45,8 @@ public class FirmwareManageAdapter extends FragmentPagerAdapter {
     @Override
     public FirmwareManageFragment getItem(int position) {
         if (position > mFragments.size() - 1) {
-            FirmwareManageFragment firmwareManageFragment = FirmwareManageFragment.newInstance(
-                    MenuValuesDao.getConfigurationTabsTextsPosition(position, fragmentActivity),
-                    fragmentActivity);
+            FirmwareManageFragment firmwareManageFragment = FirmwareManageFragment
+                    .newInstance(position, fragmentActivity);
             mFragments.add(firmwareManageFragment);
             return firmwareManageFragment;
         } else {
@@ -55,11 +56,25 @@ public class FirmwareManageAdapter extends FragmentPagerAdapter {
 
     @Override
     public CharSequence getPageTitle(int position) {
-        return MenuValuesDao.getFirmwareManageTabsPageTitle(position, fragmentActivity);
+        return getTabTextArray()[position];
     }
 
     @Override
     public int getCount() {
-        return MenuValuesDao.getFirmwareManageTabsCount(fragmentActivity);
+        return getTabTextArray().length;
+    }
+
+    /**
+     * Get Tab Text Array
+     *
+     * @return String[]
+     */
+    private String[] getTabTextArray() {
+        if (titleArray == null) {
+            titleArray = fragmentActivity
+                    .getResources()
+                    .getStringArray(R.array.firmware_manage_tab_text);
+        }
+        return titleArray;
     }
 }

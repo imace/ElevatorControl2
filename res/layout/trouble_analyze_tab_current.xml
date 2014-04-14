@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-            android:id="@+id/layout_failure_current"
-            android:background="@color/main_background"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/main_background">
     <LinearLayout
+            android:id="@+id/error_view"
+            android:layout_alignParentTop="true"
+            android:padding="@dimen/card_view_margin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/card_view_margin"
-            android:padding="7dp"
             android:background="@drawable/card_view_background"
             android:orientation="vertical">
         <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-            <TextView
+            <org.holoeverywhere.widget.TextView
                     android:id="@+id/TextView09"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -23,21 +24,18 @@
                     android:textColor="#333333"
                     android:layout_marginRight="5dp"
                     android:textAppearance="?android:attr/textAppearanceMedium"/>
-
-            <TextView
+            <org.holoeverywhere.widget.TextView
                     android:id="@+id/current_error_help_display"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="#7F7F7F"
                     android:textAppearance="?android:attr/textAppearanceMedium"/>
         </LinearLayout>
-
         <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-
-            <TextView
+            <org.holoeverywhere.widget.TextView
                     android:id="@+id/TextView07"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -45,20 +43,18 @@
                     android:textColor="#333333"
                     android:text="@string/label_txt_error_name"
                     android:textAppearance="?android:attr/textAppearanceMedium"/>
-            <TextView
+            <org.holoeverywhere.widget.TextView
                     android:id="@+id/current_error_help_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="#7F7F7F"
                     android:textAppearance="?android:attr/textAppearanceMedium"/>
         </LinearLayout>
-
         <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-
-            <TextView
+            <org.holoeverywhere.widget.TextView
                     android:id="@+id/TextView05"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -67,45 +63,43 @@
                     android:text="@string/label_txt_error_level"
                     android:textAppearance="?android:attr/textAppearanceMedium"/>
 
-            <TextView
+            <org.holoeverywhere.widget.TextView
                     android:id="@+id/current_error_help_level"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="#7F7F7F"
                     android:textAppearance="?android:attr/textAppearanceMedium"/>
         </LinearLayout>
-
         <LinearLayout
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-            <TextView
+            <org.holoeverywhere.widget.TextView
                     android:id="@+id/TextView04"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="#333333"
                     android:text="@string/label_txt_error_reason"
                     android:textAppearance="?android:attr/textAppearanceMedium"/>
-            <TextView
+            <org.holoeverywhere.widget.TextView
                     android:id="@+id/current_error_help_reason"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="#7F7F7F"
                     android:textAppearance="?android:attr/textAppearanceMedium"/>
         </LinearLayout>
-
         <LinearLayout
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-            <TextView
+            <org.holoeverywhere.widget.TextView
                     android:id="@+id/textView1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="#333333"
                     android:text="@string/label_txt_error_solution"
                     android:textAppearance="?android:attr/textAppearanceMedium"/>
-            <TextView
+            <org.holoeverywhere.widget.TextView
                     android:id="@+id/current_error_help_solution"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -113,5 +107,29 @@
                     android:textAppearance="?android:attr/textAppearanceMedium"/>
         </LinearLayout>
     </LinearLayout>
-
-</ScrollView>
+    <LinearLayout
+            android:visibility="invisible"
+            android:id="@+id/no_error_view"
+            android:minHeight="150dp"
+            android:layout_alignParentTop="true"
+            android:padding="@dimen/card_view_margin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_margin="@dimen/card_view_margin"
+            android:background="@drawable/card_view_background"
+            android:orientation="vertical">
+        <ImageView
+                android:src="@drawable/ic_accept"
+                android:contentDescription="@null"
+                android:layout_marginBottom="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        <org.holoeverywhere.widget.TextView
+                android:text="@string/no_error_text"
+                android:textSize="20sp"
+                android:textColor="#515151"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+    </LinearLayout>
+</RelativeLayout>

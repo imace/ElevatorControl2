@@ -11,7 +11,8 @@
             android:layout_height="match_parent"
             android:listSelector="@android:color/transparent"
             android:dividerHeight="8dp"
+            android:padding="@dimen/card_view_margin"
+            android:clipToPadding="false"
             android:scrollbarStyle="outsideOverlay"
-            android:divider="@android:color/transparent"
-            android:padding="@dimen/card_view_margin"/>
+            android:divider="@android:color/transparent"/>
 </LinearLayout>

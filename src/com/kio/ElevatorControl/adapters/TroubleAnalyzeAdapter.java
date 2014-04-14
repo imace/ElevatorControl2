@@ -4,7 +4,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import com.kio.ElevatorControl.daos.MenuValuesDao;
+import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.views.fragments.TroubleAnalyzeFragment;
 
 import java.util.ArrayList;
@@ -15,6 +15,8 @@ public class TroubleAnalyzeAdapter extends FragmentPagerAdapter {
     private FragmentActivity fragmentActivity;
 
     private List<TroubleAnalyzeFragment> mFragments;
+
+    private String[] titleArray;
 
     public TroubleAnalyzeAdapter(FragmentManager fm) {
         super(fm);
@@ -30,9 +32,8 @@ public class TroubleAnalyzeAdapter extends FragmentPagerAdapter {
     @Override
     public Fragment getItem(int position) {
         if (position > mFragments.size() - 1) {
-            TroubleAnalyzeFragment troubleAnalyzeFragment = TroubleAnalyzeFragment.newInstance(MenuValuesDao
-                    .getTroubleAnalyzeTabsTextsPosition(position, fragmentActivity),
-                    fragmentActivity);
+            TroubleAnalyzeFragment troubleAnalyzeFragment = TroubleAnalyzeFragment
+                    .newInstance(position, fragmentActivity);
             mFragments.add(troubleAnalyzeFragment);
             return troubleAnalyzeFragment;
         } else {
@@ -42,12 +43,12 @@ public class TroubleAnalyzeAdapter extends FragmentPagerAdapter {
 
     @Override
     public CharSequence getPageTitle(int position) {
-        return MenuValuesDao.getTroubleAnalyzeTabsPageTitle(position, fragmentActivity);
+        return getTabTextArray()[position];
     }
 
     @Override
     public int getCount() {
-        return MenuValuesDao.getTroubleAnalyzeTabsCount(fragmentActivity);
+        return getTabTextArray().length;
     }
 
     public FragmentActivity getFragmentActivity() {
@@ -56,6 +57,20 @@ public class TroubleAnalyzeAdapter extends FragmentPagerAdapter {
 
     public void setFragmentActivity(FragmentActivity activity) {
         this.fragmentActivity = activity;
+    }
+
+    /**
+     * Get Tab Text Array
+     *
+     * @return String[]
+     */
+    private String[] getTabTextArray() {
+        if (titleArray == null) {
+            titleArray = fragmentActivity
+                    .getResources()
+                    .getStringArray(R.array.trouble_analyze_tab_text);
+        }
+        return titleArray;
     }
 
 }

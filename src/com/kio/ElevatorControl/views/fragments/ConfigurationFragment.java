@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +11,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.activities.*;
-import com.kio.ElevatorControl.daos.MenuValuesDao;
 import com.kio.ElevatorControl.daos.ParameterGroupSettingsDao;
 import com.kio.ElevatorControl.daos.RealTimeMonitorDao;
 import com.kio.ElevatorControl.models.MoveInsideOutside;
@@ -22,7 +20,6 @@ import com.kio.ElevatorControl.models.RealTimeMonitor;
 import com.mobsandgeeks.adapters.InstantAdapter;
 import org.holoeverywhere.widget.ListView;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 /**
@@ -49,14 +46,26 @@ public class ConfigurationFragment extends Fragment {
      * @param ctx      context
      * @return fragment
      */
-    public static ConfigurationFragment newInstance(int tabIndex, Context ctx) {
+    public static ConfigurationFragment newInstance(int tabIndex, Context context) {
         ConfigurationFragment configurationFragment = new ConfigurationFragment();
         configurationFragment.tabIndex = tabIndex;
-        configurationFragment.context = ctx;
-        configurationFragment.layoutId = MenuValuesDao.getConfigurationTabsLayoutId(tabIndex, ctx);
-        if (configurationFragment.layoutId == 0) {
-            configurationFragment.layoutId = R.layout.fragment_test;
+        configurationFragment.context = context;
+        int layout = R.layout.fragment_not_found;
+        switch (tabIndex) {
+            case 0:
+                layout = R.layout.configuration_tab_monitor;
+                break;
+            case 1:
+                layout = R.layout.configuration_tab_setting;
+                break;
+            case 2:
+                layout = R.layout.configuration_tab_debug;
+                break;
+            case 3:
+                layout = R.layout.configuration_tab_duplicate;
+                break;
         }
+        configurationFragment.layoutId = layout;
         return configurationFragment;
     }
 
@@ -65,21 +74,20 @@ public class ConfigurationFragment extends Fragment {
      */
     @Override
     public void onResume() {
-        try {
-            ((Object) this).getClass()
-                    .getMethod(
-                            MenuValuesDao.getConfigurationLoadMethodName(
-                                    tabIndex, context)).invoke(this);
-        } catch (NoSuchMethodException e) {
-            Log.e(TAG, e.getMessage());
-        } catch (IllegalArgumentException e) {
-            Log.e(TAG, e.getMessage());
-        } catch (IllegalAccessException e) {
-            Log.e(TAG, e.getMessage());
-        } catch (InvocationTargetException e) {
-            Log.e(TAG, e.getTargetException().getMessage());
-        } finally {
-            super.onResume();
+        super.onResume();
+        switch (tabIndex) {
+            case 0:
+                loadMonitorView();
+                break;
+            case 1:
+                loadSettingView();
+                break;
+            case 2:
+                loadDebugView();
+                break;
+            case 3:
+                loadDuplicateView();
+                break;
         }
     }
 

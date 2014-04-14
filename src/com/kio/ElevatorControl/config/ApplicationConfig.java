@@ -91,4 +91,58 @@ public class ApplicationConfig {
      */
     public static final int[] DESCRIPTION_TYPE = new int[]{0, 1, 2, 3};
 
+    /**
+     * Web API接口
+     */
+    public static final String DomainName = "http://222.92.112.36:6954/";
+
+    // 验证是否注册用户
+    // 参数：phoneNum 手机号码
+    // 返回值：成功返回True失败返回False
+    public static final String VerifyUser = "HuiChuanAPI.asmx/VerifyRegister?phoneNum=";
+
+    // 注册用户
+    // 参数：username 用户名
+    // company 公司
+    // mobilPhone 手机号码
+    // contactTel 联系电话
+    // email E-MAIL地址
+    // 返回值：成功返回True失败返回False
+    public static final String RegisterUser = "HuiChuanAPI.asmx/SendRegister";
+
+    // 获取最近一次功能码更新的时间戳
+    // 参数：DeviceType 设备型号
+    // 返回值：最近一次功能码更新的时间戳
+    public static final String GetFunctionCodeUpdateTimestamp = "";
+
+    // 获取功能码
+    // 参数：DeviceType 设备型号
+    // 返回值：返回JSON格式的功能码
+    public static final String GetFunctionCode = "HuiChuanAPI.asmx/GetFunctionCode?DeviceType=";
+
+    // 获取最近一次故障帮助信息更新的时间戳
+    // 参数无
+    // 返回值：最近一次故障帮助信息更新的时间戳
+    public static final String GetErrorHelpUpdateTimestamp = "";
+
+    // 获取故障码
+    // 参数：无
+    // 返回值：返回JSON格式的故障码
+    public static final String GetErrorHelp = "HuiChuanAPI.asmx/GetErrHelp";
+
+    // 获取最近一次状态码更新的时间戳
+    // 参数：DeviceType 设备型号
+    // 返回值：最近一次状态码更新的时间戳
+    public static final String GetStateCodeUpdateTimestamp = "";
+
+    // 获取状态码
+    // 参数：DeviceType 设备型号
+    // 返回值：返回JSON格式的状态码
+    public static final String GetStateCode = "HuiChuanAPI.asmx/GetState?DeviceType=";
+
+    // 获取所有设备的列表
+    // 参数：无
+    // 返回值：返回JSON格式的所有设备信息列表
+    public static final String GetDeviceList = "HuiChuanAPI.asmx/GetDeviceList";
+
 }

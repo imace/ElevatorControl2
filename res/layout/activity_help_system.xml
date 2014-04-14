@@ -5,9 +5,30 @@
               android:background="@color/main_background"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
-    <FrameLayout android:id="@+id/help_system_content"
-                 android:layout_margin="@dimen/card_view_margin"
-                 android:background="@drawable/card_view_background"
-                 android:layout_width="match_parent"
-                 android:layout_height="match_parent"/>
+    <org.holoeverywhere.widget.TextView
+            android:text="@string/system_setting_section"
+            android:layout_margin="@dimen/card_view_margin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    <org.holoeverywhere.widget.ListView
+            android:id="@+id/system_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/card_view_margin"
+            android:background="@drawable/card_view_background"
+            android:clipToPadding="false"
+            android:scrollbarStyle="outsideOverlay"/>
+    <org.holoeverywhere.widget.TextView
+            android:text="@string/other_setting_section"
+            android:layout_margin="@dimen/card_view_margin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    <org.holoeverywhere.widget.ListView
+            android:id="@+id/other_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/card_view_margin"
+            android:background="@drawable/card_view_background"
+            android:clipToPadding="false"
+            android:scrollbarStyle="outsideOverlay"/>
 </LinearLayout>

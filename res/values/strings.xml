@@ -46,12 +46,33 @@
     <string name="restart_scan_text">继续扫描</string>
     <string name="scan_tips_text">扫描条形码中，请稍后…</string>
 
+    <string name="input_cell_phone_number">输入手机号码</string>
+    <string name="unauthorized_title">未授权</string>
+    <string name="unauthorized_message">当前用户授权失败！</string>
+
     <!-- 程序首页 Home -->
     <string name="elevator_status_text">电梯状态</string>
     <string name="running_speed_text">运行速度</string>
     <string name="door_status_text">开关门状态</string>
     <string name="lock_elevator_status_text">轿厢状态</string>
     <string name="error_code_text">故障</string>
+
+    <!-- 用户注册 -->
+    <string name="register_user_text">用户注册</string>
+    <string name="user_name_text">用户名</string>
+    <string name="company_text">公司</string>
+    <string name="cell_phone_text">手机</string>
+    <string name="tel_phone_text">电话</string>
+    <string name="email_text">邮箱</string>
+    <string name="submit_text">提交</string>
+    <string name="register_failed_text">注册失败</string>
+
+    <!-- 选择设备型号 -->
+    <string name="select_device_type_text">选择设备型号</string>
+    <string name="cannot_match_device_text">未能自动匹配当前连接的设备型号，请手动选择设备型号。</string>
+
+    <!-- 当前故障 -->
+    <string name="no_error_text">当前未发生故障</string>
 
     <!-- 历史故障 -->
     <string name="history_error_code">故障码</string>
@@ -63,16 +84,28 @@
     <string name="no_error_code_result">未查询到结果</string>
 
     <!-- 帮助 -->
-    <string name="remote_help_text">远程协助</string>
-    <string name="application_config_text">程序设置</string>
-    <string name="scan_barcode_text">扫描一维码</string>
+    <string name="system_setting_section">程序设置</string>
+    <string name="other_setting_section">其他</string>
+    <string-array name="system_setting_array">
+        <item>快捷菜单设置</item>
+        <item>软件更新</item>
+        <item>远程协助</item>
+        <item>蓝牙地址</item>
+    </string-array>
+    <string-array name="other_setting_array">
+        <item>扫描条形码</item>
+        <item>日志</item>
+        <item>关于</item>
+    </string-array>
     <string name="bluetooth_address_text">蓝牙地址</string>
     <string name="current_connected_device_name_text">当前连接设备名称</string>
     <string name="current_connected_device_address_text">当前连接设备蓝牙地址</string>
     <string name="no_connected_device">未连接任何设备</string>
 
     <!-- 应用程序设置 -->
-    <string name="bluetooth_setting_text">蓝牙设置</string>
+    <string name="remote_help_text">远程协助</string>
+    <string name="login_wait_text">用户登录中，请稍后！</string>
+    <string name="scan_barcode_text">扫描条形码码</string>
     <string name="shortcut_setting_text">快捷菜单设置</string>
     <string name="add_shortcut_dialog_title_text">新增快捷菜单</string>
     <string name="shortcut_name_text">快捷菜单名称</string>
@@ -84,8 +117,6 @@
     </string-array>
     <string name="confirm_delete_title_text">确认删除</string>
     <string name="confirm_delete_message_text">确认删除该快捷菜单吗？</string>
-    <string name="application_update_text">软件更新</string>
-    <string name="application_log_text">日志</string>
     <string name="about_text">关于</string>
 
     <!-- 电梯内召、外召 -->
@@ -153,20 +184,9 @@
     <string-array name="navigation_tab_text">
         <item>故障分析</item>
         <item>电梯调试</item>
+        <item>首页</item>
         <item>程序管理</item>
         <item>帮助</item>
-    </string-array>
-    <string-array name="navigation_tab_icon">
-        <item>tab_trouble_analyze</item>
-        <item>tab_configuration</item>
-        <item>tab_firmware_manage</item>
-        <item>tab_help_system</item>
-    </string-array>
-    <string-array name="navigation_tab_class_name">
-        <item>com.kio.ElevatorControl.activities.TroubleAnalyzeActivity</item>
-        <item>com.kio.ElevatorControl.activities.ConfigurationActivity</item>
-        <item>com.kio.ElevatorControl.activities.FirmwareManageActivity</item>
-        <item>com.kio.ElevatorControl.activities.HelpSystemActivity</item>
     </string-array>
 
     <!-- 电梯调试标签页选项卡 -->
@@ -176,18 +196,6 @@
         <item>测试功能</item>
         <item>参数拷贝</item>
     </string-array>
-    <string-array name="configuration_tab_layout">
-        <item>configuration_tab_monitor</item>
-        <item>configuration_tab_setting</item>
-        <item>configuration_tab_debug</item>
-        <item>configuration_tab_duplicate</item>
-    </string-array>
-    <string-array name="configuration_function">
-        <item>loadMonitorView</item>
-        <item>loadSettingView</item>
-        <item>loadDebugView</item>
-        <item>loadDuplicateView</item>
-    </string-array>
 
     <!-- 故障分析标签页选项卡 -->
     <string-array name="trouble_analyze_tab_text">
@@ -195,32 +203,12 @@
         <item>历史故障</item>
         <item>故障查询</item>
     </string-array>
-    <string-array name="trouble_analyze_tab_layout">
-        <item>trouble_analyze_tab_current</item>
-        <item>trouble_analyze_tab_history</item>
-        <item>trouble_analyze_tab_search</item>
-    </string-array>
-    <string-array name="trouble_analyze_function">
-        <item>loadCurrentTroubleView</item>
-        <item>loadHistoryTroubleView</item>
-        <item>loadSearchTroubleView</item>
-    </string-array>
 
     <!-- 程序管理标签选项卡 -->
     <string-array name="firmware_manage_tab_text">
         <item>程序申请</item>
         <item>程序提取</item>
         <item>程序烧录</item>
-    </string-array>
-    <string-array name="firmware_manage_tab_layout">
-        <item>firmware_manage_tab_apply</item>
-        <item>firmware_manage_tab_download</item>
-        <item>firmware_manage_tab_burn</item>
-    </string-array>
-    <string-array name="firmware_manage_tab_function">
-        <item>loadFirmwareApplyView</item>
-        <item>loadFirmwareDownloadView</item>
-        <item>loadFirmwareBurnView</item>
     </string-array>
     <!-- //////////////////////////////////// 标签选项卡 END ////////////////////////////////// -->
 </resources>

@@ -22,25 +22,33 @@
             android:layout_marginRight="@dimen/card_view_margin"
             android:layout_marginLeft="@dimen/card_view_margin"
             android:layout_marginBottom="@dimen/card_view_margin"
-            android:padding="@dimen/card_view_margin"
             android:layout_width="match_parent"
             android:layout_height="100dp">
-        <ImageButton
-                android:id="@+id/open_door_button"
-                android:background="#00000000"
-                android:src="@drawable/open_elevator_door"
-                android:contentDescription="@null"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
         <LinearLayout
-                android:layout_marginLeft="@dimen/card_view_margin"
-                android:layout_marginRight="@dimen/card_view_margin"
                 android:gravity="center"
-                android:orientation="vertical"
                 android:layout_weight="1"
                 android:layout_width="0dp"
-                android:background="@color/highlight_text_color"
-                android:layout_height="60dp">
+                android:layout_height="match_parent">
+            <ImageButton
+                    android:id="@+id/open_door_button"
+                    android:background="#00000000"
+                    android:src="@drawable/open_elevator_button"
+                    android:contentDescription="@null"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+        </LinearLayout>
+        <View
+                android:background="@android:drawable/divider_horizontal_bright"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:layout_width="1dp"
+                android:layout_height="match_parent"/>
+        <LinearLayout
+                android:gravity="center"
+                android:orientation="vertical"
+                android:layout_weight="2"
+                android:layout_width="0dp"
+                android:layout_height="match_parent">
             <TextView
                     android:id="@+id/current_floor"
                     android:textColor="#FFFFFF"
@@ -48,12 +56,24 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
         </LinearLayout>
-        <ImageButton
-                android:id="@+id/close_door_button"
-                android:background="#00000000"
-                android:src="@drawable/close_elevator_door"
-                android:contentDescription="@null"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+        <View
+                android:background="@android:drawable/divider_horizontal_bright"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:layout_width="1dp"
+                android:layout_height="match_parent"/>
+        <LinearLayout
+                android:gravity="center"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent">
+            <ImageButton
+                    android:id="@+id/close_door_button"
+                    android:background="#00000000"
+                    android:src="@drawable/close_elevator_button"
+                    android:contentDescription="@null"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

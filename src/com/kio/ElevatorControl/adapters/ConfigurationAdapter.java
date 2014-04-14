@@ -3,7 +3,7 @@ package com.kio.ElevatorControl.adapters;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import com.kio.ElevatorControl.daos.MenuValuesDao;
+import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.views.fragments.ConfigurationFragment;
 
 import java.util.ArrayList;
@@ -14,6 +14,8 @@ public class ConfigurationAdapter extends FragmentPagerAdapter {
     private FragmentActivity fragmentActivity;
 
     private List<ConfigurationFragment> mFragments;
+
+    private String[] titleArray;
 
     public FragmentActivity getFragmentActivity() {
         return fragmentActivity;
@@ -37,9 +39,8 @@ public class ConfigurationAdapter extends FragmentPagerAdapter {
     @Override
     public ConfigurationFragment getItem(int position) {
         if (position > mFragments.size() - 1) {
-            ConfigurationFragment configurationFragment = ConfigurationFragment.newInstance(
-                    MenuValuesDao.getConfigurationTabsTextsPosition(position, fragmentActivity),
-                    fragmentActivity);
+            ConfigurationFragment configurationFragment = ConfigurationFragment
+                    .newInstance(position, fragmentActivity);
             mFragments.add(configurationFragment);
             return configurationFragment;
         } else {
@@ -49,12 +50,26 @@ public class ConfigurationAdapter extends FragmentPagerAdapter {
 
     @Override
     public CharSequence getPageTitle(int position) {
-        return MenuValuesDao.getConfigurationTabsPageTitle(position, fragmentActivity);
+        return getTabTextArray()[position];
     }
 
     @Override
     public int getCount() {
-        return MenuValuesDao.getConfigurationTabsCount(fragmentActivity);
+        return getTabTextArray().length;
+    }
+
+    /**
+     * Get Tab Text Array
+     *
+     * @return String[]
+     */
+    private String[] getTabTextArray() {
+        if (titleArray == null) {
+            titleArray = fragmentActivity
+                    .getResources()
+                    .getStringArray(R.array.configuration_tab_text);
+        }
+        return titleArray;
     }
 
 }

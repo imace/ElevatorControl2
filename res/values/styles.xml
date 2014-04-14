@@ -1,33 +1,24 @@
 <resources>
     <style name="Theme.Global" parent="Holo.Theme.Light.DarkActionBar">
         <item name="vpiTabPageIndicatorStyle">@style/CustomTabPageIndicator</item>
+        <item name="android:actionDropDownStyle">@style/Custom.Spinner.DropDown</item>
+        <item name="actionDropDownStyle">@style/Custom.Spinner.DropDown</item>
         <item name="android:spinnerItemStyle">@style/CustomSpinnerItemStyle</item>
         <item name="android:spinnerDropDownItemStyle">@style/CustomSpinnerDropdownItemStyle</item>
-        <item name="android:actionBarStyle">@style/CustomActionBarStyle</item>
-        <!-- Support library compatibility -->
-        <item name="actionBarStyle">@style/CustomActionBarStyle</item>
-        <item name="numberPickerStyle">@style/CustomNumberPickerStyle</item>
     </style>
 
-    <!-- ActionBar 样式 -->
-    <style name="CustomActionBarStyle" parent="@style/Widget.AppCompat.Light.ActionBar.Solid.Inverse">
-        <item name="android:background">@drawable/actionbar_blue</item>
-        <!-- Support library compatibility -->
-        <item name="background">@drawable/actionbar_blue</item>
-    </style>
-
-    <style name="CustomNumberPickerStyle" parent="Holo.NumberPicker">
-
+    <style name="Custom.Spinner.DropDown" parent="@style/Widget.AppCompat.Light.Spinner.DropDown.ActionBar">
+        <item name="android:background">@drawable/custom_spinner_background</item>
     </style>
 
     <style name="CustomSpinnerItemStyle" parent="android:TextAppearance.Widget.TextView.SpinnerItem">
-        <item name="android:textColor">#eeeeee</item>
+        <item name="android:textColor">#ffffffff</item>
         <item name="android:background">@android:color/transparent</item>
     </style>
 
     <style name="CustomSpinnerDropdownItemStyle" parent="@android:style/Widget.Holo.DropDownItem.Spinner">
-        <item name="android:textColor">#eeeeee</item>
-        <item name="android:background">#303030</item>
+        <item name="android:textColor">#ff333333</item>
+        <item name="android:background">#ffffffff</item>
     </style>
 
     <style name="CustomDialogStyle" parent="Holo.Theme.Dialog.Light">

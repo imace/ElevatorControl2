@@ -49,6 +49,8 @@ public class ParameterDetailActivity extends Activity {
 
     private HCommunication[] communications;
 
+    public boolean isSynced;
+
     /**
      * 功能参数详细列表
      */
@@ -62,6 +64,7 @@ public class ParameterDetailActivity extends Activity {
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
         Views.inject(this);
+        isSynced = false;
         parameterDetailHandler = new ParameterDetailHandler(this);
         updateHandler = new UpdateHandler(this);
         bindListViewItemClickListener();
@@ -74,65 +77,67 @@ public class ParameterDetailActivity extends Activity {
         parameterDetailListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                final int index = position;
-                final ParameterSettings settings = settingsList.get(position);
-                AlertDialog.Builder builder = CustomDialog.parameterDetailDialog(ParameterDetailActivity.this,
-                        settings);
-                builder.setPositiveButton(R.string.dialog_btn_ok, null);
-                detailDialog = builder.create();
-                detailDialog.show();
-                detailDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[0]) {
-                            final String inputValue = ((EditText) detailDialog.findViewById(R.id.setting_value))
-                                    .getText()
-                                    .toString();
-                            if (ParseSerialsUtils.validateUserInputValue(ParameterDetailActivity.this,
-                                    settings,
-                                    inputValue)) {
+                if (isSynced) {
+                    final int index = position;
+                    final ParameterSettings settings = settingsList.get(position);
+                    AlertDialog.Builder builder = CustomDialog.parameterDetailDialog(ParameterDetailActivity.this,
+                            settings);
+                    builder.setPositiveButton(R.string.dialog_btn_ok, null);
+                    detailDialog = builder.create();
+                    detailDialog.show();
+                    detailDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[0]) {
+                                final String inputValue = ((EditText) detailDialog.findViewById(R.id.setting_value))
+                                        .getText()
+                                        .toString();
+                                if (ParseSerialsUtils.validateUserInputValue(ParameterDetailActivity.this,
+                                        settings,
+                                        inputValue)) {
+                                    startSetNewValueCommunications(index,
+                                            String.format("%04x ", Integer.parseInt(inputValue)));
+                                    detailDialog.dismiss();
+                                }
+                            }
+                            if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[1]) {
+                                int checkedIndex = detailDialog.getListView().getCheckedItemPosition();
+                                if (checkedIndex != ParseSerialsUtils.getIntFromBytes(settings.getReceived())) {
+                                    startSetNewValueCommunications(index, String.format("%04x ", checkedIndex));
+                                }
+                                detailDialog.dismiss();
+                            }
+                            if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[2]) {
+                                ListView listView = (ListView) detailDialog.findViewById(R.id.switch_list);
+                                DialogSwitchListViewAdapter adapter = (DialogSwitchListViewAdapter) listView
+                                        .getAdapterSource();
+                                List<ParameterStatusItem> list = adapter.getItemList();
+                                byte[] data = settings.getReceived();
+                                boolean[] booleans = HSerial.byte2BoolArr(data[4], data[5]);
+                                int size = booleans.length;
+                                String binaryString = "";
+                                for (int j = 0; j < size; j++) {
+                                    boolean hasValue = false;
+                                    boolean settingValue = false;
+                                    for (ParameterStatusItem item : list) {
+                                        if (Integer.parseInt(item.id) == j) {
+                                            hasValue = true;
+                                            settingValue = item.status;
+                                        }
+                                    }
+                                    if (hasValue) {
+                                        binaryString += settingValue ? 1 : 0;
+                                    } else {
+                                        binaryString += booleans[j] ? 1 : 0;
+                                    }
+                                }
                                 startSetNewValueCommunications(index,
-                                        String.format("%04x ", Integer.parseInt(inputValue)));
+                                        String.format("%04x ", Integer.parseInt(binaryString, 2)));
                                 detailDialog.dismiss();
                             }
                         }
-                        if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[1]) {
-                            int checkedIndex = detailDialog.getListView().getCheckedItemPosition();
-                            if (checkedIndex != ParseSerialsUtils.getIntFromBytes(settings.getReceived())) {
-                                startSetNewValueCommunications(index, String.format("%04x ", checkedIndex));
-                            }
-                            detailDialog.dismiss();
-                        }
-                        if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[2]) {
-                            ListView listView = (ListView) detailDialog.findViewById(R.id.switch_list);
-                            DialogSwitchListViewAdapter adapter = (DialogSwitchListViewAdapter) listView
-                                    .getAdapterSource();
-                            List<ParameterStatusItem> list = adapter.getItemList();
-                            byte[] data = settings.getReceived();
-                            boolean[] booleans = HSerial.byte2BoolArr(data[4], data[5]);
-                            int size = booleans.length;
-                            String binaryString = "";
-                            for (int j = 0; j < size; j++) {
-                                boolean hasValue = false;
-                                boolean settingValue = false;
-                                for (ParameterStatusItem item : list) {
-                                    if (Integer.parseInt(item.id) == j) {
-                                        hasValue = true;
-                                        settingValue = item.status;
-                                    }
-                                }
-                                if (hasValue) {
-                                    binaryString += settingValue ? 1 : 0;
-                                } else {
-                                    binaryString += booleans[j] ? 1 : 0;
-                                }
-                            }
-                            startSetNewValueCommunications(index,
-                                    String.format("%04x ", Integer.parseInt(binaryString, 2)));
-                            detailDialog.dismiss();
-                        }
-                    }
-                });
+                    });
+                }
             }
         });
     }

@@ -7,7 +7,11 @@
     <org.holoeverywhere.widget.GridView
             android:id="@+id/grid_view"
             android:numColumns="3"
+            android:verticalSpacing="@dimen/card_view_margin"
+            android:horizontalSpacing="@dimen/card_view_margin"
             android:scrollbars="none"
+            android:padding="@dimen/card_view_margin"
+            android:clipToPadding="false"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:listSelector="#00000000"/>

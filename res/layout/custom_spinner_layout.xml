@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.kio.ElevatorControl.views.customspinner.NoDefaultSpinner
         xmlns:android="http://schemas.android.com/apk/res/android"
-        style="@android:style/Widget.Holo.Spinner"
+        style="@style/Custom.Spinner.DropDown"
         android:minHeight="@dimen/abc_action_bar_stacked_max_height"
         android:prompt="@string/choose_bluetooth_device"
         android:layout_width="wrap_content"

@@ -3,7 +3,6 @@ package com.kio.ElevatorControl.activities;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
-import android.util.Log;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.hbluetooth.HBluetooth;
@@ -12,18 +11,16 @@ import com.hbluetooth.HSerial;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.adapters.TroubleAnalyzeAdapter;
 import com.kio.ElevatorControl.config.ApplicationConfig;
-import com.kio.ElevatorControl.daos.MenuValuesDao;
+import com.kio.ElevatorControl.daos.ErrorHelpDao;
 import com.kio.ElevatorControl.daos.ParameterSettingsDao;
 import com.kio.ElevatorControl.handlers.CurrentErrorHandler;
 import com.kio.ElevatorControl.handlers.HistoryErrorHandler;
-import com.kio.ElevatorControl.models.ErrorHelp;
 import com.kio.ElevatorControl.models.HistoryError;
 import com.kio.ElevatorControl.models.ParameterSettings;
 import com.kio.ElevatorControl.utils.ParseSerialsUtils;
 import com.viewpagerindicator.TabPageIndicator;
 import org.holoeverywhere.app.Activity;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,6 +44,8 @@ public class TroubleAnalyzeActivity extends Activity {
     private CurrentErrorHandler currentErrorHandler;
 
     private HistoryErrorHandler historyErrorHandler;
+
+    private HCommunication[] currentCommunications;
 
     public HCommunication[] historyCommunications;
 
@@ -78,21 +77,16 @@ public class TroubleAnalyzeActivity extends Activity {
                 Runnable runnable = new Runnable() {
                     @Override
                     public void run() {
-                        try {
-                            String mName = MenuValuesDao
-                                    .getTroubleAnalyzeTabsLoadMethodName(pageIndex, TroubleAnalyzeActivity.this);
-                            ((Object) TroubleAnalyzeActivity.this)
-                                    .getClass()
-                                    .getMethod(mName)
-                                    .invoke(TroubleAnalyzeActivity.this);
-                        } catch (NoSuchMethodException e) {
-                            Log.e(TAG, e.getMessage());
-                        } catch (IllegalArgumentException e) {
-                            Log.e(TAG, e.getMessage());
-                        } catch (IllegalAccessException e) {
-                            Log.e(TAG, e.getMessage());
-                        } catch (InvocationTargetException e) {
-                            Log.e(TAG, "InvocationTargetException");
+                        switch (pageIndex) {
+                            case 0:
+                                loadCurrentTroubleView();
+                                break;
+                            case 1:
+                                loadHistoryTroubleView();
+                                break;
+                            case 2:
+                                loadSearchTroubleView();
+                                break;
                         }
                     }
                 };
@@ -166,55 +160,49 @@ public class TroubleAnalyzeActivity extends Activity {
      * 当前故障
      */
     public void loadCurrentTroubleView() {
-        Log.v("AAABBB", "Start");
-        HCommunication[] communications = new HCommunication[]{
-                new HCommunication() {
+        if (currentCommunications == null) {
+            currentCommunications = new HCommunication[]{
+                    new HCommunication() {
 
-                    @Override
-                    public void beforeSend() {
-                        this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("010380000001")));
-                    }
-
-                    @Override
-                    public void afterSend() {
-
-                    }
-
-                    @Override
-                    public void beforeReceive() {
-                    }
-
-                    @Override
-                    public void afterReceive() {
-                    }
-
-                    @Override
-                    public Object onParse() {
-                        if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                            byte[] received = HSerial.trimEnd(getReceivedBuffer());
-                            Log.v("AAABBB", HSerial.byte2HexStr(received));
-                            ErrorHelp errorHelp = new ErrorHelp();
-                            try {
-                                errorHelp.setReceived(TroubleAnalyzeActivity.this, received);
-                                return errorHelp;
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                        @Override
+                        public void beforeSend() {
+                            this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("010380000001")));
                         }
-                        return null;
+
+                        @Override
+                        public void afterSend() {
+
+                        }
+
+                        @Override
+                        public void beforeReceive() {
+                        }
+
+                        @Override
+                        public void afterReceive() {
+                        }
+
+                        @Override
+                        public Object onParse() {
+                            if (HSerial.isCRC16Valid(getReceivedBuffer())) {
+                                byte[] received = HSerial.trimEnd(getReceivedBuffer());
+                                String errorCode = ParseSerialsUtils.getErrorCode(received);
+                                return ErrorHelpDao.findByDisplay(TroubleAnalyzeActivity.this, errorCode);
+                            }
+                            return null;
+                        }
                     }
-                }
-        };
+            };
+        }
         if (currentErrorHandler == null)
             currentErrorHandler = new CurrentErrorHandler(this);
         if (HBluetooth.getInstance(this).isPrepared())
-            Log.v("AAABBB", "Start11");
-            HBluetooth.getInstance(this)
-                    .setHandler(currentErrorHandler)
-                    .setCommunications(communications)
-                    .Start();
+            currentErrorHandler.sendCount = currentCommunications.length;
+        HBluetooth.getInstance(this)
+                .setHandler(currentErrorHandler)
+                .setCommunications(currentCommunications)
+                .Start();
     }
-
 
     /**
      * 历史故障
@@ -232,7 +220,6 @@ public class TroubleAnalyzeActivity extends Activity {
      * 故障查询
      */
     public void loadSearchTroubleView() {
-        // 停止串口通信
         HBluetooth.getInstance(this).setHandler(currentErrorHandler);
     }
 }

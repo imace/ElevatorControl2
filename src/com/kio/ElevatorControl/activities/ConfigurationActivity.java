@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
-import android.util.Log;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.hbluetooth.HBluetooth;
@@ -12,14 +11,12 @@ import com.hbluetooth.HCommunication;
 import com.hbluetooth.HSerial;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.adapters.ConfigurationAdapter;
-import com.kio.ElevatorControl.daos.MenuValuesDao;
 import com.kio.ElevatorControl.daos.RealTimeMonitorDao;
 import com.kio.ElevatorControl.handlers.ConfigurationHandler;
 import com.kio.ElevatorControl.models.RealTimeMonitor;
 import com.viewpagerindicator.TabPageIndicator;
 import org.holoeverywhere.app.Activity;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 /**
@@ -57,6 +54,7 @@ public class ConfigurationActivity extends Activity {
         pager.setAdapter(mConfigurationAdapter);
         pager.setOffscreenPageLimit(3);
         indicator.setViewPager(pager);
+        configurationHandler = new ConfigurationHandler(this);
         indicator.setOnPageChangeListener(new OnPageChangeListener() {
             @Override
             public void onPageScrollStateChanged(int arg0) {
@@ -73,19 +71,19 @@ public class ConfigurationActivity extends Activity {
                 Runnable runnable = new Runnable() {
                     @Override
                     public void run() {
-                        try {
-                            String mName = MenuValuesDao
-                                    .getConfigurationLoadMethodName(mCurrentPageIndex, ConfigurationActivity.this);
-                            ((Object) ConfigurationActivity.this).getClass().getMethod(mName)
-                                    .invoke(ConfigurationActivity.this);
-                        } catch (NoSuchMethodException e) {
-                            Log.e(TAG, e.getMessage());
-                        } catch (IllegalArgumentException e) {
-                            Log.e(TAG, e.getMessage());
-                        } catch (IllegalAccessException e) {
-                            Log.e(TAG, e.getMessage());
-                        } catch (InvocationTargetException e) {
-                            Log.e(TAG, "InvocationTargetException");
+                        switch (mCurrentPageIndex) {
+                            case 0:
+                                loadMonitorView();
+                                break;
+                            case 1:
+                                loadSettingView();
+                                break;
+                            case 2:
+                                loadDebugView();
+                                break;
+                            case 3:
+                                loadDuplicateView();
+                                break;
                         }
                     }
                 };
@@ -154,9 +152,6 @@ public class ConfigurationActivity extends Activity {
             }
         }
         if (HBluetooth.getInstance(this).isPrepared()) {
-            if (configurationHandler == null) {
-                configurationHandler = new ConfigurationHandler(this);
-            }
             configurationHandler.sendCount = communications.length;
             HBluetooth.getInstance(this)
                     .setHandler(configurationHandler)
@@ -165,21 +160,15 @@ public class ConfigurationActivity extends Activity {
         }
     }
 
-    /***
-     *
-     */
     public void loadSettingView() {
-        // 停止串口通信
         HBluetooth.getInstance(this).setHandler(null);
     }
 
     public void loadDebugView() {
-        // 停止串口通信
         HBluetooth.getInstance(this).setHandler(null);
     }
 
     public void loadDuplicateView() {
-        // 停止串口通信
         HBluetooth.getInstance(this).setHandler(null);
     }
 

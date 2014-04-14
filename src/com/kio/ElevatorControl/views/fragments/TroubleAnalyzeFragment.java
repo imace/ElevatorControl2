@@ -3,7 +3,6 @@ package com.kio.ElevatorControl.views.fragments;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,10 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.daos.ErrorHelpDao;
-import com.kio.ElevatorControl.daos.MenuValuesDao;
 import com.kio.ElevatorControl.models.ErrorHelp;
-
-import java.lang.reflect.InvocationTargetException;
 
 public class TroubleAnalyzeFragment extends Fragment {
 
@@ -39,14 +35,23 @@ public class TroubleAnalyzeFragment extends Fragment {
      * @param ctx      Context
      * @return Fragment
      */
-    public static TroubleAnalyzeFragment newInstance(int tabIndex, Context ctx) {
+    public static TroubleAnalyzeFragment newInstance(int tabIndex, Context context) {
         TroubleAnalyzeFragment troubleAnalyzeFragment = new TroubleAnalyzeFragment();
         troubleAnalyzeFragment.tabIndex = tabIndex;
-        troubleAnalyzeFragment.context = ctx;
-        troubleAnalyzeFragment.layoutId = MenuValuesDao.getTroubleAnalyzeTabsLayoutId(tabIndex, ctx);
-        if (troubleAnalyzeFragment.layoutId == 0) {
-            troubleAnalyzeFragment.layoutId = R.layout.fragment_test;
+        troubleAnalyzeFragment.context = context;
+        int layout = R.layout.fragment_not_found;
+        switch (tabIndex) {
+            case 0:
+                layout = R.layout.trouble_analyze_tab_current;
+                break;
+            case 1:
+                layout = R.layout.trouble_analyze_tab_history;
+                break;
+            case 2:
+                layout = R.layout.trouble_analyze_tab_search;
+                break;
         }
+        troubleAnalyzeFragment.layoutId = layout;
         return troubleAnalyzeFragment;
     }
 
@@ -56,20 +61,16 @@ public class TroubleAnalyzeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        try {
-            // 反射执行
-            ((Object) this).getClass()
-                    .getMethod(MenuValuesDao
-                            .getTroubleAnalyzeTabsLoadMethodName(tabIndex, context))
-                    .invoke(this);
-        } catch (NoSuchMethodException e) {
-            Log.e(TAG, e.getMessage());
-        } catch (IllegalArgumentException e) {
-            Log.e(TAG, e.getMessage());
-        } catch (IllegalAccessException e) {
-            Log.e(TAG, e.getMessage());
-        } catch (InvocationTargetException e) {
-            Log.e(TAG, e.getTargetException().getMessage());
+        switch (tabIndex) {
+            case 0:
+                loadCurrentTroubleView();
+                break;
+            case 1:
+                loadHistoryTroubleView();
+                break;
+            case 2:
+                loadSearchTroubleView();
+                break;
         }
     }
 
@@ -158,7 +159,6 @@ public class TroubleAnalyzeFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // 返回layoutId对应的布局
         return inflater.inflate(layoutId, container, false);
     }
 

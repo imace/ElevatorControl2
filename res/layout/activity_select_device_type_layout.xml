@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:background="@color/main_background"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+    <LinearLayout
+            android:layout_margin="@dimen/card_view_margin"
+            android:padding="@dimen/card_view_margin"
+            android:gravity="center_vertical"
+            android:minHeight="60dp"
+            android:background="@drawable/card_view_background"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <org.holoeverywhere.widget.TextView
+                android:text="@string/cannot_match_device_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/Holo.TextAppearance.Inverse"/>
+    </LinearLayout>
+    <RelativeLayout
+            android:minHeight="100dp"
+            android:layout_marginRight="@dimen/card_view_margin"
+            android:layout_marginLeft="@dimen/card_view_margin"
+            android:background="@drawable/card_view_background"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <org.holoeverywhere.widget.ProgressBar
+                android:id="@+id/progress_bar"
+                android:layout_centerInParent="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        <LinearLayout
+                android:id="@+id/device_view"
+                android:visibility="gone"
+                android:orientation="vertical"
+                android:layout_alignParentTop="true"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+            <org.holoeverywhere.widget.ListView
+                    android:id="@+id/device_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+            <View
+                    android:background="@android:drawable/divider_horizontal_bright"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"/>
+        </LinearLayout>
+    </RelativeLayout>
+
+</LinearLayout>

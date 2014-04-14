@@ -3,7 +3,6 @@ package com.kio.ElevatorControl.views.fragments;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +11,6 @@ import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.activities.FirmwareManageActivity;
 import com.kio.ElevatorControl.adapters.FirmwareBurnAdapter;
 import com.kio.ElevatorControl.adapters.FirmwareDownloadAdapter;
-import com.kio.ElevatorControl.daos.MenuValuesDao;
 import com.kio.ElevatorControl.models.Firmware;
 import com.kio.ElevatorControl.views.customspinner.NoDefaultSpinner;
 import org.holoeverywhere.widget.AutoCompleteTextView;
@@ -20,7 +18,6 @@ import org.holoeverywhere.widget.EditText;
 import org.holoeverywhere.widget.GridView;
 import org.holoeverywhere.widget.ListView;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,10 +45,19 @@ public class FirmwareManageFragment extends Fragment {
         FirmwareManageFragment firmwareManageFragment = new FirmwareManageFragment();
         firmwareManageFragment.tabIndex = tabIndex;
         firmwareManageFragment.context = context;
-        firmwareManageFragment.layoutId = MenuValuesDao.getFirmwareManageTabsLayoutId(tabIndex, context);
-        if (firmwareManageFragment.layoutId == 0) {
-            firmwareManageFragment.layoutId = R.layout.fragment_test;
+        int layout = R.layout.fragment_not_found;
+        switch (tabIndex) {
+            case 0:
+                layout = R.layout.firmware_manage_tab_apply;
+                break;
+            case 1:
+                layout = R.layout.firmware_manage_tab_download;
+                break;
+            case 2:
+                layout = R.layout.firmware_manage_tab_burn;
+                break;
         }
+        firmwareManageFragment.layoutId = layout;
         return firmwareManageFragment;
     }
 
@@ -64,17 +70,16 @@ public class FirmwareManageFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        try {
-            ((Object) this).getClass().getMethod(MenuValuesDao.getFirmwareManageTabsLoadMethodName(tabIndex, context))
-                    .invoke(this);
-        } catch (NoSuchMethodException e) {
-            Log.e(TAG, e.getMessage());
-        } catch (IllegalArgumentException e) {
-            Log.e(TAG, e.getMessage());
-        } catch (IllegalAccessException e) {
-            Log.e(TAG, e.getMessage());
-        } catch (InvocationTargetException e) {
-            Log.e(TAG, e.getTargetException().getMessage());
+        switch (tabIndex) {
+            case 0:
+                loadFirmwareApplyView();
+                break;
+            case 1:
+                loadFirmwareBurnView();
+                break;
+            case 2:
+                loadFirmwareDownloadView();
+                break;
         }
     }
 

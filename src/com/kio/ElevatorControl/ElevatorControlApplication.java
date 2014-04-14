@@ -23,4 +23,11 @@ public class ElevatorControlApplication extends Application {
         // 初始化缓存组件
         LruCacheTool.getInstance().initCache(getApplicationContext());
     }
+
+    /**
+     * 检查错误故障信息是否更新
+     */
+    private void checkErrorHelpListUpdate(){
+
+    }
 }

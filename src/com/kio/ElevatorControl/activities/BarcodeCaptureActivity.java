@@ -96,7 +96,8 @@ public class BarcodeCaptureActivity extends Activity {
         Camera c = null;
         try {
             c = Camera.open();
-        } catch (Exception e) {
+        } catch (Exception ignored) {
+
         }
         return c;
     }

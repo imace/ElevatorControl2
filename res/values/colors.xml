@@ -8,7 +8,9 @@
     <color name="viewfinder_mask">#60000000</color>
     <color name="possible_result_points">#c0ffff00</color>
 
-    <color name="main_background">#E2E2E2</color>
+    <color name="main_background">#fff2f2f2</color>
     <color name="card_highlight_color">#260e87c6</color>
-    <color name="highlight_text_color">#0e87c6</color>
+    <color name="highlight_text_color">#3498DB</color>
+    <color name="elevator_button">#ff848484</color>
+    <color name="elevator_button_highlighted">#ff9dcd0c</color>
 </resources>

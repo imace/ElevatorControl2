@@ -1,20 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:kio="http://schemas.android.com/apk/res-auto"
                 android:orientation="vertical"
+                android:background="@drawable/elevator_button_background"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
     <com.kio.ElevatorControl.views.TypefaceTextView
             android:layout_centerInParent="true"
             android:id="@+id/floor_text"
-            android:textSize="58sp"
-            android:textColor="#1d2225"
-            android:textColorHighlight="@color/highlight_text_color"
+            android:textSize="85sp"
             android:textStyle="bold"
             android:layout_gravity="center"
             android:gravity="center"
-            kio:customTypeface="fonts/uni_dream_LED.ttf"
+            android:textColor="@color/elevator_button_color"
+            kio:customTypeface="fonts/helvetica_light.otf"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 </RelativeLayout>

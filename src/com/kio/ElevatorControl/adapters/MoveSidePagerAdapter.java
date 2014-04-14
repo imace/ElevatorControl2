@@ -107,7 +107,7 @@ public class MoveSidePagerAdapter extends PagerAdapter {
         if (statusBarResource > 0) {
             statusBarHeight = baseActivity.getResources().getDimensionPixelSize(statusBarResource);
         }
-        contentViewHeight = screenHeight - statusBarHeight - actionBarHeight - getPixelFromDimension(130);
+        contentViewHeight = screenHeight - statusBarHeight - actionBarHeight - getPixelFromDimension(180);
     }
 
     /**

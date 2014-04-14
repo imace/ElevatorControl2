@@ -19,6 +19,7 @@
         <TextView
                 android:gravity="center"
                 android:textSize="16sp"
+                android:textColor="#ffffffff"
                 android:layout_gravity="center_horizontal"
                 android:id="@+id/scan_result_text"
                 android:text="@string/scan_tips_text"
@@ -29,6 +30,7 @@
         <Button
                 android:layout_gravity="center_horizontal"
                 android:id="@+id/start_scan_button"
+                android:textColor="#ffffffff"
                 android:text="@string/restart_scan_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
