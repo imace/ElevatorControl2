@@ -1,51 +1,32 @@
 package com.kio.ElevatorControl.activities;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
 import butterknife.InjectView;
-import butterknife.OnClick;
 import butterknife.Views;
 import com.kio.ElevatorControl.R;
 import org.holoeverywhere.app.Activity;
+import org.holoeverywhere.widget.ListView;
 
 /**
  * Created by IntelliJ IDEA.
  * User: keith.
- * Date: 14-3-4.
- * Time: 10:39.
+ * Date: 14-4-17.
+ * Time: 10:48.
  */
+public class ViewSystemStatusActivity extends Activity {
 
-public class ScanBarcodeActivity extends Activity {
-
-    @InjectView(R.id.start_scan_button)
-    Button startScanButton;
-
-    @InjectView(R.id.scan_result_edit_text)
-    EditText scanResultEditText;
+    @InjectView(R.id.list_view)
+    ListView listView;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
-        setTitle(R.string.scan_barcode_text);
+        setTitle(R.string.system_status_title);
+        setContentView(R.layout.activity_view_system_status);
+        Views.inject(this);
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
-        setContentView(R.layout.activity_scan_barcode);
-        Views.inject(this);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
-    }
-
-    @OnClick(R.id.start_scan_button)
-    public void startScanButtonClick(View view) {
-        startActivity(new Intent(ScanBarcodeActivity.this, BarcodeCaptureActivity.class));
     }
 
     @Override
@@ -57,6 +38,12 @@ public class ScanBarcodeActivity extends Activity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
     }
 
 }

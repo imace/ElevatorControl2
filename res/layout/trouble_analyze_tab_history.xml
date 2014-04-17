@@ -3,17 +3,47 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@color/main_background">
-    <org.holoeverywhere.widget.ProgressBar
-            android:layout_centerInParent="true"
-            android:visibility="visible"
-            style="@style/Holo.ProgressBar.Large"
-            android:id="@+id/load_history_progress_bar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+    <LinearLayout
+            android:orientation="vertical"
+            android:id="@+id/history_load_view"
+            android:tag="history_load_view"
+            android:gravity="center"
+            android:minHeight="150dp"
+            android:layout_alignParentTop="true"
+            android:layout_margin="@dimen/card_view_margin"
+            android:background="@drawable/card_view_background"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <org.holoeverywhere.widget.ProgressBar
+                style="@style/Holo.ProgressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+    </LinearLayout>
+    <LinearLayout
+            android:orientation="vertical"
+            android:id="@+id/history_no_device_view"
+            android:tag="history_no_device_view"
+            android:gravity="center"
+            android:minHeight="150dp"
+            android:visibility="gone"
+            android:layout_alignParentTop="true"
+            android:layout_margin="@dimen/card_view_margin"
+            android:background="@drawable/card_view_background"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <org.holoeverywhere.widget.TextView
+                android:gravity="center"
+                android:layout_gravity="center"
+                style="@style/Holo.TextAppearance.Light"
+                android:text="@string/no_connected_device"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+    </LinearLayout>
     <LinearLayout
             android:visibility="gone"
             android:orientation="vertical"
-            android:id="@+id/history_view"
+            android:id="@+id/history_error_view"
+            android:tag="history_error_view"
             android:padding="@dimen/card_view_margin"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
@@ -47,12 +77,33 @@
         <!-- TABLE -->
         <org.holoeverywhere.widget.ListView
                 android:layout_weight="1"
-                android:id="@+id/history_list"
+                android:id="@+id/history_error_list"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:listSelector="@android:color/transparent"
                 android:dividerHeight="8dp"
                 android:scrollbarStyle="outsideOverlay"
                 android:divider="@android:color/transparent"/>
+    </LinearLayout>
+    <LinearLayout
+            android:visibility="gone"
+            android:id="@+id/history_no_error_view"
+            android:tag="history_no_error_view"
+            android:minHeight="150dp"
+            android:layout_alignParentTop="true"
+            android:padding="@dimen/card_view_margin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_margin="@dimen/card_view_margin"
+            android:background="@drawable/card_view_background"
+            android:orientation="vertical">
+        <org.holoeverywhere.widget.TextView
+                android:gravity="center"
+                android:layout_gravity="center"
+                style="@style/Holo.TextAppearance.Light"
+                android:text="@string/no_history_error_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
     </LinearLayout>
 </RelativeLayout>

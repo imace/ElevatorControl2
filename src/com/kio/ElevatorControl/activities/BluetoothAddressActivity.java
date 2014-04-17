@@ -35,6 +35,7 @@ public class BluetoothAddressActivity extends Activity {
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
         setTitle(R.string.bluetooth_address_text);
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
@@ -52,6 +53,12 @@ public class BluetoothAddressActivity extends Activity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
     }
 
     /**

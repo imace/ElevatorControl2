@@ -69,7 +69,7 @@ public class HistoryError {
 
             this.errorCode = String.format("E%02d", nErrCode);
             this.errorFloor = String.valueOf(nErrFloor);
-            this.errorDateTime = nMonth + "-" + nDay + " " + nHour + ":" + nMin;
+            this.errorDateTime = nMonth + "月" + nDay + "日" + " " + nHour + ":" + nMin;
         }
     }
 

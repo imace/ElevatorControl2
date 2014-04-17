@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:kio="http://schemas.android.com/apk/res-auto"
               android:orientation="vertical"
               android:gravity="center_horizontal"
               android:background="@color/main_background"
@@ -49,10 +50,12 @@
                 android:layout_weight="2"
                 android:layout_width="0dp"
                 android:layout_height="match_parent">
-            <TextView
+            <com.kio.ElevatorControl.views.TypefaceTextView
                     android:id="@+id/current_floor"
-                    android:textColor="#FFFFFF"
-                    android:textSize="32sp"
+                    android:textSize="65sp"
+                    android:textStyle="bold"
+                    android:textColor="#ff868686"
+                    kio:customTypeface="fonts/helvetica_light.otf"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
         </LinearLayout>

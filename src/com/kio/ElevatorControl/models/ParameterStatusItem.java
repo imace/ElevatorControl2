@@ -31,7 +31,7 @@ public class ParameterStatusItem {
     @InstantText(viewId = R.id.status_value)
     public String getStatusString() {
         if (statusString == null) {
-            return status ? "开" : "关";
+            return status ? "有效" : "无效";
         }
         return statusString;
     }

@@ -13,11 +13,36 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:hint="@string/local_save_file_name_hint"/>
-    <org.holoeverywhere.widget.ProgressBar
-            android:visibility="gone"
-            android:id="@+id/progress_bar"
-            style="?android:attr/progressBarStyleHorizontal"
+    <LinearLayout
+            android:id="@+id/progress_view"
+            android:visibility="invisible"
+            android:orientation="vertical"
             android:layout_centerInParent="true"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content">
+        <org.holoeverywhere.widget.ProgressBar
+                android:id="@+id/progress_bar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        <RelativeLayout
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+            <org.holoeverywhere.widget.TextView
+                    android:id="@+id/total_items"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            <org.holoeverywhere.widget.TextView
+                    android:id="@+id/current_item"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+        </RelativeLayout>
+    </LinearLayout>
+
 </RelativeLayout>

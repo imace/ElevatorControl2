@@ -22,6 +22,7 @@ import org.holoeverywhere.app.AlertDialog;
 import org.holoeverywhere.widget.Button;
 import org.holoeverywhere.widget.ProgressBar;
 import org.holoeverywhere.widget.TextView;
+import org.holoeverywhere.widget.Toast;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -86,7 +87,6 @@ public class FirmwareManageActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        loadFirmwareApplyView();
     }
 
     /**
@@ -124,6 +124,12 @@ public class FirmwareManageActivity extends Activity {
                         IProgram.getInstance().GetBinFileInfo();
                         firmwareMetaTextView.setText(IProgram.getInstance().GetBinFileInfo());
                     }
+                    else {
+                        Toast.makeText(FirmwareManageActivity.this,
+                                R.string.not_connect_device_error,
+                                android.widget.Toast.LENGTH_SHORT)
+                                .show();
+                    }
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
@@ -144,31 +150,25 @@ public class FirmwareManageActivity extends Activity {
                             }
                         });
                         dlgButton.invalidate();
-                        IProgram.getInstance().StartProgram();//开始烧录
-
+                        if (HBluetooth.getInstance(FirmwareManageActivity.this).isPrepared()) {
+                            IProgram.getInstance().StartProgram();//开始烧录
+                        }
+                        else {
+                            Toast.makeText(FirmwareManageActivity.this,
+                                    R.string.not_connect_device_error,
+                                    android.widget.Toast.LENGTH_SHORT)
+                                    .show();
+                        }
                         firmwareMetaView.setVisibility(View.GONE);
                         burnView.setVisibility(View.VISIBLE);
                         burningProgressBar.setVisibility(View.VISIBLE);
                         dlgButton.setEnabled(false);
-
                     }
                 });
                 return false;
             }
         });
         popupMenu.show();
-    }
-
-    public void loadFirmwareApplyView() {
-
-    }
-
-    public void loadFirmwareDownloadView() {
-
-    }
-
-    public void loadFirmwareBurnView() {
-
     }
 
     // ================================= Firmware burn handler ========================================

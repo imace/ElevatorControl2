@@ -1,9 +1,12 @@
 package com.kio.ElevatorControl.activities;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Message;
 import android.view.MenuItem;
+import android.view.View;
 import butterknife.InjectView;
+import butterknife.OnClick;
 import butterknife.Views;
 import com.hbluetooth.HBluetooth;
 import com.hbluetooth.HCommunication;
@@ -16,14 +19,15 @@ import com.kio.ElevatorControl.daos.ParameterSettingsDao;
 import com.kio.ElevatorControl.daos.RealTimeMonitorDao;
 import com.kio.ElevatorControl.models.ParameterSettings;
 import com.kio.ElevatorControl.models.RealTimeMonitor;
+import com.kio.ElevatorControl.utils.ParseSerialsUtils;
+import com.kio.ElevatorControl.views.TypefaceTextView;
 import com.kio.ElevatorControl.views.viewpager.VerticalViewPager;
 import org.holoeverywhere.app.Activity;
+import org.holoeverywhere.widget.Toast;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Created by IntelliJ IDEA.
@@ -38,6 +42,9 @@ public class MoveOutsideActivity extends Activity {
     @InjectView(R.id.vertical_view_pager)
     VerticalViewPager viewPager;
 
+    @InjectView(R.id.current_floor)
+    TypefaceTextView currentFloorTextView;
+
     private static final String codeType = "64";
 
     private List<RealTimeMonitor> realTimeMonitors;
@@ -48,34 +55,158 @@ public class MoveOutsideActivity extends Activity {
 
     private boolean hasGetFloors = false;
 
+    private int selectedFloor;
+
+    private SyncStatusHandler mSyncStatusHandler;
+
+    private Runnable syncTask;
+
+    private boolean running = false;
+
+    private Handler syncHandler = new Handler();
+
+    /**
+     * 同步间隔
+     */
+    private static final int SYNC_TIME = 1000;
+
+    private HCommunication[] getCurrentFloorCommunications;
+
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
         setTitle(R.string.move_outside_text);
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
         setContentView(R.layout.activity_move_outside);
         Views.inject(this);
-        viewPager.setAdapter(new MoveSidePagerAdapter(MoveOutsideActivity.this, ApplicationConfig.DEFAULT_FLOORS));
+        final MoveSidePagerAdapter adapter = new MoveSidePagerAdapter(this, ApplicationConfig.DEFAULT_FLOORS);
+        viewPager.setAdapter(adapter);
+        viewPager.setOnPageChangeListener(new VerticalViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                adapter.currentPager = position;
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
         mMoveOutsideHandler = new MoveOutsideHandler(this);
         realTimeMonitors = RealTimeMonitorDao.findByType(this, codeType);
         createGetFloorsCommunication();
+        syncTask = new Runnable() {
+            @Override
+            public void run() {
+                if (running) {
+                    if (hasGetFloors) {
+                        MoveOutsideActivity.this.syncElevatorCurrentFloorStatus();
+                    } else {
+                        MoveOutsideActivity.this.loadDataAndRenderView();
+                    }
+                    errorHandler.postDelayed(this, SYNC_TIME);
+                }
+            }
+        };
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        final Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                if (!MoveOutsideActivity.this.hasGetFloors) {
-                    MoveOutsideActivity.this.loadDataAndRenderView();
-                } else {
-                    timer.cancel();
-                }
+        running = true;
+        syncHandler.postDelayed(syncTask, SYNC_TIME);
+    }
+
+    private void createGetCurrentFloorCommunications() {
+        if (getCurrentFloorCommunications == null) {
+            final List<RealTimeMonitor> monitorLists = RealTimeMonitorDao
+                    .findByNames(this, new String[]{
+                            ApplicationConfig.CURRENT_FLOOR_NAME
+                    });
+            if (monitorLists.size() == 1) {
+                getCurrentFloorCommunications = new HCommunication[]{
+                        new HCommunication() {
+                            @Override
+                            public void beforeSend() {
+                                this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103"
+                                        + monitorLists.get(0).getCode()
+                                        + "0001")));
+                            }
+
+                            @Override
+                            public void afterSend() {
+
+                            }
+
+                            @Override
+                            public void beforeReceive() {
+
+                            }
+
+                            @Override
+                            public void afterReceive() {
+
+                            }
+
+                            @Override
+                            public Object onParse() {
+                                if (HSerial.isCRC16Valid(getReceivedBuffer())) {
+                                    byte[] received = HSerial.trimEnd(getReceivedBuffer());
+                                    RealTimeMonitor monitor = null;
+                                    try {
+                                        monitor = (RealTimeMonitor) monitorLists.get(0).clone();
+                                        monitor.setReceived(received);
+                                        return monitor;
+                                    } catch (CloneNotSupportedException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                return null;
+                            }
+                        }
+                };
             }
-        }, 0, 240);
-        loadDataAndRenderView();
+        }
+        mSyncStatusHandler = new SyncStatusHandler(this);
+    }
+
+    /**
+     * 同步当前楼层
+     */
+    private void syncElevatorCurrentFloorStatus() {
+        if (HBluetooth.getInstance(MoveOutsideActivity.this).isPrepared()) {
+            if (mSyncStatusHandler != null && getCurrentFloorCommunications != null) {
+                HBluetooth.getInstance(MoveOutsideActivity.this)
+                        .setHandler(mSyncStatusHandler)
+                        .setCommunications(getCurrentFloorCommunications)
+                        .Start();
+            } else {
+                errorHandler.sendEmptyMessage(0);
+            }
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        running = false;
+        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 
     @Override
@@ -87,6 +218,16 @@ public class MoveOutsideActivity extends Activity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @OnClick(R.id.up_button)
+    void OnUpButtonClick(View view) {
+        moveOutsideCallFloor(selectedFloor, true);
+    }
+
+    @OnClick(R.id.down_button)
+    void OnDownButtonClick(View view) {
+        moveOutsideCallFloor(selectedFloor, false);
     }
 
     /**
@@ -139,7 +280,53 @@ public class MoveOutsideActivity extends Activity {
                         .setHandler(mMoveOutsideHandler)
                         .setCommunications(getFloorsCommunications)
                         .Start();
+            } else {
+                errorHandler.sendEmptyMessage(0);
             }
+        }
+    }
+
+    private void moveOutsideCallFloor(int floor, boolean isUp) {
+        final String[] codeArray = getCallCode(floor, isUp);
+        HCommunication[] communications = new HCommunication[]{
+                new HCommunication() {
+                    @Override
+                    public void beforeSend() {
+                        this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0106"
+                                + codeArray[0]
+                                + "0001")));
+                    }
+
+                    @Override
+                    public void afterSend() {
+
+                    }
+
+                    @Override
+                    public void beforeReceive() {
+
+                    }
+
+                    @Override
+                    public void afterReceive() {
+
+                    }
+
+                    @Override
+                    public Object onParse() {
+                        return null;
+                    }
+                }
+        };
+        if (HBluetooth.getInstance(MoveOutsideActivity.this).isPrepared()) {
+            HBluetooth.getInstance(MoveOutsideActivity.this)
+                    .setCommunications(communications)
+                    .Start();
+        } else {
+            Toast.makeText(this,
+                    R.string.not_connect_device_error,
+                    android.widget.Toast.LENGTH_SHORT)
+                    .show();
         }
     }
 
@@ -149,8 +336,7 @@ public class MoveOutsideActivity extends Activity {
      * @param position GridView Item Index
      * @return String[]
      */
-    private String[] getCallCode(int position, boolean isUp) {
-        int index = position + 1;
+    private String[] getCallCode(int floor, boolean isUp) {
         int section_location = 0;
         String searchCondition = "";
         String[] conditions = new String[]{"1~4",
@@ -167,9 +353,9 @@ public class MoveOutsideActivity extends Activity {
                 "45~48"};
         for (String condition : conditions) {
             String[] parts = condition.split("~");
-            if (index >= Integer.parseInt(parts[0]) && index <= Integer.parseInt(parts[1])) {
+            if (floor >= Integer.parseInt(parts[0]) && floor <= Integer.parseInt(parts[1])) {
                 searchCondition = condition + "层召唤信息";
-                int minus = index - Integer.parseInt(parts[0]);
+                int minus = floor - Integer.parseInt(parts[0]);
                 section_location = isUp ? minus * 2 : (2 * minus + 1);
             }
         }
@@ -186,169 +372,23 @@ public class MoveOutsideActivity extends Activity {
         return new String[]{code, String.valueOf(location)};
     }
 
-    // ================================= GridView adapter ========================================== //
-
-    /**
-     * 电梯层数 GridView adapter
-     */
-    /*
-    private class OutsideFloorAdapter extends BaseAdapter {
-
-        public OutsideFloorAdapter() {
-
-        }
+    private Handler errorHandler = new Handler() {
 
         @Override
-        public int getCount() {
-            return Math.abs(MoveOutsideActivity.this.floors[0] - MoveOutsideActivity.this.floors[1]) + 1;
-        }
-
-        @Override
-        public Object getItem(int i) {
-            return null;
-        }
-
-        @Override
-        public long getItemId(int i) {
-            return 0;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup viewGroup) {
-            ViewHolder holder = null;
-            LayoutInflater mInflater = LayoutInflater.from(MoveOutsideActivity.this);
-            if (convertView == null) {
-                convertView = mInflater.inflate(R.layout.move_outside_row_item, null);
-                holder = new ViewHolder();
-                holder.mFloorTextView = (TypefaceTextView) convertView.findViewById(R.id.floor_text);
-                holder.mUpButton = (TintedImageButton) convertView.findViewById(R.id.up_button);
-                holder.mDownButton = (TintedImageButton) convertView.findViewById(R.id.down_button);
-                convertView.setTag(holder);
-            } else {
-                holder = (ViewHolder) convertView.getTag();
-            }
-            final int index = position;
-            holder.mFloorTextView.setText(String.valueOf(Math.min(MoveOutsideActivity.this.floors[0],
-                    MoveOutsideActivity.this.floors[1]) + position));
-            holder.mUpButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    final String[] condition = MoveOutsideActivity.this.getCallCode(index, true);
-                    Log.v(TAG, condition[0]);
-                    final RealTimeMonitor monitor = realTimeMonitors.get(Integer.parseInt(condition[1]));
-                    HCommunication[] communications = new HCommunication[]{
-                            new HCommunication() {
-                                @Override
-                                public void beforeSend() {
-                                    this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0106"
-                                            + condition[0]
-                                            + "0001")));
-                                }
-
-                                @Override
-                                public void afterSend() {
-
-                                }
-
-                                @Override
-                                public void beforeReceive() {
-
-                                }
-
-                                @Override
-                                public void afterReceive() {
-
-                                }
-
-                                @Override
-                                public Object onParse() {
-                                    if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                                        byte[] received = HSerial.trimEnd(getReceivedBuffer());
-                                        Log.v(TAG, HSerial.byte2HexStr(received));
-                                        monitor.setReceived(received);
-                                        return monitor;
-                                    }
-                                    return null;
-                                }
-                            }
-                    };
-                    if (HBluetooth.getInstance(MoveOutsideActivity.this).isPrepared()) {
-                        HBluetooth.getInstance(MoveOutsideActivity.this)
-                                .setCommunications(communications)
-                                .Start();
-                    }
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case 0: {
+                    Toast.makeText(MoveOutsideActivity.this,
+                            R.string.not_connect_device_error,
+                            android.widget.Toast.LENGTH_SHORT)
+                            .show();
                 }
-            });
-            holder.mDownButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    final String[] condition = MoveOutsideActivity.this.getCallCode(index, false);
-                    Log.v(TAG, condition[0]);
-                    final RealTimeMonitor monitor = realTimeMonitors.get(Integer.parseInt(condition[1]));
-                    HCommunication[] communications = new HCommunication[]{
-                            new HCommunication() {
-                                @Override
-                                public void beforeSend() {
-                                    this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0106"
-                                            + condition[0]
-                                            + "0001")));
-                                }
-
-                                @Override
-                                public void afterSend() {
-
-                                }
-
-                                @Override
-                                public void beforeReceive() {
-
-                                }
-
-                                @Override
-                                public void afterReceive() {
-
-                                }
-
-                                @Override
-                                public Object onParse() {
-                                    if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                                        byte[] received = HSerial.trimEnd(getReceivedBuffer());
-                                        Log.v(TAG, HSerial.byte2HexStr(received));
-                                        monitor.setReceived(received);
-                                        return monitor;
-                                    }
-                                    return null;
-                                }
-                            }
-                    };
-                    if (HBluetooth.getInstance(MoveOutsideActivity.this).isPrepared()) {
-                        HBluetooth.getInstance(MoveOutsideActivity.this)
-                                .setCommunications(communications)
-                                .Start();
-                    }
-                }
-            });
-            if (position == 0) {
-                holder.mUpButton.setVisibility(View.VISIBLE);
-                holder.mDownButton.setVisibility(View.INVISIBLE);
-            } else if (position == getCount() - 1) {
-                holder.mUpButton.setVisibility(View.INVISIBLE);
-                holder.mDownButton.setVisibility(View.VISIBLE);
-            } else {
-                holder.mUpButton.setVisibility(View.VISIBLE);
-                holder.mDownButton.setVisibility(View.VISIBLE);
+                break;
             }
-            return convertView;
+            super.handleMessage(msg);
         }
 
-        // View holder
-        private class ViewHolder {
-            TypefaceTextView mFloorTextView;
-            TintedImageButton mUpButton;
-            TintedImageButton mDownButton;
-        }
-    }
-    */
+    };
 
     // =================================== MoveOutside Handler ==============================
 
@@ -382,12 +422,47 @@ public class MoveOutsideActivity extends Activity {
                     int bottom = ByteBuffer.wrap(new byte[]{data[6], data[7]}).getShort();
                     MoveSidePagerAdapter adapter = new MoveSidePagerAdapter(MoveOutsideActivity.this,
                             new int[]{bottom, top});
+                    adapter.setOnSelectFloorListener(new MoveSidePagerAdapter.onSelectFloorListener() {
+                        @Override
+                        public void onSelect(int floor) {
+                            MoveOutsideActivity.this.selectedFloor = floor;
+                        }
+                    });
                     MoveOutsideActivity.this.viewPager.setAdapter(adapter);
+                    MoveOutsideActivity.this.createGetCurrentFloorCommunications();
                     MoveOutsideActivity.this.hasGetFloors = true;
                 }
             }
         }
 
+    }
+
+    // ============================== 同步当前楼层 ================================================ //
+    private class SyncStatusHandler extends HHandler {
+
+        public SyncStatusHandler(Activity activity) {
+            super(activity);
+            TAG = SyncStatusHandler.class.getSimpleName();
+        }
+
+        @Override
+        public void onMultiTalkBegin(Message msg) {
+            super.onMultiTalkBegin(msg);
+        }
+
+        @Override
+        public void onMultiTalkEnd(Message msg) {
+            super.onMultiTalkEnd(msg);
+        }
+
+        @Override
+        public void onTalkReceive(Message msg) {
+            if (msg.obj != null && msg.obj instanceof RealTimeMonitor) {
+                RealTimeMonitor monitor = (RealTimeMonitor) msg.obj;
+                MoveOutsideActivity.this.currentFloorTextView
+                        .setText(String.valueOf(ParseSerialsUtils.getIntFromBytes(monitor.getReceived())));
+            }
+        }
     }
 
 }

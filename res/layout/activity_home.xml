@@ -1,117 +1,146 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
               xmlns:kio="http://schemas.android.com/apk/res-auto"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:orientation="vertical"
-              android:background="@color/main_background"
-              tools:context=".IndexActivity">
+              android:background="@color/main_background">
     <LinearLayout
             android:padding="10dp"
+            android:baselineAligned="false"
+            android:gravity="center"
             android:layout_margin="10dp"
             android:background="@drawable/card_view_background"
             android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/door_view_height">
-        <com.kio.ElevatorControl.views.DoorAnimationView
-                android:id="@+id/door_animation_view"
-                android:layout_marginRight="10dp"
-                android:layout_weight="2"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content">
         <LinearLayout
-                android:layout_weight="1"
+                android:gravity="center"
+                android:layout_weight="2"
+                android:layout_marginRight="10dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content">
+            <com.kio.ElevatorControl.views.DoorAnimationView
+                    android:id="@+id/door_animation_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+        </LinearLayout>
+        <LinearLayout
                 android:orientation="vertical"
+                android:layout_weight="1"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content">
             <!-- ///////////////////////////// 状态信息 - 文本 //////////////////////////// -->
             <LinearLayout
-                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginBottom="5dp"
+                    android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                 <org.holoeverywhere.widget.TextView
-                        android:textSize="20sp"
+                        style="@style/Holo.TextAppearance.Medium"
                         android:textColor="#005387"
+                        android:gravity="center"
+                        android:layout_gravity="center"
                         android:text="@string/elevator_status_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
             </LinearLayout>
             <!-- 运行速度 -->
             <LinearLayout
-                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                 <org.holoeverywhere.widget.TextView
-                        android:textSize="16sp"
+                        style="@style/Holo.TextAppearance"
+                        android:gravity="center"
+                        android:layout_gravity="center"
                         android:textColor="#515151"
-                        android:layout_marginRight="5dp"
                         android:text="@string/running_speed_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
                 <org.holoeverywhere.widget.TextView
                         android:id="@+id/running_speed"
-                        android:textSize="16sp"
+                        style="@style/Holo.TextAppearance"
+                        android:gravity="center"
+                        android:layout_gravity="center"
                         android:textColor="#ff989898"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
             </LinearLayout>
             <!-- 轿厢状态 -->
             <LinearLayout
-                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                 <org.holoeverywhere.widget.TextView
-                        android:textSize="16sp"
+                        style="@style/Holo.TextAppearance"
                         android:textColor="#515151"
-                        android:layout_marginRight="5dp"
+                        android:gravity="center"
+                        android:layout_gravity="center"
                         android:text="@string/lock_elevator_status_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
                 <org.holoeverywhere.widget.TextView
                         android:id="@+id/lock_status"
-                        android:textSize="16sp"
+                        android:gravity="center"
+                        android:layout_gravity="center"
+                        style="@style/Holo.TextAppearance"
                         android:textColor="#ff989898"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
             </LinearLayout>
             <!-- 故障代码 -->
             <LinearLayout
-                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_gravity="center"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="5dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                 <org.holoeverywhere.widget.TextView
-                        android:textSize="16sp"
+                        style="@style/Holo.TextAppearance"
                         android:textColor="#515151"
-                        android:layout_marginRight="5dp"
+                        android:gravity="center"
+                        android:layout_gravity="center"
                         android:text="@string/error_code_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
                 <!-- 故障代码红色 -->
                 <org.holoeverywhere.widget.TextView
                         android:id="@+id/error_status"
-                        android:textSize="16sp"
+                        android:gravity="center"
+                        android:layout_gravity="center"
+                        style="@style/Holo.TextAppearance"
                         android:textColor="#ffff594b"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
             </LinearLayout>
             <!-- ///////////////////////////// 状态信息 - 图形  //////////////////////////// -->
             <LinearLayout
-                    android:gravity="center_vertical"
+                    android:gravity="center"
                     android:orientation="horizontal"
+                    android:background="@drawable/elevator_dashboard_background"
+                    android:padding="5dp"
                     android:layout_width="match_parent"
-                    android:layout_height="80dp">
-                <ImageView
-                        android:id="@+id/current_direction"
-                        android:contentDescription="@null"
-                        android:layout_marginRight="10dp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content">
                 <com.kio.ElevatorControl.views.TypefaceTextView
                         android:id="@+id/current_floor"
                         android:textColor="#ff989898"
                         kio:customTypeface="fonts/digit_font.ttf"
-                        android:textSize="60sp"
+                        android:textSize="35sp"
+                        android:text="0"
+                        android:gravity="center"
+                        android:layout_gravity="center"
+                        android:layout_marginRight="10dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                <ImageView
+                        android:id="@+id/current_direction"
+                        android:src="@drawable/elevator_upward"
+                        android:contentDescription="@null"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
             </LinearLayout>

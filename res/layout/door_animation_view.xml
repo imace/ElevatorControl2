@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:background="@android:color/transparent"
+                android:background="#00000000"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
     <ImageView
             android:src="@drawable/elevator_inside"
+            android:background="#00000000"
+            android:scaleType="fitCenter"
             android:layout_centerInParent="true"
             android:contentDescription="@null"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
     <LinearLayout
             android:gravity="center"
+            android:background="#00000000"
             android:layout_centerInParent="true"
             android:orientation="horizontal"
             android:layout_width="wrap_content"
@@ -19,20 +22,25 @@
         <ImageView
                 android:layout_weight="1"
                 android:id="@+id/left_door"
+                android:background="#00000000"
                 android:src="@drawable/left_door"
                 android:contentDescription="@null"
                 android:layout_width="0dp"
+                android:scaleType="centerCrop"
                 android:layout_height="wrap_content"/>
         <ImageView
                 android:layout_weight="1"
                 android:id="@+id/right_door"
+                android:background="#00000000"
                 android:src="@drawable/right_door"
                 android:contentDescription="@null"
                 android:layout_width="0dp"
+                android:scaleType="centerCrop"
                 android:layout_height="wrap_content"/>
     </LinearLayout>
     <ImageView
             android:src="@drawable/elevator_border"
+            android:background="#00000000"
             android:contentDescription="@null"
             android:layout_centerInParent="true"
             android:layout_width="wrap_content"

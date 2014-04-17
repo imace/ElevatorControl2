@@ -51,6 +51,7 @@ public class ChooseDeviceActivity extends Activity {
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
         setContentView(R.layout.activity_choose_device);
         Views.inject(this);
         researchDevices.setEnabled(false);
@@ -74,6 +75,12 @@ public class ChooseDeviceActivity extends Activity {
         researchDevices();
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
+    }
+
     /**
      * 搜索蓝牙设备
      */
@@ -84,6 +91,12 @@ public class ChooseDeviceActivity extends Activity {
                     .setDiscoveryMode(true)
                     .setHandler(searchHandler)
                     .Start();
+        }
+        else {
+            Toast.makeText(this,
+                    R.string.not_connect_device_error,
+                    android.widget.Toast.LENGTH_SHORT)
+                    .show();
         }
     }
 

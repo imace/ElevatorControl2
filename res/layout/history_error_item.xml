@@ -7,7 +7,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal">
-    <TextView
+    <org.holoeverywhere.widget.TextView
             android:textColor="#515151"
             android:id="@+id/history_error_code"
             android:text="@string/history_error_code"
@@ -15,7 +15,7 @@
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"/>
-    <TextView
+    <org.holoeverywhere.widget.TextView
             android:textColor="#515151"
             android:id="@+id/history_error_floor"
             android:text="@string/history_error_floor"
@@ -23,7 +23,7 @@
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"/>
-    <TextView
+    <org.holoeverywhere.widget.TextView
             android:textColor="#515151"
             android:id="@+id/history_error_date"
             android:text="@string/history_error_date"

@@ -38,6 +38,7 @@ public class ParameterDetailHandler extends HHandler {
             ((ParameterDetailActivity) activity).settingsList.clear();
             ((ParameterDetailActivity) activity).settingsList.addAll(tempList);
             ((ParameterDetailActivity) activity).instantAdapter.notifyDataSetChanged();
+            ((ParameterDetailActivity) activity).isSynced = true;
         } else {
             ((ParameterDetailActivity) activity).startCombinationCommunications();
         }

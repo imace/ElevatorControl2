@@ -41,6 +41,7 @@
     <string name="choose_device_tips_text">选择需要连接的设备</string>
     <string name="research_text">重新搜索</string>
 
+   <string name="not_connect_device_error">当前未连接设备，无法获取数据！</string>
     <!-- 条形码扫描 -->
     <string name="focus_to_scan_text">对焦扫描</string>
     <string name="restart_scan_text">继续扫描</string>
@@ -56,6 +57,7 @@
     <string name="door_status_text">开关门状态</string>
     <string name="lock_elevator_status_text">轿厢状态</string>
     <string name="error_code_text">故障</string>
+    <string name="home_no_error_text">无故障</string>
 
     <!-- 用户注册 -->
     <string name="register_user_text">用户注册</string>
@@ -66,6 +68,7 @@
     <string name="email_text">邮箱</string>
     <string name="submit_text">提交</string>
     <string name="register_failed_text">注册失败</string>
+    <string name="verify_user_text">验证中…</string>
 
     <!-- 选择设备型号 -->
     <string name="select_device_type_text">选择设备型号</string>
@@ -78,6 +81,7 @@
     <string name="history_error_code">故障码</string>
     <string name="history_error_floor">故障楼层</string>
     <string name="history_error_date">故障时间</string>
+    <string name="no_history_error_text">无历史故障</string>
 
     <!-- 故障查询 -->
     <string name="search_hint_text">输入故障码查询</string>
@@ -132,12 +136,14 @@
 
     <!-- 参数上传 -->
     <string name="parameter_file_package_text">参数文件包</string>
-    <string name="upload_button_text">上传</string>
+    <string name="upload_button_text">写入</string>
     <string name="profile_version_text">版本</string>
-    <string name="profile_update_date_text">发布日期</string>
+    <string name="profile_create_date_text">日期</string>
     <string name="uploading_profile_text">正在写入参数</string>
     <string name="uploading_profile_end">写入结束</string>
     <string name="uploading_profile_complete">全部正确写入！</string>
+    <string name="upload_dialog_title">上传参数</string>
+    <string name="upload_dialog_message">确定要上传参数吗</string>
 
     <!-- 参数读取 -->
     <string name="parameter_upload_text">参数写入 (手机 -> 一体机)</string>
@@ -149,6 +155,10 @@
     <string name="local_save_file_name_hint">保存的文件名</string>
     <string name="save_file_failed_title">保存失败</string>
     <string name="cannot_save_file">未能保存文件，请检查SD卡！</string>
+    <string name="parameter_download_button_text">读取</string>
+
+    <string name="confirm_restore_title">恢复出厂设置</string>
+    <string name="confirm_restore_message">确定要恢复出厂设置吗？</string>
 
     <!-- 程序申请 -->
     <string name="equipment_manufacturers_text">设备厂家</string>
@@ -178,6 +188,11 @@
     <string name="parameter_default_value_text">默认值</string>
     <string name="parameter_scale_text">比例</string>
     <string name="not_validated_input_value_text">输入值范围错误，请重新输入！</string>
+    <string name="stop_to_modify_message">此项参数需要停机才能修改！</string>
+    <string name="cannot_modify_message">此项参数只读，不可修改！</string>
+
+    <!-- 系统当前状态 -->
+    <string name="system_status_title">系统状态</string>
 
     <!-- //////////////////////////////////// 标签选项卡 START ////////////////////////////////// -->
     <!-- 主标签页选项卡 -->
@@ -193,7 +208,7 @@
     <string-array name="configuration_tab_text">
         <item>实时监控</item>
         <item>参数设置</item>
-        <item>测试功能</item>
+        <item>呼梯测试</item>
         <item>参数拷贝</item>
     </string-array>
 

@@ -48,6 +48,11 @@ public class DoorAnimationView extends RelativeLayout {
         super(context, attrs, defStyle);
     }
 
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, widthMeasureSpec);
+    }
+
     /**
      * 开门
      */

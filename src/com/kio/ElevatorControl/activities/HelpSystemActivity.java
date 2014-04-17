@@ -57,7 +57,7 @@ public class HelpSystemActivity extends Activity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 switch (position){
                     case 0:
-                        startActivity(new Intent(HelpSystemActivity.this, ScanBarcodeActivity.class));
+                        startActivity(new Intent(HelpSystemActivity.this, BarcodeCaptureActivity.class));
                         break;
                     case 1:
                         break;

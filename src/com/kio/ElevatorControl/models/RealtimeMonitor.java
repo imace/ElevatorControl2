@@ -1,7 +1,6 @@
 package com.kio.ElevatorControl.models;
 
 import android.annotation.SuppressLint;
-import android.util.Log;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.config.ApplicationConfig;
 import com.kio.ElevatorControl.utils.ParseSerialsUtils;
@@ -11,7 +10,10 @@ import net.tsz.afinal.annotation.sqlite.Transient;
 import org.json.JSONException;
 import org.json.JSONStringer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -35,6 +37,7 @@ public class RealTimeMonitor implements Cloneable {
     private String type;// 种类
     private boolean showBit = false;// 是否详细描述每一位上的值,默认是false
 
+    public List<byte[]> dataArray;
     /**
      * 无描述返回     0
      * 数值计算匹配   1
@@ -104,6 +107,10 @@ public class RealTimeMonitor implements Cloneable {
      */
     @InstantText(viewId = R.id.value_monitor_item)
     public String getListViewItemText() {
+        if (descriptionType == ApplicationConfig.specialTypeInput ||
+                descriptionType == ApplicationConfig.specialTypeOutput) {
+            return received.length == 0 ? "" : "查看详细->";
+        }
         listViewItemText = ParseSerialsUtils.getValueTextFromRealTimeMonitor(this);
         return this.listViewItemText;
     }

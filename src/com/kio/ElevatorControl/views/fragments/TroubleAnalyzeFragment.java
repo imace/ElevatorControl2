@@ -62,30 +62,10 @@ public class TroubleAnalyzeFragment extends Fragment {
     public void onResume() {
         super.onResume();
         switch (tabIndex) {
-            case 0:
-                loadCurrentTroubleView();
-                break;
-            case 1:
-                loadHistoryTroubleView();
-                break;
             case 2:
                 loadSearchTroubleView();
                 break;
         }
-    }
-
-    /**
-     * 当前故障
-     */
-    public void loadCurrentTroubleView() {
-
-    }
-
-    /**
-     * 历史故障
-     */
-    public void loadHistoryTroubleView() {
-
     }
 
     /**

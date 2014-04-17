@@ -1,8 +1,11 @@
 package com.kio.ElevatorControl.activities;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.view.View;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.hbluetooth.HBluetooth;
@@ -20,6 +23,7 @@ import com.kio.ElevatorControl.models.ParameterSettings;
 import com.kio.ElevatorControl.utils.ParseSerialsUtils;
 import com.viewpagerindicator.TabPageIndicator;
 import org.holoeverywhere.app.Activity;
+import org.holoeverywhere.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,6 +64,7 @@ public class TroubleAnalyzeActivity extends Activity {
         pager.setOffscreenPageLimit(3);
         indicator.setViewPager(pager);
         getHistoryErrorCode();
+        currentErrorHandler = new CurrentErrorHandler(this);
         historyErrorHandler = new HistoryErrorHandler(TroubleAnalyzeActivity.this);
         indicator.setOnPageChangeListener(new OnPageChangeListener() {
 
@@ -84,9 +89,6 @@ public class TroubleAnalyzeActivity extends Activity {
                             case 1:
                                 loadHistoryTroubleView();
                                 break;
-                            case 2:
-                                loadSearchTroubleView();
-                                break;
                         }
                     }
                 };
@@ -99,8 +101,17 @@ public class TroubleAnalyzeActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (pageIndex == 0) {
-            loadCurrentTroubleView();
+        reSyncData();
+    }
+
+    public void reSyncData() {
+        switch (pageIndex) {
+            case 0:
+                loadCurrentTroubleView();
+                break;
+            case 1:
+                loadHistoryTroubleView();
+                break;
         }
     }
 
@@ -194,14 +205,16 @@ public class TroubleAnalyzeActivity extends Activity {
                     }
             };
         }
-        if (currentErrorHandler == null)
-            currentErrorHandler = new CurrentErrorHandler(this);
-        if (HBluetooth.getInstance(this).isPrepared())
+        if (HBluetooth.getInstance(this).isPrepared()) {
             currentErrorHandler.sendCount = currentCommunications.length;
-        HBluetooth.getInstance(this)
-                .setHandler(currentErrorHandler)
-                .setCommunications(currentCommunications)
-                .Start();
+            handler.sendEmptyMessage(3);
+            HBluetooth.getInstance(this)
+                    .setHandler(currentErrorHandler)
+                    .setCommunications(currentCommunications)
+                    .Start();
+        } else {
+            handler.sendEmptyMessage(1);
+        }
     }
 
     /**
@@ -209,17 +222,76 @@ public class TroubleAnalyzeActivity extends Activity {
      */
     public void loadHistoryTroubleView() {
         if (HBluetooth.getInstance(this).isPrepared()) {
+            handler.sendEmptyMessage(4);
+            historyErrorHandler.sendCount = historyCommunications.length;
             HBluetooth.getInstance(this)
                     .setHandler(historyErrorHandler)
                     .setCommunications(historyCommunications)
                     .Start();
+        } else {
+            handler.sendEmptyMessage(2);
         }
     }
 
-    /**
-     * 故障查询
-     */
-    public void loadSearchTroubleView() {
-        HBluetooth.getInstance(this).setHandler(currentErrorHandler);
-    }
+    private Handler handler = new Handler() {
+
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case 0: {
+                    Toast.makeText(TroubleAnalyzeActivity.this,
+                            R.string.not_connect_device_error,
+                            android.widget.Toast.LENGTH_SHORT)
+                            .show();
+                }
+                break;
+                case 1: {
+                    View loadView = pager.findViewById(R.id.load_view);
+                    View noDeviceView = pager.findViewById(R.id.no_device_view);
+                    if (loadView != null && noDeviceView != null) {
+                        loadView.setVisibility(View.GONE);
+                        noDeviceView.setVisibility(View.VISIBLE);
+                    }
+                }
+                break;
+                case 2: {
+                    View loadView = pager.findViewWithTag("history_load_view");
+                    View noDeviceView = pager.findViewWithTag("history_no_device_view");
+                    if (loadView != null && noDeviceView != null) {
+                        loadView.setVisibility(View.GONE);
+                        noDeviceView.setVisibility(View.VISIBLE);
+                    }
+                }
+                break;
+                case 3: {
+                    View loadView = pager.findViewWithTag("load_view");
+                    View noDeviceView = pager.findViewWithTag("no_device_view");
+                    View errorView = pager.findViewWithTag("error_view");
+                    View noErrorView = pager.findViewWithTag("no_error_view");
+                    if (loadView != null && errorView != null && noErrorView != null && noDeviceView != null) {
+                        noDeviceView.setVisibility(View.GONE);
+                        errorView.setVisibility(View.GONE);
+                        noErrorView.setVisibility(View.GONE);
+                        loadView.setVisibility(View.VISIBLE);
+                    }
+                }
+                break;
+                case 4: {
+                    View loadView = pager.findViewWithTag("history_load_view");
+                    View noDeviceView = pager.findViewWithTag("history_no_device_view");
+                    View errorView = pager.findViewWithTag("history_error_view");
+                    View noErrorView = pager.findViewWithTag("history_no_error_view");
+                    if (loadView != null && noDeviceView != null && errorView != null && noErrorView != null) {
+                        noErrorView.setVisibility(View.GONE);
+                        noDeviceView.setVisibility(View.GONE);
+                        errorView.setVisibility(View.GONE);
+                        loadView.setVisibility(View.VISIBLE);
+                    }
+                }
+                break;
+            }
+            super.handleMessage(msg);
+        }
+
+    };
 }

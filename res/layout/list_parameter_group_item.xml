@@ -4,15 +4,29 @@
                 android:background="@drawable/card_view_selector"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
-    <TextView
-            android:id="@+id/text_parameter_setting"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+    <LinearLayout
+            android:orientation="horizontal"
             android:layout_centerVertical="true"
             android:layout_alignParentLeft="true"
-            android:textSize="16sp"
-            android:textColor="#515151"
-            android:layout_marginLeft="10dp"/>
+            android:layout_marginLeft="10dp"
+            android:gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+        <org.holoeverywhere.widget.TextView
+                android:id="@+id/code_text"
+                android:textSize="16sp"
+                android:textColor="#515151"
+                android:layout_marginRight="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        <org.holoeverywhere.widget.TextView
+                android:id="@+id/text_parameter_setting"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:textColor="#515151"/>
+    </LinearLayout>
+
     <LinearLayout
             android:layout_centerVertical="true"
             android:layout_alignParentRight="true"

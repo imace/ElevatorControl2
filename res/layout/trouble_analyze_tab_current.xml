@@ -4,7 +4,45 @@
                 android:layout_height="match_parent"
                 android:background="@color/main_background">
     <LinearLayout
+            android:orientation="vertical"
+            android:id="@+id/load_view"
+            android:tag="load_view"
+            android:gravity="center"
+            android:minHeight="150dp"
+            android:layout_alignParentTop="true"
+            android:layout_margin="@dimen/card_view_margin"
+            android:background="@drawable/card_view_background"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <org.holoeverywhere.widget.ProgressBar
+                style="@style/Holo.ProgressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+    </LinearLayout>
+    <LinearLayout
+            android:orientation="vertical"
+            android:id="@+id/no_device_view"
+            android:tag="no_device_view"
+            android:gravity="center"
+            android:minHeight="150dp"
+            android:visibility="gone"
+            android:layout_alignParentTop="true"
+            android:layout_margin="@dimen/card_view_margin"
+            android:background="@drawable/card_view_background"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <org.holoeverywhere.widget.TextView
+                android:gravity="center"
+                android:layout_gravity="center"
+                style="@style/Holo.TextAppearance.Light"
+                android:text="@string/no_connected_device"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+    </LinearLayout>
+    <LinearLayout
             android:id="@+id/error_view"
+            android:tag="error_view"
+            android:visibility="gone"
             android:layout_alignParentTop="true"
             android:padding="@dimen/card_view_margin"
             android:layout_width="match_parent"
@@ -108,8 +146,9 @@
         </LinearLayout>
     </LinearLayout>
     <LinearLayout
-            android:visibility="invisible"
+            android:visibility="gone"
             android:id="@+id/no_error_view"
+            android:tag="no_error_view"
             android:minHeight="150dp"
             android:layout_alignParentTop="true"
             android:padding="@dimen/card_view_margin"
@@ -119,16 +158,11 @@
             android:layout_margin="@dimen/card_view_margin"
             android:background="@drawable/card_view_background"
             android:orientation="vertical">
-        <ImageView
-                android:src="@drawable/ic_accept"
-                android:contentDescription="@null"
-                android:layout_marginBottom="10dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
         <org.holoeverywhere.widget.TextView
+                android:gravity="center"
+                android:layout_gravity="center"
+                style="@style/Holo.TextAppearance.Light"
                 android:text="@string/no_error_text"
-                android:textSize="20sp"
-                android:textColor="#515151"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
     </LinearLayout>

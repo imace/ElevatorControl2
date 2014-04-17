@@ -6,8 +6,13 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.*;
 import android.widget.*;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
+import android.widget.Toast;
 import butterknife.Views;
 import com.hbluetooth.HBluetooth;
 import com.hbluetooth.HJudgeListener;
@@ -18,6 +23,7 @@ import com.kio.ElevatorControl.views.customspinner.ViewGroupUtils;
 import com.kio.ElevatorControl.views.dialogs.CustomDialog;
 import com.manuelpeinado.refreshactionitem.ProgressIndicatorType;
 import com.manuelpeinado.refreshactionitem.RefreshActionItem;
+import org.holoeverywhere.widget.*;
 import org.holoeverywhere.widget.TextView;
 
 /**
@@ -42,6 +48,11 @@ public class NavigationTabActivity extends TabActivity implements RefreshActionI
         initTabs();
         replaceTitleViewWithSpinnerView();
         startHomeActivityStatusSyncTask();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
     }
 
     /**
@@ -176,17 +187,40 @@ public class NavigationTabActivity extends TabActivity implements RefreshActionI
                     .setDiscoveryMode(true)
                     .setHandler(new SearchBluetoothHandler(this)).Start();
         }
+        else {
+            org.holoeverywhere.widget.Toast.makeText(this,
+                    R.string.not_connect_device_error,
+                    android.widget.Toast.LENGTH_SHORT)
+                    .show();
+        }
     }
 
     /**
      * 开启HomeActivity Sync Task
      */
     public void startHomeActivityStatusSyncTask() {
-        if (getTabHost().getCurrentTab() == 2) {
-            if (getCurrentActivity() instanceof HomeActivity) {
-                HomeActivity homeActivity = (HomeActivity) getCurrentActivity();
-                homeActivity.loopSyncElevatorStatusTask();
+        switch (getTabHost().getCurrentTab()) {
+            case 0: {
+                if (getCurrentActivity() instanceof TroubleAnalyzeActivity) {
+                    TroubleAnalyzeActivity troubleAnalyzeActivity = (TroubleAnalyzeActivity) getCurrentActivity();
+                    troubleAnalyzeActivity.reSyncData();
+                }
             }
+            break;
+            case 1: {
+                if (getCurrentActivity() instanceof ConfigurationActivity) {
+                    ConfigurationActivity configurationActivity = (ConfigurationActivity) getCurrentActivity();
+                    configurationActivity.reSyncData();
+                }
+            }
+            break;
+            case 2: {
+                if (getCurrentActivity() instanceof HomeActivity) {
+                    HomeActivity homeActivity = (HomeActivity) getCurrentActivity();
+                    homeActivity.reSyncData();
+                }
+            }
+            break;
         }
     }
 

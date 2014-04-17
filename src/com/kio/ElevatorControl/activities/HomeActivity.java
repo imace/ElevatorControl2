@@ -1,8 +1,8 @@
 package com.kio.ElevatorControl.activities;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.widget.ImageView;
 import butterknife.InjectView;
 import butterknife.Views;
@@ -23,6 +23,7 @@ import com.kio.ElevatorControl.views.TypefaceTextView;
 import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.widget.ListView;
 import org.holoeverywhere.widget.TextView;
+import org.holoeverywhere.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,6 +33,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 public class HomeActivity extends Activity {
+
+    private static final String TAG = HomeActivity.class.getSimpleName();
 
     @InjectView(R.id.list_view)
     ListView mListView;
@@ -58,31 +61,39 @@ public class HomeActivity extends Activity {
 
     private SyncStatusHandler mSyncStatusHandler;
 
-    private Thread syncThread;
-
-    private boolean threadPause;
-
-    private static final String TAG = HomeActivity.class.getSimpleName();
-
     private List<RealTimeMonitor> monitorLists;
 
     private String[] elevatorBoxStatus;
 
     private ShortcutListViewAdapter adapter;
 
+    private Handler handler = new Handler();
+
+    private Runnable syncTask;
+
+    private boolean running = false;
+
     /**
      * 同步间隔
      */
-    private static final int SYNC_TIME = 600;
+    private static final int SYNC_TIME = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         Views.inject(this);
-        threadPause = false;
         mSyncStatusHandler = new SyncStatusHandler(HomeActivity.this);
         readMonitorStateCode();
+        syncTask = new Runnable() {
+            @Override
+            public void run() {
+                if (running) {
+                    HomeActivity.this.syncElevatorStatus();
+                    handler.postDelayed(this, SYNC_TIME);
+                }
+            }
+        };
     }
 
     /**
@@ -145,26 +156,18 @@ public class HomeActivity extends Activity {
     protected void onResume() {
         super.onResume();
         setListViewDataSource();
-        threadPause = false;
+        reSyncData();
+        HBluetooth.getInstance(this).prepare();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        threadPause = true;
+        running = false;
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        threadPause = true;
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        threadPause = true;
-        syncThread.interrupt();
+    public void reSyncData() {
+        loopSyncElevatorStatusTask();
     }
 
     /**
@@ -172,21 +175,13 @@ public class HomeActivity extends Activity {
      */
     public void loopSyncElevatorStatusTask() {
         if (HBluetooth.getInstance(HomeActivity.this).isPrepared()) {
-            syncThread = new Thread() {
-                public void run() {
-                    while (true) {
-                        if (!threadPause) {
-                            HomeActivity.this.syncElevatorStatus();
-                        }
-                        try {
-                            Thread.sleep(SYNC_TIME);
-                        } catch (InterruptedException e) {
-                            Log.e(TAG, "Bluetooth Thread Error", e);
-                        }
-                    }
-                }
-            };
-            syncThread.start();
+            running = true;
+            handler.postDelayed(syncTask, SYNC_TIME);
+        } else {
+            Toast.makeText(this,
+                    R.string.not_connect_device_error,
+                    android.widget.Toast.LENGTH_SHORT)
+                    .show();
         }
     }
 
@@ -199,6 +194,11 @@ public class HomeActivity extends Activity {
                     .setHandler(mSyncStatusHandler)
                     .setCommunications(communications)
                     .Start();
+        } else {
+            Toast.makeText(this,
+                    R.string.not_connect_device_error,
+                    android.widget.Toast.LENGTH_SHORT)
+                    .show();
         }
     }
 
@@ -243,8 +243,15 @@ public class HomeActivity extends Activity {
                             .setText(ParseSerialsUtils.getValueTextFromRealTimeMonitor(monitor)
                                     + monitor.getUnit());
                 } else if (monitor.getName().equalsIgnoreCase(ApplicationConfig.ERROR_CODE_NAME)) {
-                    HomeActivity.this.errorStatusTextView
-                            .setText(ParseSerialsUtils.getErrorCode(monitor.getReceived()));
+                    String errorCode = ParseSerialsUtils.getErrorCode(monitor.getReceived());
+                    if (errorCode.equalsIgnoreCase("E00")){
+                        HomeActivity.this.errorStatusTextView.setTextColor(0xff989898);
+                        HomeActivity.this.errorStatusTextView.setText(R.string.home_no_error_text);
+                    }
+                    else {
+                        HomeActivity.this.errorStatusTextView.setTextColor(0xffff594b);
+                        HomeActivity.this.errorStatusTextView.setText(errorCode);
+                    }
                 } else if (monitor.getName().equalsIgnoreCase(ApplicationConfig.CURRENT_FLOOR_NAME)) {
                     HomeActivity.this.currentFloorTextView
                             .setText(String.valueOf(ParseSerialsUtils.getIntFromBytes(monitor.getReceived())));

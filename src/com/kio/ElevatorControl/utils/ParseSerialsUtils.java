@@ -60,7 +60,8 @@ public class ParseSerialsUtils {
                 try {
                     return "" + value * Integer.parseInt(settings.getScale());
                 } catch (Exception e) {
-                    return "" + value * Float.parseFloat(settings.getScale());
+                    double doubleValue = (double) value * Double.parseDouble(settings.getScale());
+                    return String.format("%." + (settings.getScale().length() - 2) + "f", doubleValue);
                 }
             }
             if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[1]) {

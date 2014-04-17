@@ -3,9 +3,9 @@ package com.kio.ElevatorControl.activities;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Message;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import butterknife.InjectView;
 import butterknife.OnClick;
 import butterknife.Views;
@@ -26,6 +26,7 @@ import org.holoeverywhere.app.AlertDialog;
 import org.holoeverywhere.widget.EditText;
 import org.holoeverywhere.widget.ProgressBar;
 import org.holoeverywhere.widget.TextView;
+import org.holoeverywhere.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -48,13 +49,23 @@ public class ParameterDownloadActivity extends Activity {
 
     private DownloadParameterHandler downloadParameterHandler;
 
+    private View progressView;
+
     private ProgressBar downloadProgressBar;
+
+    private TextView totalTextView;
+
+    private TextView currentTextView;
 
     private EditText fileNameEditText;
 
     private List<HCommunication[]> communicationsList;
 
     private AlertDialog downloadDialog;
+
+    private Button confirmButton;
+
+    private Button cancelButton;
 
     private List<ParameterGroupSettings> parameterGroupLists;
 
@@ -75,6 +86,7 @@ public class ParameterDownloadActivity extends Activity {
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
         setTitle(R.string.parameter_download_text);
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
@@ -86,6 +98,12 @@ public class ParameterDownloadActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
     }
 
     @Override
@@ -105,25 +123,43 @@ public class ParameterDownloadActivity extends Activity {
     @OnClick(R.id.download_button)
     void onDownloadButtonClick() {
         //弹出下载框
-        AlertDialog.Builder builder = new AlertDialog.Builder(ParameterDownloadActivity.this);
-        LayoutInflater inflater = ParameterDownloadActivity.this.getLayoutInflater();
-        View dialogView = inflater.inflate(R.layout.parameters_duplicate_dialog, null);
-        downloadProgressBar = (ProgressBar) dialogView.findViewById(R.id.progress_bar);
-        fileNameEditText = (EditText) dialogView.findViewById(R.id.file_name);
-        builder.setTitle(R.string.save_file_dialog_title);
-        builder.setView(dialogView);
-        builder.setPositiveButton(R.string.dialog_btn_ok, null);
-        builder.setNegativeButton(R.string.dialog_btn_cancel, null);
-        downloadDialog = builder.create();
-        downloadDialog.setCancelable(false);
-        downloadDialog.setCanceledOnTouchOutside(false);
-        downloadDialog.show();
-        downloadDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                ParameterDownloadActivity.this.saveProfileToLocal(fileNameEditText.getText().toString());
-            }
-        });
+        if (HBluetooth.getInstance(this).isPrepared()) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(ParameterDownloadActivity.this);
+            LayoutInflater inflater = ParameterDownloadActivity.this.getLayoutInflater();
+            View dialogView = inflater.inflate(R.layout.parameters_duplicate_dialog, null);
+            progressView = dialogView.findViewById(R.id.progress_view);
+            downloadProgressBar = (ProgressBar) dialogView.findViewById(R.id.progress_bar);
+            totalTextView = (TextView) dialogView.findViewById(R.id.total_items);
+            currentTextView = (TextView) dialogView.findViewById(R.id.current_item);
+            fileNameEditText = (EditText) dialogView.findViewById(R.id.file_name);
+            builder.setTitle(R.string.save_file_dialog_title);
+            builder.setView(dialogView);
+            builder.setPositiveButton(R.string.dialog_btn_ok, null);
+            builder.setNegativeButton(R.string.dialog_btn_cancel, null);
+            downloadDialog = builder.create();
+            downloadDialog.setCancelable(false);
+            downloadDialog.setCanceledOnTouchOutside(false);
+            downloadDialog.show();
+            cancelButton = downloadDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+            confirmButton = downloadDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            downloadDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    ParameterDownloadActivity.this.saveProfileToLocal(fileNameEditText.getText().toString());
+                }
+            });
+            downloadDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    downloadDialog.dismiss();
+                }
+            });
+        } else {
+            Toast.makeText(this,
+                    R.string.not_connect_device_error,
+                    android.widget.Toast.LENGTH_SHORT)
+                    .show();
+        }
     }
 
     /**
@@ -150,10 +186,11 @@ public class ParameterDownloadActivity extends Activity {
             }
             downloadProgressBar.setMax(maxProgress);
             downloadProgressBar.setProgress(0);
-            downloadProgressBar.setVisibility(View.VISIBLE);
+            totalTextView.setText(String.valueOf(maxProgress));
+            currentTextView.setText("0/" + maxProgress);
+            progressView.setVisibility(View.VISIBLE);
             ParameterDownloadActivity.this.startCommunication(0);
         } else {
-            // 未能保存文件时弹出警告
             AlertDialog.Builder builder = new AlertDialog.Builder(ParameterDownloadActivity.this);
             builder.setTitle(R.string.save_file_failed_title);
             builder.setMessage(R.string.cannot_save_file);
@@ -204,7 +241,6 @@ public class ParameterDownloadActivity extends Activity {
                 public Object onParse() {
                     if (HSerial.isCRC16Valid(getReceivedBuffer())) {
                         byte[] data = HSerial.trimEnd(getReceivedBuffer());
-                        Log.v("AAABBB", HSerial.byte2HexStr(data));
                         short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
                         if (length * 2 == bytesLength) {
                             List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
@@ -212,7 +248,6 @@ public class ParameterDownloadActivity extends Activity {
                                 ParameterSettings item = list.get(position * 10 + j);
                                 byte[] tempData = HSerial.crc16(HSerial.hexStr2Ints("01030002"
                                         + HSerial.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
-                                Log.v("AAABBB", HSerial.byte2HexStr(tempData));
                                 item.setReceived(tempData);
                                 tempList.add(item);
                             }
@@ -241,6 +276,15 @@ public class ParameterDownloadActivity extends Activity {
                         .setHandler(downloadParameterHandler)
                         .setCommunications(communicationsList.get(position))
                         .Start();
+                if (confirmButton != null && cancelButton != null) {
+                    confirmButton.setEnabled(false);
+                    cancelButton.setEnabled(false);
+                }
+            } else {
+                Toast.makeText(this,
+                        R.string.not_connect_device_error,
+                        android.widget.Toast.LENGTH_SHORT)
+                        .show();
             }
         }
     }
@@ -275,6 +319,9 @@ public class ParameterDownloadActivity extends Activity {
             HCommunication[] communications = ParameterDownloadActivity.this.communicationsList.get(index);
             if (communications.length == receiveCount) {
                 ParameterDownloadActivity.this.downloadProgressBar.incrementProgress(receiveCount);
+                int currentProgress = ParameterDownloadActivity.this.downloadProgressBar.getProgress();
+                int maxProgress = ParameterDownloadActivity.this.downloadProgressBar.getMax();
+                ParameterDownloadActivity.this.currentTextView.setText(currentProgress + "/" + maxProgress);
                 ParameterDownloadActivity.this.parameterGroupLists
                         .get(index)
                         .getParametersettings()
@@ -313,7 +360,6 @@ public class ParameterDownloadActivity extends Activity {
                     }
                 }
             } else {
-                // 重新获取
                 receiveCount = 0;
                 ParameterDownloadActivity.this.startCommunication(index);
             }

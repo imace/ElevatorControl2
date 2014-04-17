@@ -42,6 +42,7 @@ public class SelectDeviceTypeActivity extends Activity {
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
         setContentView(R.layout.activity_select_device_type_layout);
         setTitle(R.string.select_device_type_text);
         Views.inject(this);
@@ -54,6 +55,12 @@ public class SelectDeviceTypeActivity extends Activity {
 
             }
         });
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
     }
 
     /**

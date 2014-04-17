@@ -23,7 +23,6 @@ public class ParameterGroupSettings {
     private boolean Valid;
     private Date lasttime;
 
-
     @OneToMany(manyColumn = "FKGroupId")
     private OneToManyLazyLoader<ParameterGroupSettings, ParameterSettings> parametersettings;
 

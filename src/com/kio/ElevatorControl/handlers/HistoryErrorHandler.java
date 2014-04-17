@@ -3,6 +3,8 @@ package com.kio.ElevatorControl.handlers;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.os.Message;
+import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,11 +12,10 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import com.hbluetooth.HHandler;
 import com.kio.ElevatorControl.R;
+import com.kio.ElevatorControl.activities.TroubleAnalyzeActivity;
 import com.kio.ElevatorControl.models.HistoryError;
 import com.kio.ElevatorControl.views.dialogs.CustomDialog;
-import org.holoeverywhere.widget.LinearLayout;
 import org.holoeverywhere.widget.ListView;
-import org.holoeverywhere.widget.ProgressBar;
 import org.holoeverywhere.widget.TextView;
 
 import java.util.ArrayList;
@@ -28,15 +29,11 @@ import java.util.List;
  */
 public class HistoryErrorHandler extends HHandler {
 
-    private ListView listView;
-
     private List<HistoryError> errorList;
 
-    private ProgressBar progressBar;
+    public int sendCount;
 
-    private LinearLayout historyView;
-
-    private HistoryAdapter adapter;
+    public int receiveCount;
 
     public HistoryErrorHandler(Activity activity) {
         super(activity);
@@ -47,53 +44,70 @@ public class HistoryErrorHandler extends HHandler {
     public void onMultiTalkBegin(Message msg) {
         super.onMultiTalkBegin(msg);
         errorList = new ArrayList<HistoryError>();
-        if (adapter != null) {
-            adapter.notifyDataSetChanged();
-        }
-        if (progressBar != null && historyView != null) {
-            progressBar.setVisibility(View.VISIBLE);
-            historyView.setVisibility(View.INVISIBLE);
-        }
+        receiveCount = 0;
     }
 
     @Override
     public void onMultiTalkEnd(Message msg) {
         super.onMultiTalkEnd(msg);
-        if (progressBar == null) {
-            progressBar = (ProgressBar) activity.findViewById(R.id.load_history_progress_bar);
-        }
-        if (historyView == null) {
-            historyView = (LinearLayout) activity.findViewById(R.id.history_view);
-        }
-        if (listView == null) {
-            listView = (ListView) activity.findViewById(R.id.history_list);
-        }
-        if (listView.getOnItemClickListener() == null) {
-            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                    final HistoryError historyError = errorList.get(i);
-                    AlertDialog.Builder builder = CustomDialog.historyErrorDialog(historyError,
-                            HistoryErrorHandler.this.activity);
-                    AlertDialog dialog = builder.create();
-                    dialog.show();
+        Log.v("AAABBB", sendCount + "+" + receiveCount);
+        if (sendCount == receiveCount) {
+            Log.v("AAABBB", "Start");
+            ViewPager pager = ((TroubleAnalyzeActivity) activity).pager;
+            View loadView = pager.findViewById(R.id.history_load_view);
+            View errorView = pager.findViewById(R.id.history_error_view);
+            View noErrorView = pager.findViewById(R.id.history_no_error_view);
+            View noDeviceView = pager.findViewById(R.id.history_no_device_view);
+            ListView listView = (ListView) pager.findViewById(R.id.history_error_list);
+            if (loadView != null && errorView != null && noErrorView != null
+                    && listView != null && noDeviceView != null) {
+                if (errorList.size() > 0) {
+                    if (listView.getOnItemClickListener() == null) {
+                        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                                final HistoryError historyError = errorList.get(i);
+                                AlertDialog.Builder builder = CustomDialog.historyErrorDialog(historyError,
+                                        HistoryErrorHandler.this.activity);
+                                AlertDialog dialog = builder.create();
+                                dialog.show();
+                            }
+                        });
+                    }
+                    HistoryAdapter adapter = new HistoryAdapter();
+                    listView.setAdapter(adapter);
+                    Log.v("AAABBB", "01");
+                    loadView.setVisibility(View.GONE);
+                    noErrorView.setVisibility(View.GONE);
+                    noDeviceView.setVisibility(View.GONE);
+                    errorView.setVisibility(View.VISIBLE);
+                } else {
+                    Log.v("AAABBB", "02");
+                    loadView.setVisibility(View.GONE);
+                    noDeviceView.setVisibility(View.GONE);
+                    errorView.setVisibility(View.GONE);
+                    noErrorView.setVisibility(View.VISIBLE);
                 }
-            });
+            }
+        } else {
+            ((TroubleAnalyzeActivity) activity).loadHistoryTroubleView();
         }
-        adapter = new HistoryAdapter();
-        listView.setAdapter(adapter);
-        progressBar.setVisibility(View.INVISIBLE);
-        historyView.setVisibility(View.VISIBLE);
     }
 
     @Override
     public void onTalkReceive(Message msg) {
         if (msg.obj != null && (msg.obj instanceof HistoryError)) {
+            receiveCount++;
             HistoryError historyError = (HistoryError) msg.obj;
             if (!historyError.isNoError()) {
                 errorList.add((HistoryError) msg.obj);
             }
         }
+    }
+
+    @Override
+    public void onTalkError(Message msg) {
+        ((TroubleAnalyzeActivity) activity).loadHistoryTroubleView();
     }
 
     // ================================ History List View Adapter =========================================

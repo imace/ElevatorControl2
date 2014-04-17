@@ -4,15 +4,19 @@
               android:gravity="center"
               android:layout_weight="1"
               android:layout_width="0dp"
-              android:layout_height="@dimen/navigation_bar_height"
+              android:paddingTop="5dp"
+              android:paddingBottom="3dp"
+              android:layout_height="@dimen/abc_action_bar_default_height"
               android:background="#00000000">
     <ImageView android:id="@+id/icon"
+               android:layout_weight="3"
                android:layout_width="wrap_content"
-               android:layout_height="wrap_content"
+               android:layout_height="0dp"
+               android:scaleType="fitCenter"
                android:contentDescription="@null"/>
     <org.holoeverywhere.widget.TextView
             android:id="@+id/title"
-            android:textSize="15sp"
+            android:textSize="14sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/tab_indicator_text"/>

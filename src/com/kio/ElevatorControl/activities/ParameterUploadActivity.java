@@ -1,9 +1,11 @@
 package com.kio.ElevatorControl.activities;
 
+import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Message;
+import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,17 +22,14 @@ import com.kio.ElevatorControl.config.ApplicationConfig;
 import com.kio.ElevatorControl.models.ParameterSettings;
 import com.kio.ElevatorControl.models.Profile;
 import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.app.AlertDialog;
-import org.holoeverywhere.widget.Button;
-import org.holoeverywhere.widget.ListView;
-import org.holoeverywhere.widget.ProgressBar;
-import org.holoeverywhere.widget.TextView;
+import org.holoeverywhere.widget.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -66,6 +65,7 @@ public class ParameterUploadActivity extends Activity {
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
         setTitle(R.string.parameter_upload_text);
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
@@ -76,6 +76,12 @@ public class ParameterUploadActivity extends Activity {
         uploadParameterHandler = new UploadParameterHandler(this);
         adapter = new LocalProfileAdapter(profileList);
         listView.setAdapter(adapter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
     }
 
     @Override
@@ -103,9 +109,11 @@ public class ParameterUploadActivity extends Activity {
             File[] files = directory.listFiles();
             for (File inFile : files) {
                 if (inFile.isFile()) {
+                    Date date = new Date(inFile.lastModified());
+                    DateFormat dateFormat = new android.text.format.DateFormat();
                     Profile profile = new Profile();
                     profile.setVersion("1.2");
-                    profile.setUpdateDate("2014-5-12");
+                    profile.setUpdateDate(DateFormat.format("yyyy年MMMdd日 kk:mm", date).toString());
                     profile.setFileName(inFile.getName());
                     profileList.add(profile);
                 }
@@ -257,6 +265,11 @@ public class ParameterUploadActivity extends Activity {
                         .setHandler(uploadParameterHandler)
                         .setCommunications(communicationsList.get(position))
                         .Start();
+            } else {
+                Toast.makeText(this,
+                        R.string.not_connect_device_error,
+                        android.widget.Toast.LENGTH_SHORT)
+                        .show();
             }
         }
     }
@@ -341,22 +354,39 @@ public class ParameterUploadActivity extends Activity {
             if (convertView == null) {
                 convertView = mInflater.inflate(R.layout.parameter_upload_item, null);
                 holder = new ViewHolder();
-                holder.profileVersion = (TextView) convertView.findViewById(R.id.profile_version);
-                holder.profileUpdateDate = (TextView) convertView.findViewById(R.id.profile_update_date);
+                holder.profileName = (TextView) convertView.findViewById(R.id.profile_name);
+                holder.createDate = (TextView) convertView.findViewById(R.id.create_date);
                 holder.uploadButton = (Button) convertView.findViewById(R.id.upload_button);
                 convertView.setTag(holder);
             } else {
                 holder = (ViewHolder) convertView.getTag();
             }
             Profile profile = getItem(position);
-            holder.profileVersion.setText(profile.getVersion());
-            holder.profileUpdateDate.setText(profile.getUpdateDate());
+            holder.profileName.setText(profile.getFileName());
+            holder.createDate.setText(profile.getUpdateDate());
             final int index = position;
             holder.uploadButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    // 上传对应的参数
-                    ParameterUploadActivity.this.onUploadButtonClick(index);
+                    if (HBluetooth.getInstance(ParameterUploadActivity.this).isPrepared()){
+                        AlertDialog.Builder builder = new android.app.AlertDialog.Builder(ParameterUploadActivity.this, R.style.CustomDialogStyle)
+                                .setTitle(R.string.upload_dialog_title)
+                                .setMessage(R.string.upload_dialog_message)
+                                .setNegativeButton(R.string.dialog_btn_cancel, null)
+                                .setPositiveButton(R.string.dialog_btn_ok, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        ParameterUploadActivity.this.onUploadButtonClick(index);
+                                    }
+                                });
+                        builder.create().show();
+                    }
+                    else {
+                        Toast.makeText(ParameterUploadActivity.this,
+                                R.string.not_connect_device_error,
+                                android.widget.Toast.LENGTH_SHORT)
+                                .show();
+                    }
                 }
             });
             return convertView;
@@ -366,8 +396,8 @@ public class ParameterUploadActivity extends Activity {
          * View Holder
          */
         private class ViewHolder {
-            TextView profileVersion;
-            TextView profileUpdateDate;
+            TextView profileName;
+            TextView createDate;
             Button uploadButton;
         }
 

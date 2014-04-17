@@ -1,7 +1,8 @@
 package com.kio.ElevatorControl.activities;
 
-import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import butterknife.InjectView;
@@ -11,12 +12,15 @@ import com.hbluetooth.HCommunication;
 import com.hbluetooth.HSerial;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.adapters.ConfigurationAdapter;
+import com.kio.ElevatorControl.config.ApplicationConfig;
 import com.kio.ElevatorControl.daos.RealTimeMonitorDao;
 import com.kio.ElevatorControl.handlers.ConfigurationHandler;
 import com.kio.ElevatorControl.models.RealTimeMonitor;
 import com.viewpagerindicator.TabPageIndicator;
 import org.holoeverywhere.app.Activity;
+import org.holoeverywhere.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -75,15 +79,6 @@ public class ConfigurationActivity extends Activity {
                             case 0:
                                 loadMonitorView();
                                 break;
-                            case 1:
-                                loadSettingView();
-                                break;
-                            case 2:
-                                loadDebugView();
-                                break;
-                            case 3:
-                                loadDuplicateView();
-                                break;
                         }
                     }
                 };
@@ -96,14 +91,15 @@ public class ConfigurationActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (mCurrentPageIndex == 0) {
-            loadMonitorView();
-        }
+        reSyncData();
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode,
-                                    Intent data) {
+    public void reSyncData() {
+        switch (mCurrentPageIndex) {
+            case 0:
+                loadMonitorView();
+                break;
+        }
     }
 
     /**
@@ -112,7 +108,7 @@ public class ConfigurationActivity extends Activity {
      */
     public void loadMonitorView() {
         if (communications == null) {
-            List<RealTimeMonitor> monitorList = RealTimeMonitorDao.findAll(this);
+            List<RealTimeMonitor> monitorList = RealTimeMonitorDao.findByNames(this, ApplicationConfig.stateFilters);
             communications = new HCommunication[monitorList.size()];
             int commandSize = monitorList.size();
             for (int index = 0; index < commandSize; index++) {
@@ -157,19 +153,27 @@ public class ConfigurationActivity extends Activity {
                     .setHandler(configurationHandler)
                     .setCommunications(communications)
                     .Start();
+        } else {
+            handler.sendEmptyMessage(0);
         }
     }
 
-    public void loadSettingView() {
-        HBluetooth.getInstance(this).setHandler(null);
-    }
+    private Handler handler = new Handler() {
 
-    public void loadDebugView() {
-        HBluetooth.getInstance(this).setHandler(null);
-    }
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case 0: {
+                    Toast.makeText(ConfigurationActivity.this,
+                            R.string.not_connect_device_error,
+                            android.widget.Toast.LENGTH_SHORT)
+                            .show();
+                }
+                break;
+            }
+            super.handleMessage(msg);
+        }
 
-    public void loadDuplicateView() {
-        HBluetooth.getInstance(this).setHandler(null);
-    }
+    };
 
 }

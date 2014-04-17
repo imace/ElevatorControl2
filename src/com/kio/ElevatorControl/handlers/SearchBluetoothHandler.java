@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.os.Message;
 import android.util.Log;
-import com.hbluetooth.HBluetooth;
 import com.hbluetooth.HHandler;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.activities.NavigationTabActivity;
@@ -23,18 +22,19 @@ public class SearchBluetoothHandler extends HHandler {
 
     private static final String TAG = SearchBluetoothHandler.class.getSimpleName();
 
+    private static final String[] filterArray = new String[]{"BC04-B"};
+
     private NavigationTabActivity mNavigationTabActivity;
 
     public SearchBluetoothHandler(Activity activity) {
         super(activity);
         mNavigationTabActivity = (NavigationTabActivity) activity;
-        HBluetooth bluetoothSocket = HBluetooth.getInstance(activity);
     }
 
     /**
      * BEGIN PREPARING
      *
-     * @param msg
+     * @param msg message
      */
     @Override
     public void onBeginPreparing(Message msg) {
@@ -44,12 +44,11 @@ public class SearchBluetoothHandler extends HHandler {
     /**
      * FOUND DEVICE
      *
-     * @param msg
+     * @param msg message
      */
     @Override
     @SuppressWarnings("unchecked")
     public void onFoundDevice(Message msg) {
-        Log.v(TAG, "found device");
         mNavigationTabActivity.mRefreshActionItem.showProgress(true);
         assert ((Map<String, BluetoothDevice>) msg.obj) != null;
         Set<String> strings = ((Map<String, BluetoothDevice>) msg.obj).keySet();
@@ -60,7 +59,7 @@ public class SearchBluetoothHandler extends HHandler {
     /**
      * KILL BLUETOOTH
      *
-     * @param msg
+     * @param msg message
      */
     @Override
     public void onKillBluetooth(Message msg) {
@@ -70,20 +69,20 @@ public class SearchBluetoothHandler extends HHandler {
     /**
      * PREPARE SUCCESSFUL
      *
-     * @param msg
+     * @param msg message
      */
     @Override
     public void onPrepared(Message msg) {
-        Log.v(TAG, "prepared");
         mNavigationTabActivity.mRefreshActionItem.showProgress(false);
         mNavigationTabActivity.startHomeActivityStatusSyncTask();
-        Toast.makeText(activity, activity.getResources().getString(R.string.success_connect), Toast.LENGTH_SHORT).show();
+        Toast.makeText(activity, activity.getResources().getString(R.string.success_connect),
+                Toast.LENGTH_SHORT).show();
     }
 
     /**
      * PREPARE FAILED
      *
-     * @param msg
+     * @param msg message
      */
     @Override
     public void onPrepError(Message msg) {
@@ -96,11 +95,11 @@ public class SearchBluetoothHandler extends HHandler {
     /**
      * TALK RECEIVE
      *
-     * @param msg
+     * @param msg message
      */
     @Override
     public void onTalkReceive(Message msg) {
-
+        mNavigationTabActivity.mRefreshActionItem.showProgress(false);
     }
 
     /**
@@ -110,7 +109,6 @@ public class SearchBluetoothHandler extends HHandler {
     public void onHandlerChanged(Message msg) {
         // 进度条
         Log.v(TAG, "Handler changed");
-        mNavigationTabActivity.mRefreshActionItem.showProgress(false);
     }
 
 }

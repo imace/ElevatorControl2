@@ -40,24 +40,32 @@ public class CurrentErrorHandler extends HHandler {
         super.onMultiTalkEnd(msg);
         if (receiveCount == sendCount) {
             ViewPager pager = ((TroubleAnalyzeActivity) activity).pager;
+            View loadView = pager.findViewById(R.id.load_view);
             View errorView = pager.findViewById(R.id.error_view);
             View noErrorView = pager.findViewById(R.id.no_error_view);
-            if (errorHelp != null) {
-                TextView display = (TextView) pager.findViewById(R.id.current_error_help_display);
-                TextView level = (TextView) pager.findViewById(R.id.current_error_help_level);
-                TextView name = (TextView) pager.findViewById(R.id.current_error_help_name);
-                TextView reason = (TextView) pager.findViewById(R.id.current_error_help_reason);
-                TextView solution = (TextView) pager.findViewById(R.id.current_error_help_solution);
-                name.setText(errorHelp.getName());
-                display.setText(errorHelp.getDisplay());
-                level.setText(errorHelp.getLevel());
-                reason.setText(errorHelp.getReason());
-                solution.setText(errorHelp.getSolution());
-                errorView.setVisibility(View.VISIBLE);
-                noErrorView.setVisibility(View.INVISIBLE);
-            } else {
-                errorView.setVisibility(View.INVISIBLE);
-                noErrorView.setVisibility(View.VISIBLE);
+            View noDeviceView = pager.findViewById(R.id.no_device_view);
+            if (loadView != null && errorView != null && noErrorView != null && noDeviceView != null) {
+                if (errorHelp != null) {
+                    TextView display = (TextView) pager.findViewById(R.id.current_error_help_display);
+                    TextView level = (TextView) pager.findViewById(R.id.current_error_help_level);
+                    TextView name = (TextView) pager.findViewById(R.id.current_error_help_name);
+                    TextView reason = (TextView) pager.findViewById(R.id.current_error_help_reason);
+                    TextView solution = (TextView) pager.findViewById(R.id.current_error_help_solution);
+                    name.setText(errorHelp.getName());
+                    display.setText(errorHelp.getDisplay());
+                    level.setText(errorHelp.getLevel());
+                    reason.setText(errorHelp.getReason());
+                    solution.setText(errorHelp.getSolution());
+                    loadView.setVisibility(View.GONE);
+                    noErrorView.setVisibility(View.GONE);
+                    noDeviceView.setVisibility(View.GONE);
+                    errorView.setVisibility(View.VISIBLE);
+                } else {
+                    loadView.setVisibility(View.GONE);
+                    noDeviceView.setVisibility(View.GONE);
+                    errorView.setVisibility(View.GONE);
+                    noErrorView.setVisibility(View.VISIBLE);
+                }
             }
         } else {
             ((TroubleAnalyzeActivity) activity).loadCurrentTroubleView();

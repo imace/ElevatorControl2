@@ -134,7 +134,7 @@
         <org.holoeverywhere.widget.TextView
                 android:textSize="18sp"
                 android:textColor="#333"
-                android:text="@string/download_text"
+                android:text="@string/parameter_download_button_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
     </LinearLayout>

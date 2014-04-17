@@ -3,19 +3,20 @@ package com.kio.ElevatorControl.views.dialogs;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.util.Log;
-import android.util.TypedValue;
+import android.content.Intent;
 import android.view.View;
 import com.hbluetooth.HBluetooth;
 import com.hbluetooth.HSerial;
 import com.kio.ElevatorControl.R;
+import com.kio.ElevatorControl.activities.CheckAuthorizationActivity;
 import com.kio.ElevatorControl.adapters.DialogSwitchListViewAdapter;
 import com.kio.ElevatorControl.config.ApplicationConfig;
 import com.kio.ElevatorControl.daos.ErrorHelpDao;
 import com.kio.ElevatorControl.models.*;
 import com.kio.ElevatorControl.utils.ParseSerialsUtils;
 import com.mobsandgeeks.adapters.InstantAdapter;
-import org.holoeverywhere.widget.*;
+import org.holoeverywhere.widget.ListView;
+import org.holoeverywhere.widget.TextView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,15 +27,9 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 public class CustomDialog {
-
     // ==================================== Terminal Detail Dialog ================================== //
     public static AlertDialog.Builder terminalDetailDialog(final Activity activity, final RealTimeMonitor monitor) {
         byte[] data = monitor.getReceived();
-        if (data.length != 8) {
-            return new AlertDialog.Builder(activity)
-                    .setTitle(R.string.data_error_text)
-                    .setNeutralButton(R.string.dialog_btn_ok, null);
-        }
         View dialogView = activity.getLayoutInflater().inflate(R.layout.terminal_detail_dialog, null);
         ListView listView = (ListView) dialogView.findViewById(R.id.status_list);
         List<ParameterStatusItem> statusList = new ArrayList<ParameterStatusItem>();
@@ -105,6 +100,40 @@ public class CustomDialog {
                 e.printStackTrace();
             }
         }
+        if (monitor.getDescriptionType() == ApplicationConfig.specialTypeInput) {
+            if (monitor.dataArray.size() == 4) {
+                int[] values = new int[]{
+                        ParseSerialsUtils.getIntFromBytes(monitor.dataArray.get(0)),
+                        ParseSerialsUtils.getIntFromBytes(monitor.dataArray.get(1)),
+                        ParseSerialsUtils.getIntFromBytes(monitor.dataArray.get(2)),
+                        ParseSerialsUtils.getIntFromBytes(monitor.dataArray.get(3))
+                };
+                int index = 0;
+                for (String name : ApplicationConfig.inputFilters) {
+                    ParameterStatusItem status = new ParameterStatusItem();
+                    status.name = name;
+                    status.status = values[index] != 0;
+                    statusList.add(status);
+                    index++;
+                }
+            }
+        }
+        if (monitor.getDescriptionType() == ApplicationConfig.specialTypeOutput) {
+            if (monitor.dataArray.size() == 2) {
+                int[] values = new int[]{
+                        ParseSerialsUtils.getIntFromBytes(monitor.dataArray.get(0)),
+                        ParseSerialsUtils.getIntFromBytes(monitor.dataArray.get(1))
+                };
+                int index = 0;
+                for (String name : ApplicationConfig.outputFilters) {
+                    ParameterStatusItem status = new ParameterStatusItem();
+                    status.name = name;
+                    status.status = values[index] != 0;
+                    statusList.add(status);
+                    index++;
+                }
+            }
+        }
         InstantAdapter<ParameterStatusItem> adapter = new InstantAdapter<ParameterStatusItem>(
                 activity.getBaseContext(),
                 R.layout.terminal_status_item,
@@ -113,96 +142,13 @@ public class CustomDialog {
         listView.setAdapter(adapter);
         return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
                 .setView(dialogView)
-                .setTitle(monitor.getName())
+                .setTitle(monitor.getName() + " " + monitor.getCode())
                 .setNeutralButton(R.string.dialog_btn_ok, null);
     }
 
     // ================================== Parameter Detail Dialog =========================================== //
     public static AlertDialog.Builder parameterDetailDialog(final Activity activity,
                                                             final ParameterSettings settings) {
-        if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[0]) {
-            View dialogView = activity.getLayoutInflater().inflate(R.layout.parameter_picker_dialog, null);
-            LinearLayout containView = (LinearLayout) dialogView.findViewById(R.id.picker_view);
-            // 滑动数值选择器
-            final SeekBar seekBar = (SeekBar) dialogView.findViewById(R.id.seek_bar);
-            String maxValueString = settings.getScope().split("-")[1];
-            int totals = maxValueString.length();
-            String[] hexValue = new String[]{"0", "1", "2", "3", "4", "5", "6", "7",
-                    "8", "9", "A", "B", "C", "D", "E", "F"};
-            // 数值滚动选择器
-            for (int i = 0; i < totals; i++) {
-                String valueChar = Character.toString(maxValueString.charAt(i));
-                NumberPicker picker = new NumberPicker(activity);
-                picker.setWrapSelectorWheel(false);
-                picker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
-                if (ParseSerialsUtils.isInteger(valueChar)) {
-                    picker.setMinValue(0);
-                    picker.setMaxValue(Integer.parseInt(valueChar));
-                }
-                if (valueChar.equalsIgnoreCase(".")) {
-                    picker.setMinValue(0);
-                    picker.setMaxValue(0);
-                    picker.setDisplayedValues(new String[]{"."});
-                }
-                picker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
-                    @Override
-                    public void onValueChange(NumberPicker picker, int oldValue, int newValue) {
-
-                    }
-                });
-                int margin = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5,
-                        activity.getResources().getDisplayMetrics()));
-                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT);
-                layoutParams.setMargins(0, 0, margin, 0);
-                containView.addView(picker, layoutParams);
-            }
-            Long maxValueLong = Math.round(Double.parseDouble(maxValueString)
-                    / (Double.parseDouble(settings.getScale())));
-            int maxValueInt = maxValueLong.intValue();
-            seekBar.setMax(maxValueInt);
-            seekBar.setProgress(1);
-            seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    Log.v("AAABBB", String.valueOf(seekBar.getProgress()));
-                }
-
-                @Override
-                public void onStartTrackingTouch(SeekBar seekBar) {
-
-                }
-
-                @Override
-                public void onStopTrackingTouch(SeekBar seekBar) {
-
-                }
-            });
-            return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
-                    .setView(dialogView)
-                    .setTitle(settings.getName())
-                    .setNeutralButton(R.string.dialog_btn_cancel, null);
-            /*
-            View dialogView = activity.getLayoutInflater().inflate(R.layout.parameter_edit_dialog, null);
-            EditText settingValueEditText = (EditText) dialogView.findViewById(R.id.setting_value);
-            TextView scaleNewValue = (TextView) dialogView.findViewById(R.id.scale_new_value);
-            TextView unitTextView = (TextView) dialogView.findViewById(R.id.unit);
-            TextView defaultValueTextView = (TextView) dialogView.findViewById(R.id.default_value);
-            TextView valueScopeTextView = (TextView) dialogView.findViewById(R.id.value_scope);
-            TextView scaleTextView = (TextView) dialogView.findViewById(R.id.scale);
-            settingValueEditText.setText(String.valueOf(ParseSerialsUtils.getIntFromBytes(settings.getReceived())));
-            scaleNewValue.setText(settings.getScale());
-            defaultValueTextView.setText(settings.getDefaultValue());
-            unitTextView.setText(settings.getUnit());
-            valueScopeTextView.setText(settings.getScope());
-            scaleTextView.setText(settings.getScale());
-            return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
-                    .setView(dialogView)
-                    .setTitle(settings.getName())
-                    .setNeutralButton(R.string.dialog_btn_cancel, null);
-                    */
-        }
         if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[1]) {
             try {
                 JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
@@ -216,7 +162,7 @@ public class CustomDialog {
                         .setSingleChoiceItems(charArray,
                                 ParseSerialsUtils.getIntFromBytes(settings.getReceived()),
                                 null)
-                        .setTitle(settings.getName())
+                        .setTitle(settings.getName() + " " + settings.getCode())
                         .setNeutralButton(R.string.dialog_btn_cancel, null);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -242,14 +188,14 @@ public class CustomDialog {
                 listView.setAdapter(adapter);
                 return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
                         .setView(dialogView)
-                        .setTitle(settings.getName())
+                        .setTitle(settings.getName() + " " + settings.getCode())
                         .setNeutralButton(R.string.dialog_btn_cancel, null);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
         return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
-                .setTitle(settings.getName())
+                .setTitle(settings.getName() + " " + settings.getCode())
                 .setNeutralButton(R.string.dialog_btn_cancel, null);
     }
 
@@ -264,12 +210,16 @@ public class CustomDialog {
                             public void onClick(DialogInterface arg0, int arg1) {
                                 arg0.cancel();
                             }
-                        }).setPositiveButton(activity.getResources().getString(R.string.dialog_btn_ok)
+                        })
+                .setPositiveButton(activity.getResources().getString(R.string.dialog_btn_ok)
                         , new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         HBluetooth.getInstance(activity).kill();
+                        Intent intent = new Intent(activity, CheckAuthorizationActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        intent.putExtra("Exit", true);
+                        activity.startActivity(intent);
                         activity.finish();
-                        System.exit(0);
                     }
                 });
     }

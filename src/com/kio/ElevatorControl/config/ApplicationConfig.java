@@ -9,6 +9,8 @@ package com.kio.ElevatorControl.config;
  */
 public class ApplicationConfig {
 
+    public static final String PREFS_NAME = "application_preference";
+
     /**
      * 数据库名称
      */
@@ -33,9 +35,76 @@ public class ApplicationConfig {
     public static final String RETAIN_NAME = "保留";
 
     /**
+     * 1 任意修改
+     * 2 停机修改
+     * 3 不可修改
+     */
+    public static final int[] modifyType = new int[]{1, 2, 3};
+
+    /**
+     * 实时状态参数过滤
+     */
+    public static final String[] stateFilters = new String[]{
+            "运行速度",
+            "额定速度",
+            "母线电压",
+            "输出电流",
+            "输出频率",
+            "当前楼层",
+            "当前位置",
+            "轿顶输入端子",
+            "轿顶输出端子",
+            "系统状态",
+            "轿厢负载",
+            "预转矩电流",
+            "减速距离",
+            "故障信息",
+            "高压端子输入状态",
+            "输出端子",
+            "输出端子2",
+            "输入端子低位",
+            "输入端子高位",
+            "端子输入状态3",
+            "端子输入状态4"};
+
+    public static final String[] normalFilters = new String[]{
+            "运行速度",
+            "额定速度",
+            "母线电压",
+            "输出电流",
+            "输出频率",
+            "当前楼层",
+            "当前位置",
+            "轿顶输入端子",
+            "轿顶输出端子",
+            "系统状态",
+            "轿厢负载",
+            "预转矩电流",
+            "减速距离",
+            "故障信息",
+            "高压端子输入状态"
+    };
+
+    public static final String[] outputFilters = new String[]{
+            "输出端子",
+            "输出端子2",
+    };
+
+    public static final String[] inputFilters = new String[]{
+            "输入端子低位",
+            "输入端子高位",
+            "端子输入状态3",
+            "端子输入状态4"
+    };
+
+    public static final int specialTypeInput = 5;
+
+    public static final int specialTypeOutput = 6;
+
+    /**
      * 电梯默认最底层和最高层
      */
-    public static final int[] DEFAULT_FLOORS = new int[]{1, 16};
+    public static final int[] DEFAULT_FLOORS = new int[]{1, 9};
 
     /**
      * 设备型号

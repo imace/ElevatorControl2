@@ -1,26 +1,19 @@
 package com.kio.ElevatorControl.activities;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.os.StrictMode;
-import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.kio.ElevatorControl.R;
-import com.kio.ElevatorControl.adapters.ChatMessageAdapter;
-import com.kio.ElevatorControl.models.ChatMessage;
 import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.widget.LinearLayout;
 import org.holoeverywhere.widget.ListView;
-import org.holoeverywhere.widget.Toast;
-import org.jivesoftware.smack.*;
-import org.jivesoftware.smack.packet.Presence;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import org.jivesoftware.smack.ConnectionConfiguration;
+import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.XMPPException;
 
 /**
  * Created by IntelliJ IDEA.
@@ -48,6 +41,7 @@ public class RemoteHelpActivity extends Activity {
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
         setTitle(R.string.remote_help_text);
@@ -55,16 +49,13 @@ public class RemoteHelpActivity extends Activity {
         Views.inject(this);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
-        if (connectToServer()) {
-            if (userLogin("keith", "010120")) {
-                loginView.setVisibility(View.GONE);
-                chatView.setVisibility(View.VISIBLE);
-                getAllGroupsList();
-                //updateChatListViewData();
-            }
-        } else {
-            Toast.makeText(this, "无法连接到服务器", Toast.LENGTH_SHORT).show();
-        }
+        new Thread(new XMPPThread()).start();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
     }
 
     @Override
@@ -79,58 +70,31 @@ public class RemoteHelpActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void getAllGroupsList(){
-        Roster roster = connection.getRoster();
-        Collection entries = roster.getUnfiledEntries();
-    }
+    private Handler handler = new Handler() {
 
-    private void updateChatListViewData() {
-        List<ChatMessage> chatMessageList = new ArrayList<ChatMessage>();
-        for (int i = 0; i < 10; i++) {
-            ChatMessage item = new ChatMessage();
-            item.setMessage(i + "Message");
-            item.setSend(i % 2 == 0);
-            chatMessageList.add(item);
-        }
-        chatListView.setAdapter(new ChatMessageAdapter(this, chatMessageList));
-    }
+        @Override
+        public void handleMessage(Message msg) {
 
-    /**
-     * 连接到服务器
-     *
-     * @return 是否连接成功
-     */
-    private boolean connectToServer() {
-        ConnectionConfiguration config = new ConnectionConfiguration(
-                serverHost, serverPort);
-        config.setDebuggerEnabled(true);
-        try {
-            connection = new XMPPConnection(config);
-            connection.connect();
-            return true;
-        } catch (XMPPException e) {
-            e.printStackTrace();
         }
-        return false;
-    }
 
-    /**
-     * 用户登录
-     *
-     * @param userName 用户名
-     * @param password 密码
-     * @return 是否登录成功
-     */
-    public boolean userLogin(String userName, String password) {
-        try {
-            if (connection == null)
-                return false;
-            connection.loginAnonymously();
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
+    };
+
+    public class XMPPThread implements Runnable {
+
+        @Override
+        public void run() {
+            ConnectionConfiguration config = new ConnectionConfiguration(
+                    serverHost, serverPort);
+            config.setDebuggerEnabled(true);
+            try {
+                connection = new XMPPConnection(config);
+                connection.connect();
+                connection.loginAnonymously();
+            } catch (XMPPException e) {
+                e.printStackTrace();
+            }
         }
-        return false;
+
     }
 
 }

@@ -14,6 +14,7 @@ import org.json.JSONException;
 import org.json.JSONStringer;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * 参数
@@ -59,7 +60,7 @@ public class ParameterSettings implements Cloneable {
     private int descriptiontype;
 
     /**
-     * 修改方式 '★' : 1 停机修改 '☆' : 2 任意修改 '*' : 3 不可修改
+     * 修改方式 '★' : 1 任意修改 '☆' : 2 停机修改 '*' : 3 不可修改
      */
     private String mode;
     private boolean Valid;
@@ -116,6 +117,14 @@ public class ParameterSettings implements Cloneable {
 
     public String getCode() {
         return code.replace("FR", "D2");
+    }
+
+    @InstantText(viewId = R.id.code_text)
+    public String getCodeText() {
+        if (getCode().length() == 4){
+            return getCode().substring(0, 2) + "-" +getCode().substring(2, 4);
+        }
+        return "";
     }
 
     public void setCode(String code) {

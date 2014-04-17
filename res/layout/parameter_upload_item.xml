@@ -8,17 +8,11 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
     <org.holoeverywhere.widget.TextView
+            android:id="@+id/profile_name"
             android:textSize="18sp"
             android:textColor="#515151"
-            android:text="@string/profile_version_text"
             android:layout_marginRight="5dp"
             android:layout_marginLeft="10dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-    <org.holoeverywhere.widget.TextView
-            android:textSize="18sp"
-            android:textColor="#878787"
-            android:id="@+id/profile_version"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
     <LinearLayout
@@ -29,12 +23,12 @@
         <org.holoeverywhere.widget.TextView
                 android:textSize="18sp"
                 android:textColor="#515151"
-                android:text="@string/profile_update_date_text"
+                android:text="@string/profile_create_date_text"
                 android:layout_marginRight="5dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
         <org.holoeverywhere.widget.TextView
-                android:id="@+id/profile_update_date"
+                android:id="@+id/create_date"
                 android:textSize="18sp"
                 android:textColor="#878787"
                 android:layout_width="wrap_content"

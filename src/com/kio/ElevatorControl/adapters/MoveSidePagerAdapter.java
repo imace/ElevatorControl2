@@ -2,8 +2,10 @@ package com.kio.ElevatorControl.adapters;
 
 import android.content.Context;
 import android.graphics.Point;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.*;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.activities.MoveInsideActivity;
@@ -12,6 +14,8 @@ import com.kio.ElevatorControl.views.TypefaceTextView;
 import com.kio.ElevatorControl.views.viewpager.PagerAdapter;
 import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.widget.GridView;
+
+import java.util.Arrays;
 
 /**
  * Created by IntelliJ IDEA.
@@ -28,6 +32,22 @@ public class MoveSidePagerAdapter extends PagerAdapter {
     private Activity baseActivity;
 
     private int contentViewHeight;
+
+    private int selectIndex;
+
+    private boolean firstRender;
+
+    public int currentPager;
+
+    public interface onSelectFloorListener {
+        void onSelect(int floor);
+    }
+
+    private onSelectFloorListener selectListener;
+
+    public void setOnSelectFloorListener(onSelectFloorListener listener) {
+        selectListener = listener;
+    }
 
     public MoveSidePagerAdapter(MoveInsideActivity activity, int[] floors) {
         this.baseActivity = activity;
@@ -58,9 +78,23 @@ public class MoveSidePagerAdapter extends PagerAdapter {
     public Object instantiateItem(ViewGroup container, int position) {
         LayoutInflater mInflater = LayoutInflater.from(baseActivity);
         View contentView = mInflater.inflate(R.layout.move_side_view, null);
+        firstRender = true;
         GridView gridView = (GridView) contentView.findViewById(R.id.grid_view);
-        MoveSideGridViewAdapter adapter = new MoveSideGridViewAdapter(getFloors(position));
+        final MoveSideGridViewAdapter adapter = new MoveSideGridViewAdapter(getFloors(position));
         gridView.setAdapter(adapter);
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int index, long l) {
+                selectIndex = index;
+                firstRender = false;
+                if (selectListener != null) {
+                    int[] floors = getFloors(currentPager);
+                    int minFloor = Math.min(floors[0], floors[1]);
+                    selectListener.onSelect(minFloor + index);
+                }
+                adapter.notifyDataSetChanged();
+            }
+        });
         container.addView(contentView);
         return contentView;
     }
@@ -159,6 +193,13 @@ public class MoveSidePagerAdapter extends PagerAdapter {
                 holder = (ViewHolder) convertView.getTag();
             }
             holder.floorTextView.setText(String.valueOf(Math.min(floors[0], floors[1]) + position));
+            if (selectIndex == position && !firstRender) {
+                convertView.setBackgroundResource(R.drawable.elevator_button_highlighted);
+                holder.floorTextView.setSelected(true);
+            } else {
+                convertView.setBackgroundResource(R.drawable.elevator_button_background);
+                holder.floorTextView.setSelected(false);
+            }
             return convertView;
         }
 
