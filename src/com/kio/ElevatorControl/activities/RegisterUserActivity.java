@@ -53,9 +53,9 @@ public class RegisterUserActivity extends Activity {
         Views.inject(this);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
-        TelephonyManager telephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
+        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         String phoneNumber = telephonyManager.getLine1Number();
-        if (phoneNumber != null){
+        if (phoneNumber != null) {
             phoneNumber.replace("-", "");
             phoneNumber.replace("(", "");
             phoneNumber.replace(")", "");
@@ -84,7 +84,7 @@ public class RegisterUserActivity extends Activity {
     /**
      * 提交用户注册
      */
-    private void submitRegisterRequest(){
+    private void submitRegisterRequest() {
         User user = new User();
         user.setName(userName.getText().toString());
         user.setCompany(company.getText().toString());
@@ -94,10 +94,9 @@ public class RegisterUserActivity extends Activity {
         WebApi.getInstance().setOnResultListener(new WebApi.onGetResultListener() {
             @Override
             public void onResult(String responseString) {
-                if (responseString.equalsIgnoreCase("TRUE")){
+                if (responseString.equalsIgnoreCase("TRUE")) {
 
-                }
-                else {
+                } else {
                     Toast.makeText(RegisterUserActivity.this,
                             R.string.register_failed_text,
                             android.widget.Toast.LENGTH_SHORT).show();

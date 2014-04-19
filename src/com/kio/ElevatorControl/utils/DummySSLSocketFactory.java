@@ -20,22 +20,20 @@
  */
 package com.kio.ElevatorControl.utils;
 
+import javax.net.SocketFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-
-import javax.net.SocketFactory;
-import javax.net.ssl.SSLSocketFactory;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
-import java.security.cert.CertificateException;
 
 /**
  * An SSL socket factory that will let any certifacte past, even if it's expired or
@@ -53,11 +51,9 @@ public class DummySSLSocketFactory extends SSLSocketFactory {
                     new TrustManager[]{new DummyTrustManager()},
                     new java.security.SecureRandom());
             factory = sslcontent.getSocketFactory();
-        }
-        catch (NoSuchAlgorithmException e) {
+        } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
-        }
-        catch (KeyManagementException e) {
+        } catch (KeyManagementException e) {
             e.printStackTrace();
         }
     }
@@ -111,11 +107,9 @@ public class DummySSLSocketFactory extends SSLSocketFactory {
             try {
                 cert[0].checkValidity();
                 return true;
-            }
-            catch (CertificateExpiredException e) {
+            } catch (CertificateExpiredException e) {
                 return false;
-            }
-            catch (CertificateNotYetValidException e) {
+            } catch (CertificateNotYetValidException e) {
                 return false;
             }
         }

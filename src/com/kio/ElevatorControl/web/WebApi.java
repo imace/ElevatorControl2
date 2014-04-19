@@ -127,7 +127,7 @@ public class WebApi {
     /**
      * 取得最近一次更新的时间戳
      */
-    public void getErrorHelpListLastUpdateTime(){
+    public void getErrorHelpListLastUpdateTime() {
 
     }
 

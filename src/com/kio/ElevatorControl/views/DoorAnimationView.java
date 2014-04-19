@@ -2,12 +2,13 @@ package com.kio.ElevatorControl.views;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import com.kio.ElevatorControl.R;
 import org.holoeverywhere.LayoutInflater;
+import org.holoeverywhere.widget.LinearLayout;
 
 /**
  * Created by IntelliJ IDEA.
@@ -15,13 +16,17 @@ import org.holoeverywhere.LayoutInflater;
  * Date: 14-3-12.
  * Time: 10:46.
  */
-public class DoorAnimationView extends RelativeLayout {
+public class DoorAnimationView extends LinearLayout {
 
     private static final String TAG = DoorAnimationView.class.getSimpleName();
 
-    private ImageView leftDoor;
+    private View leftDoor;
 
-    private ImageView rightDoor;
+    private View rightDoor;
+
+    private TypefaceTextView currentFloor;
+
+    private ImageView currentDirection;
 
     private int DOOR_OPEN = 1;
 
@@ -38,8 +43,10 @@ public class DoorAnimationView extends RelativeLayout {
     public DoorAnimationView(Context context, AttributeSet attrs) {
         super(context, attrs);
         LayoutInflater.from(context).inflate(R.layout.door_animation_view, this, true);
-        leftDoor = (ImageView) findViewById(R.id.left_door);
-        rightDoor = (ImageView) findViewById(R.id.right_door);
+        leftDoor = findViewById(R.id.left_door);
+        rightDoor = findViewById(R.id.right_door);
+        currentFloor = (TypefaceTextView) findViewById(R.id.current_floor);
+        currentDirection = (ImageView) findViewById(R.id.current_direction);
         animating = false;
         doorStatus = DOOR_CLOSE;
     }
@@ -51,6 +58,34 @@ public class DoorAnimationView extends RelativeLayout {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, widthMeasureSpec);
+    }
+
+    /**
+     * Set current floor
+     *
+     * @param floor Current floor
+     */
+    public void setCurrentFloor(int floor) {
+        currentFloor.setText(String.valueOf(floor));
+    }
+
+    /**
+     * Set current direction
+     *
+     * @param direction Current direction
+     */
+    public void setCurrentDirection(int direction) {
+        switch (direction) {
+            case 1:
+                currentDirection.setImageResource(R.drawable.elevator_up);
+                break;
+            case 2:
+                currentDirection.setImageResource(R.drawable.elevator_down);
+                break;
+            case 3:
+                currentDirection.setImageDrawable(null);
+                break;
+        }
     }
 
     /**

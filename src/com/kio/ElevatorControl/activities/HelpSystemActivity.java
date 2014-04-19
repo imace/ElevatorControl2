@@ -36,7 +36,7 @@ public class HelpSystemActivity extends Activity {
         systemSettingListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                switch (position){
+                switch (position) {
                     case 0:
                         startActivity(new Intent(HelpSystemActivity.this, ShortcutSettingActivity.class));
                         break;
@@ -55,7 +55,7 @@ public class HelpSystemActivity extends Activity {
         otherSettingListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                switch (position){
+                switch (position) {
                     case 0:
                         startActivity(new Intent(HelpSystemActivity.this, BarcodeCaptureActivity.class));
                         break;

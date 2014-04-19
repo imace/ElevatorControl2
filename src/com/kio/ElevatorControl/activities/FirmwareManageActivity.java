@@ -123,8 +123,7 @@ public class FirmwareManageActivity extends Activity {
                         IProgram.getInstance().SetProgramPara(socket, fileInputStream, burnHandler);
                         IProgram.getInstance().GetBinFileInfo();
                         firmwareMetaTextView.setText(IProgram.getInstance().GetBinFileInfo());
-                    }
-                    else {
+                    } else {
                         Toast.makeText(FirmwareManageActivity.this,
                                 R.string.not_connect_device_error,
                                 android.widget.Toast.LENGTH_SHORT)
@@ -152,8 +151,7 @@ public class FirmwareManageActivity extends Activity {
                         dlgButton.invalidate();
                         if (HBluetooth.getInstance(FirmwareManageActivity.this).isPrepared()) {
                             IProgram.getInstance().StartProgram();//开始烧录
-                        }
-                        else {
+                        } else {
                             Toast.makeText(FirmwareManageActivity.this,
                                     R.string.not_connect_device_error,
                                     android.widget.Toast.LENGTH_SHORT)

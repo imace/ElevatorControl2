@@ -44,6 +44,7 @@ public class CurrentErrorHandler extends HHandler {
             View errorView = pager.findViewById(R.id.error_view);
             View noErrorView = pager.findViewById(R.id.no_error_view);
             View noDeviceView = pager.findViewById(R.id.no_device_view);
+            View viewSystemStatus = pager.findViewById(R.id.view_system_status);
             if (loadView != null && errorView != null && noErrorView != null && noDeviceView != null) {
                 if (errorHelp != null) {
                     TextView display = (TextView) pager.findViewById(R.id.current_error_help_display);
@@ -60,6 +61,12 @@ public class CurrentErrorHandler extends HHandler {
                     noErrorView.setVisibility(View.GONE);
                     noDeviceView.setVisibility(View.GONE);
                     errorView.setVisibility(View.VISIBLE);
+                    viewSystemStatus.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            ((TroubleAnalyzeActivity) activity).viewCurrentSystemStatus();
+                        }
+                    });
                 } else {
                     loadView.setVisibility(View.GONE);
                     noDeviceView.setVisibility(View.GONE);

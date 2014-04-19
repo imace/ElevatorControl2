@@ -5,16 +5,20 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.util.Log;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.hbluetooth.HBluetooth;
 import com.hbluetooth.HCommunication;
+import com.hbluetooth.HHandler;
 import com.hbluetooth.HSerial;
 import com.kio.ElevatorControl.R;
 import com.kio.ElevatorControl.adapters.ConfigurationAdapter;
 import com.kio.ElevatorControl.config.ApplicationConfig;
+import com.kio.ElevatorControl.daos.ParameterSettingsDao;
 import com.kio.ElevatorControl.daos.RealTimeMonitorDao;
 import com.kio.ElevatorControl.handlers.ConfigurationHandler;
+import com.kio.ElevatorControl.models.ParameterSettings;
 import com.kio.ElevatorControl.models.RealTimeMonitor;
 import com.viewpagerindicator.TabPageIndicator;
 import org.holoeverywhere.app.Activity;
@@ -38,6 +42,10 @@ public class ConfigurationActivity extends Activity {
 
     private HCommunication[] communications;
 
+    private GetX1ToX27StatusHandler getX1ToX27StatusHandler;
+
+    private HCommunication[] getX1ToX27Communications;
+
     /**
      * 注入页面元素
      */
@@ -55,6 +63,7 @@ public class ConfigurationActivity extends Activity {
         setContentView(R.layout.activity_configuration);
         Views.inject(this);
         mConfigurationAdapter = new ConfigurationAdapter(this);
+        getX1ToX27StatusHandler = new GetX1ToX27StatusHandler(this);
         pager.setAdapter(mConfigurationAdapter);
         pager.setOffscreenPageLimit(3);
         indicator.setViewPager(pager);
@@ -158,6 +167,82 @@ public class ConfigurationActivity extends Activity {
         }
     }
 
+    /**
+     * 查看输入端状态
+     *
+     * @param monitor RealTimeMonitor
+     */
+    public void seeInputTerminalStatus(RealTimeMonitor monitor) {
+        List<ParameterSettings> terminalList = ParameterSettingsDao.findByType(this, 3);
+        if (getX1ToX27Communications == null) {
+            int size = terminalList.size();
+            getX1ToX27Communications = new HCommunication[size];
+            for (int i = 0; i < size; i++) {
+                final ParameterSettings settings = terminalList.get(i);
+                communications[i] = new HCommunication() {
+                    @Override
+                    public void beforeSend() {
+                        this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103"
+                                + settings.getCode()
+                                + "0001")));
+                    }
+
+                    @Override
+                    public void afterSend() {
+
+                    }
+
+                    @Override
+                    public void beforeReceive() {
+
+                    }
+
+                    @Override
+                    public void afterReceive() {
+
+                    }
+
+                    @Override
+                    public Object onParse() {
+                        return null;
+                    }
+                };
+            }
+        }
+    }
+
+    /**
+     * Start Get X1ToX27 Communications
+     */
+    private void startGetX1ToX27Communications() {
+        if (getX1ToX27Communications != null) {
+            if (HBluetooth.getInstance(this).isPrepared()) {
+                getX1ToX27StatusHandler.sendCount = getX1ToX27Communications.length;
+                HBluetooth.getInstance(this)
+                        .setHandler(getX1ToX27StatusHandler)
+                        .setCommunications(getX1ToX27Communications)
+                        .Start();
+            } else {
+                Toast.makeText(ConfigurationActivity.this,
+                        R.string.not_connect_device_error,
+                        android.widget.Toast.LENGTH_SHORT)
+                        .show();
+            }
+        }
+    }
+
+    /**
+     * 查看输出端子状态
+     *
+     * @param monitor RealTimeMonitor
+     */
+    public void seeOutputTerminalStatus(RealTimeMonitor monitor) {
+        Log.v("AAABBB", HSerial.byte2HexStr(monitor.getCombineBytes()));
+    }
+
+    /**
+     * Bluetooth socket error handler
+     */
     private Handler handler = new Handler() {
 
         @Override
@@ -175,5 +260,52 @@ public class ConfigurationActivity extends Activity {
         }
 
     };
+
+    // =============================== Get X1 - X24 Status Handler ====================================== //
+    private class GetX1ToX27StatusHandler extends HHandler {
+
+        public int sendCount;
+
+        private int receiveCount;
+
+        private List<ParameterSettings> settingsList;
+
+        public GetX1ToX27StatusHandler(android.app.Activity activity) {
+            super(activity);
+            TAG = GetX1ToX27StatusHandler.class.getSimpleName();
+        }
+
+        @Override
+        public void onMultiTalkBegin(Message msg) {
+            super.onMultiTalkBegin(msg);
+            receiveCount = 0;
+            settingsList = new ArrayList<ParameterSettings>();
+        }
+
+        @Override
+        public void onMultiTalkEnd(Message msg) {
+            super.onMultiTalkEnd(msg);
+            if (sendCount == receiveCount) {
+
+            } else {
+                ConfigurationActivity.this.startGetX1ToX27Communications();
+            }
+        }
+
+        @Override
+        public void onTalkReceive(Message msg) {
+            super.onTalkReceive(msg);
+            if (msg.obj != null && msg.obj instanceof ParameterSettings) {
+                settingsList.add((ParameterSettings) msg.obj);
+                receiveCount++;
+            }
+        }
+
+        @Override
+        public void onTalkError(Message msg) {
+            super.onTalkError(msg);
+            ConfigurationActivity.this.startGetX1ToX27Communications();
+        }
+    }
 
 }

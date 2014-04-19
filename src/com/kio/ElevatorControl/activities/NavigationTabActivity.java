@@ -6,13 +6,8 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.*;
 import android.widget.*;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.LinearLayout;
-import android.widget.Toast;
 import butterknife.Views;
 import com.hbluetooth.HBluetooth;
 import com.hbluetooth.HJudgeListener;
@@ -23,7 +18,6 @@ import com.kio.ElevatorControl.views.customspinner.ViewGroupUtils;
 import com.kio.ElevatorControl.views.dialogs.CustomDialog;
 import com.manuelpeinado.refreshactionitem.ProgressIndicatorType;
 import com.manuelpeinado.refreshactionitem.RefreshActionItem;
-import org.holoeverywhere.widget.*;
 import org.holoeverywhere.widget.TextView;
 
 /**
@@ -37,7 +31,7 @@ public class NavigationTabActivity extends TabActivity implements RefreshActionI
 
     public RefreshActionItem mRefreshActionItem;
 
-    private NoDefaultSpinner actionbarSpinnerView;
+    private NoDefaultSpinner actionbarSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -137,12 +131,15 @@ public class NavigationTabActivity extends TabActivity implements RefreshActionI
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
         int titleId = Resources.getSystem().getIdentifier("action_bar_title", "id", "android");
         View titleView = findViewById(titleId);
-        actionbarSpinnerView = (NoDefaultSpinner) getLayoutInflater().inflate(R.layout.custom_spinner_layout, null);
-        ViewGroupUtils.replaceView(titleView, actionbarSpinnerView);
+        View newTitleView = getLayoutInflater().inflate(R.layout.custom_spinner_layout, null);
+        ;
+        actionbarSpinner = (NoDefaultSpinner) newTitleView.findViewById(R.id.custom_spinner);
+        ViewGroupUtils.replaceView(titleView, newTitleView);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getBaseContext(),
                 android.R.layout.simple_spinner_item, new String[]{});
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        actionbarSpinnerView.setAdapter(adapter);
+        actionbarSpinner.setAdapter(adapter);
+        actionbarSpinner.setVisibility(View.GONE);
     }
 
     /**
@@ -152,31 +149,36 @@ public class NavigationTabActivity extends TabActivity implements RefreshActionI
      */
     public void updateSpinnerDropdownItem(String[] items) {
         final String[] devices = items;
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getBaseContext(),
-                android.R.layout.simple_spinner_item, devices);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        actionbarSpinnerView.setAdapter(adapter);
-        actionbarSpinnerView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                final String devName = devices[i];
-                HBluetooth bluetoothSocket = HBluetooth.getInstance(NavigationTabActivity.this);
-                bluetoothSocket.setPrepared(false)
-                        .setDiscoveryMode(false)
-                        .setJudgement(new HJudgeListener() {
-                            @Override
-                            public boolean judge(BluetoothDevice dev) {
-                                String deviceLogName = dev.getName() + "(" + dev.getAddress() + ")";
-                                return deviceLogName.trim().equalsIgnoreCase(devName);
-                            }
-                        }).Start();
-            }
+        if (devices.length > 0) {
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(getBaseContext(),
+                    android.R.layout.simple_spinner_item, devices);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            actionbarSpinner.setAdapter(adapter);
+            actionbarSpinner.setVisibility(View.VISIBLE);
+            actionbarSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                    final String devName = devices[i];
+                    HBluetooth bluetoothSocket = HBluetooth.getInstance(NavigationTabActivity.this);
+                    bluetoothSocket.setPrepared(false)
+                            .setDiscoveryMode(false)
+                            .setJudgement(new HJudgeListener() {
+                                @Override
+                                public boolean judge(BluetoothDevice dev) {
+                                    String deviceLogName = dev.getName() + "(" + dev.getAddress() + ")";
+                                    return deviceLogName.trim().equalsIgnoreCase(devName);
+                                }
+                            }).Start();
+                }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
+                @Override
+                public void onNothingSelected(AdapterView<?> adapterView) {
 
-            }
-        });
+                }
+            });
+        } else {
+            actionbarSpinner.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -186,8 +188,7 @@ public class NavigationTabActivity extends TabActivity implements RefreshActionI
                     .setPrepared(false)
                     .setDiscoveryMode(true)
                     .setHandler(new SearchBluetoothHandler(this)).Start();
-        }
-        else {
+        } else {
             org.holoeverywhere.widget.Toast.makeText(this,
                     R.string.not_connect_device_error,
                     android.widget.Toast.LENGTH_SHORT)

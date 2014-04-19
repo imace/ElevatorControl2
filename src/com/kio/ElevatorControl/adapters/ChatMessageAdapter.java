@@ -53,7 +53,7 @@ public class ChatMessageAdapter extends BaseAdapter {
             if (convertView == null) {
                 ViewGroup viewGroup = (ViewGroup) mInflater.inflate(R.layout.chat_send_message_item, null);
                 sendViewHolder = new SendViewHolder();
-                sendViewHolder.messageContent = (TextView)viewGroup.findViewById(R.id.message_content);
+                sendViewHolder.messageContent = (TextView) viewGroup.findViewById(R.id.message_content);
                 viewGroup.setTag(sendViewHolder);
                 view = viewGroup;
             } else {
@@ -68,7 +68,7 @@ public class ChatMessageAdapter extends BaseAdapter {
             if (convertView == null) {
                 ViewGroup viewGroup = (ViewGroup) mInflater.inflate(R.layout.chat_receive_message_item, null);
                 receiveViewHolder = new ReceiveViewHolder();
-                receiveViewHolder.messageContent = (TextView)viewGroup.findViewById(R.id.message_content);
+                receiveViewHolder.messageContent = (TextView) viewGroup.findViewById(R.id.message_content);
                 viewGroup.setTag(receiveViewHolder);
                 view = viewGroup;
             } else {

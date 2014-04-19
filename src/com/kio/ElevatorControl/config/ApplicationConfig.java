@@ -26,6 +26,8 @@ public class ApplicationConfig {
 
     public static final String CURRENT_FLOOR_NAME = "当前楼层";
 
+    public static final String STATUS_WORD_NAME = "状态字功能";
+
     public static final String HISTORY_ERROR_CODE_NAME = "第&次故障信息";
 
     public static final String LAST_HISTORY_ERROR_CODE_NAME = "最后一次故障";
@@ -195,9 +197,9 @@ public class ApplicationConfig {
     public static final String GetErrorHelpUpdateTimestamp = "";
 
     // 获取故障码
-    // 参数：无
+    // 参数：DeviceType 设备型号
     // 返回值：返回JSON格式的故障码
-    public static final String GetErrorHelp = "HuiChuanAPI.asmx/GetErrHelp";
+    public static final String GetErrorHelp = "HuiChuanAPI.asmx/GetErrHelp?DeviceType=";
 
     // 获取最近一次状态码更新的时间戳
     // 参数：DeviceType 设备型号

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">汇川电梯控制</string>
+    <string name="app_abbreviation_name">Inovance</string>
     <string name="title_activity_container">主页</string>
     <string name="title_activity_login">登陆</string>
     <string name="title_activity_core">汇川</string>
@@ -19,8 +20,8 @@
     <string name="dialog_btn_ok">确定</string>
     <string name="dialog_btn_cancel">取消</string>
     <string name="error_no_data_received">没有数据！</string>
-    <string name="are_you_sure_exit">您确定退出吗？</string>
-    <string name="are_you_sure_message">友情提示</string>
+    <string name="are_you_sure_exit">确定要退出吗？</string>
+    <string name="are_you_sure_message">确认退出</string>
     <string name="label_txt_error_code">故障码</string>
     <string name="label_txt_error_name">故障名称</string>
     <string name="label_txt_error_level">故障级别</string>
@@ -37,6 +38,9 @@
     <string name="company_name_text">汇川技术股份有限公司</string>
     <string name="company_description_text">高效产业 · 清洁能源 · 美好生活</string>
     <string name="company_copyright_text">Copyright ©2004</string>
+
+    <string name="new_value_over_max">设置的新值不符号范围</string>
+    <string name="write_failed_text">写入失败，请尝试重新写入。</string>
 
     <string name="choose_device_tips_text">选择需要连接的设备</string>
     <string name="research_text">重新搜索</string>
@@ -55,8 +59,9 @@
     <string name="elevator_status_text">电梯状态</string>
     <string name="running_speed_text">运行速度</string>
     <string name="door_status_text">开关门状态</string>
+    <string name="system_status_text">系统状态</string>
     <string name="lock_elevator_status_text">轿厢状态</string>
-    <string name="error_code_text">故障</string>
+    <string name="error_code_text">故障状态</string>
     <string name="home_no_error_text">无故障</string>
 
     <!-- 用户注册 -->
@@ -76,6 +81,7 @@
 
     <!-- 当前故障 -->
     <string name="no_error_text">当前未发生故障</string>
+    <string name="view_system_status_text">查看系统状态</string>
 
     <!-- 历史故障 -->
     <string name="history_error_code">故障码</string>
@@ -104,7 +110,7 @@
     <string name="bluetooth_address_text">蓝牙地址</string>
     <string name="current_connected_device_name_text">当前连接设备名称</string>
     <string name="current_connected_device_address_text">当前连接设备蓝牙地址</string>
-    <string name="no_connected_device">未连接任何设备</string>
+    <string name="no_connected_device">当前未连接设备</string>
 
     <!-- 应用程序设置 -->
     <string name="remote_help_text">远程协助</string>

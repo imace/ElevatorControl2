@@ -14,7 +14,6 @@ import org.json.JSONException;
 import org.json.JSONStringer;
 
 import java.util.Date;
-import java.util.List;
 
 /**
  * 参数
@@ -35,6 +34,8 @@ public class ParameterSettings implements Cloneable {
     private String scale;// 最小单位
     private String unit;// 单位名称
     private String type;// 种类
+
+    private String tempScope; // 取得的取值范围
 
     /**
      * 解析后的JSON Array String
@@ -121,8 +122,8 @@ public class ParameterSettings implements Cloneable {
 
     @InstantText(viewId = R.id.code_text)
     public String getCodeText() {
-        if (getCode().length() == 4){
-            return getCode().substring(0, 2) + "-" +getCode().substring(2, 4);
+        if (getCode().length() == 4) {
+            return getCode().substring(0, 2) + "-" + getCode().substring(2, 4);
         }
         return "";
     }
@@ -170,6 +171,14 @@ public class ParameterSettings implements Cloneable {
 
     public void setScope(String scope) {
         this.scope = scope;
+    }
+
+    public String getTempScope() {
+        return tempScope;
+    }
+
+    public void setTempScope(String tempScope) {
+        this.tempScope = tempScope;
     }
 
     public String getDefaultValue() {
@@ -289,7 +298,7 @@ public class ParameterSettings implements Cloneable {
 
     public void setReceived(byte[] data) {
         this.received = data;
-        if (data.length == 8){
+        if (data.length == 8) {
             this.userValue = String.valueOf(ParseSerialsUtils.getIntFromBytes(data));
             this.hexValueString = HSerial.byte2HexStr(new byte[]{data[4], data[5]});
         }

@@ -91,8 +91,7 @@ public class ChooseDeviceActivity extends Activity {
                     .setDiscoveryMode(true)
                     .setHandler(searchHandler)
                     .Start();
-        }
-        else {
+        } else {
             Toast.makeText(this,
                     R.string.not_connect_device_error,
                     android.widget.Toast.LENGTH_SHORT)

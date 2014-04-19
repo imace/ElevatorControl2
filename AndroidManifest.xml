@@ -31,6 +31,7 @@
         <!-- 登陆认证 -->
         <activity
                 android:screenOrientation="portrait"
+                
                 android:theme="@style/Holo.Theme.Light.NoActionBar"
                 android:name=".activities.CheckAuthorizationActivity">
             <intent-filter>
@@ -146,6 +147,7 @@
         <activity
                 android:icon="@drawable/ic_elevator_actionbar_white"
                 android:screenOrientation="portrait"
+                
                 android:windowSoftInputMode="stateAlwaysHidden"
                 android:name=".activities.RegisterUserActivity"/>
         <!-- 关于 -->

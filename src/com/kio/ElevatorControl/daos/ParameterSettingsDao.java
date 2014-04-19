@@ -47,4 +47,16 @@ public class ParameterSettingsDao {
         return new ArrayList<ParameterSettings>();
     }
 
+    /**
+     * Find By Type
+     *
+     * @param context Context
+     * @param type Type
+     * @return List<ParameterSettings>
+     */
+    public static List<ParameterSettings> findByType(Context context, int type) {
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
+        return db.findAllByWhere(ParameterSettings.class, " type = '" + String.valueOf(type) + "'");
+    }
+
 }

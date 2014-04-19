@@ -205,13 +205,18 @@ public class ParseSerialsUtils {
     public static int getElevatorBoxStatusCode(RealTimeMonitor monitor) {
         byte[] data = monitor.getReceived();
         if (data.length == 8) {
-            String bitString = ""
-                    + (byte) ((data[5] >> 7) & 0x1) + (byte) ((data[5] >> 6) & 0x1)
-                    + (byte) ((data[5] >> 5) & 0x1) + (byte) ((data[5] >> 4) & 0x1);
-            return Integer.parseInt(bitString, 2);
+            return data[4] & 0x0f;
         }
         return -1;
-        //String binaryString = String.format("%8s", Integer.toBinaryString(data[5] & 0xFF)).replace(' ', '0');
+    }
+
+    @SuppressLint("GetSystemStatusCode")
+    public static int getSystemStatusCode(RealTimeMonitor monitor) {
+        byte[] data = monitor.getReceived();
+        if (data.length == 8) {
+            return (data[5] >> 4) & 0x0f;
+        }
+        return -1;
     }
 
     /**

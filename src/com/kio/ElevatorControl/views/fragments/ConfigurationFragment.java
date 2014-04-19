@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,7 +29,6 @@ import org.holoeverywhere.widget.ListView;
 import org.holoeverywhere.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -122,23 +122,23 @@ public class ConfigurationFragment extends Fragment {
         List<RealTimeMonitor> monitorList = new ArrayList<RealTimeMonitor>();
         List<RealTimeMonitor> inputMonitor = new ArrayList<RealTimeMonitor>();
         List<RealTimeMonitor> outputMonitor = new ArrayList<RealTimeMonitor>();
-        for (String normal : ApplicationConfig.normalFilters){
+        for (String normal : ApplicationConfig.normalFilters) {
             for (RealTimeMonitor monitor : tempMonitorList) {
-                if (monitor.getName().equalsIgnoreCase(normal)){
+                if (monitor.getName().equalsIgnoreCase(normal)) {
                     monitorList.add(monitor);
                 }
             }
         }
-        for (String input : ApplicationConfig.inputFilters){
+        for (String input : ApplicationConfig.inputFilters) {
             for (RealTimeMonitor monitor : tempMonitorList) {
-                if (monitor.getName().equalsIgnoreCase(input)){
+                if (monitor.getName().equalsIgnoreCase(input)) {
                     inputMonitor.add(monitor);
                 }
             }
         }
-        for (String output : ApplicationConfig.outputFilters){
+        for (String output : ApplicationConfig.outputFilters) {
             for (RealTimeMonitor monitor : tempMonitorList) {
-                if (monitor.getName().equalsIgnoreCase(output)){
+                if (monitor.getName().equalsIgnoreCase(output)) {
                     outputMonitor.add(monitor);
                 }
             }

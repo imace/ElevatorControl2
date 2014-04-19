@@ -1,10 +1,11 @@
 package com.kio.ElevatorControl.activities;
 
 import android.app.AlertDialog;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
@@ -69,17 +70,23 @@ public class ParameterDetailActivity extends Activity {
 
     private TextView waitTextView;
 
+    private TextView descriptionTextView;
+
     private LinearLayout pickerContainer;
 
     private LinearLayout pickerView;
 
-    private SeekBar seekBar;
+    private boolean isWritingData = false;
 
-    private int seekBarStartValue;
-
-    private int seekBarCurrentValue;
+    private boolean isWriteSuccessful = false;
 
     private List<NumberPicker> numberPickerList;
+
+    private int dotIndex = -1;
+
+    private long maxValueLong;
+
+    private long minValueLong;
 
     /**
      * 功能参数详细列表
@@ -104,7 +111,9 @@ public class ParameterDetailActivity extends Activity {
             @Override
             public void run() {
                 if (syncParameterRunning) {
-                    ParameterDetailActivity.this.startCombinationCommunications();
+                    if (!isWritingData) {
+                        ParameterDetailActivity.this.startCombinationCommunications();
+                    }
                     handler.postDelayed(this, SYNC_TIME);
                 }
             }
@@ -150,7 +159,7 @@ public class ParameterDetailActivity extends Activity {
                     if (mode == ApplicationConfig.modifyType[1]) {
                         new AlertDialog.Builder(ParameterDetailActivity.this,
                                 R.style.CustomDialogStyle)
-                                .setTitle(settings.getName() + " " + settings.getCode())
+                                .setTitle(settings.getCodeText() + " " + settings.getName())
                                 .setMessage(R.string.stop_to_modify_message)
                                 .setPositiveButton(R.string.dialog_btn_ok, null)
                                 .create()
@@ -159,7 +168,7 @@ public class ParameterDetailActivity extends Activity {
                     if (mode == ApplicationConfig.modifyType[2]) {
                         new AlertDialog.Builder(ParameterDetailActivity.this,
                                 R.style.CustomDialogStyle)
-                                .setTitle(settings.getName() + " " + settings.getCode())
+                                .setTitle(settings.getCodeText() + " " + settings.getName())
                                 .setMessage(R.string.cannot_modify_message)
                                 .setPositiveButton(R.string.dialog_btn_ok, null)
                                 .create()
@@ -179,45 +188,61 @@ public class ParameterDetailActivity extends Activity {
             }
         }
         View dialogView = getLayoutInflater().inflate(R.layout.parameter_picker_dialog, null);
-        TextView descriptionTextView = (TextView) dialogView.findViewById(R.id.description_text);
+        descriptionTextView = (TextView) dialogView.findViewById(R.id.description_text);
         waitTextView = (TextView) dialogView.findViewById(R.id.wait_text);
         pickerContainer = (LinearLayout) dialogView.findViewById(R.id.picker_container);
         pickerView = (LinearLayout) dialogView.findViewById(R.id.picker_view);
-        seekBar = (SeekBar) dialogView.findViewById(R.id.seek_bar);
         AlertDialog.Builder builder = new AlertDialog.Builder(ParameterDetailActivity.this,
                 R.style.CustomDialogStyle)
                 .setView(dialogView)
-                .setTitle(settings.getName() + " " + settings.getCode())
+                .setTitle(settings.getCodeText() + " " + settings.getName())
                 .setNeutralButton(R.string.dialog_btn_cancel, null)
                 .setPositiveButton(R.string.dialog_btn_ok, null);
         detailDialog = builder.create();
         detailDialog.show();
+        detailDialog.setCancelable(false);
+        detailDialog.setCanceledOnTouchOutside(false);
         cancelButton = detailDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
         confirmButton = detailDialog.getButton(AlertDialog.BUTTON_POSITIVE);
         detailDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int userValue = ParameterDetailActivity.this.seekBarCurrentValue
-                        - ParameterDetailActivity.this.seekBarStartValue;
-                startSetNewValueCommunications(index, String.format("%04x ", userValue));
-                detailDialog.dismiss();
+                // TODO Get Value
+                if (pickerView != null) {
+                    List<String> stringList = new ArrayList<String>();
+                    for (NumberPicker picker : numberPickerList) {
+                        stringList.add(String.valueOf(picker.getValue()));
+                    }
+                    if (dotIndex != -1) {
+                        stringList.add(dotIndex, ".");
+                    }
+                    String valueString = "";
+                    for (String string : stringList) {
+                        valueString += string;
+                    }
+                    String userValueString = valueString.replaceFirst("^0+(?!$)", "");
+                    final Long userValueLong = Math.round(Double.parseDouble(userValueString)
+                            / (Double.parseDouble(settings.getScale())));
+                    if (userValueLong >= minValueLong && userValueLong <= maxValueLong) {
+                        startSetNewValueCommunications(index, String.format("%04x ", userValueLong.intValue()));
+                    } else {
+                        Toast.makeText(ParameterDetailActivity.this,
+                                R.string.new_value_over_max,
+                                android.widget.Toast.LENGTH_SHORT)
+                                .show();
+                    }
+                }
             }
         });
         detailDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                detailDialog.dismiss();
             }
         });
-        String unit = settings.getUnit().length() == 0 ? "" : " 单位:" + settings.getUnit();
-        descriptionTextView.setText("取值范围:" + settings.getScope()
-                + " 默认值:" + settings.getDefaultValue()
-                + unit);
         if (count != 0) {
             cancelButton.setEnabled(false);
             confirmButton.setEnabled(false);
-            detailDialog.setCancelable(false);
-            detailDialog.setCanceledOnTouchOutside(false);
             ParameterDetailActivity.this.syncParameterRunning = false;
             List<String> codeArray = ParameterDetailActivity.this.getCodeStringArray(settings);
             ParameterDetailActivity.this.createCommunications(codeArray, index, settings);
@@ -227,155 +252,86 @@ public class ParameterDetailActivity extends Activity {
     }
 
     private void createNumberPickerAndBindListener(final ParameterSettings settings) {
-        String[] scopeArray = settings.getScope().split("~");
+        String[] scopeArray;
+        if (settings.getTempScope() != null) {
+            scopeArray = settings.getTempScope().split("~");
+        } else {
+            scopeArray = settings.getScope().split("~");
+        }
         if (scopeArray.length == 2) {
-            final String minValueString = settings.getScope().split("~")[0];
-            final String maxValueString = settings.getScope().split("~")[1];
-            final Long minValueLong = Math.round(Double.parseDouble(minValueString)
+            String minValueString = scopeArray[0];
+            String maxValueString = scopeArray[1];
+            minValueLong = Math.round(Double.parseDouble(minValueString)
                     / (Double.parseDouble(settings.getScale())));
-            final Long maxValueLong = Math.round(Double.parseDouble(maxValueString)
+            maxValueLong = Math.round(Double.parseDouble(maxValueString)
                     / (Double.parseDouble(settings.getScale())));
-            numberPickerList = new ArrayList<NumberPicker>();
+            String currentValueString = settings.getFinalValue();
+            if (settings.getFinalValue().length() < maxValueString.length()) {
+                int leadZeroCount = maxValueString.length() - currentValueString.length();
+                String leadZeroString = "";
+                for (int i = 0; i < leadZeroCount; i++) {
+                    leadZeroString += "0";
+                }
+                currentValueString = leadZeroString + currentValueString;
+            }
             int totals = maxValueString.length();
+            dotIndex = -1;
+            numberPickerList = new ArrayList<NumberPicker>();
             for (int i = 0; i < totals; i++) {
                 String valueChar = Character.toString(maxValueString.charAt(i));
-                NumberPicker picker = new NumberPicker(this);
-                picker.setWrapSelectorWheel(false);
-                picker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
-                if (ParseSerialsUtils.isInteger(valueChar)) {
-                    picker.setMinValue(0);
-                    picker.setMaxValue(9);
-                }
-                if (valueChar.equalsIgnoreCase(".")) {
-                    picker.setMinValue(0);
-                    picker.setMaxValue(0);
-                    picker.setDisplayedValues(new String[]{"."});
-                }
+                String currentValueChar = Character.toString(currentValueString.charAt(i));
                 int margin = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5,
                         getResources().getDisplayMetrics()));
                 LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.WRAP_CONTENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT);
-                layoutParams.setMargins(0, 0, margin, 0);
-                numberPickerList.add(picker);
-                pickerView.addView(picker, layoutParams);
-                picker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
-                    @Override
-                    public void onValueChange(NumberPicker picker, int oldValue, int newValue) {
-                        if (numberPickerList != null) {
-                            String valueString = "";
-                            for (NumberPicker item : numberPickerList) {
-                                String[] displayValue = item.getDisplayedValues();
-                                if (displayValue == null) {
-                                    valueString += item.getValue();
-                                } else {
-                                    if (displayValue.length == 1 && displayValue[0].equalsIgnoreCase(".")) {
-                                        valueString += ".";
-                                    }
-                                }
-                            }
-                            Log.v("AAABBB-AA", valueString);
-                            if (valueString.contains(".")) {
-                                String userValueString = valueString.replaceFirst("^0+(?!$)", "");
-                                if (Character.toString(userValueString.charAt(0)).equalsIgnoreCase(".")) {
-                                    userValueString = "0" + userValueString;
-                                }
-                                if (seekBar != null) {
-                                    final Long finalValueLong = Math.round(Double.parseDouble(userValueString)
-                                            / (Double.parseDouble(settings.getScale())));
-                                    int setValue = finalValueLong.intValue() - minValueLong.intValue();
-                                    if (setValue >= 0 && setValue <= seekBar.getProgress()) {
-                                        seekBar.setProgress(setValue);
-                                    }
-                                    if (setValue > seekBar.getProgress()) {
-                                        seekBar.setProgress(maxValueLong.intValue() - minValueLong.intValue());
-                                    }
-                                }
-                            } else {
-                                String userValueString = valueString.replaceFirst("^0+(?!$)", "");
-                                Log.v("AAABBB-CC", userValueString);
-                                int userValue = userValueString.length() == 0 ? 0 : Integer.parseInt(userValueString);
-                                if (userValue <= maxValueLong.intValue()) {
-                                    if (seekBar != null) {
-                                        int setValue = userValue - minValueLong.intValue();
-                                        if (setValue >= 0 && setValue <= seekBar.getProgress()) {
-                                            seekBar.setProgress(setValue);
-                                        }
-                                        if (setValue > seekBar.getProgress()) {
-                                            seekBar.setProgress(maxValueLong.intValue() - minValueLong.intValue());
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
+                if (ParseSerialsUtils.isInteger(valueChar)) {
+                    NumberPicker picker = new NumberPicker(this);
+                    picker.setWrapSelectorWheel(false);
+                    picker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
+                    picker.setMinValue(0);
+                    picker.setMaxValue(9);
+                    picker.setValue(Integer.parseInt(currentValueChar));
+                    layoutParams.setMargins(0, 0, margin, 0);
+                    pickerView.addView(picker, layoutParams);
+                    numberPickerList.add(picker);
+                }
+                if (valueChar.equalsIgnoreCase(".")) {
+                    TextView textView = new TextView(this);
+                    textView.setText(".");
+                    textView.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                    layoutParams.setMargins(0, 15, margin, 0);
+                    pickerView.addView(textView, layoutParams);
+                    dotIndex = i;
+                }
             }
-            // Bind seekBar Listener
-            ParameterDetailActivity.this.seekBarStartValue = minValueLong.intValue();
-            seekBar.setMax(maxValueLong.intValue() - minValueLong.intValue());
-            seekBar.setProgress(1);
-            seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    ParameterDetailActivity.this.seekBarCurrentValue = seekBar.getProgress();
-                    int currentValue = ParameterDetailActivity.this.seekBarCurrentValue
-                            + ParameterDetailActivity.this.seekBarStartValue;
-                    String finalValueString = "";
-                    try {
-                        String valueString = currentValue / Integer.parseInt(settings.getScale()) + "";
-                        int leadZero = maxValueString.length() - valueString.length();
-                        String prefix = "";
-                        for (int i = 0; i < leadZero; i++) {
-                            prefix += "0";
-                        }
-                        finalValueString = prefix + valueString;
-                    } catch (Exception e) {
-                        double pickerValue = currentValue / Double.parseDouble(settings.getScale());
-                        String[] valueArray = maxValueString.split(".");
-                        if (valueArray.length == 2) {
-                            finalValueString = String.format("%." + valueArray.length + "f", pickerValue);
-                            if (finalValueString.length() != maxValueString.length()) {
-                                int leadZero = maxValueString.length() - finalValueString.length();
-                                String prefix = "";
-                                for (int i = 0; i < leadZero; i++) {
-                                    prefix += "0";
-                                }
-                                finalValueString = prefix + finalValueString;
-                            }
-                        }
-                    }
-                    if (numberPickerList != null) {
-                        if (finalValueString.length() == maxValueString.length()) {
-                            int totals = finalValueString.length();
-                            for (int i = 0; i < totals; i++) {
-                                NumberPicker picker = numberPickerList.get(i);
-                                String valueChar = Character.toString(finalValueString.charAt(i));
-                                if (ParseSerialsUtils.isInteger(valueChar)) {
-                                    picker.setValue(Integer.parseInt(valueChar));
-                                }
-                            }
-                        }
-                    }
-                }
-
-                @Override
-                public void onStartTrackingTouch(SeekBar seekBar) {
-
-                }
-
-                @Override
-                public void onStopTrackingTouch(SeekBar seekBar) {
-
-                }
-            });
         }
+        if (settings.getTempScope() != null) {
+            settings.getTempScope().split("~");
+        }
+        int index = 0;
+        String scopeString = "";
+        for (String scope : settings.getScope().split("~")) {
+            if (scope.contains("F")) {
+                scopeString += settings.getScope().split("~")[index]
+                        + "(" + settings.getTempScope().split("~")[index] + ")";
+            } else {
+                scopeString += settings.getScope().split("~")[index];
+            }
+            if (index != settings.getScope().split("~").length - 1) {
+                scopeString += "-";
+            }
+            index++;
+        }
+        String unit = settings.getUnit().length() == 0 ? "" : " 单位:" + settings.getUnit();
+        String metaText = "取值范围:" + scopeString + " "
+                + " 默认值:" + settings.getDefaultValue() + " "
+                + unit;
+        descriptionTextView.setText(metaText);
         waitTextView.setVisibility(View.GONE);
         pickerContainer.setVisibility(View.VISIBLE);
         cancelButton.setEnabled(true);
         confirmButton.setEnabled(true);
-        detailDialog.setCancelable(true);
-        detailDialog.setCanceledOnTouchOutside(true);
     }
 
     private void onClickListViewWithIndex(final int index) {
@@ -385,6 +341,8 @@ public class ParameterDetailActivity extends Activity {
         builder.setPositiveButton(R.string.dialog_btn_ok, null);
         detailDialog = builder.create();
         detailDialog.show();
+        detailDialog.setCancelable(false);
+        detailDialog.setCanceledOnTouchOutside(false);
         cancelButton = detailDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
         confirmButton = detailDialog.getButton(AlertDialog.BUTTON_POSITIVE);
         detailDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
@@ -513,7 +471,7 @@ public class ParameterDetailActivity extends Activity {
     private void startSetNewValueCommunications(int position, String value) {
         final String newSettingValue = value;
         final ParameterSettings settings = settingsList.get(position);
-        HCommunication[] communications = new HCommunication[]{
+        final HCommunication[] communications = new HCommunication[]{
                 new HCommunication() {
                     @Override
                     public void beforeSend() {
@@ -550,11 +508,33 @@ public class ParameterDetailActivity extends Activity {
                 }
         };
         if (HBluetooth.getInstance(ParameterDetailActivity.this).isPrepared()) {
+            ParameterDetailActivity.this.isWritingData = true;
+            ParameterDetailActivity.this.isWriteSuccessful = false;
             updateHandler.index = position;
-            HBluetooth.getInstance(ParameterDetailActivity.this)
-                    .setHandler(updateHandler)
-                    .setCommunications(communications)
-                    .Start();
+            new CountDownTimer(1500, 500) {
+                public void onTick(long millisUntilFinished) {
+                    if (!ParameterDetailActivity.this.isWriteSuccessful) {
+                        HBluetooth.getInstance(ParameterDetailActivity.this)
+                                .setHandler(updateHandler)
+                                .setCommunications(communications)
+                                .Start();
+                    } else {
+                        ParameterDetailActivity.this.isWritingData = false;
+                        if (detailDialog != null) {
+                            detailDialog.dismiss();
+                        }
+                    }
+                }
+
+                public void onFinish() {
+                    if (!ParameterDetailActivity.this.isWriteSuccessful) {
+                        Toast.makeText(ParameterDetailActivity.this,
+                                R.string.write_failed_text,
+                                android.widget.Toast.LENGTH_SHORT).show();
+                    }
+                    ParameterDetailActivity.this.isWritingData = true;
+                }
+            }.start();
         } else {
             Toast.makeText(this,
                     R.string.not_connect_device_error,
@@ -690,6 +670,7 @@ public class ParameterDetailActivity extends Activity {
                 ParameterSettings settings = (ParameterSettings) msg.obj;
                 ParameterDetailActivity.this.settingsList.set(index, settings);
                 ParameterDetailActivity.this.instantAdapter.notifyDataSetChanged();
+                ParameterDetailActivity.this.isWriteSuccessful = true;
             }
         }
 
@@ -747,7 +728,7 @@ public class ParameterDetailActivity extends Activity {
                         }
                         index++;
                     }
-                    settings.setScope(scopeString);
+                    settings.setTempScope(scopeString);
                 }
                 ParameterDetailActivity.this.createNumberPickerAndBindListener(settings);
                 ParameterDetailActivity.this.syncParameterRunning = true;
@@ -772,4 +753,5 @@ public class ParameterDetailActivity extends Activity {
             ParameterDetailActivity.this.createCommunications(codeArray, index, settings);
         }
     }
+
 }

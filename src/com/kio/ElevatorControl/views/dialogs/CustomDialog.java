@@ -100,40 +100,6 @@ public class CustomDialog {
                 e.printStackTrace();
             }
         }
-        if (monitor.getDescriptionType() == ApplicationConfig.specialTypeInput) {
-            if (monitor.dataArray.size() == 4) {
-                int[] values = new int[]{
-                        ParseSerialsUtils.getIntFromBytes(monitor.dataArray.get(0)),
-                        ParseSerialsUtils.getIntFromBytes(monitor.dataArray.get(1)),
-                        ParseSerialsUtils.getIntFromBytes(monitor.dataArray.get(2)),
-                        ParseSerialsUtils.getIntFromBytes(monitor.dataArray.get(3))
-                };
-                int index = 0;
-                for (String name : ApplicationConfig.inputFilters) {
-                    ParameterStatusItem status = new ParameterStatusItem();
-                    status.name = name;
-                    status.status = values[index] != 0;
-                    statusList.add(status);
-                    index++;
-                }
-            }
-        }
-        if (monitor.getDescriptionType() == ApplicationConfig.specialTypeOutput) {
-            if (monitor.dataArray.size() == 2) {
-                int[] values = new int[]{
-                        ParseSerialsUtils.getIntFromBytes(monitor.dataArray.get(0)),
-                        ParseSerialsUtils.getIntFromBytes(monitor.dataArray.get(1))
-                };
-                int index = 0;
-                for (String name : ApplicationConfig.outputFilters) {
-                    ParameterStatusItem status = new ParameterStatusItem();
-                    status.name = name;
-                    status.status = values[index] != 0;
-                    statusList.add(status);
-                    index++;
-                }
-            }
-        }
         InstantAdapter<ParameterStatusItem> adapter = new InstantAdapter<ParameterStatusItem>(
                 activity.getBaseContext(),
                 R.layout.terminal_status_item,
@@ -142,7 +108,7 @@ public class CustomDialog {
         listView.setAdapter(adapter);
         return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
                 .setView(dialogView)
-                .setTitle(monitor.getName() + " " + monitor.getCode())
+                .setTitle(monitor.getCodeText() + " " + monitor.getName())
                 .setNeutralButton(R.string.dialog_btn_ok, null);
     }
 
@@ -162,7 +128,7 @@ public class CustomDialog {
                         .setSingleChoiceItems(charArray,
                                 ParseSerialsUtils.getIntFromBytes(settings.getReceived()),
                                 null)
-                        .setTitle(settings.getName() + " " + settings.getCode())
+                        .setTitle(settings.getCodeText() + " " + settings.getName())
                         .setNeutralButton(R.string.dialog_btn_cancel, null);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -188,14 +154,14 @@ public class CustomDialog {
                 listView.setAdapter(adapter);
                 return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
                         .setView(dialogView)
-                        .setTitle(settings.getName() + " " + settings.getCode())
+                        .setTitle(settings.getCodeText() + " " + settings.getName())
                         .setNeutralButton(R.string.dialog_btn_cancel, null);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
         return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
-                .setTitle(settings.getName() + " " + settings.getCode())
+                .setTitle(settings.getCodeText() + " " + settings.getName())
                 .setNeutralButton(R.string.dialog_btn_cancel, null);
     }
 

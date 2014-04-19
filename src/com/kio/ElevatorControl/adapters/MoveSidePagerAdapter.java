@@ -2,7 +2,6 @@ package com.kio.ElevatorControl.adapters;
 
 import android.content.Context;
 import android.graphics.Point;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.*;
 import android.widget.AdapterView;
@@ -14,8 +13,6 @@ import com.kio.ElevatorControl.views.TypefaceTextView;
 import com.kio.ElevatorControl.views.viewpager.PagerAdapter;
 import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.widget.GridView;
-
-import java.util.Arrays;
 
 /**
  * Created by IntelliJ IDEA.

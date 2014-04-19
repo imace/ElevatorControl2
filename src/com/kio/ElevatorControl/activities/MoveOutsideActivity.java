@@ -1,6 +1,7 @@
 package com.kio.ElevatorControl.activities;
 
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
 import android.view.MenuItem;
@@ -65,6 +66,12 @@ public class MoveOutsideActivity extends Activity {
 
     private Handler syncHandler = new Handler();
 
+    private FloorHandler floorHandler;
+
+    private boolean isWritingData = false;
+
+    private boolean isWriteSuccessful = false;
+
     /**
      * 同步间隔
      */
@@ -99,6 +106,7 @@ public class MoveOutsideActivity extends Activity {
             }
         });
         mMoveOutsideHandler = new MoveOutsideHandler(this);
+        floorHandler = new FloorHandler(this);
         realTimeMonitors = RealTimeMonitorDao.findByType(this, codeType);
         createGetFloorsCommunication();
         syncTask = new Runnable() {
@@ -106,7 +114,9 @@ public class MoveOutsideActivity extends Activity {
             public void run() {
                 if (running) {
                     if (hasGetFloors) {
-                        MoveOutsideActivity.this.syncElevatorCurrentFloorStatus();
+                        if (!isWritingData) {
+                            MoveOutsideActivity.this.syncElevatorCurrentFloorStatus();
+                        }
                     } else {
                         MoveOutsideActivity.this.loadDataAndRenderView();
                     }
@@ -222,12 +232,50 @@ public class MoveOutsideActivity extends Activity {
 
     @OnClick(R.id.up_button)
     void OnUpButtonClick(View view) {
-        moveOutsideCallFloor(selectedFloor, true);
+        MoveOutsideActivity.this.isWritingData = true;
+        MoveOutsideActivity.this.isWriteSuccessful = false;
+        new CountDownTimer(1500, 500) {
+            public void onTick(long millisUntilFinished) {
+                if (!MoveOutsideActivity.this.isWriteSuccessful) {
+                    moveOutsideCallFloor(selectedFloor, true);
+                } else {
+                    MoveOutsideActivity.this.isWritingData = false;
+                }
+            }
+
+            public void onFinish() {
+                if (!MoveOutsideActivity.this.isWriteSuccessful) {
+                    Toast.makeText(MoveOutsideActivity.this,
+                            R.string.write_failed_text,
+                            android.widget.Toast.LENGTH_SHORT).show();
+                }
+                MoveOutsideActivity.this.isWritingData = true;
+            }
+        }.start();
     }
 
     @OnClick(R.id.down_button)
     void OnDownButtonClick(View view) {
-        moveOutsideCallFloor(selectedFloor, false);
+        MoveOutsideActivity.this.isWritingData = true;
+        MoveOutsideActivity.this.isWriteSuccessful = false;
+        new CountDownTimer(1500, 500) {
+            public void onTick(long millisUntilFinished) {
+                if (!MoveOutsideActivity.this.isWriteSuccessful) {
+                    moveOutsideCallFloor(selectedFloor, false);
+                } else {
+                    MoveOutsideActivity.this.isWritingData = false;
+                }
+            }
+
+            public void onFinish() {
+                if (!MoveOutsideActivity.this.isWriteSuccessful) {
+                    Toast.makeText(MoveOutsideActivity.this,
+                            R.string.write_failed_text,
+                            android.widget.Toast.LENGTH_SHORT).show();
+                }
+                MoveOutsideActivity.this.isWritingData = true;
+            }
+        }.start();
     }
 
     /**
@@ -286,6 +334,12 @@ public class MoveOutsideActivity extends Activity {
         }
     }
 
+    /**
+     * 外召
+     *
+     * @param floor Floor
+     * @param isUp  Is up
+     */
     private void moveOutsideCallFloor(int floor, boolean isUp) {
         final String[] codeArray = getCallCode(floor, isUp);
         HCommunication[] communications = new HCommunication[]{
@@ -319,7 +373,9 @@ public class MoveOutsideActivity extends Activity {
                 }
         };
         if (HBluetooth.getInstance(MoveOutsideActivity.this).isPrepared()) {
+            floorHandler.writeCode = codeArray[0];
             HBluetooth.getInstance(MoveOutsideActivity.this)
+                    .setHandler(floorHandler)
                     .setCommunications(communications)
                     .Start();
         } else {
@@ -389,6 +445,41 @@ public class MoveOutsideActivity extends Activity {
         }
 
     };
+
+    // ==================================== 召唤楼层 =================================================//
+
+    /**
+     * 召唤楼层
+     */
+    private class FloorHandler extends HHandler {
+
+        public String writeCode;
+
+        public FloorHandler(Activity activity) {
+            super(activity);
+            TAG = FloorHandler.class.getSimpleName();
+        }
+
+        @Override
+        public void onMultiTalkBegin(Message msg) {
+            super.onMultiTalkBegin(msg);
+        }
+
+        @Override
+        public void onMultiTalkEnd(Message msg) {
+            super.onMultiTalkEnd(msg);
+        }
+
+        @Override
+        public void onTalkReceive(Message msg) {
+            if (msg.obj != null && msg.obj instanceof String) {
+                if (((String) msg.obj).contains(writeCode)) {
+                    MoveOutsideActivity.this.isWriteSuccessful = true;
+                }
+            }
+        }
+
+    }
 
     // =================================== MoveOutside Handler ==============================
 

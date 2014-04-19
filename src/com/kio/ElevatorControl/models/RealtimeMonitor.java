@@ -37,7 +37,7 @@ public class RealTimeMonitor implements Cloneable {
     private String type;// 种类
     private boolean showBit = false;// 是否详细描述每一位上的值,默认是false
 
-    public List<byte[]> dataArray;
+    private byte[] combineBytes;
     /**
      * 无描述返回     0
      * 数值计算匹配   1
@@ -121,6 +121,13 @@ public class RealTimeMonitor implements Cloneable {
 
     public String getCode() {
         return code;
+    }
+
+    public String getCodeText() {
+        if (getCode().length() == 4) {
+            return getCode().substring(0, 2) + "-" + getCode().substring(2, 4);
+        }
+        return "";
     }
 
     public void setCode(String code) {
@@ -331,6 +338,14 @@ public class RealTimeMonitor implements Cloneable {
 
     public void setJSONDescription(String JSONDescription) {
         this.JSONDescription = JSONDescription;
+    }
+
+    public byte[] getCombineBytes() {
+        return combineBytes;
+    }
+
+    public void setCombineBytes(byte[] combineBytes) {
+        this.combineBytes = combineBytes;
     }
 
     public Object clone() throws CloneNotSupportedException {

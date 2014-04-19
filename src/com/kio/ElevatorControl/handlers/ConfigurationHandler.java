@@ -3,7 +3,6 @@ package com.kio.ElevatorControl.handlers;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.os.Message;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import com.hbluetooth.HHandler;
@@ -16,7 +15,6 @@ import com.mobsandgeeks.adapters.InstantAdapter;
 import org.holoeverywhere.widget.ListView;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -51,51 +49,75 @@ public class ConfigurationHandler extends HHandler {
             final List<RealTimeMonitor> finalList = new ArrayList<RealTimeMonitor>();
             List<RealTimeMonitor> inputMonitor = new ArrayList<RealTimeMonitor>();
             List<RealTimeMonitor> outputMonitor = new ArrayList<RealTimeMonitor>();
-            for (String normal : ApplicationConfig.normalFilters){
+            for (String normal : ApplicationConfig.normalFilters) {
                 for (RealTimeMonitor monitor : monitorList) {
-                    if (monitor.getName().equalsIgnoreCase(normal)){
+                    if (monitor.getName().equalsIgnoreCase(normal)) {
                         finalList.add(monitor);
                     }
                 }
             }
-            for (String input : ApplicationConfig.inputFilters){
+            for (String input : ApplicationConfig.inputFilters) {
                 for (RealTimeMonitor monitor : monitorList) {
-                    if (monitor.getName().equalsIgnoreCase(input)){
+                    if (monitor.getName().equalsIgnoreCase(input)) {
                         inputMonitor.add(monitor);
+                        break;
                     }
                 }
             }
-            for (String output : ApplicationConfig.outputFilters){
+            for (String output : ApplicationConfig.outputFilters) {
                 for (RealTimeMonitor monitor : monitorList) {
-                    if (monitor.getName().equalsIgnoreCase(output)){
+                    if (monitor.getName().equalsIgnoreCase(output)) {
                         outputMonitor.add(monitor);
+                        break;
                     }
                 }
             }
             if (inputMonitor.size() == 4) {
-                RealTimeMonitor monitor = inputMonitor.get(0);
-                monitor.dataArray = new ArrayList<byte[]>();
-                monitor.dataArray.add(inputMonitor.get(0).getReceived());
-                monitor.dataArray.add(inputMonitor.get(1).getReceived());
-                monitor.dataArray.add(inputMonitor.get(2).getReceived());
-                monitor.dataArray.add(inputMonitor.get(3).getReceived());
-                monitor.setCode(inputMonitor.get(0).getCode()
-                        + "+" + inputMonitor.get(1).getCode()
-                        + "+" + inputMonitor.get(2).getCode()
-                        + "+" + inputMonitor.get(3).getCode());
-                monitor.setDescriptionType(ApplicationConfig.specialTypeInput);
-                monitor.setName("输入端子");
-                finalList.add(monitor);
+                try {
+                    RealTimeMonitor monitor = (RealTimeMonitor) inputMonitor.get(0).clone();
+                    monitor.setName("输入端子");
+                    byte[] combineBytes = new byte[]{
+                            inputMonitor.get(0).getReceived()[4],
+                            inputMonitor.get(0).getReceived()[5],
+
+                            inputMonitor.get(1).getReceived()[4],
+                            inputMonitor.get(1).getReceived()[5],
+
+                            inputMonitor.get(2).getReceived()[4],
+                            inputMonitor.get(2).getReceived()[5],
+
+                            inputMonitor.get(3).getReceived()[4],
+                            inputMonitor.get(3).getReceived()[5],
+                    };
+                    monitor.setCombineBytes(combineBytes);
+                    monitor.setCode(inputMonitor.get(0).getCode()
+                            + "+" + inputMonitor.get(1).getCode()
+                            + "+" + inputMonitor.get(2).getCode()
+                            + "+" + inputMonitor.get(3).getCode());
+                    monitor.setDescriptionType(ApplicationConfig.specialTypeInput);
+                    finalList.add(monitor);
+                } catch (CloneNotSupportedException e) {
+                    e.printStackTrace();
+                }
             }
             if (outputMonitor.size() == 2) {
-                RealTimeMonitor monitor = outputMonitor.get(0);
-                monitor.dataArray = new ArrayList<byte[]>();
-                monitor.dataArray.add(inputMonitor.get(0).getReceived());
-                monitor.dataArray.add(inputMonitor.get(1).getReceived());
-                monitor.setCode(outputMonitor.get(0).getCode() + "+" + outputMonitor.get(0).getCode());
-                monitor.setDescriptionType(ApplicationConfig.specialTypeOutput);
-                monitor.setName("输出端子");
-                finalList.add(monitor);
+                try {
+                    RealTimeMonitor monitor = (RealTimeMonitor) inputMonitor.get(0).clone();
+                    monitor.setName("输出端子");
+                    byte[] combineBytes = new byte[]{
+                            outputMonitor.get(0).getReceived()[4],
+                            outputMonitor.get(0).getReceived()[4],
+
+                            outputMonitor.get(1).getReceived()[4],
+                            outputMonitor.get(1).getReceived()[5],
+                    };
+                    monitor.setCombineBytes(combineBytes);
+                    monitor.setCode(outputMonitor.get(0).getCode() + "+" + outputMonitor.get(0).getCode());
+                    monitor.setDescriptionType(ApplicationConfig.specialTypeOutput);
+                    finalList.add(monitor);
+                } catch (CloneNotSupportedException e) {
+                    e.printStackTrace();
+                }
             }
             ListView listView = (ListView) ((ConfigurationActivity) activity).pager.findViewById(R.id.monitor_list);
             InstantAdapter<RealTimeMonitor> monitorInstantAdapter = new InstantAdapter<RealTimeMonitor>(
@@ -108,10 +130,17 @@ public class ConfigurationHandler extends HHandler {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                     RealTimeMonitor monitor = finalList.get(position);
-                    if (monitor.getDescriptionType() != ApplicationConfig.DESCRIPTION_TYPE[0]) {
+                    if (monitor.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[2] ||
+                            monitor.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[3]) {
                         AlertDialog dialog = CustomDialog.terminalDetailDialog(activity, monitor).create();
                         dialog.setInverseBackgroundForced(true);
                         dialog.show();
+                    }
+                    if (monitor.getDescriptionType() == ApplicationConfig.specialTypeInput) {
+                        ((ConfigurationActivity) activity).seeInputTerminalStatus(monitor);
+                    }
+                    if (monitor.getDescriptionType() == ApplicationConfig.specialTypeOutput) {
+                        ((ConfigurationActivity) activity).seeOutputTerminalStatus(monitor);
                     }
                 }
             });

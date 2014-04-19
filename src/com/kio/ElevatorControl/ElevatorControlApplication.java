@@ -4,8 +4,6 @@ import com.kio.ElevatorControl.cache.LruCacheTool;
 import com.kio.ElevatorControl.config.ApplicationConfig;
 import com.kio.ElevatorControl.daos.ShortcutDao;
 import com.kio.ElevatorControl.models.Shortcut;
-import org.acra.ACRA;
-import org.acra.annotation.ReportsCrashes;
 import org.holoeverywhere.HoloEverywhere;
 import org.holoeverywhere.app.Application;
 import org.holoeverywhere.preference.SharedPreferences;

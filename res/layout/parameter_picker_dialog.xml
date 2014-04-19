@@ -40,13 +40,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
             </LinearLayout>
-            <org.holoeverywhere.widget.SeekBar
-                    android:id="@+id/seek_bar"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp"
-                    android:layout_marginBottom="20dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"/>
         </LinearLayout>
         <org.holoeverywhere.widget.TextView
                 android:id="@+id/wait_text"

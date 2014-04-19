@@ -1,5 +1,6 @@
 package com.kio.ElevatorControl.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -113,6 +114,13 @@ public class TroubleAnalyzeActivity extends Activity {
                 loadHistoryTroubleView();
                 break;
         }
+    }
+
+    /**
+     * 查看系统状态
+     */
+    public void viewCurrentSystemStatus() {
+        startActivity(new Intent(this, ViewSystemStatusActivity.class));
     }
 
     /**

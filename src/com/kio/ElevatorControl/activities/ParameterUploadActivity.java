@@ -368,7 +368,7 @@ public class ParameterUploadActivity extends Activity {
             holder.uploadButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if (HBluetooth.getInstance(ParameterUploadActivity.this).isPrepared()){
+                    if (HBluetooth.getInstance(ParameterUploadActivity.this).isPrepared()) {
                         AlertDialog.Builder builder = new android.app.AlertDialog.Builder(ParameterUploadActivity.this, R.style.CustomDialogStyle)
                                 .setTitle(R.string.upload_dialog_title)
                                 .setMessage(R.string.upload_dialog_message)
@@ -380,8 +380,7 @@ public class ParameterUploadActivity extends Activity {
                                     }
                                 });
                         builder.create().show();
-                    }
-                    else {
+                    } else {
                         Toast.makeText(ParameterUploadActivity.this,
                                 R.string.not_connect_device_error,
                                 android.widget.Toast.LENGTH_SHORT)

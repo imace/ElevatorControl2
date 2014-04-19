@@ -1,9 +1,9 @@
 package com.kio.ElevatorControl.activities;
 
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.MenuItem;
 import butterknife.InjectView;
 import butterknife.OnClick;
@@ -63,6 +63,10 @@ public class MoveInsideActivity extends Activity {
 
     private Handler syncHandler = new Handler();
 
+    private boolean isWritingData = false;
+
+    private boolean isWriteSuccessful = false;
+
     /**
      * 同步间隔
      */
@@ -107,7 +111,9 @@ public class MoveInsideActivity extends Activity {
             public void run() {
                 if (running) {
                     if (hasGetFloors) {
-                        MoveInsideActivity.this.syncElevatorCurrentFloorStatus();
+                        if (!isWritingData) {
+                            MoveInsideActivity.this.syncElevatorCurrentFloorStatus();
+                        }
                     } else {
                         MoveInsideActivity.this.loadDataAndRenderView();
                     }
@@ -350,6 +356,11 @@ public class MoveInsideActivity extends Activity {
         }
     }
 
+    /**
+     * 召唤楼层
+     *
+     * @param floor Floor
+     */
     private void moveInsideCallFloor(int floor) {
         final String[] codeArray = getCallCode(floor);
         HCommunication[] communications = new HCommunication[]{
@@ -383,7 +394,9 @@ public class MoveInsideActivity extends Activity {
                 }
         };
         if (HBluetooth.getInstance(MoveInsideActivity.this).isPrepared()) {
+            floorHandler.writeCode = codeArray[0];
             HBluetooth.getInstance(MoveInsideActivity.this)
+                    .setHandler(floorHandler)
                     .setCommunications(communications)
                     .Start();
         } else {
@@ -498,7 +511,27 @@ public class MoveInsideActivity extends Activity {
                     adapter.setOnSelectFloorListener(new MoveSidePagerAdapter.onSelectFloorListener() {
                         @Override
                         public void onSelect(int floor) {
-                            MoveInsideActivity.this.moveInsideCallFloor(floor);
+                            final int calledFloor = floor;
+                            MoveInsideActivity.this.isWritingData = true;
+                            MoveInsideActivity.this.isWriteSuccessful = false;
+                            new CountDownTimer(1500, 500) {
+                                public void onTick(long millisUntilFinished) {
+                                    if (!MoveInsideActivity.this.isWriteSuccessful) {
+                                        MoveInsideActivity.this.moveInsideCallFloor(calledFloor);
+                                    } else {
+                                        MoveInsideActivity.this.isWritingData = false;
+                                    }
+                                }
+
+                                public void onFinish() {
+                                    if (!MoveInsideActivity.this.isWriteSuccessful) {
+                                        Toast.makeText(MoveInsideActivity.this,
+                                                R.string.write_failed_text,
+                                                android.widget.Toast.LENGTH_SHORT).show();
+                                    }
+                                    MoveInsideActivity.this.isWritingData = true;
+                                }
+                            }.start();
                         }
                     });
                     MoveInsideActivity.this.viewPager.setAdapter(adapter);
@@ -517,6 +550,8 @@ public class MoveInsideActivity extends Activity {
      */
     private class FloorHandler extends HHandler {
 
+        public String writeCode;
+
         public FloorHandler(Activity activity) {
             super(activity);
             TAG = FloorHandler.class.getSimpleName();
@@ -534,8 +569,10 @@ public class MoveInsideActivity extends Activity {
 
         @Override
         public void onTalkReceive(Message msg) {
-            if (msg.obj != null && msg.obj instanceof RealTimeMonitor) {
-                RealTimeMonitor monitor = (RealTimeMonitor) msg.obj;
+            if (msg.obj != null && msg.obj instanceof String) {
+                if (((String) msg.obj).contains(writeCode)) {
+                    MoveInsideActivity.this.isWriteSuccessful = true;
+                }
             }
         }
 

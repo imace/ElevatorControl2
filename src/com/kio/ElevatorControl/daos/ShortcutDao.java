@@ -32,7 +32,7 @@ public class ShortcutDao {
         db.delete(shortcut);
     }
 
-    public static void updateItem(Context context, Shortcut shortcut){
+    public static void updateItem(Context context, Shortcut shortcut) {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         db.update(shortcut);
     }
