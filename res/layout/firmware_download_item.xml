@@ -1,43 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:orientation="vertical"
-                android:minHeight="@dimen/card_cell_height"
+                android:gravity="center_vertical"
+                android:minHeight="54dp"
                 android:background="@drawable/card_view_selector"
+                android:paddingBottom="5dp"
+                android:paddingTop="5dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
-    <TextView
-            android:textSize="16sp"
+    <org.holoeverywhere.widget.TextView
+            android:id="@+id/approve_date"
+            style="@style/Holo.TextAppearance.Light"
             android:textColor="#515151"
-            android:id="@+id/firmware_name"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="20dp"
+            android:gravity="center"
             android:layout_centerVertical="true"
             android:layout_alignParentLeft="true"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-    <TextView
-            android:textSize="16sp"
-            android:textColor="#878787"
-            android:layout_toRightOf="@+id/firmware_name"
-            android:id="@+id/firmware_version"
-            android:layout_centerVertical="true"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-    <TextView
-            android:textSize="16sp"
-            android:textColor="#515151"
-            android:layout_toLeftOf="@+id/arrow_indicator"
-            android:layout_marginRight="20dp"
-            android:id="@+id/firmware_download_status"
-            android:layout_centerVertical="true"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-    <ImageView
-            android:id="@+id/arrow_indicator"
-            android:layout_centerVertical="true"
+            android:layout_height="44dp"/>
+    <LinearLayout
+            android:id="@+id/download_button"
+            android:background="@drawable/upload_button_selector"
             android:layout_alignParentRight="true"
-            android:contentDescription="@null"
+            android:layout_centerVertical="true"
+            android:gravity="center"
+            android:minWidth="60dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="44dp">
+        <org.holoeverywhere.widget.TextView
+                style="@style/Holo.TextAppearance.Small.Light"
+                android:textColor="#989898"
+                android:gravity="center"
+                android:text="@string/download_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+    </LinearLayout>
 </RelativeLayout>

@@ -31,9 +31,18 @@
     <string name="registration_code_text">注册码</string>
     <string name="init_data_wait_text">初始化数据中，请稍后…</string>
     <string name="data_error_text">错误</string>
-    <string name="download_text">下载</string>
+    <string name="download_text">提取</string>
     <string name="login_text">登陆</string>
     <string name="sign_up_text">注册</string>
+
+    <string name="read_data_error">读取列表信息错误</string>
+    <string name="get_bluetooth_address_error">请打开蓝牙，以便获取蓝牙硬件地址。</string>
+
+    <string name="write_parameter_successful">参数写入成功</string>
+    <string-array name="status_text_array">
+        <item>有效</item>
+        <item>无效</item>
+    </string-array>
 
     <string name="company_name_text">汇川技术股份有限公司</string>
     <string name="company_description_text">高效产业 · 清洁能源 · 美好生活</string>
@@ -63,6 +72,7 @@
     <string name="lock_elevator_status_text">轿厢状态</string>
     <string name="error_code_text">故障状态</string>
     <string name="home_no_error_text">无故障</string>
+    <string name="choice_device_type_title">选择设备型号</string>
 
     <!-- 用户注册 -->
     <string name="register_user_text">用户注册</string>
@@ -81,7 +91,7 @@
 
     <!-- 当前故障 -->
     <string name="no_error_text">当前未发生故障</string>
-    <string name="view_system_status_text">查看系统状态</string>
+    <string name="view_error_status_text">查看故障信息</string>
 
     <!-- 历史故障 -->
     <string name="history_error_code">故障码</string>
@@ -119,7 +129,7 @@
     <string name="shortcut_setting_text">快捷菜单设置</string>
     <string name="add_shortcut_dialog_title_text">新增快捷菜单</string>
     <string name="shortcut_name_text">快捷菜单名称</string>
-    <string name="shortcut_command_text">快捷指令</string>
+    <string name="shortcut_action_text">快捷动作</string>
     <string name="shortcut_item_operation_title_text">选择操作</string>
     <string-array name="operation_item">
         <item>编辑</item>
@@ -148,8 +158,8 @@
     <string name="uploading_profile_text">正在写入参数</string>
     <string name="uploading_profile_end">写入结束</string>
     <string name="uploading_profile_complete">全部正确写入！</string>
-    <string name="upload_dialog_title">上传参数</string>
-    <string name="upload_dialog_message">确定要上传参数吗</string>
+    <string name="upload_dialog_title">写入参数</string>
+    <string name="upload_dialog_message">确定要写入参数吗</string>
 
     <!-- 参数读取 -->
     <string name="parameter_upload_text">参数写入 (手机 -> 一体机)</string>
@@ -162,18 +172,23 @@
     <string name="save_file_failed_title">保存失败</string>
     <string name="cannot_save_file">未能保存文件，请检查SD卡！</string>
     <string name="parameter_download_button_text">读取</string>
+    <string name="download_parameter_save_successful">参数读取并保存完毕</string>
+    <string name="save_parameter_failed">参数保存失败，请重试。</string>
 
     <string name="confirm_restore_title">恢复出厂设置</string>
     <string name="confirm_restore_message">确定要恢复出厂设置吗？</string>
 
     <!-- 程序申请 -->
-    <string name="equipment_manufacturers_text">设备厂家</string>
+    <string name="vendor_name_text">设备厂家</string>
     <string name="equipment_model_text">设备型号</string>
     <string name="manufacturers_serial_number_text">厂家编号</string>
     <string name="firmware_version_text">程序版本</string>
     <string name="remark_text">备注</string>
     <string name="submit_application_text">提交申请</string>
     <string name="dialog_btn_over">完成</string>
+    <string name="wait_for_approve_text">程序申请提交成功，请等待审批。</string>
+    <string name="general_device_apply">通用设备</string>
+    <string name="special_device_apply">专用设备</string>
 
     <string-array name="firmware_download_status">
         <item>已下载</item>
@@ -189,6 +204,11 @@
     <string name="residue_time_text">剩余次数</string>
     <string name="time_unit_text">次</string>
 
+    <!-- 程序提取 -->
+    <string name="download_firmware_dialog_title">提取固件</string>
+    <string name="downloading_message_text">提取中</string>
+    <string name="download_successful_message">程序提取成功</string>
+
     <!-- 功能参数组详细 -->
     <string name="parameter_value_scope_text">取值范围</string>
     <string name="parameter_default_value_text">默认值</string>
@@ -198,7 +218,7 @@
     <string name="cannot_modify_message">此项参数只读，不可修改！</string>
 
     <!-- 系统当前状态 -->
-    <string name="system_status_title">系统状态</string>
+    <string name="error_status_title">故障状态</string>
 
     <!-- //////////////////////////////////// 标签选项卡 START ////////////////////////////////// -->
     <!-- 主标签页选项卡 -->

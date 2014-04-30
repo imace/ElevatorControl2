@@ -7,7 +7,7 @@
               android:background="@color/main_background"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
-    <com.kio.ElevatorControl.views.viewpager.VerticalViewPager
+    <com.inovance.ElevatorControl.views.viewpager.VerticalViewPager
             android:id="@+id/vertical_view_pager"
             android:layout_weight="1"
             android:scrollbars="none"
@@ -50,7 +50,7 @@
                 android:layout_weight="2"
                 android:layout_width="0dp"
                 android:layout_height="match_parent">
-            <com.kio.ElevatorControl.views.TypefaceTextView
+            <com.inovance.ElevatorControl.views.TypefaceTextView
                     android:id="@+id/current_floor"
                     android:textSize="65sp"
                     android:textStyle="bold"

@@ -15,7 +15,7 @@
             android:background="@drawable/card_view_background">
         <org.holoeverywhere.widget.TextView
                 android:layout_marginLeft="10dp"
-                android:textSize="18sp"
+                style="@style/Holo.TextAppearance.Light"
                 android:textColor="#515151"
                 android:text="@string/user_name_text"
                 android:layout_width="wrap_content"
@@ -47,7 +47,7 @@
             android:background="@drawable/card_view_background">
         <org.holoeverywhere.widget.TextView
                 android:layout_marginLeft="10dp"
-                android:textSize="18sp"
+                style="@style/Holo.TextAppearance.Light"
                 android:textColor="#515151"
                 android:text="@string/company_text"
                 android:layout_width="wrap_content"
@@ -79,7 +79,7 @@
             android:background="@drawable/card_view_background">
         <org.holoeverywhere.widget.TextView
                 android:layout_marginLeft="10dp"
-                android:textSize="18sp"
+                style="@style/Holo.TextAppearance.Light"
                 android:textColor="#515151"
                 android:text="@string/cell_phone_text"
                 android:layout_width="wrap_content"
@@ -112,7 +112,7 @@
             android:background="@drawable/card_view_background">
         <org.holoeverywhere.widget.TextView
                 android:layout_marginLeft="10dp"
-                android:textSize="18sp"
+                style="@style/Holo.TextAppearance.Light"
                 android:textColor="#515151"
                 android:text="@string/tel_phone_text"
                 android:layout_width="wrap_content"
@@ -145,7 +145,7 @@
             android:background="@drawable/card_view_background">
         <org.holoeverywhere.widget.TextView
                 android:layout_marginLeft="10dp"
-                android:textSize="18sp"
+                style="@style/Holo.TextAppearance.Light"
                 android:textColor="#515151"
                 android:text="@string/email_text"
                 android:layout_width="wrap_content"
@@ -175,6 +175,7 @@
             android:layout_height="50dp"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
+            android:layout_marginBottom="10dp"
             android:background="@drawable/card_view_selector">
         <org.holoeverywhere.widget.ProgressBar
                 android:id="@+id/submit_progress"
@@ -185,9 +186,23 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
         <org.holoeverywhere.widget.TextView
-                android:textSize="18sp"
+                style="@style/Holo.TextAppearance.Light"
+                android:id="@+id/submit_text"
                 android:background="@android:color/transparent"
                 android:text="@string/submit_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+    </LinearLayout>
+    <LinearLayout
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <org.holoeverywhere.widget.TextView
+                android:id="@+id/error_text"
+                style="@style/Holo.TextAppearance.Light"
+                android:textColor="#ffaf2422"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
     </LinearLayout>

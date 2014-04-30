@@ -18,7 +18,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
             <org.holoeverywhere.widget.TextView
-                    style="@style/Holo.TextAppearance.Medium.Light"
+                    style="@style/Holo.TextAppearance.Light"
                     android:textColor="#333333"
                     android:layout_marginBottom="5dp"
                     android:text="@string/current_connected_device_name_text"
@@ -32,7 +32,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
             <org.holoeverywhere.widget.TextView
-                    style="@style/Holo.TextAppearance.Medium.Light"
+                    style="@style/Holo.TextAppearance.Light"
                     android:textColor="#333333"
                     android:layout_marginBottom="5dp"
                     android:text="@string/current_connected_device_address_text"
@@ -48,7 +48,7 @@
         <org.holoeverywhere.widget.TextView
                 android:visibility="gone"
                 android:id="@+id/no_connected_device"
-                style="@style/Holo.TextAppearance.Medium.Light"
+                style="@style/Holo.TextAppearance.Light"
                 android:textColor="#333333"
                 android:layout_centerInParent="true"
                 android:text="@string/no_connected_device"

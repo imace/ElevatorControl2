@@ -7,7 +7,12 @@
               android:layout_height="match_parent">
     <org.holoeverywhere.widget.TextView
             android:text="@string/system_setting_section"
-            android:layout_margin="@dimen/card_view_margin"
+            android:minHeight="20dp"
+            style="@style/Holo.TextAppearance.Small.Light"
+            android:layout_marginTop="@dimen/card_view_margin"
+            android:layout_marginLeft="@dimen/card_view_margin"
+            android:gravity="center_vertical"
+            android:layout_gravity="center_vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
     <org.holoeverywhere.widget.ListView
@@ -17,10 +22,15 @@
             android:layout_margin="@dimen/card_view_margin"
             android:background="@drawable/card_view_background"
             android:clipToPadding="false"
+            android:scrollbars="none"
             android:scrollbarStyle="outsideOverlay"/>
     <org.holoeverywhere.widget.TextView
             android:text="@string/other_setting_section"
-            android:layout_margin="@dimen/card_view_margin"
+            android:minHeight="20dp"
+            style="@style/Holo.TextAppearance.Small.Light"
+            android:layout_marginLeft="@dimen/card_view_margin"
+            android:gravity="center_vertical"
+            android:layout_gravity="center_vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
     <org.holoeverywhere.widget.ListView
@@ -30,5 +40,6 @@
             android:layout_margin="@dimen/card_view_margin"
             android:background="@drawable/card_view_background"
             android:clipToPadding="false"
+            android:scrollbars="none"
             android:scrollbarStyle="outsideOverlay"/>
 </LinearLayout>

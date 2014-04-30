@@ -20,7 +20,7 @@
                 android:layout_marginRight="10dp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content">
-            <com.kio.ElevatorControl.views.DoorAnimationView
+            <com.inovance.ElevatorControl.views.DoorAnimationView
                     android:id="@+id/door_animation_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>

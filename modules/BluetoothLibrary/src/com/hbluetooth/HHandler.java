@@ -5,10 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import com.kio.bluetooth.R;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 public class HHandler extends Handler {
@@ -25,36 +22,64 @@ public class HHandler extends Handler {
     }
 
     /**
-     * 根据hhandler.xml配置进行消息处理
+     * 消息处理
      */
     @Override
     public void handleMessage(Message msg) {
-        for (Field f : R.string.class.getFields()) {
-            try {
-                if (msg.what == f.getInt(null)) {
-                    this.getClass().getMethod(
-                            activity.getResources().getString(msg.what),
-                            Message.class).invoke(this, msg);
-                }
-            } catch (IllegalArgumentException e) {
-                Log.e(TAG, "IllegalArgumentException");
-            } catch (IllegalAccessException e) {
-                Log.e(TAG, "IllegalAccessException");
-            } catch (NoSuchMethodException e) {
-                Log.e(TAG, "NoSuchMethodException");
-            } catch (InvocationTargetException e) {
-                Log.e(TAG, "InvocationTargetException");
-            } catch (NullPointerException e) {
-                Log.e(TAG, "NullPointerException");
-            }
-        }
         super.handleMessage(msg);
+        switch (msg.what) {
+            case Config.onBeginPreparing:
+                onBeginPreparing(msg);
+                break;
+            case Config.onFoundDevice:
+                onFoundDevice(msg);
+                break;
+            case Config.onResetBluetooth:
+                onResetBluetooth(msg);
+                break;
+            case Config.onKillBluetooth:
+                onKillBluetooth(msg);
+                break;
+            case Config.onChooseDevice:
+                onChooseDevice(msg);
+                break;
+            case Config.onPrepared:
+                onPrepared(msg);
+                break;
+            case Config.onPrepError:
+                onPrepError(msg);
+                break;
+            case Config.onMultiTalkBegin:
+                onMultiTalkBegin(msg);
+                break;
+            case Config.onMultiTalkEnd:
+                onMultiTalkEnd(msg);
+                break;
+            case Config.onBeforeTalkSend:
+                onBeforeTalkSend(msg);
+                break;
+            case Config.onAfterTalkSend:
+                onAfterTalkSend(msg);
+                break;
+            case Config.onTalkError:
+                onTalkError(msg);
+                break;
+            case Config.onTalkReceive:
+                onTalkReceive(msg);
+                break;
+            case Config.onHandlerChanged:
+                onHandlerChanged(msg);
+                break;
+            case Config.onDiscoveryFinished:
+                onDiscoveryFinished(msg);
+                break;
+        }
     }
 
     /**
      * BEGIN PREPARING
      *
-     * @param msg
+     * @param msg message
      */
     public void onBeginPreparing(Message msg) {
         if (DEBUG) {
@@ -65,7 +90,7 @@ public class HHandler extends Handler {
     /**
      * FOUND DEVICE
      *
-     * @param msg
+     * @param msg message
      */
     @SuppressWarnings("unchecked")
     public void onFoundDevice(Message msg) {
@@ -78,7 +103,7 @@ public class HHandler extends Handler {
     /**
      * CHOOSE DEVICE
      *
-     * @param msg
+     * @param msg message
      */
     public void onChooseDevice(final Message msg) {
         if (DEBUG) {
@@ -89,7 +114,7 @@ public class HHandler extends Handler {
     /**
      * RESET BLUETOOTH
      *
-     * @param msg
+     * @param msg message
      */
     public void onResetBluetooth(Message msg) {
         if (DEBUG) {
@@ -100,7 +125,7 @@ public class HHandler extends Handler {
     /**
      * KILL BLUETOOTH
      *
-     * @param msg
+     * @param msg message
      */
     public void onKillBluetooth(Message msg) {
         if (DEBUG) {
@@ -111,7 +136,7 @@ public class HHandler extends Handler {
     /**
      * PREPARE SUCCESSFUL
      *
-     * @param msg
+     * @param msg message
      */
     public void onPrepared(Message msg) {
         if (DEBUG) {
@@ -122,7 +147,7 @@ public class HHandler extends Handler {
     /**
      * PREPARE FAILED
      *
-     * @param msg
+     * @param msg message
      */
     public void onPrepError(Message msg) {
         if (DEBUG) {
@@ -133,7 +158,7 @@ public class HHandler extends Handler {
     /**
      * TALK BEFORE SEND
      *
-     * @param msg
+     * @param msg message
      */
     public void onBeforeTalkSend(Message msg) {
         if (DEBUG) {
@@ -144,7 +169,7 @@ public class HHandler extends Handler {
     /**
      * TALK AFTER SEND
      *
-     * @param msg
+     * @param msg message
      */
     public void onAfterTalkSend(Message msg) {
         if (DEBUG) {
@@ -155,7 +180,7 @@ public class HHandler extends Handler {
     /**
      * TALK RECEIVE
      *
-     * @param msg
+     * @param msg message
      */
     public void onTalkReceive(Message msg) {
         if (DEBUG) {
@@ -166,7 +191,7 @@ public class HHandler extends Handler {
     /**
      * TALK ERROR
      *
-     * @param msg
+     * @param msg message
      */
     public void onTalkError(Message msg) {
         if (DEBUG) {
@@ -179,7 +204,7 @@ public class HHandler extends Handler {
     /**
      * HANDLER CHANGED
      *
-     * @param msg
+     * @param msg message
      */
     public void onHandlerChanged(Message msg) { //the origin handler
         if (DEBUG) {
@@ -193,7 +218,7 @@ public class HHandler extends Handler {
     /**
      * MULTI TALK BEGIN
      *
-     * @param msg
+     * @param msg message
      */
     public void onMultiTalkBegin(Message msg) {
         if (DEBUG) {
@@ -204,11 +229,22 @@ public class HHandler extends Handler {
     /**
      * MULTI TALK END
      *
-     * @param msg
+     * @param msg message
      */
     public void onMultiTalkEnd(Message msg) {
         if (DEBUG) {
             Log.v(TAG, "onMultiTalkEnd");
+        }
+    }
+
+    /**
+     * 蓝牙设备搜索结束
+     *
+     * @param message message
+     */
+    public void onDiscoveryFinished(Message message) {
+        if (DEBUG) {
+            Log.v(TAG, "onDiscoveryFinished");
         }
     }
 }

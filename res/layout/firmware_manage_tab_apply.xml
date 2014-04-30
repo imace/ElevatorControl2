@@ -5,22 +5,57 @@
               android:background="@color/main_background"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
+    <LinearLayout
+            android:layout_margin="10dp"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:background="@drawable/card_view_background"
+            android:layout_width="match_parent"
+            android:layout_height="60dp">
+        <org.holoeverywhere.widget.TextView
+                android:id="@+id/general_device"
+                android:layout_weight="1"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:layout_width="0dp"
+                style="@style/Holo.TextAppearance.Light"
+                android:textColor="@color/button_text_color"
+                android:text="@string/general_device_apply"
+                android:layout_height="match_parent"/>
+        <View
+                android:layout_gravity="center"
+                android:background="@android:drawable/divider_horizontal_bright"
+                android:layout_width="1dp"
+                android:layout_height="match_parent"/>
+        <org.holoeverywhere.widget.TextView
+                android:id="@+id/special_device"
+                android:layout_weight="1"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:layout_width="0dp"
+                style="@style/Holo.TextAppearance.Light"
+                android:textColor="@color/button_text_color"
+                android:text="@string/special_device_apply"
+                android:layout_height="match_parent"/>
+    </LinearLayout>
     <!-- 设备厂家 -->
     <LinearLayout
-            android:layout_marginTop="@dimen/card_view_margin"
-            android:layout_marginRight="@dimen/card_view_margin"
-            android:layout_marginLeft="@dimen/card_view_margin"
-            android:layout_marginBottom="8dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginRight="10dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:visibility="gone"
+            android:id="@+id/vendor_view"
             android:background="@drawable/card_view_background"
             android:layout_width="match_parent"
             android:gravity="center_vertical"
-            android:padding="10dp"
             android:orientation="horizontal"
             android:layout_height="50dp">
-        <TextView
-                android:textSize="18sp"
+        <org.holoeverywhere.widget.TextView
+                style="@style/Holo.TextAppearance.Light"
                 android:textColor="#515151"
-                android:text="@string/equipment_manufacturers_text"
+                android:text="@string/vendor_name_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
         <View
@@ -30,25 +65,28 @@
                 android:layout_width="1dp"
                 android:layout_height="match_parent"/>
         <AutoCompleteTextView
-                android:id="@+id/equipment_manufacturers"
-                android:background="@android:color/transparent"
+                android:id="@+id/vendor"
+                style="@style/Holo.TextAppearance.Light"
                 android:layout_weight="1"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"/>
     </LinearLayout>
     <!-- 设备型号 -->
     <LinearLayout
-            android:layout_marginRight="@dimen/card_view_margin"
-            android:layout_marginLeft="@dimen/card_view_margin"
-            android:layout_marginBottom="8dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginRight="10dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
             android:background="@drawable/card_view_background"
             android:layout_width="match_parent"
             android:gravity="center_vertical"
-            android:padding="10dp"
             android:orientation="horizontal"
             android:layout_height="50dp">
-        <TextView
-                android:textSize="18sp"
+        <org.holoeverywhere.widget.TextView
+                style="@style/Holo.TextAppearance.Light"
                 android:textColor="#515151"
                 android:text="@string/equipment_model_text"
                 android:layout_width="wrap_content"
@@ -59,55 +97,28 @@
                 android:layout_marginRight="5dp"
                 android:layout_width="1dp"
                 android:layout_height="match_parent"/>
-        <com.kio.ElevatorControl.views.customspinner.NoDefaultSpinner
+        <org.holoeverywhere.widget.Spinner
                 android:id="@+id/equipment_model"
+                style="@style/Holo.Spinner.Light"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
                 android:layout_weight="1"
                 android:layout_width="0dp"
-                android:background="@android:color/transparent"
-                android:layout_height="match_parent"/>
-    </LinearLayout>
-    <!-- 固件版本 -->
-    <LinearLayout
-            android:layout_marginRight="@dimen/card_view_margin"
-            android:layout_marginLeft="@dimen/card_view_margin"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/card_view_background"
-            android:layout_width="match_parent"
-            android:gravity="center_vertical"
-            android:padding="10dp"
-            android:orientation="horizontal"
-            android:layout_height="50dp">
-        <TextView
-                android:textSize="18sp"
-                android:textColor="#515151"
-                android:text="@string/firmware_version_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-        <View
-                android:background="#ffdfdfdf"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:layout_width="1dp"
-                android:layout_height="match_parent"/>
-        <com.kio.ElevatorControl.views.customspinner.NoDefaultSpinner
-                android:id="@+id/firmware_version"
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:background="@android:color/transparent"
                 android:layout_height="match_parent"/>
     </LinearLayout>
     <!-- 备注 -->
     <LinearLayout
-            android:layout_marginRight="@dimen/card_view_margin"
-            android:layout_marginLeft="@dimen/card_view_margin"
-            android:layout_marginBottom="8dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginRight="10dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
             android:background="@drawable/card_view_background"
             android:layout_width="match_parent"
-            android:padding="10dp"
             android:orientation="horizontal"
             android:layout_height="120dp">
-        <TextView
-                android:textSize="18sp"
+        <org.holoeverywhere.widget.TextView
+                style="@style/Holo.TextAppearance.Light"
                 android:textColor="#515151"
                 android:text="@string/remark_text"
                 android:layout_width="wrap_content"
@@ -118,42 +129,47 @@
                 android:layout_marginRight="5dp"
                 android:layout_width="1dp"
                 android:layout_height="match_parent"/>
-        <EditText
+        <org.holoeverywhere.widget.EditText
+                android:id="@+id/remark"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:inputType="textMultiLine"
                 android:ems="10"
-                android:background="@android:color/transparent"
+                style="@style/Holo.TextAppearance.Light"
+                android:textColor="#ff646464"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
                 android:gravity="top"
-                android:id="@+id/remark"
                 android:layout_weight="1"/>
     </LinearLayout>
     <!-- 提交 -->
     <LinearLayout
             android:id="@+id/submit_apply"
-            android:layout_marginRight="@dimen/card_view_margin"
-            android:layout_marginLeft="@dimen/card_view_margin"
+            android:orientation="horizontal"
+            android:layout_marginLeft="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginRight="10dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
             android:background="@drawable/card_view_selector"
             android:layout_width="match_parent"
             android:gravity="center"
-            android:layout_marginBottom="8dp"
+            android:layout_gravity="center"
             android:layout_height="50dp">
-        <TextView
-                android:textSize="18sp"
-                android:background="@android:color/transparent"
-                android:text="@string/submit_application_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-    </LinearLayout>
-    <LinearLayout
-            android:visibility="invisible"
-            android:id="@+id/submit_progress"
-            android:gravity="center"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
         <org.holoeverywhere.widget.ProgressBar
+                android:id="@+id/submit_progress"
+                android:visibility="gone"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        <org.holoeverywhere.widget.TextView
+                style="@style/Holo.TextAppearance.Light"
+                android:id="@+id/submit_text"
+                android:background="@android:color/transparent"
+                android:text="@string/submit_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
     </LinearLayout>
-
 </LinearLayout>

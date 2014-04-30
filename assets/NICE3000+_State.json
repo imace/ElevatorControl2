@@ -432,7 +432,7 @@
         "showBit": "FALSE"
     },
     {
-        "code": "2020",
+        "code": "201A",
         "name": "41~44层召唤信息",
         "productId": 0,
         "description": null,
@@ -444,7 +444,7 @@
         "showBit": "FALSE"
     },
     {
-        "code": "2021",
+        "code": "201B",
         "name": "45~48层召唤信息",
         "productId": 0,
         "description": null,
@@ -459,8 +459,8 @@
         "code": "3000",
         "name": "状态字功能",
         "productId": 0,
-        "description": "1:电梯上行#2:电梯下行#3:停机#",
-        "childId": "1:01#2:02#3:0003#",
+        "description": "1:电梯下行#2:电梯上行#3:停机#",
+        "childId": "1:01#2:02#3:03#",
         "scope": "",
         "scale": 1,
         "unit": "",

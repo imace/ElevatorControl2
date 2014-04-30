@@ -38,11 +38,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
         <org.holoeverywhere.widget.TextView
-                android:text="@string/shortcut_command_text"
+                android:text="@string/shortcut_action_text"
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"/>
-        <org.holoeverywhere.widget.EditText
-                android:id="@+id/shortcut_command"
+        <org.holoeverywhere.widget.Spinner
+                android:id="@+id/action_spinner"
+                style="@style/Holo.Spinner.Light"
                 android:layout_weight="1"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"/>

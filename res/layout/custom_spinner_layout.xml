@@ -6,21 +6,9 @@
               android:orientation="horizontal"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
-    <!--
-    <org.holoeverywhere.widget.TextView
-            android:gravity="center"
-            style="@style/Holo.TextAppearance"
-            android:textColor="#ffffffff"
-            android:textSize="@dimen/abc_action_bar_title_text_size"
-            android:layout_gravity="center"
-            android:text="@string/app_abbreviation_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-            -->
-    <com.kio.ElevatorControl.views.customspinner.NoDefaultSpinner
+    <com.inovance.ElevatorControl.views.customspinner.NoDefaultSpinner
             android:id="@+id/custom_spinner"
             xmlns:android="http://schemas.android.com/apk/res/android"
-            style="@style/Custom.Spinner.DropDown"
             android:minHeight="@dimen/abc_action_bar_stacked_max_height"
             android:prompt="@string/choose_bluetooth_device"
             android:layout_width="wrap_content"

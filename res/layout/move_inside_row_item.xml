@@ -10,7 +10,7 @@
             android:src="@drawable/floor_button_background"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
-    <com.kio.ElevatorControl.views.TypefaceTextView
+    <com.inovance.ElevatorControl.views.TypefaceTextView
             android:layout_centerInParent="true"
             android:id="@+id/floor_text"
             android:textSize="58sp"

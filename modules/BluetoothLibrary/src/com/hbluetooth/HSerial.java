@@ -61,7 +61,7 @@ public class HSerial {
         for (int n = 0; n < b.length; n++) {
             stmp = Integer.toHexString(b[n] & 0xFF);
             sb.append((stmp.length() == 1) ? "0" + stmp : stmp);
-            sb.append(" ");
+            sb.append("");
         }
         return sb.toString().toUpperCase().trim();
     }
@@ -309,6 +309,21 @@ public class HSerial {
             flag >>= 1;
         }
         return arr;
+    }
+
+    /**
+     * Convert a byte array to a boolean array
+     *
+     * @param bytes byte array
+     * @return boolean array
+     */
+    public static boolean[] byteArray2BitArray(byte[] bytes) {
+        boolean[] bits = new boolean[bytes.length * 8];
+        for (int i = 0; i < bytes.length * 8; i++) {
+            if ((bytes[i / 8] & (1 << (7 - (i % 8)))) > 0)
+                bits[i] = true;
+        }
+        return bits;
     }
 
 }
