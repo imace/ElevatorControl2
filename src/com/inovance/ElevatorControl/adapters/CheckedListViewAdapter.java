@@ -34,6 +34,10 @@ public class CheckedListViewAdapter extends BaseAdapter {
         this.notifyDataSetChanged();
     }
 
+    public int getCheckedIndex() {
+        return checkedIndex;
+    }
+
     @Override
     public int getCount() {
         return checkList == null ? 0 : checkList.length;

@@ -1,19 +1,12 @@
 package com.inovance.ElevatorControl;
 
-import android.util.Log;
 import com.inovance.ElevatorControl.cache.LruCacheTool;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ShortcutDao;
 import com.inovance.ElevatorControl.models.Shortcut;
-import com.inovance.ElevatorControl.utils.AssetUtils;
 import org.holoeverywhere.HoloEverywhere;
 import org.holoeverywhere.app.Application;
 import org.holoeverywhere.preference.SharedPreferences;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.io.File;
-import java.io.FileOutputStream;
 
 /**
  * Created by keith on 14-3-8.

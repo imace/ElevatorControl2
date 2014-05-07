@@ -73,6 +73,9 @@ public class BluetoothHandler extends Handler {
             case BluetoothState.onDiscoveryFinished:
                 onDiscoveryFinished(msg);
                 break;
+            case BluetoothState.onDisconnected:
+
+                break;
         }
     }
 
@@ -245,6 +248,17 @@ public class BluetoothHandler extends Handler {
     public void onDiscoveryFinished(Message message) {
         if (DEBUG) {
             Log.v(TAG, "onDiscoveryFinished");
+        }
+    }
+
+    /**
+     * 蓝牙连接断开
+     *
+     * @param message message
+     */
+    public void onDisconnected(Message message) {
+        if (DEBUG) {
+            Log.v(TAG, "onDisconnected");
         }
     }
 }

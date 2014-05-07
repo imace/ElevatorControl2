@@ -39,8 +39,8 @@ public class ParameterDetailHandler extends BluetoothHandler {
             if (parentActivity.mRefreshActionItem != null) {
                 parentActivity.mRefreshActionItem.showProgress(false);
             }
-            parentActivity.settingsList.clear();
-            parentActivity.settingsList.addAll(tempList);
+            parentActivity.listViewDataSource.clear();
+            parentActivity.listViewDataSource.addAll(tempList);
             parentActivity.instantAdapter.notifyDataSetChanged();
             parentActivity.syncingParameter = false;
         } else {
@@ -66,7 +66,7 @@ public class ParameterDetailHandler extends BluetoothHandler {
 
     @Override
     public void onTalkError(Message msg) {
-        ((ParameterDetailActivity) activity).startCombinationCommunications();
+        super.onTalkError(msg);
     }
 
 }

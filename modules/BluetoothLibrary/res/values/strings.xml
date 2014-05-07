@@ -6,6 +6,7 @@
     <string name="cancel_bond">取消配对!</string>
     <string name="failed_connect">连接失败,蓝牙通讯异常!</string>
     <string name="success_connect">与蓝牙设备配对成功!</string>
+    <string name="connect_lost_text">蓝牙设备连接断开</string>
 
     <item name="request_enable_bt" format="integer" type="integer">3</item>
     <integer-array name="array_ports">

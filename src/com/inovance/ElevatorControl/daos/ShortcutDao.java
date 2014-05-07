@@ -24,7 +24,7 @@ public class ShortcutDao {
 
     public static void saveItem(Context context, Shortcut shortcut) {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
-        db.save(shortcut);
+        db.saveBindId(shortcut);
     }
 
     public static void deleteItem(Context context, Shortcut shortcut) {

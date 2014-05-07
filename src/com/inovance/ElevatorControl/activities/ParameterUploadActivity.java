@@ -23,6 +23,7 @@ import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.models.Profile;
+import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
 import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.widget.*;
 import org.json.JSONArray;
@@ -222,7 +223,7 @@ public class ParameterUploadActivity extends Activity {
                         @Override
                         public void beforeSend() {
                             this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0106"
-                                    + item.getCode()
+                                    + ParseSerialsUtils.getCalculatedCode(item)
                                     + item.getHexValueString()
                                     + "0001")));
                         }

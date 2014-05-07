@@ -24,24 +24,29 @@ public class BluetoothState {
     public static final int CONNECT_FAILED = 3;
 
     /**
+     * 准备断开连接
+     */
+    public static final int WILL_DISCONNECT = 4;
+
+    /**
      * 未建立链接
      */
-    public static final int NOT_CONNECT = 4;
+    public static final int DISCONNECTED = 5;
 
     /**
      * 正在连接蓝牙设备
      */
-    public static final int CONNECTING = 5;
+    public static final int CONNECTING = 6;
 
     /**
      * 将要进行搜索
      */
-    public static final int WILL_DISCOVERING = 6;
+    public static final int WILL_DISCOVERING = 7;
 
     /**
      * 正在配对
      */
-    public static final int PAIRING = 7;
+    public static final int PAIRING = 8;
 
     /**
      * 开始搜索
@@ -90,5 +95,10 @@ public class BluetoothState {
      * 蓝牙搜索结束
      */
     public static final int onDiscoveryFinished = 14;
+
+    /**
+     * 蓝牙连接断开
+     */
+    public static final int onDisconnected = 15;
 
 }

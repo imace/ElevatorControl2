@@ -6,6 +6,7 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Message;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,6 +19,7 @@ import com.bluetoothtool.BluetoothTalk;
 import com.bluetoothtool.BluetoothTool;
 import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
+import com.inovance.ElevatorControl.adapters.CheckedListViewAdapter;
 import com.inovance.ElevatorControl.adapters.DialogSwitchListViewAdapter;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ParameterGroupSettingsDao;
@@ -45,6 +47,8 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
     private AlertDialog detailDialog;
 
     public List<ParameterSettings> settingsList;
+
+    public List<ParameterSettings> listViewDataSource;
 
     private ParameterDetailHandler parameterDetailHandler;
 
@@ -118,16 +122,16 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 this, SelectedId);
         this.setTitle(parameterGroupSettings.getGroupText());
         settingsList = parameterGroupSettings.getParametersettings().getList();
-        List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
+        listViewDataSource = new ArrayList<ParameterSettings>();
         for (ParameterSettings item : settingsList) {
             if (!item.getName().contains(ApplicationConfig.RETAIN_NAME)) {
-                tempList.add(item);
+                listViewDataSource.add(item);
             }
         }
         instantAdapter = new InstantAdapter<ParameterSettings>(this,
                 R.layout.list_parameter_group_item,
                 ParameterSettings.class,
-                tempList);
+                listViewDataSource);
         parameterDetailListView.setAdapter(instantAdapter);
     }
 
@@ -140,7 +144,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 if (!syncingParameter) {
                     if (BluetoothTool.getInstance(ParameterDetailActivity.this).isConnected()) {
-                        final ParameterSettings settings = settingsList.get(position);
+                        final ParameterSettings settings = listViewDataSource.get(position);
                         int mode = Integer.parseInt(settings.getMode());
                         // 任意修改
                         if (mode == ApplicationConfig.modifyType[0]) {
@@ -446,7 +450,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
      * @param index ListView Index
      */
     private void onClickListViewWithIndex(final int index) {
-        final ParameterSettings settings = settingsList.get(index);
+        final ParameterSettings settings = listViewDataSource.get(index);
         AlertDialog.Builder builder = CustomDialog.parameterDetailDialog(ParameterDetailActivity.this,
                 settings);
         int mode = Integer.parseInt(settings.getMode());
@@ -488,11 +492,12 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                                     && !settings.getName().contains("X27")) {
                                 ToggleButton toggleButton = (ToggleButton) detailDialog.findViewById(R.id.toggle_button);
                                 ListView listView = (ListView) detailDialog.findViewById(R.id.list_view);
-                                int selectedIndex = listView.getSelectedItemPosition();
+                                CheckedListViewAdapter adapter = (CheckedListViewAdapter)listView.getAdapterSource();
+                                int checkedIndex = adapter.getCheckedIndex();
                                 if (!toggleButton.isChecked()) {
-                                    selectedIndex += 32;
+                                    checkedIndex += 32;
                                 }
-                                startSetNewValueCommunications(index, String.format("%04x", selectedIndex));
+                                startSetNewValueCommunications(index, String.format("%04x", checkedIndex));
                             } else if (Integer.parseInt(settings.getType()) == 25) {
                                 Spinner modSpinner = (Spinner) detailDialog.findViewById(R.id.mod_value);
                                 Spinner remSpinner = (Spinner) detailDialog.findViewById(R.id.rem_value);
@@ -639,7 +644,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
      * @param userValue New Setting value (Hex String)
      */
     private void startSetNewValueCommunications(final int position, final String userValue) {
-        final ParameterSettings settings = settingsList.get(position);
+        final ParameterSettings settings = listViewDataSource.get(position);
         final BluetoothTalk[] communications = new BluetoothTalk[]{
                 new BluetoothTalk() {
                     @Override
@@ -876,7 +881,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                     index++;
                 }
                 if (writeSuccessful) {
-                    ParameterDetailActivity.this.settingsList.set(index, settings);
+                    ParameterDetailActivity.this.listViewDataSource.set(this.index, settings);
                     ParameterDetailActivity.this.instantAdapter.notifyDataSetChanged();
                     ParameterDetailActivity.this.isWriteSuccessful = true;
                 }
@@ -909,7 +914,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         public void onMultiTalkEnd(Message msg) {
             super.onMultiTalkEnd(msg);
             if (stringList.size() == count) {
-                final ParameterSettings settings = settingsList.get(index);
+                final ParameterSettings settings = listViewDataSource.get(index);
                 if (count == 2) {
                     double value1 = Double.parseDouble(stringList.get(0));
                     double value2 = Double.parseDouble(stringList.get(1));
@@ -943,7 +948,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 }
                 ParameterDetailActivity.this.createNumberPickerAndBindListener(settings);
             } else {
-                ParameterSettings settings = settingsList.get(index);
+                ParameterSettings settings = listViewDataSource.get(index);
                 List<String> codeArray = ParameterDetailActivity.this.getCodeStringArray(settings);
                 ParameterDetailActivity.this.createGetValueScopeCommunications(codeArray, index, settings);
             }
@@ -960,7 +965,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         @Override
         public void onTalkError(Message msg) {
             super.onTalkError(msg);
-            ParameterSettings settings = settingsList.get(index);
+            ParameterSettings settings = listViewDataSource.get(index);
             List<String> codeArray = ParameterDetailActivity.this.getCodeStringArray(settings);
             ParameterDetailActivity.this.createGetValueScopeCommunications(codeArray, index, settings);
         }

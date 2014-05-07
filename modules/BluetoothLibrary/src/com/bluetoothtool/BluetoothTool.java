@@ -11,6 +11,7 @@ import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.widget.Toast;
 import com.kio.bluetooth.R;
 
 import java.io.IOException;
@@ -67,6 +68,8 @@ public class BluetoothTool implements Runnable {
 
     private InputStream bluetoothInputStream;
 
+    private BluetoothDevice willConnectDevice;
+
     /**
      * 当前蓝牙状态
      */
@@ -103,7 +106,7 @@ public class BluetoothTool implements Runnable {
      */
     public void reset(boolean closeConnected) {
         abortTalking = false;
-        currentState = BluetoothState.NOT_CONNECT;
+        currentState = BluetoothState.DISCONNECTED;
         stopDiscovery();
         if (closeConnected) {
             socketClose();
@@ -123,7 +126,7 @@ public class BluetoothTool implements Runnable {
             }
         }
         broadcastReceiver = null;
-        currentState = BluetoothState.NOT_CONNECT;
+        currentState = BluetoothState.DISCONNECTED;
     }
 
     /**
@@ -153,7 +156,7 @@ public class BluetoothTool implements Runnable {
             bluetoothInputStream = null;
             bluetoothSocket = null;
         }
-        currentState = BluetoothState.NOT_CONNECT;
+        currentState = BluetoothState.DISCONNECTED;
     }
 
     /**
@@ -231,22 +234,15 @@ public class BluetoothTool implements Runnable {
      */
     public void connectDevice(BluetoothDevice device) {
         stopDiscovery();
+        willConnectDevice = device;
         boolean exist = false;
-        if (bluetoothAdapter == null){
+        if (bluetoothAdapter == null) {
             bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         }
         for (BluetoothDevice item : bluetoothAdapter.getBondedDevices()) {
             if (item.equals(device)) {
                 exist = true;
-                if (buildConnection(device)) {
-                    currentState = BluetoothState.CONNECTED;
-                    if (searchHandler != null)
-                        searchHandler.sendEmptyMessage(BluetoothState.onConnected);
-                } else {
-                    currentState = BluetoothState.CONNECT_FAILED;
-                    if (searchHandler != null)
-                        searchHandler.sendEmptyMessage(BluetoothState.onConnectFailed);
-                }
+                buildConnection(device);
             }
         }
         if (!exist) {
@@ -254,12 +250,12 @@ public class BluetoothTool implements Runnable {
             try {
                 BluetoothDevice.class.getMethod("createBond").invoke(device);
             } catch (Exception e) {
-                Message msgBond = new Message();
-                msgBond.what = BluetoothState.onConnectFailed;
-                msgBond.obj = String.format(activity.getResources().getString(R.string.failed_bond),
+                Message errorMessage = new Message();
+                errorMessage.what = BluetoothState.onConnectFailed;
+                errorMessage.obj = String.format(activity.getResources().getString(R.string.failed_bond),
                         device.getName() + "(" + device.getAddress() + ")");
                 if (searchHandler != null) {
-                    searchHandler.sendMessage(msgBond);
+                    searchHandler.sendMessage(errorMessage);
                 }
             }
         }
@@ -269,23 +265,17 @@ public class BluetoothTool implements Runnable {
      * 搜索蓝牙设备
      */
     private void restartSearch() {
-        if (bluetoothAdapter == null){
+        if (bluetoothAdapter == null) {
             bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         }
         if (!bluetoothAdapter.isDiscovering()) {
             bluetoothAdapter.startDiscovery();
             currentState = BluetoothState.DISCOVERING;
         }
-        if (null != broadcastReceiver) {
-            try {
-                activity.unregisterReceiver(broadcastReceiver);
-                broadcastReceiver = null;
-            } catch (Exception e) {
-                Log.d(TAG, "activity failed unregistered...");
-            }
+        if (broadcastReceiver == null) {
+            broadcastReceiver = getBroadcastReceiver();
+            activity.registerReceiver(broadcastReceiver, getIntentFilter());
         }
-        broadcastReceiver = getBroadcastReceiver();
-        activity.registerReceiver(broadcastReceiver, getIntentFilter());
         if (searchHandler != null) {
             searchHandler.sendEmptyMessage(BluetoothState.onBeginDiscovering);
         }
@@ -295,7 +285,7 @@ public class BluetoothTool implements Runnable {
      * 结束搜索
      */
     private void stopDiscovery() {
-        if (bluetoothAdapter == null){
+        if (bluetoothAdapter == null) {
             bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         }
         if (bluetoothAdapter.isDiscovering()) {
@@ -310,45 +300,17 @@ public class BluetoothTool implements Runnable {
      * 尝试建立连接
      *
      * @param device BluetoothDevice
-     * @return 是否建立了连接
      */
-    private boolean buildConnection(BluetoothDevice device) {
+    private void buildConnection(BluetoothDevice device) {
         socketClose();
         currentState = BluetoothState.CONNECTING;
-        boolean buildSuccessful = false;
         try {
-            if (!buildSuccessful) {
-                try {
-                    bluetoothSocket = device.createRfcommSocketToServiceRecord(UUID
-                            .fromString("00001101-0000-1000-8000-00805F9B34FB"));
-                    bluetoothSocket.connect();
-                    if (bluetoothSocket.isConnected()) {
-                        connectedDevice = device;
-                        buildSuccessful = true;
-                    }
-                } catch (IOException e) {
-                    connectedDevice = null;
-                    buildSuccessful = false;
-                }
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error create connect : " + e.getMessage());
+            bluetoothSocket = device.createRfcommSocketToServiceRecord(UUID
+                    .fromString("00001101-0000-1000-8000-00805F9B34FB"));
+            bluetoothSocket.connect();
+        } catch (IOException e) {
+            connectedDevice = null;
         }
-        if (null != broadcastReceiver) {
-            try {
-                activity.unregisterReceiver(broadcastReceiver);
-            } catch (Exception e) {
-                Log.d(TAG, "Activity failed unregistered...");
-            }
-        }
-        if (buildSuccessful) {
-            try {
-                bluetoothInputStream = bluetoothSocket.getInputStream();
-            } catch (IOException e) {
-                Log.v(TAG, "Create input stream failed.");
-            }
-        }
-        return buildSuccessful;
     }
 
     /**
@@ -376,22 +338,31 @@ public class BluetoothTool implements Runnable {
                             searchHandler.sendMessage(msg);
                         }
                     }
-                } else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(intent.getAction())) {// 改变中的状态
+                } else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(intent.getAction())) {
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                     switch (device.getBondState()) {
                         case BluetoothDevice.BOND_BONDED: {
                             stopDiscovery();
-                            if (buildConnection(device)) {
-                                currentState = BluetoothState.CONNECTED;
-                                if (searchHandler != null)
-                                    searchHandler.sendEmptyMessage(BluetoothState.onConnected);
-                            } else {
-                                currentState = BluetoothState.CONNECT_FAILED;
-                                if (searchHandler != null)
-                                    searchHandler.sendEmptyMessage(BluetoothState.onConnectFailed);
-                            }
+                            buildConnection(device);
                         }
                         break;
+                    }
+                } else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(intent.getAction())) {
+                    currentState = BluetoothState.CONNECTED;
+                    connectedDevice = willConnectDevice;
+                    try {
+                        bluetoothInputStream = bluetoothSocket.getInputStream();
+                        if (searchHandler != null)
+                            searchHandler.sendEmptyMessage(BluetoothState.onConnected);
+                    } catch (IOException e) {
+                        Log.v(TAG, "Create input stream failed.");
+                    }
+                } else if (BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED.equals(intent.getAction())) {
+                    currentState = BluetoothState.WILL_DISCONNECT;
+                } else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(intent.getAction())) {
+                    currentState = BluetoothState.DISCONNECTED;
+                    if (activity != null) {
+                        Toast.makeText(activity, R.string.connect_lost_text, Toast.LENGTH_SHORT).show();
                     }
                 } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(intent.getAction())) {
                     if (searchHandler != null) {
@@ -406,8 +377,12 @@ public class BluetoothTool implements Runnable {
         IntentFilter filter = new IntentFilter();
         filter.addAction(BluetoothDevice.ACTION_FOUND);
         filter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+        filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED);
         filter.addAction(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
         filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+        filter.addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         return filter;
     }
