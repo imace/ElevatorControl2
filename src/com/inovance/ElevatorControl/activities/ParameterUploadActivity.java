@@ -16,8 +16,8 @@ import android.widget.ScrollView;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.bluetoothtool.BluetoothHandler;
-import com.bluetoothtool.BluetoothTool;
 import com.bluetoothtool.BluetoothTalk;
+import com.bluetoothtool.BluetoothTool;
 import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
@@ -199,62 +199,66 @@ public class ParameterUploadActivity extends Activity {
                 JSONObject groupsJSONObject = groupArray.getJSONObject(i);
                 JSONArray detailArray = groupsJSONObject.getJSONArray("parameterSettings");
                 int length = detailArray.length();
-                BluetoothTalk[] communications = new BluetoothTalk[length];
+                List<BluetoothTalk> talkList = new ArrayList<BluetoothTalk>();
                 for (int j = 0; j < length; j++) {
                     JSONObject jsonObject = detailArray.getJSONObject(j);
-                    final ParameterSettings item = new ParameterSettings();
-                    item.setCode(jsonObject.optString("code"));
-                    item.setName(jsonObject.optString("name"));
-                    item.setProductId(String.valueOf(jsonObject.optInt("productId")));
-                    item.setDescription(jsonObject.optString("description"));
-                    item.setDescriptiontype(ParameterSettings
-                            .ParseDescriptionToType(item.getDescription()));
-                    item.setChildId(jsonObject.optString("childId"));
-                    item.setScope(jsonObject.optString("scope"));
-                    item.setUserValue(jsonObject.optString("userValue"));
-                    item.setHexValueString(jsonObject.optString("hexValue"));
-                    item.setDefaultValue(String.valueOf(jsonObject.optInt("defaultValue")));
-                    item.setScale(String.valueOf(jsonObject.optDouble("scale")));
-                    item.setUnit(jsonObject.optString("unit"));
-                    item.setType(String.valueOf(jsonObject.optInt("type")));
-                    item.setMode(String.valueOf(jsonObject.optInt("mode")));
-                    parameterSettingsList.add(item);
-                    communications[j] = new BluetoothTalk() {
-                        @Override
-                        public void beforeSend() {
-                            this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0106"
-                                    + ParseSerialsUtils.getCalculatedCode(item)
-                                    + item.getHexValueString()
-                                    + "0001")));
-                        }
-
-                        @Override
-                        public void afterSend() {
-
-                        }
-
-                        @Override
-                        public void beforeReceive() {
-
-                        }
-
-                        @Override
-                        public void afterReceive() {
-
-                        }
-
-                        @Override
-                        public Object onParse() {
-                            if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
-                                byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
-                                item.setReceived(received);
-                                return item;
+                    int mode = Integer.parseInt(jsonObject.optString("mode"));
+                    if (mode != 3) {
+                        final ParameterSettings item = new ParameterSettings();
+                        item.setCode(jsonObject.optString("code"));
+                        item.setName(jsonObject.optString("name"));
+                        item.setProductId(String.valueOf(jsonObject.optInt("productId")));
+                        item.setDescription(jsonObject.optString("description"));
+                        item.setDescriptiontype(ParameterSettings
+                                .ParseDescriptionToType(item.getDescription()));
+                        item.setChildId(jsonObject.optString("childId"));
+                        item.setScope(jsonObject.optString("scope"));
+                        item.setUserValue(jsonObject.optString("userValue"));
+                        item.setHexValueString(jsonObject.optString("hexValue"));
+                        item.setDefaultValue(String.valueOf(jsonObject.optInt("defaultValue")));
+                        item.setScale(String.valueOf(jsonObject.optDouble("scale")));
+                        item.setUnit(jsonObject.optString("unit"));
+                        item.setType(String.valueOf(jsonObject.optInt("type")));
+                        item.setMode(String.valueOf(jsonObject.optInt("mode")));
+                        parameterSettingsList.add(item);
+                        BluetoothTalk talk = new BluetoothTalk() {
+                            @Override
+                            public void beforeSend() {
+                                this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0106"
+                                        + ParseSerialsUtils.getCalculatedCode(item)
+                                        + item.getHexValueString()
+                                        + "0001")));
                             }
-                            return null;
-                        }
-                    };
+
+                            @Override
+                            public void afterSend() {
+
+                            }
+
+                            @Override
+                            public void beforeReceive() {
+
+                            }
+
+                            @Override
+                            public void afterReceive() {
+
+                            }
+
+                            @Override
+                            public Object onParse() {
+                                if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                                    byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
+                                    item.setReceived(received);
+                                    return item;
+                                }
+                                return null;
+                            }
+                        };
+                        talkList.add(talk);
+                    }
                 }
-                communicationsList.add(communications);
+                communicationsList.add(talkList.toArray(new BluetoothTalk[talkList.size()]));
             } catch (JSONException e) {
                 e.printStackTrace();
             }

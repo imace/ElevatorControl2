@@ -6,7 +6,6 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Message;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -347,7 +346,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         if (count != 0) {
             cancelButton.setEnabled(false);
             confirmButton.setEnabled(false);
-            List<String> codeArray = ParameterDetailActivity.this.getCodeStringArray(settings);
+            String[] codeArray = ParameterDetailActivity.this.getCodeStringArray(settings);
             ParameterDetailActivity.this.createGetValueScopeCommunications(codeArray, index, settings);
         } else {
             createNumberPickerAndBindListener(settings);
@@ -492,7 +491,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                                     && !settings.getName().contains("X27")) {
                                 ToggleButton toggleButton = (ToggleButton) detailDialog.findViewById(R.id.toggle_button);
                                 ListView listView = (ListView) detailDialog.findViewById(R.id.list_view);
-                                CheckedListViewAdapter adapter = (CheckedListViewAdapter)listView.getAdapterSource();
+                                CheckedListViewAdapter adapter = (CheckedListViewAdapter) listView.getAdapterSource();
                                 int checkedIndex = adapter.getCheckedIndex();
                                 if (!toggleButton.isChecked()) {
                                     checkedIndex += 32;
@@ -548,7 +547,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         detailDialog.setCanceledOnTouchOutside(false);
     }
 
-    private List<String> getCodeStringArray(ParameterSettings settings) {
+    private String[] getCodeStringArray(ParameterSettings settings) {
         String[] array = settings.getScope().split("~");
         List<String> list = new ArrayList<String>();
         for (String code : array) {
@@ -556,7 +555,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 list.add(code);
             }
         }
-        return list;
+        return list.toArray(new String[list.size()]);
     }
 
     /**
@@ -566,15 +565,16 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
      * @param index    ListView Index
      * @param settings ParameterSettings
      */
-    private void createGetValueScopeCommunications(List<String> list, int index, final ParameterSettings settings) {
-        BluetoothTalk[] communications = new BluetoothTalk[list.size()];
-        int position = 0;
-        for (final String code : list) {
-            communications[position] = new BluetoothTalk() {
+    private void createGetValueScopeCommunications(final String[] codeArray, int index, final ParameterSettings settings) {
+        int length = codeArray.length;
+        BluetoothTalk[] communications = new BluetoothTalk[length];
+        for (int i = 0; i < length; i++) {
+            final int position = i;
+            communications[i] = new BluetoothTalk() {
                 @Override
                 public void beforeSend() {
                     this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0103"
-                            + code
+                            + codeArray[position]
                             + "0001")));
                 }
 
@@ -597,7 +597,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 public Object onParse() {
                     if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
                         byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
-                        if (data.length == 8) {
+                        if (data.length > 6) {
                             int intValue = ParseSerialsUtils.getIntFromBytes(data);
                             try {
                                 return intValue * Integer.parseInt(settings.getScale()) + "";
@@ -949,7 +949,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 ParameterDetailActivity.this.createNumberPickerAndBindListener(settings);
             } else {
                 ParameterSettings settings = listViewDataSource.get(index);
-                List<String> codeArray = ParameterDetailActivity.this.getCodeStringArray(settings);
+                String[] codeArray = ParameterDetailActivity.this.getCodeStringArray(settings);
                 ParameterDetailActivity.this.createGetValueScopeCommunications(codeArray, index, settings);
             }
         }
@@ -965,9 +965,6 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         @Override
         public void onTalkError(Message msg) {
             super.onTalkError(msg);
-            ParameterSettings settings = listViewDataSource.get(index);
-            List<String> codeArray = ParameterDetailActivity.this.getCodeStringArray(settings);
-            ParameterDetailActivity.this.createGetValueScopeCommunications(codeArray, index, settings);
         }
     }
 

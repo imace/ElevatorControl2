@@ -38,7 +38,6 @@ import java.util.Set;
  * TabActivity 导航
  */
 
-@SuppressWarnings("deprecation")
 public class NavigationTabActivity extends TabActivity {
 
     private static final String TAG = NavigationTabActivity.class.getSimpleName();
