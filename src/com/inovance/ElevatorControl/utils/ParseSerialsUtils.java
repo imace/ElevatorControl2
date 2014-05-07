@@ -75,8 +75,7 @@ public class ParseSerialsUtils {
                         if (modValue < size && remValue < size) {
                             JSONObject modObject = jsonArray.getJSONObject(modValue);
                             JSONObject remObject = jsonArray.getJSONObject(remValue);
-                            return modValue + ":" + modObject.optString("value") + " + "
-                                    + remValue + ":" + remObject.optString("value");
+                            return modObject.optString("value") + "  " + remObject.optString("value");
                         }
                     }
                     if (Integer.parseInt(settings.getType()) == 3

@@ -30,7 +30,9 @@ import org.holoeverywhere.app.AlertDialog;
 import org.holoeverywhere.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * TabActivity 导航
@@ -257,12 +259,16 @@ public class NavigationTabActivity extends TabActivity {
      *
      * @param items 蓝牙设备列表
      */
-    public void updateSpinnerDropdownItem(List<BluetoothDevice> deviceArrayList) {
+    public void updateSpinnerDropdownItem(List<BluetoothDevice> deviceList) {
+        Set<BluetoothDevice> bluetoothDeviceSet = new HashSet<BluetoothDevice>();
+        bluetoothDeviceSet.addAll(deviceList);
+        deviceList = new ArrayList<BluetoothDevice>();
+        deviceList.addAll(bluetoothDeviceSet);
         List<String> specialDevicesName = new ArrayList<String>();
         List<String> normalDevicesName = new ArrayList<String>();
         List<BluetoothDevice> specialDevices = new ArrayList<BluetoothDevice>();
         List<BluetoothDevice> normalDevices = new ArrayList<BluetoothDevice>();
-        for (BluetoothDevice device : deviceArrayList) {
+        for (BluetoothDevice device : deviceList) {
             String deviceName = device.getName();
             if (deviceName == null) {
                 deviceName = "NULL";

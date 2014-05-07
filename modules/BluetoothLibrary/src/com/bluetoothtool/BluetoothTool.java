@@ -309,7 +309,9 @@ public class BluetoothTool implements Runnable {
                     .fromString("00001101-0000-1000-8000-00805F9B34FB"));
             bluetoothSocket.connect();
         } catch (IOException e) {
-            connectedDevice = null;
+            currentState = BluetoothState.CONNECT_FAILED;
+            if (searchHandler != null)
+                searchHandler.sendEmptyMessage(BluetoothState.onConnectFailed);
         }
     }
 
@@ -386,7 +388,6 @@ public class BluetoothTool implements Runnable {
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         return filter;
     }
-
 
     /**
      * 搜索蓝牙设备
