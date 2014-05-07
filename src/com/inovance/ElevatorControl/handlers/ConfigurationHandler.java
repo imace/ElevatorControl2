@@ -1,18 +1,12 @@
 package com.inovance.ElevatorControl.handlers;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.os.Message;
-import android.view.View;
-import android.widget.AdapterView;
-import com.hbluetooth.HHandler;
-import com.inovance.ElevatorControl.R;
+import com.bluetoothtool.BluetoothHandler;
 import com.inovance.ElevatorControl.activities.ConfigurationActivity;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.models.RealTimeMonitor;
-import com.inovance.ElevatorControl.views.dialogs.CustomDialog;
 import com.inovance.ElevatorControl.views.fragments.ConfigurationFragment;
-import org.holoeverywhere.widget.ListView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +16,7 @@ import java.util.List;
  *
  * @author jch
  */
-public class ConfigurationHandler extends HHandler {
+public class ConfigurationHandler extends BluetoothHandler {
 
     public int sendCount;
 

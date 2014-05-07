@@ -13,17 +13,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
         <org.holoeverywhere.widget.TextView
+                style="@style/Holo.TextAppearance.Light"
                 android:id="@+id/code_text"
-                android:textSize="16sp"
                 android:textColor="#515151"
                 android:layout_marginRight="10dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
         <org.holoeverywhere.widget.TextView
+                style="@style/Holo.TextAppearance.Light"
                 android:id="@+id/text_parameter_setting"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
                 android:textColor="#515151"/>
     </LinearLayout>
 
@@ -35,15 +35,15 @@
             android:gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
-        <TextView
+        <org.holoeverywhere.widget.TextView
+                style="@style/Holo.TextAppearance.Light"
                 android:id="@+id/value_parameter_setting"
-                android:textSize="16sp"
                 android:textColor="#515151"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
-        <TextView
+        <org.holoeverywhere.widget.TextView
+                style="@style/Holo.TextAppearance.Light"
                 android:id="@+id/unit_parameter_setting"
-                android:textSize="16sp"
                 android:textColor="#515151"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>

@@ -5,10 +5,13 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.view.View;
-import com.hbluetooth.HBluetooth;
-import com.hbluetooth.HSerial;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import com.bluetoothtool.BluetoothTool;
+import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.activities.CheckAuthorizationActivity;
+import com.inovance.ElevatorControl.adapters.CheckedListViewAdapter;
 import com.inovance.ElevatorControl.adapters.DialogSwitchListViewAdapter;
 import com.inovance.ElevatorControl.adapters.ParameterStatusAdapter;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
@@ -16,7 +19,9 @@ import com.inovance.ElevatorControl.daos.ErrorHelpDao;
 import com.inovance.ElevatorControl.models.*;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
 import org.holoeverywhere.widget.ListView;
+import org.holoeverywhere.widget.Spinner;
 import org.holoeverywhere.widget.TextView;
+import org.holoeverywhere.widget.ToggleButton;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,7 +39,7 @@ public class CustomDialog {
         ListView listView = (ListView) dialogView.findViewById(R.id.status_list);
         List<ParameterStatusItem> statusList = new ArrayList<ParameterStatusItem>();
         if (monitor.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[2]) {
-            boolean[] bitsValue = HSerial.byte2BoolArr(data[4], data[5]);
+            boolean[] bitsValue = SerialUtility.byte2BoolArr(data[4], data[5]);
             int bitsSize = bitsValue.length;
             try {
                 JSONArray valuesArray = new JSONArray(monitor.getJSONDescription());
@@ -116,17 +121,75 @@ public class CustomDialog {
             try {
                 JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
                 int size = jsonArray.length();
-                CharSequence[] charArray = new CharSequence[size];
+                String[] statusList = new String[size];
+                String[] spinnerList = new String[size];
                 for (int i = 0; i < size; i++) {
                     JSONObject value = jsonArray.getJSONObject(i);
-                    charArray[i] = value.optString("value");
+                    statusList[i] = value.optString("id") + ":" + value.optString("value");
+                    spinnerList[i] = value.optString("value");
                 }
-                return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
-                        .setSingleChoiceItems(charArray,
-                                ParseSerialsUtils.getIntFromBytes(settings.getReceived()),
-                                null)
-                        .setTitle(settings.getCodeText() + " " + settings.getName())
-                        .setNeutralButton(R.string.dialog_btn_cancel, null);
+                // 端子 X1 - x24
+                if (Integer.parseInt(settings.getType()) == 3
+                        && !settings.getName().contains("X25")
+                        && !settings.getName().contains("X26")
+                        && !settings.getName().contains("X27")) {
+                    View dialogView = activity.getLayoutInflater()
+                            .inflate(R.layout.parameter_terminal_status_dialog, null);
+                    final ListView listView = (ListView) dialogView.findViewById(R.id.list_view);
+                    TextView defaultValue = (TextView) dialogView.findViewById(R.id.default_value);
+                    ToggleButton toggleButton = (ToggleButton) dialogView.findViewById(R.id.toggle_button);
+                    boolean toggleButtonStatus = true;
+                    defaultValue.setText("出厂值: " + settings.getDefaultValue());
+                    int index = ParseSerialsUtils.getIntFromBytes(settings.getReceived());
+                    if (index >= 32 && index < 64) {
+                        index = index - 32;
+                        toggleButtonStatus = false;
+                    }
+                    if (index >= 96 && index < 127) {
+                        index = index - 32;
+                        toggleButtonStatus = false;
+                    }
+                    toggleButton.setChecked(toggleButtonStatus);
+                    final CheckedListViewAdapter adapter = new CheckedListViewAdapter(activity, statusList, index);
+                    listView.setAdapter(adapter);
+                    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                            listView.setSelection(position);
+                            adapter.setCheckedIndex(position);
+                        }
+                    });
+                    return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
+                            .setView(dialogView)
+                            .setTitle(settings.getCodeText() + " " + settings.getName());
+                } else if (Integer.parseInt(settings.getType()) == 25) {
+                    View dialogView = activity.getLayoutInflater()
+                            .inflate(R.layout.parameter_type25_dialog, null);
+                    Spinner modSpinner = (Spinner) dialogView.findViewById(R.id.mod_value);
+                    Spinner remSpinner = (Spinner) dialogView.findViewById(R.id.rem_value);
+                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(activity,
+                            android.R.layout.simple_spinner_item,
+                            spinnerList);
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    modSpinner.setAdapter(adapter);
+                    remSpinner.setAdapter(adapter);
+                    int value = ParseSerialsUtils.getIntFromBytes(settings.getReceived());
+                    int modValue = value / 100;
+                    int remValue = value % 100;
+                    if (modValue < statusList.length && remValue < statusList.length) {
+                        modSpinner.setSelection(modValue);
+                        remSpinner.setSelection(remValue);
+                    }
+                    return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
+                            .setView(dialogView)
+                            .setTitle(settings.getCodeText() + " " + settings.getName());
+                } else {
+                    return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
+                            .setSingleChoiceItems(statusList,
+                                    ParseSerialsUtils.getIntFromBytes(settings.getReceived()),
+                                    null)
+                            .setTitle(settings.getCodeText() + " " + settings.getName());
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -136,22 +199,24 @@ public class CustomDialog {
             View dialogView = activity.getLayoutInflater().inflate(R.layout.parameter_switch_dialog, null);
             ListView listView = (ListView) dialogView.findViewById(R.id.switch_list);
             List<ParameterStatusItem> itemList = new ArrayList<ParameterStatusItem>();
-            boolean[] booleanArray = HSerial.byte2BoolArr(settings.getReceived()[4], settings.getReceived()[5]);
+            boolean[] booleanArray = SerialUtility.byte2BoolArr(settings.getReceived()[4], settings.getReceived()[5]);
             try {
                 JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
                 int size = jsonArray.length();
                 int length = booleanArray.length;
                 for (int i = 0; i < size; i++) {
                     JSONObject jsonObject = jsonArray.getJSONObject(i);
-                    if (!jsonObject.optString("value").contains(ApplicationConfig.RETAIN_NAME)) {
-                        if (i < length) {
-                            ParameterStatusItem item = new ParameterStatusItem();
-                            item.setId(jsonObject.optString("id"));
-                            item.setName(jsonObject.optString("value"));
-                            item.setStatus(booleanArray[i]);
-                            item.setCanEdit(Integer.parseInt(settings.getMode()) == ApplicationConfig.modifyType[0]);
-                            itemList.add(item);
+                    if (i < length) {
+                        ParameterStatusItem item = new ParameterStatusItem();
+                        item.setId(jsonObject.optString("id"));
+                        item.setName(jsonObject.optString("value"));
+                        item.setStatus(booleanArray[i]);
+                        if (Integer.parseInt(settings.getMode()) == ApplicationConfig.modifyType[2]) {
+                            item.setCanEdit(false);
+                        } else {
+                            item.setCanEdit(!settings.isElevatorRunning());
                         }
+                        itemList.add(item);
                     }
                 }
                 DialogSwitchListViewAdapter adapter = new DialogSwitchListViewAdapter(itemList, activity);
@@ -183,7 +248,7 @@ public class CustomDialog {
                 .setPositiveButton(activity.getResources().getString(R.string.dialog_btn_ok)
                         , new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        HBluetooth.getInstance(activity).kill();
+                        BluetoothTool.getInstance(activity).kill();
                         Intent intent = new Intent(activity, CheckAuthorizationActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         intent.putExtra("Exit", true);

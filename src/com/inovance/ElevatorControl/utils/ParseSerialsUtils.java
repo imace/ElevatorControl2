@@ -3,7 +3,7 @@ package com.inovance.ElevatorControl.utils;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import com.hbluetooth.HSerial;
+import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ErrorHelpDao;
@@ -68,11 +68,32 @@ public class ParseSerialsUtils {
                 try {
                     JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
                     int size = jsonArray.length();
-                    for (int i = 0; i < size; i++) {
-                        JSONObject jsonObject = jsonArray.getJSONObject(i);
-                        if (i == value) {
-                            return jsonObject.optString("value");
+                    int index = getIntFromBytes(data);
+                    if (Integer.parseInt(settings.getType()) == 25) {
+                        int modValue = index / 100;
+                        int remValue = index % 100;
+                        if (modValue < size && remValue < size) {
+                            JSONObject modObject = jsonArray.getJSONObject(modValue);
+                            JSONObject remObject = jsonArray.getJSONObject(remValue);
+                            return modValue + ":" + modObject.optString("value") + " + "
+                                    + remValue + ":" + remObject.optString("value");
                         }
+                    }
+                    if (Integer.parseInt(settings.getType()) == 3
+                            && !settings.getName().contains("X25")
+                            && !settings.getName().contains("X26")
+                            && !settings.getName().contains("X27")) {
+                        if (index >= 32 && index < 64) {
+                            index = index - 32;
+                        }
+                        if (index >= 96 && index < 127) {
+                            index = index - 32;
+                        }
+                    }
+
+                    if (index < size) {
+                        JSONObject jsonObject = jsonArray.getJSONObject(index);
+                        return index + ":" + jsonObject.optString("value");
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -118,7 +139,7 @@ public class ParseSerialsUtils {
     public static String getCalculatedCode(ParameterSettings settings) {
         String r2 = settings.getCode().substring(0, 2);
         String r4 = settings.getCode().substring(2);
-        r4 = HSerial.int2HexStr(new int[]{
+        r4 = SerialUtility.int2HexStr(new int[]{
                 Integer.parseInt(r4)
         });
         return r2 + r4;

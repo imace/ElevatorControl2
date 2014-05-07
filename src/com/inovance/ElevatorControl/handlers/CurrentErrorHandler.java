@@ -5,7 +5,7 @@ import android.os.Message;
 import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.widget.TextView;
-import com.hbluetooth.HHandler;
+import com.bluetoothtool.BluetoothHandler;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.activities.TroubleAnalyzeActivity;
 import com.inovance.ElevatorControl.models.ErrorHelp;
@@ -15,7 +15,7 @@ import com.inovance.ElevatorControl.models.ErrorHelp;
  *
  * @author jch
  */
-public class CurrentErrorHandler extends HHandler {
+public class CurrentErrorHandler extends BluetoothHandler {
 
     private ErrorHelp errorHelp;
 

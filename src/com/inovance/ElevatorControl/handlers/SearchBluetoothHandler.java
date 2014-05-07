@@ -1,12 +1,15 @@
 package com.inovance.ElevatorControl.handlers;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothDevice;
 import android.os.Message;
-import com.hbluetooth.Devices;
-import com.hbluetooth.HHandler;
+import com.bluetoothtool.BluetoothHandler;
+import com.bluetoothtool.DevicesHolder;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.activities.NavigationTabActivity;
 import org.holoeverywhere.widget.Toast;
+
+import java.util.ArrayList;
 
 /**
  * Created by keith on 14-3-9.
@@ -14,7 +17,7 @@ import org.holoeverywhere.widget.Toast;
  * Date 14-3-9
  * Time 下午9:41
  */
-public class SearchBluetoothHandler extends HHandler {
+public class SearchBluetoothHandler extends BluetoothHandler {
 
     private static final String TAG = SearchBluetoothHandler.class.getSimpleName();
 
@@ -31,9 +34,10 @@ public class SearchBluetoothHandler extends HHandler {
      * @param msg message
      */
     @Override
-    public void onBeginPreparing(Message msg) {
-        super.onBeginPreparing(msg);
-        mNavigationTabActivity.mRefreshActionItem.showProgress(true);
+    public void onBeginDiscovering(Message msg) {
+        super.onBeginDiscovering(msg);
+        mNavigationTabActivity.showRefreshButtonProgress(true);
+        mNavigationTabActivity.updateSpinnerDropdownItem(new ArrayList<BluetoothDevice>());
     }
 
     /**
@@ -45,9 +49,16 @@ public class SearchBluetoothHandler extends HHandler {
     @SuppressWarnings("unchecked")
     public void onFoundDevice(Message msg) {
         super.onFoundDevice(msg);
-        mNavigationTabActivity.mRefreshActionItem.showProgress(true);
-        if (msg.obj != null && msg.obj instanceof Devices) {
-            mNavigationTabActivity.updateSpinnerDropdownItem(((Devices) msg.obj).getDevices());
+        if (mNavigationTabActivity.researchDevicesButton != null) {
+            mNavigationTabActivity.showRefreshButtonProgress(true);
+        }
+        if (msg.obj != null && msg.obj instanceof DevicesHolder) {
+            DevicesHolder devicesHolder = ((DevicesHolder) msg.obj);
+            if (devicesHolder.getDevices() != null) {
+                if (mNavigationTabActivity != null) {
+                    mNavigationTabActivity.updateSpinnerDropdownItem(devicesHolder.getDevices());
+                }
+            }
         }
     }
 
@@ -67,10 +78,10 @@ public class SearchBluetoothHandler extends HHandler {
      * @param msg message
      */
     @Override
-    public void onPrepared(Message msg) {
-        super.onPrepared(msg);
-        mNavigationTabActivity.mRefreshActionItem.showProgress(false);
-        mNavigationTabActivity.startHomeActivityStatusSyncTask();
+    public void onConnected(Message msg) {
+        super.onConnected(msg);
+        mNavigationTabActivity.showRefreshButtonProgress(false);
+        mNavigationTabActivity.startGetDeviceTypeAndNumberTask();
         Toast.makeText(activity, activity.getResources().getString(R.string.success_connect),
                 Toast.LENGTH_SHORT).show();
     }
@@ -81,34 +92,16 @@ public class SearchBluetoothHandler extends HHandler {
      * @param msg message
      */
     @Override
-    public void onPrepError(Message msg) {
-        super.onPrepError(msg);
-        mNavigationTabActivity.mRefreshActionItem.showProgress(false);
-        String errorMessage = (null == msg.obj) ? activity.getResources().getString(R.string.failed_connect) : msg.obj.toString();
+    public void onConnectFailed(Message msg) {
+        super.onConnectFailed(msg);
+        mNavigationTabActivity.showRefreshButtonProgress(false);
+        String errorMessage = (null == msg.obj) ? activity.getResources().getString(R.string.failed_connect)
+                : msg.obj.toString();
         Toast.makeText(activity, errorMessage, Toast.LENGTH_SHORT).show();
-    }
-
-    /**
-     * TALK RECEIVE
-     *
-     * @param msg message
-     */
-    @Override
-    public void onTalkReceive(Message msg) {
-        super.onTalkReceive(msg);
-        mNavigationTabActivity.mRefreshActionItem.showProgress(false);
-    }
-
-    /**
-     * HANDLER CHANGED
-     */
-    @Override
-    public void onHandlerChanged(Message msg) {
-        super.onHandlerChanged(msg);
     }
 
     public void onDiscoveryFinished(Message message) {
         super.onDiscoveryFinished(message);
-        mNavigationTabActivity.mRefreshActionItem.showProgress(false);
+        mNavigationTabActivity.showRefreshButtonProgress(false);
     }
 }

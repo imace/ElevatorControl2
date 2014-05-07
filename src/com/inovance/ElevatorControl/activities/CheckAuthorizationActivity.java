@@ -116,7 +116,7 @@ public class CheckAuthorizationActivity extends Activity {
             }
         });
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        WebApi.getInstance().verifyUser(bluetoothAdapter.getAddress());
+        WebApi.getInstance().verifyUser(CheckAuthorizationActivity.this, bluetoothAdapter.getAddress());
         CheckAuthorizationActivity.this.progressView.setVisibility(View.VISIBLE);
         CheckAuthorizationActivity.this.waitTextView.setText(R.string.verify_user_text);
         CheckAuthorizationActivity.this.btnLogin.setEnabled(false);

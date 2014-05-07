@@ -9,7 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import com.hbluetooth.HHandler;
+import com.bluetoothtool.BluetoothHandler;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.activities.TroubleAnalyzeActivity;
 import com.inovance.ElevatorControl.models.HistoryError;
@@ -26,7 +26,7 @@ import java.util.List;
  * Date: 14-3-21.
  * Time: 11:00.
  */
-public class HistoryErrorHandler extends HHandler {
+public class HistoryErrorHandler extends BluetoothHandler {
 
     private List<HistoryError> errorList;
 
@@ -84,13 +84,12 @@ public class HistoryErrorHandler extends HHandler {
                     noErrorView.setVisibility(View.VISIBLE);
                 }
             }
-        } else {
-            ((TroubleAnalyzeActivity) activity).loadHistoryTroubleView();
         }
     }
 
     @Override
     public void onTalkReceive(Message msg) {
+        super.onTalkReceive(msg);
         if (msg.obj != null && (msg.obj instanceof HistoryError)) {
             HistoryError historyError = (HistoryError) msg.obj;
             if (!historyError.isNoError()) {
@@ -102,7 +101,7 @@ public class HistoryErrorHandler extends HHandler {
 
     @Override
     public void onTalkError(Message msg) {
-        ((TroubleAnalyzeActivity) activity).loadHistoryTroubleView();
+        super.onTalkError(msg);
     }
 
     // ================================ History List View Adapter =========================================

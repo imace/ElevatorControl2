@@ -20,7 +20,7 @@
                 android:layout_marginBottom="2dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-            <TextView
+            <org.holoeverywhere.widget.TextView
                     android:textColor="#333333"
                     android:textSize="16sp"
                     android:text="@string/firmware_version_text"

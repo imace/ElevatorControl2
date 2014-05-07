@@ -9,10 +9,10 @@ import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.view.View;
 import butterknife.InjectView;
 import butterknife.Views;
-import com.hbluetooth.HBluetooth;
-import com.hbluetooth.HCommunication;
-import com.hbluetooth.HHandler;
-import com.hbluetooth.HSerial;
+import com.bluetoothtool.BluetoothHandler;
+import com.bluetoothtool.BluetoothTalk;
+import com.bluetoothtool.BluetoothTool;
+import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.adapters.ConfigurationAdapter;
 import com.inovance.ElevatorControl.adapters.ParameterStatusAdapter;
@@ -20,7 +20,7 @@ import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ParameterSettingsDao;
 import com.inovance.ElevatorControl.daos.RealTimeMonitorDao;
 import com.inovance.ElevatorControl.handlers.ConfigurationHandler;
-import com.inovance.ElevatorControl.models.ListHolder;
+import com.inovance.ElevatorControl.models.ObjectListHolder;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.models.ParameterStatusItem;
 import com.inovance.ElevatorControl.models.RealTimeMonitor;
@@ -48,15 +48,15 @@ public class ConfigurationActivity extends Activity {
 
     private ConfigurationHandler configurationHandler;
 
-    private HCommunication[] communications;
+    private BluetoothTalk[] communications;
 
     private GetXTerminalStatusHandler getXTerminalStatusHandler;
 
     private GetYTerminalStatusHandler getYTerminalStatusHandler;
 
-    private HCommunication[] getXTerminalCommunications;
+    private BluetoothTalk[] getXTerminalCommunications;
 
-    private HCommunication[] getYTerminalCommunications;
+    private BluetoothTalk[] getYTerminalCommunications;
 
     private AlertDialog terminalDialog;
 
@@ -72,7 +72,9 @@ public class ConfigurationActivity extends Activity {
 
     private static final int SYNC_TIME = 3000;
 
-    public boolean isSyncing;
+    public boolean isSyncing = false;
+
+    private boolean isReadingTerminalStatus = false;
 
     /**
      * 注入页面元素
@@ -128,10 +130,12 @@ public class ConfigurationActivity extends Activity {
             @Override
             public void run() {
                 if (isRunning) {
-                    if (!isSyncing) {
-                        ConfigurationActivity.this.reSyncData();
+                    if (BluetoothTool.getInstance(ConfigurationActivity.this).isConnected()) {
+                        if (!isSyncing && !isReadingTerminalStatus) {
+                            ConfigurationActivity.this.reSyncData();
+                            syncHandler.postDelayed(syncStatusTask, SYNC_TIME);
+                        }
                     }
-                    syncHandler.postDelayed(syncStatusTask, SYNC_TIME);
                 }
             }
         };
@@ -140,8 +144,16 @@ public class ConfigurationActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        isRunning = true;
-        syncHandler.postDelayed(syncStatusTask, SYNC_TIME);
+        if (BluetoothTool.getInstance(this).isConnected()) {
+            if (((NavigationTabActivity) getParent()).hasGetDeviceTypeAndNumber) {
+                isRunning = true;
+                isReadingTerminalStatus = false;
+                isSyncing = false;
+                syncHandler.postDelayed(syncStatusTask, SYNC_TIME);
+            }
+        } else {
+            handler.sendEmptyMessage(0);
+        }
     }
 
 
@@ -177,15 +189,15 @@ public class ConfigurationActivity extends Activity {
     public void loadMonitorView() {
         if (communications == null) {
             List<RealTimeMonitor> monitorList = RealTimeMonitorDao.findByNames(this, ApplicationConfig.stateFilters);
-            communications = new HCommunication[monitorList.size()];
+            communications = new BluetoothTalk[monitorList.size()];
             int commandSize = monitorList.size();
             for (int index = 0; index < commandSize; index++) {
                 final String code = monitorList.get(index).getCode();
                 final RealTimeMonitor monitor = monitorList.get(index);
-                communications[index] = new HCommunication() {
+                communications[index] = new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103" + code + "0001")));
+                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0103" + code + "0001")));
                     }
 
                     @Override
@@ -205,8 +217,8 @@ public class ConfigurationActivity extends Activity {
 
                     @Override
                     public Object onParse() {
-                        if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                            byte[] received = HSerial.trimEnd(getReceivedBuffer());
+                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                            byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
                             monitor.setReceived(received);
                             return monitor;
                         }
@@ -215,13 +227,13 @@ public class ConfigurationActivity extends Activity {
                 };
             }
         }
-        if (HBluetooth.getInstance(this).isPrepared()) {
+        if (BluetoothTool.getInstance(this).isConnected()) {
             configurationHandler.sendCount = communications.length;
             ConfigurationActivity.this.isSyncing = true;
-            HBluetooth.getInstance(this)
+            BluetoothTool.getInstance(this)
                     .setHandler(configurationHandler)
                     .setCommunications(communications)
-                    .Start();
+                    .send();
         } else {
             handler.sendEmptyMessage(0);
         }
@@ -235,7 +247,7 @@ public class ConfigurationActivity extends Activity {
     public void seeInputTerminalStatus(RealTimeMonitor monitor) {
         if (getXTerminalCommunications == null) {
             final List<ParameterSettings> terminalList = ParameterSettingsDao.findByType(this, 3);
-            getXTerminalCommunications = new HCommunication[4];
+            getXTerminalCommunications = new BluetoothTalk[4];
             for (int i = 0; i < 4; i++) {
                 int startIndex = 0;
                 int length = 0;
@@ -259,10 +271,10 @@ public class ConfigurationActivity extends Activity {
                 final int startPosition = startIndex;
                 final ParameterSettings firstItem = terminalList.get(startIndex);
                 final String lengthHex = String.format("%04x", length);
-                getXTerminalCommunications[i] = new HCommunication() {
+                getXTerminalCommunications[i] = new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(HSerial.crc16(HSerial
+                        this.setSendBuffer(SerialUtility.crc16(SerialUtility
                                 .hexStr2Ints("0103"
                                         + ParseSerialsUtils.getCalculatedCode(firstItem)
                                         + lengthHex
@@ -286,8 +298,8 @@ public class ConfigurationActivity extends Activity {
 
                     @Override
                     public Object onParse() {
-                        if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                            byte[] data = HSerial.trimEnd(getReceivedBuffer());
+                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                            byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
                             short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
                             if (commandLength * 2 == bytesLength) {
                                 List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
@@ -295,13 +307,13 @@ public class ConfigurationActivity extends Activity {
                                     int index = startPosition + j;
                                     if (index < terminalList.size()) {
                                         ParameterSettings item = terminalList.get(index);
-                                        byte[] tempData = HSerial.crc16(HSerial.hexStr2Ints("01030002"
-                                                + HSerial.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
+                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStr2Ints("01030002"
+                                                + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
                                         item.setReceived(tempData);
                                         tempList.add(item);
                                     }
                                 }
-                                ListHolder holder = new ListHolder();
+                                ObjectListHolder holder = new ObjectListHolder();
                                 holder.setParameterSettingsList(tempList);
                                 return holder;
                             }
@@ -332,12 +344,13 @@ public class ConfigurationActivity extends Activity {
      */
     private void startGetXTerminalCommunications() {
         if (getXTerminalCommunications != null) {
-            if (HBluetooth.getInstance(this).isPrepared()) {
+            if (BluetoothTool.getInstance(this).isConnected()) {
+                ConfigurationActivity.this.isReadingTerminalStatus = true;
                 getXTerminalStatusHandler.sendCount = getXTerminalCommunications.length;
-                HBluetooth.getInstance(this)
+                BluetoothTool.getInstance(this)
                         .setHandler(getXTerminalStatusHandler)
                         .setCommunications(getXTerminalCommunications)
-                        .Start();
+                        .send();
             } else {
                 Toast.makeText(ConfigurationActivity.this,
                         R.string.not_connect_device_error,
@@ -357,15 +370,15 @@ public class ConfigurationActivity extends Activity {
             final List<ParameterSettings> terminalList = ParameterSettingsDao.findByType(this, 4);
             final int size = terminalList.size();
             final int count = size <= 10 ? 1 : ((size - size % 10) / 10 + (size % 10 == 0 ? 0 : 1));
-            getYTerminalCommunications = new HCommunication[count];
+            getYTerminalCommunications = new BluetoothTalk[count];
             for (int i = 0; i < count; i++) {
                 final int position = i;
                 final ParameterSettings firstItem = terminalList.get(position * 10);
                 final int length = size <= 10 ? size : (size % 10 == 0 ? 10 : ((position == count - 1) ? size % 10 : 10));
-                getYTerminalCommunications[i] = new HCommunication() {
+                getYTerminalCommunications[i] = new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(HSerial.crc16(HSerial
+                        this.setSendBuffer(SerialUtility.crc16(SerialUtility
                                 .hexStr2Ints("0103"
                                         + ParseSerialsUtils.getCalculatedCode(firstItem)
                                         + String.format("%04x", length)
@@ -389,21 +402,21 @@ public class ConfigurationActivity extends Activity {
 
                     @Override
                     public Object onParse() {
-                        if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                            byte[] data = HSerial.trimEnd(getReceivedBuffer());
+                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                            byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
                             short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
                             if (length * 2 == bytesLength) {
                                 List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
                                 for (int j = 0; j < length; j++) {
                                     if (position * 10 + j < terminalList.size()) {
                                         ParameterSettings item = terminalList.get(position * 10 + j);
-                                        byte[] tempData = HSerial.crc16(HSerial.hexStr2Ints("01030002"
-                                                + HSerial.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
+                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStr2Ints("01030002"
+                                                + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
                                         item.setReceived(tempData);
                                         tempList.add(item);
                                     }
                                 }
-                                ListHolder holder = new ListHolder();
+                                ObjectListHolder holder = new ObjectListHolder();
                                 holder.setParameterSettingsList(tempList);
                                 return holder;
                             }
@@ -434,12 +447,13 @@ public class ConfigurationActivity extends Activity {
      */
     private void startGetYTerminalCommunications() {
         if (getYTerminalCommunications != null) {
-            if (HBluetooth.getInstance(ConfigurationActivity.this).isPrepared()) {
+            if (BluetoothTool.getInstance(ConfigurationActivity.this).isConnected()) {
                 getYTerminalStatusHandler.sendCount = getYTerminalCommunications.length;
-                HBluetooth.getInstance(ConfigurationActivity.this)
+                ConfigurationActivity.this.isReadingTerminalStatus = true;
+                BluetoothTool.getInstance(ConfigurationActivity.this)
                         .setHandler(getYTerminalStatusHandler)
                         .setCommunications(getYTerminalCommunications)
-                        .Start();
+                        .send();
             } else {
                 Toast.makeText(this,
                         R.string.not_connect_device_error,
@@ -471,7 +485,7 @@ public class ConfigurationActivity extends Activity {
     };
 
     // =============================== Get X Terminal Status Handler ====================================== //
-    private class GetXTerminalStatusHandler extends HHandler {
+    private class GetXTerminalStatusHandler extends BluetoothHandler {
 
         public int sendCount;
 
@@ -479,7 +493,7 @@ public class ConfigurationActivity extends Activity {
 
         public RealTimeMonitor monitor;
 
-        private List<ListHolder> holderList;
+        private List<ObjectListHolder> holderList;
 
         public GetXTerminalStatusHandler(android.app.Activity activity) {
             super(activity);
@@ -490,7 +504,7 @@ public class ConfigurationActivity extends Activity {
         public void onMultiTalkBegin(Message msg) {
             super.onMultiTalkBegin(msg);
             receiveCount = 0;
-            holderList = new ArrayList<ListHolder>();
+            holderList = new ArrayList<ObjectListHolder>();
         }
 
         @Override
@@ -500,10 +514,10 @@ public class ConfigurationActivity extends Activity {
                 if (ConfigurationActivity.this.waitTextView != null
                         && ConfigurationActivity.this.terminalListView != null) {
                     List<ParameterSettings> settingsList = new ArrayList<ParameterSettings>();
-                    for (ListHolder holder : holderList) {
+                    for (ObjectListHolder holder : holderList) {
                         settingsList.addAll(holder.getParameterSettingsList());
                     }
-                    boolean[] bitValues = HSerial.byteArray2BitArray(monitor.getCombineBytes());
+                    boolean[] bitValues = SerialUtility.byteArray2BitArray(monitor.getCombineBytes());
                     int length = bitValues.length;
                     List<ParameterStatusItem> statusList = new ArrayList<ParameterStatusItem>();
                     for (ParameterSettings settings : settingsList) {
@@ -526,6 +540,9 @@ public class ConfigurationActivity extends Activity {
                     ConfigurationActivity.this.terminalListView.setAdapter(adapter);
                     ConfigurationActivity.this.waitTextView.setVisibility(View.GONE);
                     ConfigurationActivity.this.terminalListView.setVisibility(View.VISIBLE);
+                    ConfigurationActivity.this.isSyncing = false;
+                    ConfigurationActivity.this.isReadingTerminalStatus = false;
+                    syncHandler.postDelayed(syncStatusTask, SYNC_TIME);
                 }
             } else {
                 ConfigurationActivity.this.startGetXTerminalCommunications();
@@ -535,8 +552,8 @@ public class ConfigurationActivity extends Activity {
         @Override
         public void onTalkReceive(Message msg) {
             super.onTalkReceive(msg);
-            if (msg.obj != null && msg.obj instanceof ListHolder) {
-                holderList.add((ListHolder) msg.obj);
+            if (msg.obj != null && msg.obj instanceof ObjectListHolder) {
+                holderList.add((ObjectListHolder) msg.obj);
                 receiveCount++;
             }
         }
@@ -544,12 +561,11 @@ public class ConfigurationActivity extends Activity {
         @Override
         public void onTalkError(Message msg) {
             super.onTalkError(msg);
-            ConfigurationActivity.this.startGetXTerminalCommunications();
         }
     }
 
     // =============================== Get Y Terminal Status Handler ====================================== //
-    private class GetYTerminalStatusHandler extends HHandler {
+    private class GetYTerminalStatusHandler extends BluetoothHandler {
 
         private int sendCount;
 
@@ -557,7 +573,7 @@ public class ConfigurationActivity extends Activity {
 
         public RealTimeMonitor monitor;
 
-        private List<ListHolder> holderList;
+        private List<ObjectListHolder> holderList;
 
         public GetYTerminalStatusHandler(android.app.Activity activity) {
             super(activity);
@@ -568,7 +584,7 @@ public class ConfigurationActivity extends Activity {
         public void onMultiTalkBegin(Message msg) {
             super.onMultiTalkBegin(msg);
             receiveCount = 0;
-            holderList = new ArrayList<ListHolder>();
+            holderList = new ArrayList<ObjectListHolder>();
         }
 
         @Override
@@ -576,12 +592,12 @@ public class ConfigurationActivity extends Activity {
             super.onMultiTalkEnd(msg);
             if (sendCount == receiveCount) {
                 List<ParameterSettings> settingsList = new ArrayList<ParameterSettings>();
-                for (ListHolder holder : holderList) {
+                for (ObjectListHolder holder : holderList) {
                     settingsList.addAll(holder.getParameterSettingsList());
                 }
                 if (ConfigurationActivity.this.waitTextView != null
                         && ConfigurationActivity.this.terminalListView != null) {
-                    boolean[] bitValues = HSerial.byteArray2BitArray(monitor.getCombineBytes());
+                    boolean[] bitValues = SerialUtility.byteArray2BitArray(monitor.getCombineBytes());
                     int length = bitValues.length;
                     List<ParameterStatusItem> statusList = new ArrayList<ParameterStatusItem>();
                     for (ParameterSettings settings : settingsList) {
@@ -597,6 +613,9 @@ public class ConfigurationActivity extends Activity {
                     ConfigurationActivity.this.terminalListView.setAdapter(adapter);
                     ConfigurationActivity.this.waitTextView.setVisibility(View.GONE);
                     ConfigurationActivity.this.terminalListView.setVisibility(View.VISIBLE);
+                    ConfigurationActivity.this.isSyncing = false;
+                    ConfigurationActivity.this.isReadingTerminalStatus = false;
+                    syncHandler.postDelayed(syncStatusTask, SYNC_TIME);
                 }
             } else {
                 ConfigurationActivity.this.startGetYTerminalCommunications();
@@ -606,8 +625,8 @@ public class ConfigurationActivity extends Activity {
         @Override
         public void onTalkReceive(Message msg) {
             super.onTalkError(msg);
-            if (msg.obj != null && msg.obj instanceof ListHolder) {
-                holderList.add((ListHolder) msg.obj);
+            if (msg.obj != null && msg.obj instanceof ObjectListHolder) {
+                holderList.add((ObjectListHolder) msg.obj);
                 receiveCount++;
             }
         }
@@ -615,7 +634,6 @@ public class ConfigurationActivity extends Activity {
         @Override
         public void onTalkError(Message msg) {
             super.onTalkError(msg);
-            ConfigurationActivity.this.startGetYTerminalCommunications();
         }
     }
 

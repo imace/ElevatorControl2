@@ -137,7 +137,7 @@ public class FirmwareManageFragment extends Fragment implements WebApi.onGetResu
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 if (i < vendorList.size()) {
                     submitView.setEnabled(false);
-                    WebApi.getInstance().getDeviceListByVendorIDS(vendorList.get(i).getSerialNumber());
+                    WebApi.getInstance().getDeviceListByVendorIDS(getActivity(), vendorList.get(i).getSerialNumber());
                 }
             }
         });
@@ -151,7 +151,7 @@ public class FirmwareManageFragment extends Fragment implements WebApi.onGetResu
                     generalApply.setSelected(true);
                     specialApply.setSelected(false);
                     vendorView.setVisibility(View.GONE);
-                    WebApi.getInstance().getDeviceList();
+                    WebApi.getInstance().getDeviceList(getActivity());
                 }
             }
         });
@@ -162,14 +162,14 @@ public class FirmwareManageFragment extends Fragment implements WebApi.onGetResu
                     generalApply.setSelected(false);
                     specialApply.setSelected(true);
                     vendorView.setVisibility(View.VISIBLE);
-                    WebApi.getInstance().getVendorList();
+                    WebApi.getInstance().getVendorList(getActivity());
                 }
             }
         });
         submitView.setEnabled(false);
         WebApi.getInstance().setOnFailureListener(this);
         WebApi.getInstance().setOnResultListener(this);
-        WebApi.getInstance().getDeviceList();
+        WebApi.getInstance().getDeviceList(getActivity());
         submitView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -223,7 +223,7 @@ public class FirmwareManageFragment extends Fragment implements WebApi.onGetResu
             WebApi.getInstance().setOnFailureListener(this);
             downloadListLoadView.setVisibility(View.VISIBLE);
             firmwareDownloadListView.setVisibility(View.GONE);
-            WebApi.getInstance().getAllFirmwareNotDownload(bluetoothAddress);
+            WebApi.getInstance().getAllFirmwareNotDownload(getActivity(), bluetoothAddress);
         } catch (Exception e) {
             Toast.makeText(getActivity(), R.string.get_bluetooth_address_error, Toast.LENGTH_SHORT).show();
         }
@@ -258,7 +258,7 @@ public class FirmwareManageFragment extends Fragment implements WebApi.onGetResu
         this.firmware = firmware;
         WebApi.getInstance().setOnFailureListener(this);
         WebApi.getInstance().setOnResultListener(this);
-        WebApi.getInstance().downloadFirmwareFromServer(firmware.getID());
+        WebApi.getInstance().downloadFirmwareFromServer(getActivity(), firmware.getID());
     }
 
     // ============================================= Web APi Listener ================================= //
@@ -395,7 +395,7 @@ public class FirmwareManageFragment extends Fragment implements WebApi.onGetResu
                             // 存储到数据库中
                             FirmwareDao.saveItem(getActivity(), firmware);
                             // 从服务器删除已提取的程序
-                            WebApi.getInstance().deleteFileFromServer(firmware.getID());
+                            WebApi.getInstance().deleteFileFromServer(getActivity(), firmware.getID());
                         }
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();

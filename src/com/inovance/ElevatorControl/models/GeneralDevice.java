@@ -27,7 +27,7 @@ public class GeneralDevice {
      */
     private String description;
 
-    public GeneralDevice(JSONObject object){
+    public GeneralDevice(JSONObject object) {
         this.ID = object.optInt("ID");
         this.name = object.optString("DeviceName");
         this.number = object.optString("DeviceNum");

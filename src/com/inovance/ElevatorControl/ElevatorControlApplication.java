@@ -1,12 +1,19 @@
 package com.inovance.ElevatorControl;
 
+import android.util.Log;
 import com.inovance.ElevatorControl.cache.LruCacheTool;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ShortcutDao;
 import com.inovance.ElevatorControl.models.Shortcut;
+import com.inovance.ElevatorControl.utils.AssetUtils;
 import org.holoeverywhere.HoloEverywhere;
 import org.holoeverywhere.app.Application;
 import org.holoeverywhere.preference.SharedPreferences;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileOutputStream;
 
 /**
  * Created by keith on 14-3-8.
@@ -34,13 +41,37 @@ public class ElevatorControlApplication extends Application {
         LruCacheTool.getInstance().initCache(getApplicationContext());
         writeDefaultShortcutData();
         //ACRA.init(this);
-    }
-
-    /**
-     * 检查错误故障信息是否更新
-     */
-    private void checkErrorHelpListUpdate() {
-
+        /*
+        String JSON = AssetUtils.readDefaultFunCode(getApplicationContext(), "NICE3000+_FunCode.json");
+        try {
+            JSONArray groups = new JSONArray(JSON);
+            // 遍历group
+            int size = groups.length();
+            int position = 0;
+            for (int i = 0; i < size; i++) {
+                JSONObject groupsJSONObject = groups.getJSONObject(i);
+                JSONArray settingJson = groupsJSONObject.getJSONArray("parameterSettings");
+                int length = settingJson.length();
+                for (int j = 0; j < length; j++) {
+                    Log.v("AAABBB", String.valueOf(position));
+                    JSONObject jsonObject = settingJson.getJSONObject(j);
+                    jsonObject.put("mode", ApplicationConfig.tempA[position]);
+                    position++;
+                }
+            }
+            Log.v("AAABBB", groups.toString());
+            File fileName = new File(getApplicationContext().getExternalCacheDir().getPath()
+                    + "/test");
+            if (!fileName.exists()) {
+                fileName.createNewFile();
+            }
+            FileOutputStream outputStream = new FileOutputStream(fileName);
+            outputStream.write(groups.toString().getBytes());
+            outputStream.close();
+        } catch (Exception e) {
+            //
+        }
+        */
     }
 
     private void writeDefaultShortcutData() {

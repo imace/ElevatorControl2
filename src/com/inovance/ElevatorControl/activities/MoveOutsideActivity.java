@@ -9,16 +9,16 @@ import android.view.View;
 import butterknife.InjectView;
 import butterknife.OnClick;
 import butterknife.Views;
-import com.hbluetooth.HBluetooth;
-import com.hbluetooth.HCommunication;
-import com.hbluetooth.HHandler;
-import com.hbluetooth.HSerial;
+import com.bluetoothtool.BluetoothHandler;
+import com.bluetoothtool.BluetoothTalk;
+import com.bluetoothtool.BluetoothTool;
+import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.adapters.MoveSidePagerAdapter;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ParameterSettingsDao;
 import com.inovance.ElevatorControl.daos.RealTimeMonitorDao;
-import com.inovance.ElevatorControl.models.ListHolder;
+import com.inovance.ElevatorControl.models.ObjectListHolder;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.models.RealTimeMonitor;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
@@ -60,7 +60,7 @@ public class MoveOutsideActivity extends Activity {
 
     private MoveOutsideHandler mMoveOutsideHandler;
 
-    private HCommunication[] getFloorsCommunications;
+    private BluetoothTalk[] getFloorsCommunications;
 
     private boolean hasGetFloors = false;
 
@@ -96,7 +96,7 @@ public class MoveOutsideActivity extends Activity {
      */
     private static final int SYNC_TIME = 1000;
 
-    private HCommunication[] getMoveOutsideInfoCommunications;
+    private BluetoothTalk[] getMoveOutsideInfoCommunications;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -149,8 +149,15 @@ public class MoveOutsideActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        running = true;
-        syncHandler.postDelayed(syncTask, SYNC_TIME);
+        if (BluetoothTool.getInstance(this).isConnected()) {
+            running = true;
+            syncHandler.postDelayed(syncTask, SYNC_TIME);
+        } else {
+            Toast.makeText(this,
+                    R.string.not_connect_device_error,
+                    android.widget.Toast.LENGTH_SHORT)
+                    .show();
+        }
     }
 
     private void createGetMoveOutsideInfoCommunications() {
@@ -158,7 +165,7 @@ public class MoveOutsideActivity extends Activity {
             final List<RealTimeMonitor> monitorLists = RealTimeMonitorDao
                     .findByNames(this, ApplicationConfig.moveOutsideInfoName);
             if (monitorLists.size() == ApplicationConfig.moveOutsideInfoName.length) {
-                getMoveOutsideInfoCommunications = new HCommunication[3];
+                getMoveOutsideInfoCommunications = new BluetoothTalk[3];
                 final int index01 = 0;
                 final int index02 = 1;
                 final int index03 = 11;
@@ -190,10 +197,10 @@ public class MoveOutsideActivity extends Activity {
                     }
                     final String sendCode = hexString;
                     final int index = i;
-                    getMoveOutsideInfoCommunications[i] = new HCommunication() {
+                    getMoveOutsideInfoCommunications[i] = new BluetoothTalk() {
                         @Override
                         public void beforeSend() {
-                            this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints(sendCode)));
+                            this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints(sendCode)));
                         }
 
                         @Override
@@ -213,19 +220,19 @@ public class MoveOutsideActivity extends Activity {
 
                         @Override
                         public Object onParse() {
-                            if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                                byte[] data = HSerial.trimEnd(getReceivedBuffer());
+                            if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                                byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
                                 short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
                                 if (index == 0) {
                                     if (length01 * 2 == bytesLength) {
                                         List<RealTimeMonitor> tempList = new ArrayList<RealTimeMonitor>();
-                                        byte[] tempData = HSerial.crc16(HSerial.hexStr2Ints("01030002"
-                                                + HSerial.byte2HexStr(new byte[]{data[4], data[5]})));
+                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStr2Ints("01030002"
+                                                + SerialUtility.byte2HexStr(new byte[]{data[4], data[5]})));
                                         try {
                                             RealTimeMonitor monitor = (RealTimeMonitor) monitor01.clone();
                                             monitor.setReceived(tempData);
                                             tempList.add(monitor);
-                                            ListHolder holder = new ListHolder();
+                                            ObjectListHolder holder = new ObjectListHolder();
                                             holder.setRealTimeMonitorList(tempList);
                                             return holder;
                                         } catch (CloneNotSupportedException e) {
@@ -237,8 +244,8 @@ public class MoveOutsideActivity extends Activity {
                                     if (length02 * 2 == bytesLength) {
                                         List<RealTimeMonitor> tempList = new ArrayList<RealTimeMonitor>();
                                         for (int m = 0; m < length02; m++) {
-                                            byte[] tempData = HSerial.crc16(HSerial.hexStr2Ints("01030002"
-                                                    + HSerial.byte2HexStr(new byte[]{data[4
+                                            byte[] tempData = SerialUtility.crc16(SerialUtility.hexStr2Ints("01030002"
+                                                    + SerialUtility.byte2HexStr(new byte[]{data[4
                                                     + m * 2], data[5 + m * 2]})));
                                             try {
                                                 RealTimeMonitor monitor = (RealTimeMonitor)
@@ -249,7 +256,7 @@ public class MoveOutsideActivity extends Activity {
                                                 e.printStackTrace();
                                             }
                                         }
-                                        ListHolder holder = new ListHolder();
+                                        ObjectListHolder holder = new ObjectListHolder();
                                         holder.setRealTimeMonitorList(tempList);
                                         return holder;
                                     }
@@ -258,8 +265,8 @@ public class MoveOutsideActivity extends Activity {
                                     if (length03 * 2 == bytesLength) {
                                         List<RealTimeMonitor> tempList = new ArrayList<RealTimeMonitor>();
                                         for (int n = 0; n < length03; n++) {
-                                            byte[] tempData = HSerial.crc16(HSerial.hexStr2Ints("01030002"
-                                                    + HSerial.byte2HexStr(new byte[]{data[4
+                                            byte[] tempData = SerialUtility.crc16(SerialUtility.hexStr2Ints("01030002"
+                                                    + SerialUtility.byte2HexStr(new byte[]{data[4
                                                     + n * 2], data[5 + n * 2]})));
                                             try {
                                                 RealTimeMonitor monitor = (RealTimeMonitor)
@@ -270,7 +277,7 @@ public class MoveOutsideActivity extends Activity {
                                                 e.printStackTrace();
                                             }
                                         }
-                                        ListHolder holder = new ListHolder();
+                                        ObjectListHolder holder = new ObjectListHolder();
                                         holder.setRealTimeMonitorList(tempList);
                                         return holder;
                                     }
@@ -289,14 +296,14 @@ public class MoveOutsideActivity extends Activity {
      */
     private void syncMoveOutsideInfoStatus() {
         if (!isSyncing) {
-            if (HBluetooth.getInstance(MoveOutsideActivity.this).isPrepared()) {
+            if (BluetoothTool.getInstance(MoveOutsideActivity.this).isConnected()) {
                 if (mSyncMoveOutsideInfoHandler != null && getMoveOutsideInfoCommunications != null) {
                     MoveOutsideActivity.this.isSyncing = true;
                     mSyncMoveOutsideInfoHandler.sendCount = getMoveOutsideInfoCommunications.length;
-                    HBluetooth.getInstance(MoveOutsideActivity.this)
+                    BluetoothTool.getInstance(MoveOutsideActivity.this)
                             .setHandler(mSyncMoveOutsideInfoHandler)
                             .setCommunications(getMoveOutsideInfoCommunications)
-                            .Start();
+                            .send();
                 } else {
                     errorHandler.sendEmptyMessage(0);
                 }
@@ -391,11 +398,11 @@ public class MoveOutsideActivity extends Activity {
         List<ParameterSettings> settingsList = ParameterSettingsDao.findByNames(MoveOutsideActivity.this,
                 names.toArray(new String[names.size()]));
         final String code = settingsList.get(0).getCode() + "0002";
-        getFloorsCommunications = new HCommunication[]{
-                new HCommunication() {
+        getFloorsCommunications = new BluetoothTalk[]{
+                new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103"
+                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0103"
                                 + code
                                 + "0001")));
                     }
@@ -417,8 +424,8 @@ public class MoveOutsideActivity extends Activity {
 
                     @Override
                     public Object onParse() {
-                        if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                            return HSerial.trimEnd(getReceivedBuffer());
+                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                            return SerialUtility.trimEnd(getReceivedBuffer());
                         }
                         return null;
                     }
@@ -428,11 +435,11 @@ public class MoveOutsideActivity extends Activity {
 
     private void loadDataAndRenderView() {
         if (getFloorsCommunications != null) {
-            if (HBluetooth.getInstance(MoveOutsideActivity.this).isPrepared()) {
-                HBluetooth.getInstance(MoveOutsideActivity.this)
+            if (BluetoothTool.getInstance(MoveOutsideActivity.this).isConnected()) {
+                BluetoothTool.getInstance(MoveOutsideActivity.this)
                         .setHandler(mMoveOutsideHandler)
                         .setCommunications(getFloorsCommunications)
-                        .Start();
+                        .send();
             } else {
                 errorHandler.sendEmptyMessage(0);
             }
@@ -447,11 +454,11 @@ public class MoveOutsideActivity extends Activity {
      */
     private void moveOutsideCallFloor(int floor, boolean isUp) {
         final String[] codeArray = getCallCode(floor, isUp);
-        HCommunication[] communications = new HCommunication[]{
-                new HCommunication() {
+        BluetoothTalk[] communications = new BluetoothTalk[]{
+                new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0106"
+                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0106"
                                 + codeArray[0]
                                 + "0001")));
                     }
@@ -473,20 +480,20 @@ public class MoveOutsideActivity extends Activity {
 
                     @Override
                     public Object onParse() {
-                        if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                            byte[] received = HSerial.trimEnd(getReceivedBuffer());
-                            return HSerial.byte2HexStr(received);
+                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                            byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
+                            return SerialUtility.byte2HexStr(received);
                         }
                         return null;
                     }
                 }
         };
-        if (HBluetooth.getInstance(MoveOutsideActivity.this).isPrepared()) {
+        if (BluetoothTool.getInstance(MoveOutsideActivity.this).isConnected()) {
             floorHandler.writeCode = codeArray[0];
-            HBluetooth.getInstance(MoveOutsideActivity.this)
+            BluetoothTool.getInstance(MoveOutsideActivity.this)
                     .setHandler(floorHandler)
                     .setCommunications(communications)
-                    .Start();
+                    .send();
         } else {
             Toast.makeText(this,
                     R.string.not_connect_device_error,
@@ -560,7 +567,7 @@ public class MoveOutsideActivity extends Activity {
     /**
      * 召唤楼层
      */
-    private class FloorHandler extends HHandler {
+    private class FloorHandler extends BluetoothHandler {
 
         public String writeCode;
 
@@ -596,7 +603,7 @@ public class MoveOutsideActivity extends Activity {
     /**
      * 蓝牙 Socket handler
      */
-    private class MoveOutsideHandler extends HHandler {
+    private class MoveOutsideHandler extends BluetoothHandler {
 
         private int topFloor;
 
@@ -631,11 +638,11 @@ public class MoveOutsideActivity extends Activity {
                         @Override
                         public void onSelect(int floor) {
                             if (floor == Math.min(topFloor, bottomFloor)) {
-                                MoveOutsideActivity.this.upButton.setEnabled(false);
-                                MoveOutsideActivity.this.downButton.setEnabled(true);
-                            } else if (floor == Math.max(topFloor, bottomFloor)) {
                                 MoveOutsideActivity.this.upButton.setEnabled(true);
                                 MoveOutsideActivity.this.downButton.setEnabled(false);
+                            } else if (floor == Math.max(topFloor, bottomFloor)) {
+                                MoveOutsideActivity.this.upButton.setEnabled(false);
+                                MoveOutsideActivity.this.downButton.setEnabled(true);
                             } else {
                                 MoveOutsideActivity.this.upButton.setEnabled(true);
                                 MoveOutsideActivity.this.downButton.setEnabled(true);
@@ -653,13 +660,13 @@ public class MoveOutsideActivity extends Activity {
     }
 
     // ============================== 同步外召信息 ================================================ //
-    private class SyncMoveOutsideInfoHandler extends HHandler {
+    private class SyncMoveOutsideInfoHandler extends BluetoothHandler {
 
         public int sendCount;
 
         private int receiveCount;
 
-        private List<ListHolder> holderList;
+        private List<ObjectListHolder> holderList;
 
         public SyncMoveOutsideInfoHandler(Activity activity) {
             super(activity);
@@ -670,7 +677,7 @@ public class MoveOutsideActivity extends Activity {
         public void onMultiTalkBegin(Message msg) {
             super.onMultiTalkBegin(msg);
             receiveCount = 0;
-            holderList = new ArrayList<ListHolder>();
+            holderList = new ArrayList<ObjectListHolder>();
         }
 
         @Override
@@ -678,7 +685,7 @@ public class MoveOutsideActivity extends Activity {
             super.onMultiTalkEnd(msg);
             if (sendCount == receiveCount) {
                 List<RealTimeMonitor> monitorList = new ArrayList<RealTimeMonitor>();
-                for (ListHolder holder : holderList) {
+                for (ObjectListHolder holder : holderList) {
                     monitorList.addAll(holder.getRealTimeMonitorList());
                 }
                 List<Integer> calledFloorList = new ArrayList<Integer>();
@@ -687,7 +694,7 @@ public class MoveOutsideActivity extends Activity {
                         MoveOutsideActivity.this.currentFloorTextView
                                 .setText(String.valueOf(ParseSerialsUtils.getIntFromBytes(monitor.getReceived())));
                     } else {
-                        String callFloor = HSerial.byte2HexStr(new byte[]{monitor.getReceived()[4],
+                        String callFloor = SerialUtility.byte2HexStr(new byte[]{monitor.getReceived()[4],
                                 monitor.getReceived()[5]});
                         int length01 = CallCode.length;
                         for (int m = 0; m < length01; m++) {
@@ -714,8 +721,8 @@ public class MoveOutsideActivity extends Activity {
 
         @Override
         public void onTalkReceive(Message msg) {
-            if (msg.obj != null && msg.obj instanceof ListHolder) {
-                holderList.add((ListHolder) msg.obj);
+            if (msg.obj != null && msg.obj instanceof ObjectListHolder) {
+                holderList.add((ObjectListHolder) msg.obj);
                 receiveCount++;
             }
         }

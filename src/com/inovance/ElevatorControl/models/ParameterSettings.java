@@ -1,7 +1,7 @@
 package com.inovance.ElevatorControl.models;
 
 import android.annotation.SuppressLint;
-import com.hbluetooth.HSerial;
+import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
@@ -11,6 +11,7 @@ import net.tsz.afinal.annotation.sqlite.ManyToOne;
 import net.tsz.afinal.annotation.sqlite.OneToMany;
 import net.tsz.afinal.db.sqlite.OneToManyLazyLoader;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.json.JSONStringer;
 
 import java.util.Date;
@@ -76,6 +77,8 @@ public class ParameterSettings implements Cloneable {
      */
     private int writeErrorCode = -1;
 
+    private boolean elevatorRunning = true;
+
     @ManyToOne(column = "FKGroupId")
     private ParameterGroupSettings parametergroupsettings;
 
@@ -106,6 +109,27 @@ public class ParameterSettings implements Cloneable {
         } else {
             return ApplicationConfig.DESCRIPTION_TYPE[0];
         }
+    }
+
+    public ParameterSettings() {
+
+    }
+
+    public ParameterSettings(JSONObject object) {
+        this.code = object.optString("code");
+        this.name = object.optString("name");
+        this.productId = object.optString("productId");
+        this.description = object.optString("description");
+        this.descriptiontype = ParameterSettings.ParseDescriptionToType(this.getDescription());
+        this.childId = object.optString("childId");
+        this.scope = object.optString("scope");
+        this.userValue = object.optString("userValue");
+        this.hexValueString = object.optString("hexValue");
+        this.defaultValue = object.optString("defaultValue");
+        this.scale = object.optString("scale");
+        this.unit = object.optString("unit");
+        this.type = object.optString("type");
+        this.mode = object.optString("mode");
     }
 
     public int getId() {
@@ -300,7 +324,7 @@ public class ParameterSettings implements Cloneable {
         this.received = data;
         if (data.length == 8) {
             this.userValue = String.valueOf(ParseSerialsUtils.getIntFromBytes(data));
-            this.hexValueString = HSerial.byte2HexStr(new byte[]{data[4], data[5]});
+            this.hexValueString = SerialUtility.byte2HexStr(new byte[]{data[4], data[5]});
             this.finalValue = ParseSerialsUtils.getValueTextFromParameterSetting(this);
         }
     }
@@ -364,6 +388,14 @@ public class ParameterSettings implements Cloneable {
 
     public void setJSONDescription(String JSONDescription) {
         this.JSONDescription = JSONDescription;
+    }
+
+    public boolean isElevatorRunning() {
+        return elevatorRunning;
+    }
+
+    public void setElevatorRunning(boolean elevatorRunning) {
+        this.elevatorRunning = elevatorRunning;
     }
 
 }

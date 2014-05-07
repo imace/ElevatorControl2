@@ -7,114 +7,41 @@
               android:layout_height="match_parent">
     <LinearLayout
             android:background="@drawable/card_view_background"
-            android:layout_marginRight="@dimen/card_view_margin"
-            android:layout_marginLeft="@dimen/card_view_margin"
-            android:layout_marginTop="@dimen/card_view_margin"
-            android:layout_marginBottom="8dp"
-            android:paddingLeft="@dimen/card_view_margin"
-            android:paddingRight="@dimen/card_view_margin"
+            android:layout_margin="10dp"
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-        <!-- 设备型号 -->
         <LinearLayout
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
+                android:paddingRight="10dp"
+                android:paddingLeft="10dp"
                 android:minHeight="@dimen/card_cell_height"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
             <org.holoeverywhere.widget.TextView
-                    android:textSize="18sp"
+                    style="@style/Holo.TextAppearance.Light"
                     android:textColor="#515151"
                     android:text="@string/equipment_model_text"
-                    android:layout_marginRight="5dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-            <org.holoeverywhere.widget.TextView
-                    android:id="@+id/equipment_model"
-                    android:textSize="18sp"
-                    android:textColor="#878787"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
         </LinearLayout>
         <View
-                android:layout_marginTop="2dp"
-                android:layout_marginBottom="2dp"
-                android:background="#ffd8d8d8"
+                android:background="@android:drawable/divider_horizontal_bright"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"/>
-        <!-- 厂家编号 -->
         <LinearLayout
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
+                android:paddingRight="10dp"
+                android:paddingLeft="10dp"
                 android:minHeight="@dimen/card_cell_height"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
             <org.holoeverywhere.widget.TextView
-                    android:textSize="18sp"
+                    style="@style/Holo.TextAppearance.Light"
                     android:textColor="#515151"
-                    android:layout_marginRight="5dp"
                     android:text="@string/manufacturers_serial_number_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-            <org.holoeverywhere.widget.TextView
-                    android:id="@+id/manufacturers_serial_number"
-                    android:textSize="18sp"
-                    android:textColor="#878787"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-        </LinearLayout>
-        <View
-                android:layout_marginTop="2dp"
-                android:layout_marginBottom="2dp"
-                android:background="#ffd8d8d8"
-                android:layout_width="match_parent"
-                android:layout_height="1dp"/>
-        <!-- 当前参数版本 -->
-        <LinearLayout
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:minHeight="@dimen/card_cell_height"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-            <org.holoeverywhere.widget.TextView
-                    android:textSize="18sp"
-                    android:textColor="#515151"
-                    android:layout_marginRight="5dp"
-                    android:text="@string/current_parameters_version_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-            <org.holoeverywhere.widget.TextView
-                    android:id="@+id/current_parameters_version"
-                    android:textSize="18sp"
-                    android:textColor="#878787"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-        </LinearLayout>
-        <View
-                android:layout_marginTop="2dp"
-                android:layout_marginBottom="2dp"
-                android:background="#ffd8d8d8"
-                android:layout_width="match_parent"
-                android:layout_height="1dp"/>
-        <!-- 更新日期 -->
-        <LinearLayout
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:minHeight="@dimen/card_cell_height"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-            <org.holoeverywhere.widget.TextView
-                    android:textSize="18sp"
-                    android:textColor="#515151"
-                    android:layout_marginRight="5dp"
-                    android:text="@string/parameters_update_date_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-            <org.holoeverywhere.widget.TextView
-                    android:id="@+id/parameters_update_date"
-                    android:textSize="18sp"
-                    android:textColor="#878787"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
         </LinearLayout>

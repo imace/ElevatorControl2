@@ -5,8 +5,10 @@ import com.mobsandgeeks.adapters.InstantText;
 import net.tsz.afinal.annotation.sqlite.Id;
 import net.tsz.afinal.annotation.sqlite.OneToMany;
 import net.tsz.afinal.db.sqlite.OneToManyLazyLoader;
+import org.json.JSONObject;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * 参数功能组
@@ -23,9 +25,19 @@ public class ParameterGroupSettings {
     private boolean Valid;
     private Date lasttime;
 
+    private List<ParameterSettings> settingsList;
+
     @OneToMany(manyColumn = "FKGroupId")
     private OneToManyLazyLoader<ParameterGroupSettings, ParameterSettings> parametersettings;
 
+    public ParameterGroupSettings() {
+
+    }
+
+    public ParameterGroupSettings(JSONObject object) {
+        this.groupId = object.optString("groupId");
+        this.groupText = object.optString("groupText");
+    }
 
     public int getId() {
         return Id;
@@ -83,6 +95,14 @@ public class ParameterGroupSettings {
 
     public void setGroupText(String groupText) {
         this.groupText = groupText;
+    }
+
+    public List<ParameterSettings> getSettingsList() {
+        return settingsList;
+    }
+
+    public void setSettingsList(List<ParameterSettings> settingsList) {
+        this.settingsList = settingsList;
     }
 
 }

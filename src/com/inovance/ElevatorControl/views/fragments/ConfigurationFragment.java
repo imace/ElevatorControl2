@@ -11,9 +11,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import com.hbluetooth.HBluetooth;
-import com.hbluetooth.HCommunication;
-import com.hbluetooth.HSerial;
+import com.bluetoothtool.BluetoothTalk;
+import com.bluetoothtool.BluetoothTool;
+import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.activities.*;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
@@ -298,11 +298,11 @@ public class ConfigurationFragment extends Fragment {
                                 .setPositiveButton(R.string.dialog_btn_ok, new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
-                                        HCommunication[] communications = new HCommunication[1];
-                                        communications[0] = new HCommunication() {
+                                        BluetoothTalk[] communications = new BluetoothTalk[1];
+                                        communications[0] = new BluetoothTalk() {
                                             @Override
                                             public void beforeSend() {
-                                                this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("010660030001")));
+                                                this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("010660030001")));
                                             }
 
                                             @Override
@@ -325,11 +325,11 @@ public class ConfigurationFragment extends Fragment {
                                                 return null;
                                             }
                                         };
-                                        if (HBluetooth.getInstance(ConfigurationFragment.this.getActivity())
-                                                .isPrepared()) {
-                                            HBluetooth.getInstance(ConfigurationFragment.this.getActivity())
+                                        if (BluetoothTool.getInstance(ConfigurationFragment.this.getActivity())
+                                                .isConnected()) {
+                                            BluetoothTool.getInstance(ConfigurationFragment.this.getActivity())
                                                     .setCommunications(communications)
-                                                    .Start();
+                                                    .send();
                                         } else {
                                             Toast.makeText(ConfigurationFragment.this.getActivity(),
                                                     R.string.not_connect_device_error,

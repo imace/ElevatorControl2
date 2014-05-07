@@ -37,6 +37,10 @@
 
     <string name="read_data_error">读取列表信息错误</string>
     <string name="get_bluetooth_address_error">请打开蓝牙，以便获取蓝牙硬件地址。</string>
+    <string name="current_network_not_available">当前网络连接不可用</string>
+    <string name="search_device_tips_text">点击按钮搜索设备</string>
+    <string name="always_open_text">常开</string>
+    <string name="always_close_text">常闭</string>
 
     <string name="write_parameter_successful">参数写入成功</string>
     <string-array name="status_text_array">
@@ -70,8 +74,8 @@
     <string name="door_status_text">开关门状态</string>
     <string name="system_status_text">系统状态</string>
     <string name="lock_elevator_status_text">轿厢状态</string>
-    <string name="error_code_text">故障状态</string>
-    <string name="home_no_error_text">无故障</string>
+    <string name="error_code_text">故障码</string>
+    <string name="home_no_error_text">无</string>
     <string name="choice_device_type_title">选择设备型号</string>
 
     <!-- 用户注册 -->
@@ -152,8 +156,10 @@
 
     <!-- 参数上传 -->
     <string name="parameter_file_package_text">参数文件包</string>
+    <string name="view_button_text">查看</string>
     <string name="upload_button_text">写入</string>
     <string name="profile_version_text">版本</string>
+    <string name="profile_file_name_text">文件名</string>
     <string name="profile_create_date_text">日期</string>
     <string name="uploading_profile_text">正在写入参数</string>
     <string name="uploading_profile_end">写入结束</string>
@@ -216,6 +222,9 @@
     <string name="not_validated_input_value_text">输入值范围错误，请重新输入！</string>
     <string name="stop_to_modify_message">此项参数需要停机才能修改！</string>
     <string name="cannot_modify_message">此项参数只读，不可修改！</string>
+    <string name="get_elevator_status_message">读取电梯状态中</string>
+    <string name="elevator_running_message">电梯处于运行状态，不能修改参数。</string>
+    <string name="get_elevator_status_failed">读取电梯运行状态失败，请重试。</string>
 
     <!-- 系统当前状态 -->
     <string name="error_status_title">故障状态</string>

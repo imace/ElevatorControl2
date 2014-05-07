@@ -8,16 +8,16 @@ import android.view.MenuItem;
 import butterknife.InjectView;
 import butterknife.OnClick;
 import butterknife.Views;
-import com.hbluetooth.HBluetooth;
-import com.hbluetooth.HCommunication;
-import com.hbluetooth.HHandler;
-import com.hbluetooth.HSerial;
+import com.bluetoothtool.BluetoothHandler;
+import com.bluetoothtool.BluetoothTalk;
+import com.bluetoothtool.BluetoothTool;
+import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.adapters.MoveSidePagerAdapter;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ParameterSettingsDao;
 import com.inovance.ElevatorControl.daos.RealTimeMonitorDao;
-import com.inovance.ElevatorControl.models.ListHolder;
+import com.inovance.ElevatorControl.models.ObjectListHolder;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.models.RealTimeMonitor;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
@@ -56,7 +56,7 @@ public class MoveInsideActivity extends Activity {
 
     private SyncMoveInsideInfoHandler mSyncMoveInsideInfoHandler;
 
-    private HCommunication[] communications;
+    private BluetoothTalk[] communications;
 
     private Runnable syncTask;
 
@@ -77,7 +77,7 @@ public class MoveInsideActivity extends Activity {
      */
     private static final int SYNC_TIME = 1000;
 
-    private HCommunication[] getMoveInsideInfoCommunications;
+    private BluetoothTalk[] getMoveInsideInfoCommunications;
 
     private boolean hasGetFloors = false;
 
@@ -136,7 +136,7 @@ public class MoveInsideActivity extends Activity {
             final List<RealTimeMonitor> monitorLists = RealTimeMonitorDao
                     .findByNames(this, ApplicationConfig.moveInsideInfoName);
             if (monitorLists.size() == ApplicationConfig.moveInsideInfoName.length) {
-                getMoveInsideInfoCommunications = new HCommunication[2];
+                getMoveInsideInfoCommunications = new BluetoothTalk[2];
                 final int index01 = 0;
                 final int index02 = 1;
                 final int length01 = 1;
@@ -159,10 +159,10 @@ public class MoveInsideActivity extends Activity {
                     }
                     final String sendCode = hexString;
                     final int index = i;
-                    getMoveInsideInfoCommunications[i] = new HCommunication() {
+                    getMoveInsideInfoCommunications[i] = new BluetoothTalk() {
                         @Override
                         public void beforeSend() {
-                            this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints(sendCode)));
+                            this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints(sendCode)));
                         }
 
                         @Override
@@ -182,19 +182,19 @@ public class MoveInsideActivity extends Activity {
 
                         @Override
                         public Object onParse() {
-                            if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                                byte[] data = HSerial.trimEnd(getReceivedBuffer());
+                            if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                                byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
                                 short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
                                 if (index == 0) {
                                     if (length01 * 2 == bytesLength) {
                                         List<RealTimeMonitor> tempList = new ArrayList<RealTimeMonitor>();
-                                        byte[] tempData = HSerial.crc16(HSerial.hexStr2Ints("01030002"
-                                                + HSerial.byte2HexStr(new byte[]{data[4], data[5]})));
+                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStr2Ints("01030002"
+                                                + SerialUtility.byte2HexStr(new byte[]{data[4], data[5]})));
                                         try {
                                             RealTimeMonitor monitor = (RealTimeMonitor) monitor01.clone();
                                             monitor.setReceived(tempData);
                                             tempList.add(monitor);
-                                            ListHolder holder = new ListHolder();
+                                            ObjectListHolder holder = new ObjectListHolder();
                                             holder.setRealTimeMonitorList(tempList);
                                             return holder;
                                         } catch (CloneNotSupportedException e) {
@@ -206,8 +206,8 @@ public class MoveInsideActivity extends Activity {
                                     if (length02 * 2 == bytesLength) {
                                         List<RealTimeMonitor> tempList = new ArrayList<RealTimeMonitor>();
                                         for (int j = 0; j < length02; j++) {
-                                            byte[] tempData = HSerial.crc16(HSerial.hexStr2Ints("01030002"
-                                                    + HSerial.byte2HexStr(new byte[]{data[4
+                                            byte[] tempData = SerialUtility.crc16(SerialUtility.hexStr2Ints("01030002"
+                                                    + SerialUtility.byte2HexStr(new byte[]{data[4
                                                     + j * 2], data[5 + j * 2]})));
                                             try {
                                                 RealTimeMonitor monitor = (RealTimeMonitor)
@@ -218,7 +218,7 @@ public class MoveInsideActivity extends Activity {
                                                 e.printStackTrace();
                                             }
                                         }
-                                        ListHolder holder = new ListHolder();
+                                        ObjectListHolder holder = new ObjectListHolder();
                                         holder.setRealTimeMonitorList(tempList);
                                         return holder;
                                     }
@@ -237,14 +237,14 @@ public class MoveInsideActivity extends Activity {
      */
     private void syncMoveInsideInfoStatus() {
         if (!isSyncing) {
-            if (HBluetooth.getInstance(MoveInsideActivity.this).isPrepared()) {
+            if (BluetoothTool.getInstance(MoveInsideActivity.this).isConnected()) {
                 if (mSyncMoveInsideInfoHandler != null && getMoveInsideInfoCommunications != null) {
                     MoveInsideActivity.this.isSyncing = true;
                     mSyncMoveInsideInfoHandler.sendCount = getMoveInsideInfoCommunications.length;
-                    HBluetooth.getInstance(MoveInsideActivity.this)
+                    BluetoothTool.getInstance(MoveInsideActivity.this)
                             .setHandler(mSyncMoveInsideInfoHandler)
                             .setCommunications(getMoveInsideInfoCommunications)
-                            .Start();
+                            .send();
                 } else {
                     errorHandler.sendEmptyMessage(0);
                 }
@@ -255,8 +255,15 @@ public class MoveInsideActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        running = true;
-        syncHandler.postDelayed(syncTask, SYNC_TIME);
+        if (BluetoothTool.getInstance(this).isConnected()) {
+            running = true;
+            syncHandler.postDelayed(syncTask, SYNC_TIME);
+        } else {
+            Toast.makeText(this,
+                    R.string.not_connect_device_error,
+                    android.widget.Toast.LENGTH_SHORT)
+                    .show();
+        }
     }
 
     @Override
@@ -296,11 +303,11 @@ public class MoveInsideActivity extends Activity {
         List<ParameterSettings> settingsList = ParameterSettingsDao.findByNames(MoveInsideActivity.this,
                 names.toArray(new String[names.size()]));
         final String code = settingsList.get(0).getCode() + "0002";
-        communications = new HCommunication[]{
-                new HCommunication() {
+        communications = new BluetoothTalk[]{
+                new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103"
+                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0103"
                                 + code
                                 + "0001")));
                     }
@@ -322,8 +329,8 @@ public class MoveInsideActivity extends Activity {
 
                     @Override
                     public Object onParse() {
-                        if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                            return HSerial.trimEnd(getReceivedBuffer());
+                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                            return SerialUtility.trimEnd(getReceivedBuffer());
                         }
                         return null;
                     }
@@ -334,11 +341,11 @@ public class MoveInsideActivity extends Activity {
     // 开门
     @OnClick(R.id.open_door_button)
     void openDoorButtonClick() {
-        HCommunication[] communications = new HCommunication[]{
-                new HCommunication() {
+        BluetoothTalk[] communications = new BluetoothTalk[]{
+                new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103F6010001")));
+                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0103F6010001")));
                     }
 
                     @Override
@@ -362,10 +369,10 @@ public class MoveInsideActivity extends Activity {
                     }
                 }
         };
-        if (HBluetooth.getInstance(MoveInsideActivity.this).isPrepared()) {
-            HBluetooth.getInstance(MoveInsideActivity.this)
+        if (BluetoothTool.getInstance(MoveInsideActivity.this).isConnected()) {
+            BluetoothTool.getInstance(MoveInsideActivity.this)
                     .setCommunications(communications)
-                    .Start();
+                    .send();
         } else {
             Toast.makeText(this,
                     R.string.not_connect_device_error,
@@ -377,11 +384,11 @@ public class MoveInsideActivity extends Activity {
     // 关门
     @OnClick(R.id.close_door_button)
     void closeDoorButtonClick() {
-        HCommunication[] communications = new HCommunication[]{
-                new HCommunication() {
+        BluetoothTalk[] communications = new BluetoothTalk[]{
+                new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103F6010001")));
+                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0103F6010001")));
                     }
 
                     @Override
@@ -405,10 +412,10 @@ public class MoveInsideActivity extends Activity {
                     }
                 }
         };
-        if (HBluetooth.getInstance(MoveInsideActivity.this).isPrepared()) {
-            HBluetooth.getInstance(MoveInsideActivity.this)
+        if (BluetoothTool.getInstance(MoveInsideActivity.this).isConnected()) {
+            BluetoothTool.getInstance(MoveInsideActivity.this)
                     .setCommunications(communications)
-                    .Start();
+                    .send();
         } else {
             Toast.makeText(this,
                     R.string.not_connect_device_error,
@@ -424,11 +431,11 @@ public class MoveInsideActivity extends Activity {
      */
     private void moveInsideCallFloor(int floor) {
         final String[] codeArray = getCallCode(floor);
-        HCommunication[] communications = new HCommunication[]{
-                new HCommunication() {
+        BluetoothTalk[] communications = new BluetoothTalk[]{
+                new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0106"
+                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0106"
                                 + codeArray[0]
                                 + "0001")));
                     }
@@ -450,20 +457,20 @@ public class MoveInsideActivity extends Activity {
 
                     @Override
                     public Object onParse() {
-                        if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                            byte[] received = HSerial.trimEnd(getReceivedBuffer());
-                            return HSerial.byte2HexStr(received);
+                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                            byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
+                            return SerialUtility.byte2HexStr(received);
                         }
                         return null;
                     }
                 }
         };
-        if (HBluetooth.getInstance(MoveInsideActivity.this).isPrepared()) {
+        if (BluetoothTool.getInstance(MoveInsideActivity.this).isConnected()) {
             floorHandler.writeCode = codeArray[0];
-            HBluetooth.getInstance(MoveInsideActivity.this)
+            BluetoothTool.getInstance(MoveInsideActivity.this)
                     .setHandler(floorHandler)
                     .setCommunications(communications)
-                    .Start();
+                    .send();
         } else {
             Toast.makeText(this,
                     R.string.not_connect_device_error,
@@ -512,11 +519,11 @@ public class MoveInsideActivity extends Activity {
      */
     private void loadDataAndRenderView() {
         if (communications != null) {
-            if (HBluetooth.getInstance(MoveInsideActivity.this).isPrepared()) {
-                HBluetooth.getInstance(MoveInsideActivity.this)
+            if (BluetoothTool.getInstance(MoveInsideActivity.this).isConnected()) {
+                BluetoothTool.getInstance(MoveInsideActivity.this)
                         .setHandler(mMoveInsideHandler)
                         .setCommunications(communications)
-                        .Start();
+                        .send();
             } else {
                 errorHandler.sendEmptyMessage(0);
             }
@@ -542,7 +549,7 @@ public class MoveInsideActivity extends Activity {
     };
 
     // ================================= MoveInside handler ========================================== //
-    private class MoveInsideHandler extends HHandler {
+    private class MoveInsideHandler extends BluetoothHandler {
 
         public MoveInsideHandler(Activity activity) {
             super(activity);
@@ -610,7 +617,7 @@ public class MoveInsideActivity extends Activity {
     /**
      * 召唤楼层
      */
-    private class FloorHandler extends HHandler {
+    private class FloorHandler extends BluetoothHandler {
 
         public String writeCode;
 
@@ -642,13 +649,13 @@ public class MoveInsideActivity extends Activity {
     }
 
     // ============================== 同步内召信息 ================================================ //
-    private class SyncMoveInsideInfoHandler extends HHandler {
+    private class SyncMoveInsideInfoHandler extends BluetoothHandler {
 
         public int sendCount;
 
         private int receiveCount;
 
-        private List<ListHolder> holderList;
+        private List<ObjectListHolder> holderList;
 
         public SyncMoveInsideInfoHandler(Activity activity) {
             super(activity);
@@ -659,7 +666,7 @@ public class MoveInsideActivity extends Activity {
         public void onMultiTalkBegin(Message msg) {
             super.onMultiTalkBegin(msg);
             receiveCount = 0;
-            holderList = new ArrayList<ListHolder>();
+            holderList = new ArrayList<ObjectListHolder>();
         }
 
         @Override
@@ -667,7 +674,7 @@ public class MoveInsideActivity extends Activity {
             super.onMultiTalkEnd(msg);
             if (sendCount == receiveCount) {
                 List<RealTimeMonitor> monitorList = new ArrayList<RealTimeMonitor>();
-                for (ListHolder holder : holderList) {
+                for (ObjectListHolder holder : holderList) {
                     monitorList.addAll(holder.getRealTimeMonitorList());
                 }
                 List<Integer> calledFloorList = new ArrayList<Integer>();
@@ -676,7 +683,7 @@ public class MoveInsideActivity extends Activity {
                         MoveInsideActivity.this.currentFloorTextView
                                 .setText(String.valueOf(ParseSerialsUtils.getIntFromBytes(monitor.getReceived())));
                     } else {
-                        String callFloor = HSerial.byte2HexStr(new byte[]{monitor.getReceived()[4],
+                        String callFloor = SerialUtility.byte2HexStr(new byte[]{monitor.getReceived()[4],
                                 monitor.getReceived()[5]});
                         int length01 = ApplicationConfig.MOVE_SIDE_CODE.length;
                         for (int m = 0; m < length01; m++) {
@@ -703,8 +710,8 @@ public class MoveInsideActivity extends Activity {
 
         @Override
         public void onTalkReceive(Message msg) {
-            if (msg.obj != null && msg.obj instanceof ListHolder) {
-                holderList.add((ListHolder) msg.obj);
+            if (msg.obj != null && msg.obj instanceof ObjectListHolder) {
+                holderList.add((ObjectListHolder) msg.obj);
                 receiveCount++;
             }
         }

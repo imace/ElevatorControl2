@@ -3,20 +3,20 @@
                 android:minHeight="@dimen/card_cell_height"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
-    <TextView
+    <org.holoeverywhere.widget.TextView
+            style="@style/Holo.TextAppearance.Light"
             android:id="@+id/text_failure_history"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_alignParentLeft="true"
-            android:textSize="16sp"
             android:textColor="#515151"
             android:layout_marginLeft="10dp"/>
-    <TextView
+    <org.holoeverywhere.widget.TextView
+            style="@style/Holo.TextAppearance.Light"
             android:id="@+id/time_failure_history"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="16sp"
             android:layout_marginRight="10dp"
             android:layout_centerVertical="true"
             android:layout_alignParentRight="true"

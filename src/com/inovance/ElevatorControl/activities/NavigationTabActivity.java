@@ -1,25 +1,32 @@
 package com.inovance.ElevatorControl.activities;
 
-import android.app.ActionBar;
+import android.app.Activity;
 import android.app.TabActivity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Resources;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.*;
+import android.os.Message;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.*;
+import butterknife.InjectView;
 import butterknife.Views;
-import com.hbluetooth.HBluetooth;
-import com.hbluetooth.HJudgeListener;
+import com.bluetoothtool.BluetoothHandler;
+import com.bluetoothtool.BluetoothTalk;
+import com.bluetoothtool.BluetoothTool;
+import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
+import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.handlers.SearchBluetoothHandler;
+import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
 import com.inovance.ElevatorControl.views.customspinner.NoDefaultSpinner;
-import com.inovance.ElevatorControl.views.customspinner.ViewGroupUtils;
 import com.inovance.ElevatorControl.views.dialogs.CustomDialog;
-import com.manuelpeinado.refreshactionitem.ProgressIndicatorType;
-import com.manuelpeinado.refreshactionitem.RefreshActionItem;
+import org.holoeverywhere.app.AlertDialog;
 import org.holoeverywhere.widget.TextView;
 
 import java.util.ArrayList;
@@ -30,28 +37,76 @@ import java.util.List;
  */
 
 @SuppressWarnings("deprecation")
-public class NavigationTabActivity extends TabActivity implements RefreshActionItem.RefreshActionListener {
+public class NavigationTabActivity extends TabActivity {
 
     private static final String TAG = NavigationTabActivity.class.getSimpleName();
 
     private static final String SpecialDeviceName = "M-Tools";
 
-    public RefreshActionItem mRefreshActionItem;
-
-    private NoDefaultSpinner actionbarSpinner;
-
     private SearchBluetoothHandler searchBluetoothHandler;
+
+    public boolean hasGetDeviceTypeAndNumber = false;
+
+    private GetDeviceTypeAndNumberHandler getDeviceTypeAndNumberHandler;
+
+    private BluetoothTalk[] getDeviceTypeAndNumberCommunications;
+
+    private Runnable getDeviceTypeNumberTask;
+
+    private static final int LOOP_TIME = 2000;
+
+    private boolean running = false;
+
+    @InjectView(R.id.search_device_tips)
+    TextView searchDeviceTipsView;
+
+    @InjectView(R.id.custom_spinner)
+    NoDefaultSpinner deviceListSpinner;
+
+    @InjectView(R.id.research_devices_button)
+    public View researchDevicesButton;
+
+    @InjectView(R.id.refresh_button_icon)
+    ImageView refreshButtonIcon;
+
+    @InjectView(R.id.refresh_button_progress)
+    ProgressBar refreshButtonProgress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
         setContentView(R.layout.activity_navigation_tab);
         Views.inject(this);
         initTabs();
+        deviceListSpinner.setBackgroundResource(R.drawable.custom_spinner_background);
+        deviceListSpinner.setSpinnerItemLayout(R.layout.custom_white_spinner_item);
         searchBluetoothHandler = new SearchBluetoothHandler(this);
-        replaceTitleViewWithSpinnerView();
-        startHomeActivityStatusSyncTask();
+        getDeviceTypeAndNumberHandler = new GetDeviceTypeAndNumberHandler(this);
+        getDeviceTypeNumberTask = new Runnable() {
+            @Override
+            public void run() {
+                if (running) {
+                    if (!hasGetDeviceTypeAndNumber) {
+                        if (BluetoothTool.getInstance(NavigationTabActivity.this).isConnected()) {
+                            NavigationTabActivity.this.getDeviceTypeAndNumber();
+                            getDeviceTypeAndNumberHandler.postDelayed(getDeviceTypeNumberTask, LOOP_TIME);
+                        }
+                    }
+                }
+            }
+        };
+        showRefreshButtonProgress(false);
+        researchDevicesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showRefreshButtonProgress(true);
+                searchDeviceTipsView.setVisibility(View.GONE);
+                deviceListSpinner.setVisibility(View.VISIBLE);
+                BluetoothTool.getInstance(NavigationTabActivity.this)
+                        .setSearchHandler(searchBluetoothHandler)
+                        .search();
+            }
+        });
     }
 
     @Override
@@ -60,6 +115,36 @@ public class NavigationTabActivity extends TabActivity implements RefreshActionI
         if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivity(intent);
+        } else {
+            if (BluetoothTool.getInstance(NavigationTabActivity.this).isConnected()) {
+                startGetDeviceTypeAndNumberTask();
+            }
+        }
+    }
+
+    /**
+     * Start Get Device Type And Number Task
+     */
+    public void startGetDeviceTypeAndNumberTask() {
+        if (!hasGetDeviceTypeAndNumber) {
+            NavigationTabActivity.this.getDeviceTypeAndNumber();
+            running = true;
+            getDeviceTypeAndNumberHandler.postDelayed(getDeviceTypeNumberTask, LOOP_TIME);
+        }
+    }
+
+    /**
+     * Show refresh button progress
+     *
+     * @param shown shown
+     */
+    public void showRefreshButtonProgress(boolean shown) {
+        if (shown) {
+            refreshButtonIcon.setVisibility(View.GONE);
+            refreshButtonProgress.setVisibility(View.VISIBLE);
+        } else {
+            refreshButtonIcon.setVisibility(View.VISIBLE);
+            refreshButtonProgress.setVisibility(View.GONE);
         }
     }
 
@@ -159,62 +244,12 @@ public class NavigationTabActivity extends TabActivity implements RefreshActionI
         this.getTabHost().setCurrentTab(tabIndex);
     }
 
-    /**
-     * 退出 tab activity的onKeyDown有bug 改用dispatchKeyEvent
-     *
-     * @param event key event
-     * @return boolean
-     */
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_DOWN && event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
             CustomDialog.exitDialog(this).show();
             return false;
         }
         return super.dispatchKeyEvent(event);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.actionbar_menu, menu);
-        MenuItem item = menu.findItem(R.id.refresh_button);
-        assert item != null;
-        mRefreshActionItem = (RefreshActionItem) item.getActionView();
-        assert mRefreshActionItem != null;
-        mRefreshActionItem.setMenuItem(item);
-        mRefreshActionItem.setProgressIndicatorType(ProgressIndicatorType.INDETERMINATE);
-        mRefreshActionItem.setRefreshActionListener(NavigationTabActivity.this);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                startActivity(new Intent(this, NavigationTabActivity.class));
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    /**
-     * 替换 TitleView 为 SpinnerView
-     */
-    public void replaceTitleViewWithSpinnerView() {
-        ActionBar actionBar = getActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-        int titleId = Resources.getSystem().getIdentifier("action_bar_title", "id", "android");
-        View titleView = findViewById(titleId);
-        View newTitleView = getLayoutInflater().inflate(R.layout.custom_spinner_layout, null);
-        actionbarSpinner = (NoDefaultSpinner) newTitleView.findViewById(R.id.custom_spinner);
-        actionbarSpinner.setBackgroundResource(R.drawable.custom_spinner_background);
-        actionbarSpinner.setSpinnerItemLayout(R.layout.custom_white_spinner_item);
-        ViewGroupUtils.replaceView(titleView, newTitleView);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getBaseContext(),
-                R.layout.custom_white_spinner_item, new String[]{});
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        actionbarSpinner.setAdapter(adapter);
-        actionbarSpinner.setVisibility(View.GONE);
     }
 
     /**
@@ -228,8 +263,12 @@ public class NavigationTabActivity extends TabActivity implements RefreshActionI
         List<BluetoothDevice> specialDevices = new ArrayList<BluetoothDevice>();
         List<BluetoothDevice> normalDevices = new ArrayList<BluetoothDevice>();
         for (BluetoothDevice device : deviceArrayList) {
-            String name = device.getName() + "(" + device.getAddress() + ")";
-            if (device.getName().contains(SpecialDeviceName)) {
+            String deviceName = device.getName();
+            if (deviceName == null) {
+                deviceName = "NULL";
+            }
+            String name = deviceName + "(" + device.getAddress() + ")";
+            if (deviceName.contains(SpecialDeviceName)) {
                 specialDevicesName.add(name);
                 specialDevices.add(device);
             } else {
@@ -248,22 +287,13 @@ public class NavigationTabActivity extends TabActivity implements RefreshActionI
             ArrayAdapter<String> adapter = new ArrayAdapter<String>(getBaseContext(),
                     R.layout.custom_white_spinner_item, devicesName);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            actionbarSpinner.setAdapter(adapter);
-            actionbarSpinner.setVisibility(View.VISIBLE);
-            actionbarSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            deviceListSpinner.setAdapter(adapter);
+            deviceListSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
-                    final BluetoothDevice device = concatenateDevices.get(position);
-                    HBluetooth bluetoothInstance = HBluetooth.getInstance(NavigationTabActivity.this);
-                    bluetoothInstance.setPrepared(false);
-                    bluetoothInstance.setDiscoveryMode(false);
-                    bluetoothInstance.setJudgement(new HJudgeListener() {
-                        @Override
-                        public boolean judge(BluetoothDevice dev) {
-                            return dev.equals(device);
-                        }
-                    });
-                    bluetoothInstance.pairDevice(device);
+                    BluetoothDevice device = concatenateDevices.get(position);
+                    BluetoothTool.getInstance(NavigationTabActivity.this)
+                            .connectDevice(device);
                 }
 
                 @Override
@@ -271,46 +301,214 @@ public class NavigationTabActivity extends TabActivity implements RefreshActionI
 
                 }
             });
-        } else {
-            actionbarSpinner.setVisibility(View.GONE);
         }
     }
 
-    @Override
-    public void onRefreshButtonClick(RefreshActionItem sender) {
-        HBluetooth.getInstance(this)
-                .setPrepared(false)
-                .setDiscoveryMode(true)
-                .setHandler(searchBluetoothHandler)
-                .Start();
+    /**
+     * 取得设备型号、厂家编号
+     */
+    private void getDeviceTypeAndNumber() {
+        if (getDeviceTypeAndNumberCommunications == null) {
+            getDeviceTypeAndNumberCommunications = new BluetoothTalk[2];
+            for (int i = 0; i < 2; i++) {
+                final int index = i;
+                getDeviceTypeAndNumberCommunications[i] = new BluetoothTalk() {
+                    @Override
+                    public void beforeSend() {
+                        if (index == 0) {
+                            this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0103FA080001")));
+                        }
+                        if (index == 1) {
+                            this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0103D2090001")));
+                        }
+                    }
+
+                    @Override
+                    public void afterSend() {
+
+                    }
+
+                    @Override
+                    public void beforeReceive() {
+
+                    }
+
+                    @Override
+                    public void afterReceive() {
+
+                    }
+
+                    @Override
+                    public Object onParse() {
+                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                            byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
+                            if (received.length == 8) {
+                                if (index == 0) {
+                                    for (String error : ApplicationConfig.ERROR_CODE_ARRAY) {
+                                        if (SerialUtility.byte2HexStr(received).contains(error)) {
+                                            return "type:error";
+                                        }
+                                    }
+                                    return "type:" + ParseSerialsUtils.getIntFromBytes(received);
+                                }
+                                if (index == 1) {
+                                    for (String error : ApplicationConfig.ERROR_CODE_ARRAY) {
+                                        if (SerialUtility.byte2HexStr(received).contains(error)) {
+                                            return "number:1000";
+                                        }
+                                    }
+                                    return "number:" + ParseSerialsUtils.getIntFromBytes(received);
+                                }
+                            }
+                        }
+                        return null;
+                    }
+                };
+            }
+        }
+        if (BluetoothTool.getInstance(this).isConnected()) {
+            getDeviceTypeAndNumberHandler.sendCount = getDeviceTypeAndNumberCommunications.length;
+            BluetoothTool.getInstance(NavigationTabActivity.this)
+                    .setHandler(getDeviceTypeAndNumberHandler)
+                    .setCommunications(getDeviceTypeAndNumberCommunications)
+                    .send();
+        } else {
+            Toast.makeText(this,
+                    R.string.not_connect_device_error,
+                    android.widget.Toast.LENGTH_SHORT)
+                    .show();
+        }
+    }
+
+    // ============================== Get DeviceType And Number Handler ====================== //
+    private class GetDeviceTypeAndNumberHandler extends BluetoothHandler {
+
+        public int sendCount;
+
+        private int receiveCount;
+
+        private List<String> responseStringList;
+
+        public GetDeviceTypeAndNumberHandler(Activity activity) {
+            super(activity);
+            TAG = GetDeviceTypeAndNumberHandler.class.getSimpleName();
+        }
+
+        @Override
+        public void onMultiTalkBegin(Message msg) {
+            super.onMultiTalkBegin(msg);
+            receiveCount = 0;
+            responseStringList = new ArrayList<String>();
+        }
+
+        @Override
+        public void onMultiTalkEnd(Message msg) {
+            super.onMultiTalkEnd(msg);
+            if (sendCount == receiveCount) {
+                NavigationTabActivity.this.hasGetDeviceTypeAndNumber = true;
+                for (String item : responseStringList) {
+                    if (item.contains("type")) {
+                        if (item.contains("1000")) {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(NavigationTabActivity.this);
+                            AlertDialog dialog = builder.setTitle(R.string.choice_device_type_title)
+                                    .setItems(new String[]{ApplicationConfig.deviceType[0],
+                                            ApplicationConfig.deviceType[1]},
+                                            new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialogInterface, int i) {
+                                                    // 选定设备型号后开始同步参数
+                                                    NavigationTabActivity.this.startHomeActivityStatusSyncTask();
+                                                }
+                                            }).create();
+                            dialog.show();
+                            dialog.setCancelable(false);
+                            dialog.setCanceledOnTouchOutside(false);
+                        } else if (item.contains("3000")) {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(NavigationTabActivity.this);
+                            AlertDialog dialog = builder.setTitle(R.string.choice_device_type_title)
+                                    .setItems(new String[]{ApplicationConfig.deviceType[2],
+                                            ApplicationConfig.deviceType[3]},
+                                            new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialogInterface, int i) {
+                                                    // 选定设备型号后开始同步参数
+                                                    NavigationTabActivity.this.startHomeActivityStatusSyncTask();
+                                                }
+                                            })
+                                    .create();
+                            dialog.show();
+                            dialog.setCancelable(false);
+                            dialog.setCanceledOnTouchOutside(false);
+                        } else {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(NavigationTabActivity.this);
+                            AlertDialog dialog = builder.setTitle(R.string.choice_device_type_title)
+                                    .setItems(ApplicationConfig.deviceType,
+                                            new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialogInterface, int i) {
+                                                    // 选定设备型号后开始同步参数
+                                                    NavigationTabActivity.this.startHomeActivityStatusSyncTask();
+                                                }
+                                            })
+                                    .create();
+                            dialog.show();
+                            dialog.setCancelable(false);
+                            dialog.setCanceledOnTouchOutside(false);
+                        }
+                    }
+                    if (item.contains("number")) {
+                        SharedPreferences settings = getSharedPreferences(ApplicationConfig.PREFS_NAME, 0);
+                        SharedPreferences.Editor editor = settings.edit();
+                        editor.putInt(ApplicationConfig.DeviceNumberValue, Integer.parseInt(item.split(":")[1]));
+                        editor.commit();
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void onTalkReceive(Message msg) {
+            super.onTalkReceive(msg);
+            if (msg.obj != null && msg.obj instanceof String) {
+                responseStringList.add((String) msg.obj);
+                receiveCount++;
+            }
+        }
+
+        @Override
+        public void onTalkError(Message msg) {
+            super.onTalkError(msg);
+        }
     }
 
     /**
      * 开启HomeActivity Sync Task
      */
     public void startHomeActivityStatusSyncTask() {
-        switch (getTabHost().getCurrentTab()) {
-            case 0: {
-                if (getCurrentActivity() instanceof TroubleAnalyzeActivity) {
-                    TroubleAnalyzeActivity troubleAnalyzeActivity = (TroubleAnalyzeActivity) getCurrentActivity();
-                    troubleAnalyzeActivity.reSyncData();
+        if (hasGetDeviceTypeAndNumber) {
+            switch (getTabHost().getCurrentTab()) {
+                case 0: {
+                    if (getCurrentActivity() instanceof TroubleAnalyzeActivity) {
+                        TroubleAnalyzeActivity troubleAnalyzeActivity = (TroubleAnalyzeActivity) getCurrentActivity();
+                        troubleAnalyzeActivity.reSyncData();
+                    }
                 }
-            }
-            break;
-            case 1: {
-                if (getCurrentActivity() instanceof ConfigurationActivity) {
-                    ConfigurationActivity configurationActivity = (ConfigurationActivity) getCurrentActivity();
-                    configurationActivity.reSyncData();
+                break;
+                case 1: {
+                    if (getCurrentActivity() instanceof ConfigurationActivity) {
+                        ConfigurationActivity configurationActivity = (ConfigurationActivity) getCurrentActivity();
+                        configurationActivity.reSyncData();
+                    }
                 }
-            }
-            break;
-            case 2: {
-                if (getCurrentActivity() instanceof HomeActivity) {
-                    HomeActivity homeActivity = (HomeActivity) getCurrentActivity();
-                    homeActivity.reSyncData();
+                break;
+                case 2: {
+                    if (getCurrentActivity() instanceof HomeActivity) {
+                        HomeActivity homeActivity = (HomeActivity) getCurrentActivity();
+                        homeActivity.reSyncData();
+                    }
                 }
+                break;
             }
-            break;
         }
     }
 

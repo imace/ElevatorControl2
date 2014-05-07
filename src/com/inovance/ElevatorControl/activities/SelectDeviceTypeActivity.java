@@ -97,7 +97,7 @@ public class SelectDeviceTypeActivity extends Activity {
 
             }
         });
-        WebApi.getInstance().getDeviceList();
+        WebApi.getInstance().getDeviceList(this);
     }
 
     @Override

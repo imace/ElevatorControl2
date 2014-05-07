@@ -5,6 +5,7 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
     <org.holoeverywhere.widget.TextView
+            style="@style/Holo.TextAppearance.Small.Light"
             android:id="@+id/device_name"
             android:layout_marginLeft="10dp"
             android:layout_width="wrap_content"
@@ -18,6 +19,7 @@
             android:layout_width="0dp"
             android:layout_height="1dp"/>
     <org.holoeverywhere.widget.TextView
+            style="@style/Holo.TextAppearance.Small.Light"
             android:id="@+id/device_model"
             android:layout_marginRight="10dp"
             android:layout_width="wrap_content"

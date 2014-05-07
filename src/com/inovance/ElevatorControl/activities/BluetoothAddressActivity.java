@@ -6,7 +6,7 @@ import android.view.MenuItem;
 import android.view.View;
 import butterknife.InjectView;
 import butterknife.Views;
-import com.hbluetooth.HBluetooth;
+import com.bluetoothtool.BluetoothTool;
 import com.inovance.ElevatorControl.R;
 import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.widget.LinearLayout;
@@ -65,8 +65,8 @@ public class BluetoothAddressActivity extends Activity {
      * 更新连接蓝牙设备信息
      */
     private void updateConnectedDeviceInformation() {
-        if (HBluetooth.getInstance(BluetoothAddressActivity.this).isPrepared()) {
-            BluetoothDevice connectedDevice = HBluetooth.getInstance(BluetoothAddressActivity.this).connectedDevice;
+        if (BluetoothTool.getInstance(BluetoothAddressActivity.this).isConnected()) {
+            BluetoothDevice connectedDevice = BluetoothTool.getInstance(BluetoothAddressActivity.this).connectedDevice;
             deviceName.setText(connectedDevice.getName());
             deviceAddress.setText(connectedDevice.getAddress());
         } else {

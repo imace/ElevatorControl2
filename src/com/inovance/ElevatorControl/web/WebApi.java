@@ -1,7 +1,10 @@
 package com.inovance.ElevatorControl.web;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Xml;
+import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.models.User;
 import com.loopj.android.http.AsyncHttpClient;
@@ -9,6 +12,7 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.StringEntity;
+import org.holoeverywhere.widget.Toast;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -78,32 +82,36 @@ public class WebApi {
      * @param user User Class
      */
     public void registerUser(Context context, User user) {
-        String postURL = ApplicationConfig.DomainName + ApplicationConfig.RegisterUser;
-        String params = "username={param0}&company={param1}&mobilephone" +
-                "={param2}&contacttel={param3}&email={param4}&blue={param5}";
-        params = params.replace("{param0}", user.getName());
-        params = params.replace("{param1}", user.getCompany());
-        params = params.replace("{param2}", user.getCellPhone());
-        params = params.replace("{param3}", user.getTelephone());
-        params = params.replace("{param4}", user.getEmail());
-        params = params.replace("{param5}", user.getBluetoothAddress());
-        try {
-            HttpEntity entity = new StringEntity(params);
-            client.post(context,
-                    postURL,
-                    entity,
-                    "application/x-www-form-urlencoded",
-                    new ResponseHandler() {
-                        @Override
-                        public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-                            if (onResultListener != null) {
-                                onResultListener.onResult(ApplicationConfig.RegisterUser,
-                                        getResponseString(response, STRING_TAG));
+        if (isNetworkAvailable(context)) {
+            String postURL = ApplicationConfig.DomainName + ApplicationConfig.RegisterUser;
+            String params = "username={param0}&company={param1}&mobilephone" +
+                    "={param2}&contacttel={param3}&email={param4}&blue={param5}";
+            params = params.replace("{param0}", user.getName());
+            params = params.replace("{param1}", user.getCompany());
+            params = params.replace("{param2}", user.getCellPhone());
+            params = params.replace("{param3}", user.getTelephone());
+            params = params.replace("{param4}", user.getEmail());
+            params = params.replace("{param5}", user.getBluetoothAddress());
+            try {
+                HttpEntity entity = new StringEntity(params);
+                client.post(context,
+                        postURL,
+                        entity,
+                        "application/x-www-form-urlencoded",
+                        new ResponseHandler() {
+                            @Override
+                            public void onSuccess(int statusCode, Header[] headers, byte[] response) {
+                                if (onResultListener != null) {
+                                    onResultListener.onResult(ApplicationConfig.RegisterUser,
+                                            getResponseString(response, STRING_TAG));
+                                }
                             }
-                        }
-                    });
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+                        });
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        } else {
+            alertUserNetworkNotAvailable(context);
         }
     }
 
@@ -112,9 +120,9 @@ public class WebApi {
      *
      * @param bluetoothAddress Bluetooth Address
      */
-    public void verifyUser(String bluetoothAddress) {
+    public void verifyUser(Context context, String bluetoothAddress) {
         String requestURL = ApplicationConfig.DomainName + ApplicationConfig.VerifyUser + bluetoothAddress;
-        startGetRequest(requestURL, ApplicationConfig.VerifyUser);
+        startGetRequest(context, requestURL, ApplicationConfig.VerifyUser);
     }
 
     /**
@@ -122,17 +130,17 @@ public class WebApi {
      *
      * @param deviceType 设备型号
      */
-    public void getFunctionCode(String deviceType) {
+    public void getFunctionCode(Context context, String deviceType) {
         String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetFunctionCode + deviceType;
-        startGetRequest(requestURL, ApplicationConfig.GetFunctionCode);
+        startGetRequest(context, requestURL, ApplicationConfig.GetFunctionCode);
     }
 
     /**
      * 取得错误帮助信息
      */
-    public void getErrorHelpList() {
+    public void getErrorHelpList(Context context) {
         String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetErrorHelp;
-        startGetRequest(requestURL, ApplicationConfig.GetErrorHelp);
+        startGetRequest(context, requestURL, ApplicationConfig.GetErrorHelp);
     }
 
     /**
@@ -140,20 +148,24 @@ public class WebApi {
      *
      * @param deviceType 设备型号
      */
-    public void getParameterListUpdateTime(String deviceType) {
-        String requestURL = ApplicationConfig.DomainName
-                + ApplicationConfig.GetParameterListUpdateTime
-                + deviceType;
-        client.get(requestURL, new ResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-                String responseString = getResponseString(response, STRING_TAG);
-                if (onResultListener != null) {
-                    onResultListener.onResult(ApplicationConfig.GetParameterListUpdateTime,
-                            responseString);
+    public void getParameterListUpdateTime(Context context, String deviceType) {
+        if (isNetworkAvailable(context)) {
+            String requestURL = ApplicationConfig.DomainName
+                    + ApplicationConfig.GetParameterListUpdateTime
+                    + deviceType;
+            client.get(requestURL, new ResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, byte[] response) {
+                    String responseString = getResponseString(response, STRING_TAG);
+                    if (onResultListener != null) {
+                        onResultListener.onResult(ApplicationConfig.GetParameterListUpdateTime,
+                                responseString);
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            alertUserNetworkNotAvailable(context);
+        }
     }
 
     /**
@@ -161,25 +173,25 @@ public class WebApi {
      *
      * @param deviceType 设备型号
      */
-    public void getStateCode(String deviceType) {
+    public void getStateCode(Context context, String deviceType) {
         String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetStateCode + deviceType;
-        startGetRequest(requestURL, ApplicationConfig.GetStateCode);
+        startGetRequest(context, requestURL, ApplicationConfig.GetStateCode);
     }
 
     /**
      * 取得所有设备列表
      */
-    public void getDeviceList() {
+    public void getDeviceList(Context context) {
         String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetDeviceList;
-        startGetRequest(requestURL, ApplicationConfig.GetDeviceList);
+        startGetRequest(context, requestURL, ApplicationConfig.GetDeviceList);
     }
 
     /**
      * 获取所有厂商的列表
      */
-    public void getVendorList() {
+    public void getVendorList(Context context) {
         String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetVendorList;
-        startGetRequest(requestURL, ApplicationConfig.GetVendorList);
+        startGetRequest(context, requestURL, ApplicationConfig.GetVendorList);
     }
 
     /**
@@ -187,11 +199,11 @@ public class WebApi {
      *
      * @param vendorID 厂商ID
      */
-    public void getDeviceListByVendorIDS(String vendorID) {
+    public void getDeviceListByVendorIDS(Context context, String vendorID) {
         String requestURL = ApplicationConfig.DomainName
                 + ApplicationConfig.GetDeviceListByVendorID
                 + vendorID;
-        startGetRequest(requestURL, ApplicationConfig.GetDeviceListByVendorID);
+        startGetRequest(context, requestURL, ApplicationConfig.GetDeviceListByVendorID);
     }
 
     /**
@@ -203,28 +215,32 @@ public class WebApi {
      * @param remark           备注
      */
     public void applyFirmware(Context context, String bluetoothAddress, String deviceID, String remark) {
-        String postURL = ApplicationConfig.DomainName + ApplicationConfig.ApplyFirmwareApplication;
-        String params = "blue={param0}&deviceID={param1}&remark={param2}";
-        params = params.replace("{param0}", bluetoothAddress);
-        params = params.replace("{param1}", deviceID);
-        params = params.replace("{param2}", remark);
-        try {
-            HttpEntity entity = new StringEntity(params);
-            client.post(context,
-                    postURL,
-                    entity,
-                    "application/x-www-form-urlencoded",
-                    new ResponseHandler() {
-                        @Override
-                        public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-                            if (onResultListener != null) {
-                                onResultListener.onResult(ApplicationConfig.ApplyFirmwareApplication,
-                                        getResponseString(response, STRING_TAG));
+        if (isNetworkAvailable(context)) {
+            String postURL = ApplicationConfig.DomainName + ApplicationConfig.ApplyFirmwareApplication;
+            String params = "blue={param0}&deviceID={param1}&remark={param2}";
+            params = params.replace("{param0}", bluetoothAddress);
+            params = params.replace("{param1}", deviceID);
+            params = params.replace("{param2}", remark);
+            try {
+                HttpEntity entity = new StringEntity(params);
+                client.post(context,
+                        postURL,
+                        entity,
+                        "application/x-www-form-urlencoded",
+                        new ResponseHandler() {
+                            @Override
+                            public void onSuccess(int statusCode, Header[] headers, byte[] response) {
+                                if (onResultListener != null) {
+                                    onResultListener.onResult(ApplicationConfig.ApplyFirmwareApplication,
+                                            getResponseString(response, STRING_TAG));
+                                }
                             }
-                        }
-                    });
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+                        });
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        } else {
+            alertUserNetworkNotAvailable(context);
         }
     }
 
@@ -233,11 +249,11 @@ public class WebApi {
      *
      * @param bluetoothAddress 手机蓝牙地址
      */
-    public void getAllFirmwareNotDownload(String bluetoothAddress) {
+    public void getAllFirmwareNotDownload(Context context, String bluetoothAddress) {
         String requestURL = ApplicationConfig.DomainName
                 + ApplicationConfig.GetAllFirmwareNotDownload
                 + bluetoothAddress;
-        startGetRequest(requestURL, ApplicationConfig.GetAllFirmwareNotDownload);
+        startGetRequest(context, requestURL, ApplicationConfig.GetAllFirmwareNotDownload);
     }
 
     /**
@@ -245,19 +261,23 @@ public class WebApi {
      *
      * @param approveID 审批记录的ID
      */
-    public void deleteFileFromServer(int approveID) {
-        String requestURL = ApplicationConfig.DomainName
-                + ApplicationConfig.DeleteFile
-                + approveID;
-        client.get(requestURL, new ResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-                if (onResultListener != null) {
-                    onResultListener.onResult(ApplicationConfig.DeleteFile,
-                            getResponseString(response, STRING_TAG));
+    public void deleteFileFromServer(Context context, int approveID) {
+        if (isNetworkAvailable(context)) {
+            String requestURL = ApplicationConfig.DomainName
+                    + ApplicationConfig.DeleteFile
+                    + approveID;
+            client.get(requestURL, new ResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, byte[] response) {
+                    if (onResultListener != null) {
+                        onResultListener.onResult(ApplicationConfig.DeleteFile,
+                                getResponseString(response, STRING_TAG));
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            alertUserNetworkNotAvailable(context);
+        }
     }
 
     /**
@@ -265,19 +285,23 @@ public class WebApi {
      *
      * @param approveID 审批记录的ID
      */
-    public void downloadFirmwareFromServer(int approveID) {
-        String requestURL = ApplicationConfig.DomainName
-                + ApplicationConfig.DownloadFirmware
-                + approveID;
-        client.get(requestURL, new ResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-                if (onResultListener != null) {
-                    onResultListener.onResult(ApplicationConfig.DownloadFirmware,
-                            getResponseString(response, BASE64_TAG));
+    public void downloadFirmwareFromServer(Context context, int approveID) {
+        if (isNetworkAvailable(context)) {
+            String requestURL = ApplicationConfig.DomainName
+                    + ApplicationConfig.DownloadFirmware
+                    + approveID;
+            client.get(requestURL, new ResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, byte[] response) {
+                    if (onResultListener != null) {
+                        onResultListener.onResult(ApplicationConfig.DownloadFirmware,
+                                getResponseString(response, BASE64_TAG));
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            alertUserNetworkNotAvailable(context);
+        }
     }
 
     /**
@@ -286,7 +310,7 @@ public class WebApi {
      * @param url URL
      * @param tag Tag
      */
-    private void startGetRequest(final String url, final String tag) {
+    private void startGetRequest(Context context, final String url, final String tag) {
         /*
         String cacheString = LruCacheTool.getInstance().getCache(url);
         if (cacheString != null) {
@@ -306,15 +330,19 @@ public class WebApi {
             });
         }
         */
-        client.get(url, new ResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-                String responseString = getResponseString(response, STRING_TAG);
-                if (onResultListener != null) {
-                    onResultListener.onResult(tag, responseString);
+        if (isNetworkAvailable(context)) {
+            client.get(url, new ResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, byte[] response) {
+                    String responseString = getResponseString(response, STRING_TAG);
+                    if (onResultListener != null) {
+                        onResultListener.onResult(tag, responseString);
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            alertUserNetworkNotAvailable(context);
+        }
     }
 
     /**
@@ -349,6 +377,38 @@ public class WebApi {
             e.printStackTrace();
         }
         return "";
+    }
+
+    /**
+     * Check Network Available
+     *
+     * @param context Context
+     * @return Available Status
+     */
+    public static boolean isNetworkAvailable(Context context) {
+        ConnectivityManager connectivity = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivity == null) {
+            return false;
+        } else {
+            NetworkInfo[] info = connectivity.getAllNetworkInfo();
+            if (info != null) {
+                for (NetworkInfo anInfo : info) {
+                    if (anInfo.getState() == NetworkInfo.State.CONNECTED) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Alert User Current Network Not Available
+     *
+     * @param context Context
+     */
+    private void alertUserNetworkNotAvailable(Context context) {
+        Toast.makeText(context, R.string.current_network_not_available, Toast.LENGTH_SHORT).show();
     }
 
     /**

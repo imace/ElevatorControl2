@@ -2,16 +2,16 @@ package com.inovance.ElevatorControl.handlers;
 
 import android.app.Activity;
 import android.os.Message;
-import com.hbluetooth.HHandler;
+import com.bluetoothtool.BluetoothHandler;
 import com.inovance.ElevatorControl.activities.ParameterDetailActivity;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.models.ListHolder;
+import com.inovance.ElevatorControl.models.ObjectListHolder;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ParameterDetailHandler extends HHandler {
+public class ParameterDetailHandler extends BluetoothHandler {
 
     public int sendCount = 0;
 
@@ -35,11 +35,14 @@ public class ParameterDetailHandler extends HHandler {
     public void onMultiTalkEnd(Message msg) {
         super.onMultiTalkEnd(msg);
         if (receiveCount == sendCount) {
-            ((ParameterDetailActivity) activity).settingsList.clear();
-            ((ParameterDetailActivity) activity).settingsList.addAll(tempList);
-            ((ParameterDetailActivity) activity).instantAdapter.notifyDataSetChanged();
-            ((ParameterDetailActivity) activity).mRefreshActionItem.showProgress(false);
-            ((ParameterDetailActivity) activity).syncingParameter = false;
+            ParameterDetailActivity parentActivity = ((ParameterDetailActivity) activity);
+            if (parentActivity.mRefreshActionItem != null) {
+                parentActivity.mRefreshActionItem.showProgress(false);
+            }
+            parentActivity.settingsList.clear();
+            parentActivity.settingsList.addAll(tempList);
+            parentActivity.instantAdapter.notifyDataSetChanged();
+            parentActivity.syncingParameter = false;
         } else {
             ((ParameterDetailActivity) activity).startCombinationCommunications();
         }
@@ -47,10 +50,13 @@ public class ParameterDetailHandler extends HHandler {
 
     @Override
     public void onTalkReceive(Message msg) {
-        if (msg.obj instanceof ListHolder) {
-            ListHolder holder = (ListHolder) msg.obj;
+        if (msg.obj instanceof ObjectListHolder) {
+            ObjectListHolder holder = (ObjectListHolder) msg.obj;
             for (ParameterSettings item : holder.getParameterSettingsList()) {
                 if (!item.getName().contains(ApplicationConfig.RETAIN_NAME)) {
+                    if (tempList == null) {
+                        tempList = new ArrayList<ParameterSettings>();
+                    }
                     tempList.add(item);
                 }
             }

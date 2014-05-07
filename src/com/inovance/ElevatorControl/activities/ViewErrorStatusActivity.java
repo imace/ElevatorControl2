@@ -5,14 +5,14 @@ import android.os.Message;
 import android.view.MenuItem;
 import butterknife.InjectView;
 import butterknife.Views;
-import com.hbluetooth.HBluetooth;
-import com.hbluetooth.HCommunication;
-import com.hbluetooth.HHandler;
-import com.hbluetooth.HSerial;
+import com.bluetoothtool.BluetoothHandler;
+import com.bluetoothtool.BluetoothTalk;
+import com.bluetoothtool.BluetoothTool;
+import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ParameterSettingsDao;
-import com.inovance.ElevatorControl.models.ListHolder;
+import com.inovance.ElevatorControl.models.ObjectListHolder;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
 import com.mobsandgeeks.adapters.InstantAdapter;
@@ -52,7 +52,7 @@ public class ViewErrorStatusActivity extends Activity {
 
     private ErrorStatusHandler errorStatusHandler;
 
-    private HCommunication[] communications;
+    private BluetoothTalk[] communications;
 
     public InstantAdapter<ParameterSettings> instantAdapter;
 
@@ -98,15 +98,15 @@ public class ViewErrorStatusActivity extends Activity {
             listView.setAdapter(instantAdapter);
             final int size = settingsList.size();
             final int count = size <= 10 ? 1 : ((size - size % 10) / 10 + (size % 10 == 0 ? 0 : 1));
-            communications = new HCommunication[count];
+            communications = new BluetoothTalk[count];
             for (int i = 0; i < count; i++) {
                 final int position = i;
                 final ParameterSettings firstItem = settingsList.get(position * 10);
                 final int length = size <= 10 ? size : (size % 10 == 0 ? 10 : ((position == count - 1) ? size % 10 : 10));
-                communications[i] = new HCommunication() {
+                communications[i] = new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(HSerial.crc16(HSerial
+                        this.setSendBuffer(SerialUtility.crc16(SerialUtility
                                 .hexStr2Ints("0103"
                                         + ParseSerialsUtils.getCalculatedCode(firstItem)
                                         + String.format("%04x", length)
@@ -130,21 +130,21 @@ public class ViewErrorStatusActivity extends Activity {
 
                     @Override
                     public Object onParse() {
-                        if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                            byte[] data = HSerial.trimEnd(getReceivedBuffer());
+                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                            byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
                             short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
                             if (length * 2 == bytesLength) {
                                 List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
                                 for (int j = 0; j < length; j++) {
                                     if (position * 10 + j < settingsList.size()) {
                                         ParameterSettings item = settingsList.get(position * 10 + j);
-                                        byte[] tempData = HSerial.crc16(HSerial.hexStr2Ints("01030002"
-                                                + HSerial.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
+                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStr2Ints("01030002"
+                                                + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
                                         item.setReceived(tempData);
                                         tempList.add(item);
                                     }
                                 }
-                                ListHolder holder = new ListHolder();
+                                ObjectListHolder holder = new ObjectListHolder();
                                 holder.setParameterSettingsList(tempList);
                                 return holder;
                             }
@@ -158,12 +158,12 @@ public class ViewErrorStatusActivity extends Activity {
 
     public void startCommunication() {
         if (communications != null) {
-            if (HBluetooth.getInstance(ViewErrorStatusActivity.this).isPrepared()) {
+            if (BluetoothTool.getInstance(ViewErrorStatusActivity.this).isConnected()) {
                 errorStatusHandler.sendCount = communications.length;
-                HBluetooth.getInstance(ViewErrorStatusActivity.this)
+                BluetoothTool.getInstance(ViewErrorStatusActivity.this)
                         .setHandler(errorStatusHandler)
                         .setCommunications(communications)
-                        .Start();
+                        .send();
             } else {
                 Toast.makeText(this,
                         R.string.not_connect_device_error,
@@ -174,7 +174,7 @@ public class ViewErrorStatusActivity extends Activity {
     }
 
     // ================================================== Handler =========================================== //
-    public class ErrorStatusHandler extends HHandler {
+    public class ErrorStatusHandler extends BluetoothHandler {
 
         public int sendCount = 0;
 
@@ -218,8 +218,8 @@ public class ViewErrorStatusActivity extends Activity {
 
         @Override
         public void onTalkReceive(Message msg) {
-            if (msg.obj instanceof ListHolder) {
-                ListHolder holder = (ListHolder) msg.obj;
+            if (msg.obj instanceof ObjectListHolder) {
+                ObjectListHolder holder = (ObjectListHolder) msg.obj;
                 for (ParameterSettings item : holder.getParameterSettingsList()) {
                     if (!item.getName().contains(ApplicationConfig.RETAIN_NAME)) {
                         tempList.add(item);

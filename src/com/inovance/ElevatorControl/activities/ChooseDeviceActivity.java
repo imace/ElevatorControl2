@@ -13,9 +13,8 @@ import android.widget.BaseAdapter;
 import butterknife.InjectView;
 import butterknife.OnClick;
 import butterknife.Views;
-import com.hbluetooth.HBluetooth;
-import com.hbluetooth.HHandler;
-import com.hbluetooth.HJudgeListener;
+import com.bluetoothtool.BluetoothHandler;
+import com.bluetoothtool.BluetoothTool;
 import com.inovance.ElevatorControl.R;
 import org.holoeverywhere.preference.SharedPreferences;
 import org.holoeverywhere.widget.ListView;
@@ -59,16 +58,7 @@ public class ChooseDeviceActivity extends Activity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 final String devName = adapter.getItem(position);
-                HBluetooth bluetoothSocket = HBluetooth.getInstance(ChooseDeviceActivity.this);
-                bluetoothSocket.setPrepared(false)
-                        .setDiscoveryMode(false)
-                        .setJudgement(new HJudgeListener() {
-                            @Override
-                            public boolean judge(BluetoothDevice dev) {
-                                String deviceLogName = dev.getName() + "(" + dev.getAddress() + ")";
-                                return deviceLogName.trim().equalsIgnoreCase(devName);
-                            }
-                        }).Start();
+                BluetoothTool bluetoothSocket = BluetoothTool.getInstance(ChooseDeviceActivity.this);
             }
         });
         searchHandler = new SearchHandler(ChooseDeviceActivity.this);
@@ -85,12 +75,10 @@ public class ChooseDeviceActivity extends Activity {
      * 搜索蓝牙设备
      */
     private void researchDevices() {
-        if (!HBluetooth.getInstance(ChooseDeviceActivity.this).isPrepared()) {
-            HBluetooth.getInstance(ChooseDeviceActivity.this)
-                    .setPrepared(false)
-                    .setDiscoveryMode(true)
-                    .setHandler(searchHandler)
-                    .Start();
+        if (!BluetoothTool.getInstance(ChooseDeviceActivity.this).isConnected()) {
+            BluetoothTool.getInstance(ChooseDeviceActivity.this)
+                    .setSearchHandler(searchHandler)
+                    .search();
         } else {
             Toast.makeText(this,
                     R.string.not_connect_device_error,
@@ -160,7 +148,7 @@ public class ChooseDeviceActivity extends Activity {
     /**
      * Search Bluetooth SpecialDevice Handler
      */
-    private class SearchHandler extends HHandler {
+    private class SearchHandler extends BluetoothHandler {
 
         public SearchHandler(Activity activity) {
             super(activity);
@@ -173,7 +161,7 @@ public class ChooseDeviceActivity extends Activity {
          * @param msg message
          */
         @Override
-        public void onBeginPreparing(Message msg) {
+        public void onBeginDiscovering(Message msg) {
 
         }
 
@@ -212,7 +200,7 @@ public class ChooseDeviceActivity extends Activity {
          * @param msg message
          */
         @Override
-        public void onPrepared(Message msg) {
+        public void onConnected(Message msg) {
             Toast.makeText(activity, activity.getResources()
                     .getString(R.string.success_connect), Toast.LENGTH_SHORT)
                     .show();
@@ -225,7 +213,7 @@ public class ChooseDeviceActivity extends Activity {
          * @param msg message
          */
         @Override
-        public void onPrepError(Message msg) {
+        public void onConnectFailed(Message msg) {
             String errorMessage = (null == msg.obj) ?
                     activity.getResources().getString(R.string.failed_connect) :
                     msg.obj.toString();

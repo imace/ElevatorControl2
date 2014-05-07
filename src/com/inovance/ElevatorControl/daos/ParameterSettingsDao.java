@@ -51,7 +51,7 @@ public class ParameterSettingsDao {
      * Find By Type
      *
      * @param context Context
-     * @param type Type
+     * @param type    Type
      * @return List<ParameterSettings>
      */
     public static List<ParameterSettings> findByType(Context context, int type) {

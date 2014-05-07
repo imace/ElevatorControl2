@@ -37,7 +37,7 @@ public class SpecialDevice {
      */
     private String description;
 
-    public SpecialDevice(JSONObject object){
+    public SpecialDevice(JSONObject object) {
         this.ID = object.optInt("ID");
         this.name = object.optString("DeviceName");
         this.displayName = object.optString("DeviceDisplayName");

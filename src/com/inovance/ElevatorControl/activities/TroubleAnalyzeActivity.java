@@ -9,23 +9,24 @@ import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.view.View;
 import butterknife.InjectView;
 import butterknife.Views;
-import com.hbluetooth.HBluetooth;
-import com.hbluetooth.HCommunication;
-import com.hbluetooth.HSerial;
+import com.bluetoothtool.*;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.adapters.TroubleAnalyzeAdapter;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ErrorHelpDao;
-import com.inovance.ElevatorControl.daos.ParameterSettingsDao;
+import com.inovance.ElevatorControl.daos.ParameterGroupSettingsDao;
 import com.inovance.ElevatorControl.handlers.CurrentErrorHandler;
 import com.inovance.ElevatorControl.handlers.HistoryErrorHandler;
 import com.inovance.ElevatorControl.models.HistoryError;
+import com.inovance.ElevatorControl.models.ObjectListHolder;
+import com.inovance.ElevatorControl.models.ParameterGroupSettings;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
 import com.viewpagerindicator.TabPageIndicator;
 import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.widget.Toast;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,9 +51,11 @@ public class TroubleAnalyzeActivity extends Activity {
 
     private HistoryErrorHandler historyErrorHandler;
 
-    private HCommunication[] currentCommunications;
+    private BluetoothTalk[] currentCommunications;
 
-    public HCommunication[] historyCommunications;
+    public BluetoothTalk[] historyCommunications;
+
+    private FCGroupHandler fcGroupHandler;
 
     public int pageIndex;
 
@@ -64,9 +67,10 @@ public class TroubleAnalyzeActivity extends Activity {
         pager.setAdapter(new TroubleAnalyzeAdapter(this));
         pager.setOffscreenPageLimit(3);
         indicator.setViewPager(pager);
-        getHistoryErrorCode();
+        createGetFCGroupValueCommunications();
         currentErrorHandler = new CurrentErrorHandler(this);
-        historyErrorHandler = new HistoryErrorHandler(TroubleAnalyzeActivity.this);
+        historyErrorHandler = new HistoryErrorHandler(this);
+        fcGroupHandler = new FCGroupHandler(this);
         indicator.setOnPageChangeListener(new OnPageChangeListener() {
 
             @Override
@@ -102,7 +106,7 @@ public class TroubleAnalyzeActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (pageIndex != pager.getCurrentItem()){
+        if (pageIndex != pager.getCurrentItem()) {
             pager.setCurrentItem(pageIndex);
         }
         reSyncData();
@@ -137,56 +141,70 @@ public class TroubleAnalyzeActivity extends Activity {
         startActivity(new Intent(this, ViewErrorStatusActivity.class));
     }
 
-    /**
-     * 取得历史故障查询CODE
-     */
-    private void getHistoryErrorCode() {
-        ArrayList<String> names = new ArrayList<String>();
-        for (int i = 0; i < 10; i++) {
-            names.add(ApplicationConfig.HISTORY_ERROR_CODE_NAME.replace("&", String.valueOf(i + 1)));
-        }
-        names.add(ApplicationConfig.LAST_HISTORY_ERROR_CODE_NAME);
-        List<ParameterSettings> list = ParameterSettingsDao.findByNames(TroubleAnalyzeActivity.this,
-                names.toArray(new String[names.size()]));
-        int size = list.size();
-        historyCommunications = new HCommunication[size];
-        for (int i = 0; i < size; i++) {
-            final ParameterSettings item = list.get(i);
-            historyCommunications[i] = new HCommunication() {
-                @Override
-                public void beforeSend() {
-                    this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0103"
-                            + ParseSerialsUtils.splitAndConvertToHex(item.getCode())
-                            + "0004"
-                            + "0001")));
+    public void createGetFCGroupValueCommunications() {
+        if (historyCommunications == null) {
+            ParameterGroupSettings parameterGroupSettings = ParameterGroupSettingsDao.findById(
+                    this, 13);
+            final List<ParameterSettings> settingsList = parameterGroupSettings.getParametersettings().getList();
+            if (settingsList != null) {
+                final int size = settingsList.size();
+                final int count = size <= 10 ? 1 : ((size - size % 10) / 10 + (size % 10 == 0 ? 0 : 1));
+                historyCommunications = new BluetoothTalk[count];
+                for (int i = 0; i < count; i++) {
+                    final int position = i;
+                    final ParameterSettings firstItem = settingsList.get(position * 10);
+                    final int length = size <= 10 ? size : (size % 10 == 0 ? 10 : ((position == count - 1) ? size % 10 : 10));
+                    historyCommunications[i] = new BluetoothTalk() {
+                        @Override
+                        public void beforeSend() {
+                            this.setSendBuffer(SerialUtility.crc16(SerialUtility
+                                    .hexStr2Ints("0103"
+                                            + ParseSerialsUtils.getCalculatedCode(firstItem)
+                                            + String.format("%04x", length)
+                                            + "0001")));
+                        }
+
+                        @Override
+                        public void afterSend() {
+
+                        }
+
+                        @Override
+                        public void beforeReceive() {
+
+                        }
+
+                        @Override
+                        public void afterReceive() {
+
+                        }
+
+                        @Override
+                        public Object onParse() {
+                            if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                                byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
+                                short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
+                                if (length * 2 == bytesLength) {
+                                    List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
+                                    for (int j = 0; j < length; j++) {
+                                        if (position * 10 + j < settingsList.size()) {
+                                            ParameterSettings item = settingsList.get(position * 10 + j);
+                                            byte[] tempData = SerialUtility.crc16(SerialUtility.hexStr2Ints("01030002"
+                                                    + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
+                                            item.setReceived(tempData);
+                                            tempList.add(item);
+                                        }
+                                    }
+                                    ObjectListHolder holder = new ObjectListHolder();
+                                    holder.setParameterSettingsList(tempList);
+                                    return holder;
+                                }
+                            }
+                            return null;
+                        }
+                    };
                 }
-
-                @Override
-                public void afterSend() {
-
-                }
-
-                @Override
-                public void beforeReceive() {
-
-                }
-
-                @Override
-                public void afterReceive() {
-
-                }
-
-                @Override
-                public Object onParse() {
-                    if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                        byte[] received = HSerial.trimEnd(getReceivedBuffer());
-                        HistoryError historyError = new HistoryError();
-                        historyError.setData(received);
-                        return historyError;
-                    }
-                    return null;
-                }
-            };
+            }
         }
     }
 
@@ -195,12 +213,12 @@ public class TroubleAnalyzeActivity extends Activity {
      */
     public void loadCurrentTroubleView() {
         if (currentCommunications == null) {
-            currentCommunications = new HCommunication[]{
-                    new HCommunication() {
+            currentCommunications = new BluetoothTalk[]{
+                    new BluetoothTalk() {
 
                         @Override
                         public void beforeSend() {
-                            this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("010380000001")));
+                            this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("010380000001")));
                         }
 
                         @Override
@@ -218,8 +236,8 @@ public class TroubleAnalyzeActivity extends Activity {
 
                         @Override
                         public Object onParse() {
-                            if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                                byte[] received = HSerial.trimEnd(getReceivedBuffer());
+                            if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                                byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
                                 String errorCode = ParseSerialsUtils.getErrorCode(received);
                                 return ErrorHelpDao.findByDisplay(TroubleAnalyzeActivity.this, errorCode);
                             }
@@ -228,13 +246,15 @@ public class TroubleAnalyzeActivity extends Activity {
                     }
             };
         }
-        if (HBluetooth.getInstance(this).isPrepared()) {
-            currentErrorHandler.sendCount = currentCommunications.length;
-            handler.sendEmptyMessage(3);
-            HBluetooth.getInstance(this)
-                    .setHandler(currentErrorHandler)
-                    .setCommunications(currentCommunications)
-                    .Start();
+        if (BluetoothTool.getInstance(this).isConnected()) {
+            if (((NavigationTabActivity) getParent()).hasGetDeviceTypeAndNumber) {
+                handler.sendEmptyMessage(3);
+                currentErrorHandler.sendCount = currentCommunications.length;
+                BluetoothTool.getInstance(this)
+                        .setHandler(currentErrorHandler)
+                        .setCommunications(currentCommunications)
+                        .send();
+            }
         } else {
             handler.sendEmptyMessage(1);
         }
@@ -244,13 +264,14 @@ public class TroubleAnalyzeActivity extends Activity {
      * 历史故障
      */
     public void loadHistoryTroubleView() {
-        if (HBluetooth.getInstance(this).isPrepared()) {
-            handler.sendEmptyMessage(4);
-            historyErrorHandler.sendCount = historyCommunications.length;
-            HBluetooth.getInstance(this)
-                    .setHandler(historyErrorHandler)
-                    .setCommunications(historyCommunications)
-                    .Start();
+        if (BluetoothTool.getInstance(this).isConnected()) {
+            if (historyCommunications != null && historyCommunications.length > 0) {
+                fcGroupHandler.sendCount = historyCommunications.length;
+                BluetoothTool.getInstance(TroubleAnalyzeActivity.this)
+                        .setHandler(fcGroupHandler)
+                        .setCommunications(historyCommunications)
+                        .send();
+            }
         } else {
             handler.sendEmptyMessage(2);
         }
@@ -317,4 +338,107 @@ public class TroubleAnalyzeActivity extends Activity {
         }
 
     };
+
+    // ================================== FC Group Handler ========================= //
+    private class FCGroupHandler extends BluetoothHandler {
+
+        public int sendCount = 0;
+
+        private int receiveCount = 0;
+
+        public List<ParameterSettings> tempList;
+
+        public FCGroupHandler(android.app.Activity activity) {
+            super(activity);
+            TAG = FCGroupHandler.class.getSimpleName();
+        }
+
+        @Override
+        public void onMultiTalkBegin(Message msg) {
+            super.onMultiTalkBegin(msg);
+            receiveCount = 0;
+            tempList = new ArrayList<ParameterSettings>();
+        }
+
+        @Override
+        public void onMultiTalkEnd(Message msg) {
+            super.onMultiTalkEnd(msg);
+            if (receiveCount == sendCount) {
+                int startIndex = 0;
+                int index = 0;
+                for (ParameterSettings item : tempList) {
+                    if (item.getCode().equalsIgnoreCase("FC20")) {
+                        startIndex = index;
+                        break;
+                    }
+                    index++;
+                }
+                int size = tempList.size();
+                List<ParameterSettings> errorList = new ArrayList<ParameterSettings>();
+                for (int m = 0; m < 44; m++) {
+                    int position = startIndex + m;
+                    if (position < size) {
+                        errorList.add(tempList.get(position));
+                    }
+                }
+                int errorSize = errorList.size();
+                historyErrorHandler.sendEmptyMessage(BluetoothState.onMultiTalkBegin);
+                for (int n = 0; n < 11; n++) {
+                    int index01 = n * 4;
+                    int index02 = n * 4 + 1;
+                    int index03 = n * 4 + 2;
+                    int index04 = n * 4 + 3;
+                    if (index01 < errorSize && index02 < errorSize && index03 < errorSize && index04 < errorSize) {
+                        byte[] data01 = errorList.get(index01).getReceived();
+                        byte[] data02 = errorList.get(index02).getReceived();
+                        byte[] data03 = errorList.get(index03).getReceived();
+                        byte[] data04 = errorList.get(index04).getReceived();
+                        if (data01 != null && data01.length > 6
+                                && data02 != null && data02.length > 6
+                                && data03 != null && data03.length > 6
+                                && data04 != null && data04.length > 6) {
+                            byte[] errorData = new byte[]{
+                                    data01[4], data01[5],
+                                    data02[4], data02[5],
+                                    data03[4], data03[5],
+                                    data04[4], data04[5]
+                            };
+                            HistoryError historyError = new HistoryError();
+                            historyError.setData(errorData);
+
+                            Message message = new Message();
+                            message.what = BluetoothState.onTalkReceive;
+                            historyErrorHandler.sendMessage(message);
+                        }
+                    }
+                }
+                historyErrorHandler.sendEmptyMessage(BluetoothState.onMultiTalkEnd);
+            } else {
+                TroubleAnalyzeActivity.this.loadHistoryTroubleView();
+            }
+        }
+
+        @Override
+        public void onTalkReceive(Message msg) {
+            super.onTalkReceive(msg);
+            if (msg.obj instanceof ObjectListHolder) {
+                ObjectListHolder holder = (ObjectListHolder) msg.obj;
+                for (ParameterSettings item : holder.getParameterSettingsList()) {
+                    if (!item.getName().contains(ApplicationConfig.RETAIN_NAME)) {
+                        if (tempList == null) {
+                            tempList = new ArrayList<ParameterSettings>();
+                        }
+                        tempList.add(item);
+                    }
+                }
+                receiveCount++;
+            }
+        }
+
+        @Override
+        public void onTalkError(Message msg) {
+            super.onTalkError(msg);
+        }
+
+    }
 }

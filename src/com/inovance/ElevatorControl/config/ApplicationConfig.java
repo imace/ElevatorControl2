@@ -159,7 +159,7 @@ public class ApplicationConfig {
     /**
      * 电梯默认最底层和最高层
      */
-    public static final int[] DEFAULT_FLOORS = new int[]{1, 16};
+    public static final int[] DEFAULT_FLOORS = new int[]{1, 9};
 
     /**
      * 设备型号

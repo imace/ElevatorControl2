@@ -9,7 +9,7 @@ import android.view.MenuItem;
 import android.view.View;
 import butterknife.InjectView;
 import butterknife.Views;
-import com.hbluetooth.HBluetooth;
+import com.bluetoothtool.BluetoothTool;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.adapters.FirmwareManageAdapter;
 import com.inovance.ElevatorControl.models.Firmware;
@@ -145,9 +145,9 @@ public class FirmwareManageActivity extends Activity {
                 burningProgressBar.setMax(100);
                 try {
                     FileInputStream fileInputStream = new FileInputStream("/storage/emulated/0/Nice3000+_Mcbs.bin");
-                    if (HBluetooth.getInstance(FirmwareManageActivity.this).isPrepared()) {
+                    if (BluetoothTool.getInstance(FirmwareManageActivity.this).isConnected()) {
                         BurnHandler burnHandler = new BurnHandler();
-                        BluetoothSocket socket = HBluetooth.getInstance(FirmwareManageActivity.this).btSocket;
+                        BluetoothSocket socket = BluetoothTool.getInstance(FirmwareManageActivity.this).bluetoothSocket;
                         IProgram.getInstance().SetProgramPara(socket, fileInputStream, burnHandler);
                         IProgram.getInstance().GetBinFileInfo();
                         firmwareMetaTextView.setText(IProgram.getInstance().GetBinFileInfo());
@@ -177,7 +177,7 @@ public class FirmwareManageActivity extends Activity {
                             }
                         });
                         dlgButton.invalidate();
-                        if (HBluetooth.getInstance(FirmwareManageActivity.this).isPrepared()) {
+                        if (BluetoothTool.getInstance(FirmwareManageActivity.this).isConnected()) {
                             IProgram.getInstance().StartProgram();//开始烧录
                         } else {
                             Toast.makeText(FirmwareManageActivity.this,

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:minHeight="42dp"
+              android:layout_gravity="center_vertical"
+              android:gravity="center_vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+    <org.holoeverywhere.widget.TextView
+            android:id="@+id/checked_text_view"
+            android:layout_marginLeft="10dp"
+            style="@style/Holo.TextAppearance.Light"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    <ImageView
+            android:id="@+id/checked_mark"
+            android:contentDescription="@null"
+            android:background="#00000000"
+            android:scaleType="fitCenter"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+</RelativeLayout>

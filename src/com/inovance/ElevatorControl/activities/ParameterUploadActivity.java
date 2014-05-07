@@ -2,6 +2,7 @@ package com.inovance.ElevatorControl.activities;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Message;
@@ -11,12 +12,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ScrollView;
 import butterknife.InjectView;
 import butterknife.Views;
-import com.hbluetooth.HBluetooth;
-import com.hbluetooth.HCommunication;
-import com.hbluetooth.HHandler;
-import com.hbluetooth.HSerial;
+import com.bluetoothtool.BluetoothHandler;
+import com.bluetoothtool.BluetoothTool;
+import com.bluetoothtool.BluetoothTalk;
+import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.models.ParameterSettings;
@@ -49,7 +51,7 @@ public class ParameterUploadActivity extends Activity {
 
     private LocalProfileAdapter adapter;
 
-    private List<HCommunication[]> communicationsList;
+    private List<BluetoothTalk[]> communicationsList;
 
     private List<ParameterSettings> parameterSettingsList;
 
@@ -62,6 +64,8 @@ public class ParameterUploadActivity extends Activity {
     private TextView uploadTipsTextView;
 
     private ProgressBar uploadProgressBar;
+
+    private ScrollView tipsView;
 
     private Button dialogButton;
 
@@ -161,6 +165,7 @@ public class ParameterUploadActivity extends Activity {
         AlertDialog.Builder builder = new AlertDialog.Builder(ParameterUploadActivity.this);
         LayoutInflater inflater = ParameterUploadActivity.this.getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.parameters_upload_dialog, null);
+        tipsView = (ScrollView) dialogView.findViewById(R.id.tips_view);
         uploadTipsTextView = (TextView) dialogView.findViewById(R.id.upload_tips);
         uploadProgressBar = (ProgressBar) dialogView.findViewById(R.id.progress_bar);
         uploadProgressBar.setMax(parameterSettingsList.size());
@@ -169,7 +174,7 @@ public class ParameterUploadActivity extends Activity {
         builder.setNegativeButton(R.string.dialog_btn_cancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                HBluetooth.getInstance(ParameterUploadActivity.this).setHandler(null);
+                BluetoothTool.getInstance(ParameterUploadActivity.this).setHandler(null);
             }
         });
         uploadDialog = builder.create();
@@ -185,7 +190,7 @@ public class ParameterUploadActivity extends Activity {
      * @param groupArray JSON Array
      */
     private void generateCommunicationsList(JSONArray groupArray) {
-        communicationsList = new ArrayList<HCommunication[]>();
+        communicationsList = new ArrayList<BluetoothTalk[]>();
         parameterSettingsList = new ArrayList<ParameterSettings>();
         int size = groupArray.length();
         for (int i = 0; i < size; i++) {
@@ -193,7 +198,7 @@ public class ParameterUploadActivity extends Activity {
                 JSONObject groupsJSONObject = groupArray.getJSONObject(i);
                 JSONArray detailArray = groupsJSONObject.getJSONArray("parameterSettings");
                 int length = detailArray.length();
-                HCommunication[] communications = new HCommunication[length];
+                BluetoothTalk[] communications = new BluetoothTalk[length];
                 for (int j = 0; j < length; j++) {
                     JSONObject jsonObject = detailArray.getJSONObject(j);
                     final ParameterSettings item = new ParameterSettings();
@@ -213,10 +218,10 @@ public class ParameterUploadActivity extends Activity {
                     item.setType(String.valueOf(jsonObject.optInt("type")));
                     item.setMode(String.valueOf(jsonObject.optInt("mode")));
                     parameterSettingsList.add(item);
-                    communications[j] = new HCommunication() {
+                    communications[j] = new BluetoothTalk() {
                         @Override
                         public void beforeSend() {
-                            this.setSendBuffer(HSerial.crc16(HSerial.hexStr2Ints("0106"
+                            this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0106"
                                     + item.getCode()
                                     + item.getHexValueString()
                                     + "0001")));
@@ -239,8 +244,8 @@ public class ParameterUploadActivity extends Activity {
 
                         @Override
                         public Object onParse() {
-                            if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                                byte[] received = HSerial.trimEnd(getReceivedBuffer());
+                            if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                                byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
                                 item.setReceived(received);
                                 return item;
                             }
@@ -263,11 +268,11 @@ public class ParameterUploadActivity extends Activity {
     private void startCommunication(int position) {
         if (position >= 0 && position < communicationsList.size()) {
             uploadParameterHandler.index = position;
-            if (HBluetooth.getInstance(this).isPrepared()) {
-                HBluetooth.getInstance(this)
+            if (BluetoothTool.getInstance(this).isConnected()) {
+                BluetoothTool.getInstance(this)
                         .setHandler(uploadParameterHandler)
                         .setCommunications(communicationsList.get(position))
-                        .Start();
+                        .send();
             } else {
                 Toast.makeText(this,
                         R.string.not_connect_device_error,
@@ -307,6 +312,7 @@ public class ParameterUploadActivity extends Activity {
                 errorAndWarningMessage += warningString + "\n";
             }
             uploadTipsTextView.setText(errorAndWarningMessage);
+            tipsView.setVisibility(View.VISIBLE);
         }
         dialogButton.setText(R.string.dialog_btn_ok);
     }
@@ -348,19 +354,28 @@ public class ParameterUploadActivity extends Activity {
                 holder = new ViewHolder();
                 holder.profileName = (TextView) convertView.findViewById(R.id.profile_name);
                 holder.createDate = (TextView) convertView.findViewById(R.id.create_date);
+                holder.viewButton = (Button) convertView.findViewById(R.id.view_button);
                 holder.uploadButton = (Button) convertView.findViewById(R.id.upload_button);
                 convertView.setTag(holder);
             } else {
                 holder = (ViewHolder) convertView.getTag();
             }
-            Profile profile = getItem(position);
+            final Profile profile = getItem(position);
             holder.profileName.setText(profile.getFileName());
             holder.createDate.setText(profile.getUpdateDate());
             final int index = position;
+            holder.viewButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(ParameterUploadActivity.this, ParameterViewerActivity.class);
+                    intent.putExtra("profileName", profile.getFileName());
+                    startActivity(intent);
+                }
+            });
             holder.uploadButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if (HBluetooth.getInstance(ParameterUploadActivity.this).isPrepared()) {
+                    if (BluetoothTool.getInstance(ParameterUploadActivity.this).isConnected()) {
                         AlertDialog.Builder builder = new android.app.AlertDialog.Builder(ParameterUploadActivity.this, R.style.CustomDialogStyle)
                                 .setTitle(R.string.upload_dialog_title)
                                 .setMessage(R.string.upload_dialog_message)
@@ -389,6 +404,7 @@ public class ParameterUploadActivity extends Activity {
         private class ViewHolder {
             TextView profileName;
             TextView createDate;
+            Button viewButton;
             Button uploadButton;
         }
 
@@ -399,7 +415,7 @@ public class ParameterUploadActivity extends Activity {
     /**
      * 上传参数 Handler
      */
-    private class UploadParameterHandler extends HHandler {
+    private class UploadParameterHandler extends BluetoothHandler {
 
         public int index = 0;
 
@@ -444,7 +460,7 @@ public class ParameterUploadActivity extends Activity {
             if (msg.obj != null && msg.obj instanceof ParameterSettings) {
                 receiveCount++;
                 ParameterSettings settings = (ParameterSettings) msg.obj;
-                String hexString = HSerial.byte2HexStr(settings.getReceived());
+                String hexString = SerialUtility.byte2HexStr(settings.getReceived());
                 int index = 0;
                 for (String errorCode : ApplicationConfig.ERROR_CODE_ARRAY) {
                     if (hexString.contains(errorCode)) {

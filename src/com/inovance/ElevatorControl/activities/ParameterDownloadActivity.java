@@ -8,16 +8,15 @@ import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import butterknife.InjectView;
 import butterknife.OnClick;
 import butterknife.Views;
-import com.hbluetooth.HBluetooth;
-import com.hbluetooth.HCommunication;
-import com.hbluetooth.HHandler;
-import com.hbluetooth.HSerial;
+import com.bluetoothtool.BluetoothHandler;
+import com.bluetoothtool.BluetoothTalk;
+import com.bluetoothtool.BluetoothTool;
+import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.daos.ParameterGroupSettingsDao;
-import com.inovance.ElevatorControl.models.ListHolder;
+import com.inovance.ElevatorControl.models.ObjectListHolder;
 import com.inovance.ElevatorControl.models.ParameterGroupSettings;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.utils.GenerateJSON;
@@ -61,7 +60,7 @@ public class ParameterDownloadActivity extends Activity {
 
     private EditText fileNameEditText;
 
-    private List<HCommunication[]> communicationsList;
+    private List<BluetoothTalk[]> communicationsList;
 
     private AlertDialog downloadDialog;
 
@@ -70,21 +69,6 @@ public class ParameterDownloadActivity extends Activity {
     private Button cancelButton;
 
     private List<ParameterGroupSettings> parameterGroupLists;
-
-    @InjectView(R.id.equipment_model)
-    TextView equipmentModel;
-
-    @InjectView(R.id.manufacturers_serial_number)
-    TextView manufacturersSerialNumber;
-
-    @InjectView(R.id.current_parameters_version)
-    TextView currentParametersVersion;
-
-    @InjectView(R.id.parameters_update_date)
-    TextView parametersUpdateDate;
-
-    @InjectView(R.id.download_button)
-    View downloadButton;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -125,7 +109,7 @@ public class ParameterDownloadActivity extends Activity {
     @OnClick(R.id.download_button)
     void onDownloadButtonClick() {
         //弹出下载框
-        if (HBluetooth.getInstance(this).isPrepared()) {
+        if (BluetoothTool.getInstance(this).isConnected()) {
             AlertDialog.Builder builder = new AlertDialog.Builder(ParameterDownloadActivity.this);
             LayoutInflater inflater = ParameterDownloadActivity.this.getLayoutInflater();
             View dialogView = inflater.inflate(R.layout.parameters_duplicate_dialog, null);
@@ -204,9 +188,9 @@ public class ParameterDownloadActivity extends Activity {
             int maxProgress = 0;
             fileNameEditText.setVisibility(View.GONE);
             parameterGroupLists = ParameterGroupSettingsDao.findAll(ParameterDownloadActivity.this);
-            communicationsList = new ArrayList<HCommunication[]>();
+            communicationsList = new ArrayList<BluetoothTalk[]>();
             for (ParameterGroupSettings groupItem : parameterGroupLists) {
-                HCommunication[] communications = createCommunications(groupItem.getParametersettings().getList());
+                BluetoothTalk[] communications = createCommunications(groupItem.getParametersettings().getList());
                 maxProgress += communications.length;
                 communicationsList.add(communications);
             }
@@ -228,20 +212,20 @@ public class ParameterDownloadActivity extends Activity {
      * Create Communications
      *
      * @param list ParameterSettings List
-     * @return HCommunication[]
+     * @return BluetoothTalk[]
      */
-    private HCommunication[] createCommunications(final List<ParameterSettings> list) {
+    private BluetoothTalk[] createCommunications(final List<ParameterSettings> list) {
         final int size = list.size();
         final int count = size <= 10 ? 1 : ((size - size % 10) / 10 + (size % 10 == 0 ? 0 : 1));
-        HCommunication[] communications = new HCommunication[count];
+        BluetoothTalk[] communications = new BluetoothTalk[count];
         for (int i = 0; i < count; i++) {
             final int position = i;
             final ParameterSettings firstItem = list.get(position * 10);
             final int length = size <= 10 ? size : (size % 10 == 0 ? 10 : ((position == count - 1) ? size % 10 : 10));
-            communications[i] = new HCommunication() {
+            communications[i] = new BluetoothTalk() {
                 @Override
                 public void beforeSend() {
-                    this.setSendBuffer(HSerial.crc16(HSerial
+                    this.setSendBuffer(SerialUtility.crc16(SerialUtility
                             .hexStr2Ints("0103"
                                     + ParseSerialsUtils.getCalculatedCode(firstItem)
                                     + String.format("%04x", length)
@@ -265,19 +249,19 @@ public class ParameterDownloadActivity extends Activity {
 
                 @Override
                 public Object onParse() {
-                    if (HSerial.isCRC16Valid(getReceivedBuffer())) {
-                        byte[] data = HSerial.trimEnd(getReceivedBuffer());
+                    if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                        byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
                         short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
                         if (length * 2 == bytesLength) {
                             List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
                             for (int j = 0; j < length; j++) {
                                 ParameterSettings item = list.get(position * 10 + j);
-                                byte[] tempData = HSerial.crc16(HSerial.hexStr2Ints("01030002"
-                                        + HSerial.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
+                                byte[] tempData = SerialUtility.crc16(SerialUtility.hexStr2Ints("01030002"
+                                        + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
                                 item.setReceived(tempData);
                                 tempList.add(item);
                             }
-                            ListHolder holder = new ListHolder();
+                            ObjectListHolder holder = new ObjectListHolder();
                             holder.setParameterSettingsList(tempList);
                             return holder;
                         }
@@ -297,11 +281,11 @@ public class ParameterDownloadActivity extends Activity {
     private void startCommunication(int position) {
         if (position >= 0 && position < communicationsList.size()) {
             downloadParameterHandler.index = position;
-            if (HBluetooth.getInstance(this).isPrepared()) {
-                HBluetooth.getInstance(this)
+            if (BluetoothTool.getInstance(this).isConnected()) {
+                BluetoothTool.getInstance(this)
                         .setHandler(downloadParameterHandler)
                         .setCommunications(communicationsList.get(position))
-                        .Start();
+                        .send();
                 if (confirmButton != null && cancelButton != null) {
                     confirmButton.setEnabled(false);
                     cancelButton.setEnabled(false);
@@ -320,7 +304,7 @@ public class ParameterDownloadActivity extends Activity {
     /**
      * 下载参数配置Handler
      */
-    private class DownloadParameterHandler extends HHandler {
+    private class DownloadParameterHandler extends BluetoothHandler {
 
         private int index = 0;
 
@@ -342,7 +326,7 @@ public class ParameterDownloadActivity extends Activity {
         @Override
         public void onMultiTalkEnd(Message msg) {
             super.onMultiTalkEnd(msg);
-            HCommunication[] communications = ParameterDownloadActivity.this.communicationsList.get(index);
+            BluetoothTalk[] communications = ParameterDownloadActivity.this.communicationsList.get(index);
             if (communications.length == receiveCount) {
                 ParameterDownloadActivity.this.downloadProgressBar.incrementProgress(receiveCount);
                 int currentProgress = ParameterDownloadActivity.this.downloadProgressBar.getProgress();
@@ -404,8 +388,8 @@ public class ParameterDownloadActivity extends Activity {
 
         @Override
         public void onTalkReceive(Message msg) {
-            if (msg.obj != null && msg.obj instanceof ListHolder) {
-                ListHolder holder = (ListHolder) msg.obj;
+            if (msg.obj != null && msg.obj instanceof ObjectListHolder) {
+                ObjectListHolder holder = (ObjectListHolder) msg.obj;
                 for (ParameterSettings item : holder.getParameterSettingsList()) {
                     tempParameterSettingsList.add(item);
                 }
