@@ -34,13 +34,15 @@ import org.holoeverywhere.widget.Toast;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * 大标签卡 电梯调试
  *
  * @author jch
  */
-public class ConfigurationActivity extends Activity {
+public class ConfigurationActivity extends Activity implements Runnable{
 
     private static final String TAG = ConfigurationActivity.class.getSimpleName();
 
@@ -75,6 +77,8 @@ public class ConfigurationActivity extends Activity {
     public boolean isSyncing = false;
 
     private boolean isReadingTerminalStatus = false;
+
+    private ExecutorService pool = Executors.newSingleThreadExecutor();
 
     /**
      * 注入页面元素
@@ -131,10 +135,7 @@ public class ConfigurationActivity extends Activity {
             public void run() {
                 if (isRunning) {
                     if (BluetoothTool.getInstance(ConfigurationActivity.this).isConnected()) {
-                        if (!isSyncing && !isReadingTerminalStatus) {
-                            ConfigurationActivity.this.reSyncData();
-                            syncHandler.postDelayed(syncStatusTask, SYNC_TIME);
-                        }
+                        pool.execute(ConfigurationActivity.this);
                     }
                 }
             }
@@ -483,6 +484,14 @@ public class ConfigurationActivity extends Activity {
         }
 
     };
+
+    @Override
+    public void run() {
+        if (!isSyncing && !isReadingTerminalStatus) {
+            ConfigurationActivity.this.reSyncData();
+            syncHandler.postDelayed(syncStatusTask, SYNC_TIME);
+        }
+    }
 
     // =============================== Get X Terminal Status Handler ====================================== //
     private class GetXTerminalStatusHandler extends BluetoothHandler {

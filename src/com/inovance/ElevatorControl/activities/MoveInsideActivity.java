@@ -29,6 +29,8 @@ import org.holoeverywhere.widget.Toast;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by IntelliJ IDEA.
@@ -36,7 +38,7 @@ import java.util.List;
  * Date: 14-3-6.
  * Time: 11:03.
  */
-public class MoveInsideActivity extends Activity {
+public class MoveInsideActivity extends Activity implements Runnable {
 
     private static final String TAG = MoveInsideActivity.class.getSimpleName();
 
@@ -71,6 +73,8 @@ public class MoveInsideActivity extends Activity {
     private boolean isSyncing = false;
 
     private MoveSidePagerAdapter moveSidePagerAdapter;
+
+    private ExecutorService pool = Executors.newSingleThreadExecutor();
 
     /**
      * 同步间隔
@@ -118,14 +122,10 @@ public class MoveInsideActivity extends Activity {
             @Override
             public void run() {
                 if (running) {
-                    if (hasGetFloors) {
-                        if (!isWritingData) {
-                            MoveInsideActivity.this.syncMoveInsideInfoStatus();
-                        }
-                    } else {
-                        MoveInsideActivity.this.loadDataAndRenderView();
+                    if (BluetoothTool.getInstance(MoveInsideActivity.this).isConnected()) {
+                        pool.execute(MoveInsideActivity.this);
+                        syncHandler.postDelayed(this, SYNC_TIME);
                     }
-                    syncHandler.postDelayed(this, SYNC_TIME);
                 }
             }
         };
@@ -547,6 +547,17 @@ public class MoveInsideActivity extends Activity {
         }
 
     };
+
+    @Override
+    public void run() {
+        if (hasGetFloors) {
+            if (!isWritingData) {
+                MoveInsideActivity.this.syncMoveInsideInfoStatus();
+            }
+        } else {
+            MoveInsideActivity.this.loadDataAndRenderView();
+        }
+    }
 
     // ================================= MoveInside handler ========================================== //
     private class MoveInsideHandler extends BluetoothHandler {

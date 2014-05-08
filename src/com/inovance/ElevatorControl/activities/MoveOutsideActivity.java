@@ -31,6 +31,8 @@ import org.holoeverywhere.widget.Toast;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by IntelliJ IDEA.
@@ -38,7 +40,7 @@ import java.util.List;
  * Date: 14-3-6.
  * Time: 11:04.
  */
-public class MoveOutsideActivity extends Activity {
+public class MoveOutsideActivity extends Activity implements Runnable {
 
     private static final String TAG = MoveOutsideActivity.class.getSimpleName();
 
@@ -91,6 +93,8 @@ public class MoveOutsideActivity extends Activity {
 
     private MoveSidePagerAdapter moveSidePagerAdapter;
 
+    private ExecutorService pool = Executors.newSingleThreadExecutor();
+
     /**
      * 同步间隔
      */
@@ -133,14 +137,10 @@ public class MoveOutsideActivity extends Activity {
             @Override
             public void run() {
                 if (running) {
-                    if (hasGetFloors) {
-                        if (!isWritingData) {
-                            MoveOutsideActivity.this.syncMoveOutsideInfoStatus();
-                        }
-                    } else {
-                        MoveOutsideActivity.this.loadDataAndRenderView();
+                    if (BluetoothTool.getInstance(MoveOutsideActivity.this).isConnected()) {
+                        pool.execute(MoveOutsideActivity.this);
+                        syncHandler.postDelayed(this, SYNC_TIME);
                     }
-                    syncHandler.postDelayed(this, SYNC_TIME);
                 }
             }
         };
@@ -561,6 +561,17 @@ public class MoveOutsideActivity extends Activity {
         }
 
     };
+
+    @Override
+    public void run() {
+        if (hasGetFloors) {
+            if (!isWritingData) {
+                MoveOutsideActivity.this.syncMoveOutsideInfoStatus();
+            }
+        } else {
+            MoveOutsideActivity.this.loadDataAndRenderView();
+        }
+    }
 
     // ==================================== 召唤楼层 =================================================//
 

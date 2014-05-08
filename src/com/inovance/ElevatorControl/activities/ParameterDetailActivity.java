@@ -36,8 +36,10 @@ import org.holoeverywhere.widget.*;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class ParameterDetailActivity extends Activity implements RefreshActionItem.RefreshActionListener {
+public class ParameterDetailActivity extends Activity implements RefreshActionItem.RefreshActionListener, Runnable {
 
     private static final String TAG = ParameterDetailActivity.class.getSimpleName();
 
@@ -92,6 +94,8 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
     private AlertDialog getElevatorStatusDialog;
 
     private String writeErrorString;
+
+    private ExecutorService pool = Executors.newSingleThreadExecutor();
 
     /**
      * 功能参数详细列表
@@ -835,6 +839,11 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
     public void onRefreshButtonClick(RefreshActionItem sender) {
         mRefreshActionItem.showProgress(true);
         syncingParameter = true;
+        pool.execute(ParameterDetailActivity.this);
+    }
+
+    @Override
+    public void run() {
         startCombinationCommunications();
     }
 

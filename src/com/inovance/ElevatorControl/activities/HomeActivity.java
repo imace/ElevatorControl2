@@ -3,6 +3,7 @@ package com.inovance.ElevatorControl.activities;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import butterknife.InjectView;
@@ -31,9 +32,11 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
-public class HomeActivity extends Activity {
+public class HomeActivity extends Activity implements Runnable{
 
     private static final String TAG = HomeActivity.class.getSimpleName();
 
@@ -75,6 +78,8 @@ public class HomeActivity extends Activity {
 
     private List<Shortcut> shortcutList;
 
+    private ExecutorService pool = Executors.newSingleThreadExecutor();
+
     /**
      * 同步间隔
      */
@@ -92,7 +97,7 @@ public class HomeActivity extends Activity {
             public void run() {
                 if (running) {
                     if (BluetoothTool.getInstance(HomeActivity.this).isConnected()) {
-                        HomeActivity.this.syncElevatorStatus();
+                        pool.execute(HomeActivity.this);
                         handler.postDelayed(this, SYNC_TIME);
                     }
                 }
@@ -232,6 +237,11 @@ public class HomeActivity extends Activity {
         } else {
             adapter.setShortcutList(shortcutList);
         }
+    }
+
+    @Override
+    public void run() {
+        HomeActivity.this.syncElevatorStatus();
     }
 
     // ==================================== HomeActivity Bluetooth Handler ===================================
