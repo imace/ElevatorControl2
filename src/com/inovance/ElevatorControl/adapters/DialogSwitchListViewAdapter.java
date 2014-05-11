@@ -23,10 +23,13 @@ public class DialogSwitchListViewAdapter extends BaseAdapter {
 
     private List<ParameterStatusItem> itemList;
 
+    private List<ParameterStatusItem> statusItemList;
+
     private Activity baseActivity;
 
     public DialogSwitchListViewAdapter(List<ParameterStatusItem> list, Activity activity) {
         this.itemList = list;
+        this.statusItemList = list;
         this.baseActivity = activity;
     }
 
@@ -51,40 +54,21 @@ public class DialogSwitchListViewAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup viewGroup) {
-        ViewHolder holder;
         LayoutInflater mInflater = LayoutInflater.from(baseActivity);
-        if (convertView == null) {
-            convertView = mInflater.inflate(R.layout.parameter_switch_item, null);
-            holder = new ViewHolder();
-            holder.statusName = (TextView) convertView.findViewById(R.id.switch_name);
-            holder.statusSwitch = (Switch) convertView.findViewById(R.id.status_switch);
-            convertView.setTag(holder);
-        } else {
-            holder = (ViewHolder) convertView.getTag();
-        }
+        convertView = mInflater.inflate(R.layout.parameter_switch_item, null);
+        TextView switchName = (TextView) convertView.findViewById(R.id.switch_name);
+        Switch switchView = (Switch) convertView.findViewById(R.id.status_switch);
         final ParameterStatusItem item = getItem(position);
-        holder.statusName.setText(item.getName());
-        holder.statusSwitch.setChecked(item.getStatus());
-        holder.statusSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        switchName.setText(item.getName());
+        switchView.setChecked(item.getStatus());
+        final int index = position;
+        switchView.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean status) {
-                item.setStatus(status);
+                statusItemList.get(index).setStatus(status);
             }
         });
-        if (!item.getEditStatus()) {
-            holder.statusSwitch.setEnabled(false);
-        } else {
-            holder.statusSwitch.setEnabled(true);
-        }
         return convertView;
-    }
-
-    /**
-     * View Holder
-     */
-    private class ViewHolder {
-        TextView statusName;
-        Switch statusSwitch;
     }
 
 }

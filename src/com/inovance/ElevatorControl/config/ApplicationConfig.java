@@ -77,8 +77,8 @@ public class ApplicationConfig {
             "输出频率",
             "当前楼层",
             "当前位置",
-            "轿顶输入端子",
-            "轿顶输出端子",
+            "轿顶板输入端子",
+            "轿顶板输出端子",
             "系统状态",
             "轿厢负载",
             "预转矩电流",
@@ -98,8 +98,8 @@ public class ApplicationConfig {
             "输出频率",
             "当前楼层",
             "当前位置",
-            "轿顶输入端子",
-            "轿顶输出端子",
+            "轿顶板输入端子",
+            "轿顶板输出端子",
             "系统状态",
             "轿厢负载",
             "预转矩电流",
@@ -159,7 +159,7 @@ public class ApplicationConfig {
     /**
      * 电梯默认最底层和最高层
      */
-    public static final int[] DEFAULT_FLOORS = new int[]{1, 9};
+    public static final int[] DEFAULT_FLOORS = new int[]{1, 1};
 
     /**
      * 设备型号

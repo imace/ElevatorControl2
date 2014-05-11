@@ -19,6 +19,7 @@ import com.inovance.ElevatorControl.activities.*;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ParameterGroupSettingsDao;
 import com.inovance.ElevatorControl.daos.RealTimeMonitorDao;
+import com.inovance.ElevatorControl.handlers.GlobalHandler;
 import com.inovance.ElevatorControl.models.MoveInsideOutside;
 import com.inovance.ElevatorControl.models.ParameterDuplicate;
 import com.inovance.ElevatorControl.models.ParameterGroupSettings;
@@ -26,7 +27,6 @@ import com.inovance.ElevatorControl.models.RealTimeMonitor;
 import com.inovance.ElevatorControl.views.dialogs.CustomDialog;
 import com.mobsandgeeks.adapters.InstantAdapter;
 import org.holoeverywhere.widget.ListView;
-import org.holoeverywhere.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -153,12 +153,12 @@ public class ConfigurationFragment extends Fragment {
         }
         if (inputMonitor.size() == 4) {
             RealTimeMonitor monitor = inputMonitor.get(0);
-            monitor.setName("输入端子");
+            monitor.setName("主控板输入端子");
             monitorList.add(monitor);
         }
         if (outputMonitor.size() == 1) {
             RealTimeMonitor monitor = outputMonitor.get(0);
-            monitor.setName("输出端子");
+            monitor.setName("主控板输出端子");
             monitorList.add(monitor);
         }
         monitorInstantAdapter = new InstantAdapter<RealTimeMonitor>(
@@ -218,11 +218,13 @@ public class ConfigurationFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                Intent intent = new Intent(
-                        ConfigurationFragment.this.getActivity(),
-                        ParameterDetailActivity.class);
-                intent.putExtra("SelectedId", settingsList.get(position).getId());
-                ConfigurationFragment.this.getActivity().startActivity(intent);
+                if (BluetoothTool.getInstance(getActivity()).hasSelectDeviceType()) {
+                    Intent intent = new Intent(
+                            ConfigurationFragment.this.getActivity(),
+                            ParameterDetailActivity.class);
+                    intent.putExtra("SelectedId", settingsList.get(position).getId());
+                    ConfigurationFragment.this.getActivity().startActivity(intent);
+                }
             }
         });
     }
@@ -242,19 +244,21 @@ public class ConfigurationFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                switch (position) {
-                    case 0: {
-                        ConfigurationFragment.this.getActivity().startActivity(
-                                new Intent(ConfigurationFragment.this.getActivity(),
-                                        MoveInsideActivity.class));
+                if (BluetoothTool.getInstance(getActivity()).hasSelectDeviceType()) {
+                    switch (position) {
+                        case 0: {
+                            ConfigurationFragment.this.getActivity().startActivity(
+                                    new Intent(ConfigurationFragment.this.getActivity(),
+                                            MoveInsideActivity.class));
+                        }
+                        break;
+                        case 1: {
+                            ConfigurationFragment.this.getActivity().startActivity(
+                                    new Intent(ConfigurationFragment.this.getActivity(),
+                                            MoveOutsideActivity.class));
+                        }
+                        break;
                     }
-                    break;
-                    case 1: {
-                        ConfigurationFragment.this.getActivity().startActivity(
-                                new Intent(ConfigurationFragment.this.getActivity(),
-                                        MoveOutsideActivity.class));
-                    }
-                    break;
                 }
             }
         });
@@ -276,71 +280,71 @@ public class ConfigurationFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                switch (position) {
-                    case 0: {
-                        Intent intent = new Intent(ConfigurationFragment.this.getActivity(),
-                                ParameterUploadActivity.class);
-                        ConfigurationFragment.this.getActivity().startActivity(intent);
-                    }
-                    break;
-                    case 1: {
-                        Intent intent = new Intent(ConfigurationFragment.this.getActivity(),
-                                ParameterDownloadActivity.class);
-                        ConfigurationFragment.this.getActivity().startActivity(intent);
-                    }
-                    break;
-                    case 2: {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(ConfigurationFragment.this.getActivity(),
-                                R.style.CustomDialogStyle)
-                                .setTitle(R.string.confirm_restore_title)
-                                .setMessage(R.string.confirm_restore_message)
-                                .setNegativeButton(R.string.dialog_btn_cancel, null)
-                                .setPositiveButton(R.string.dialog_btn_ok, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        BluetoothTalk[] communications = new BluetoothTalk[1];
-                                        communications[0] = new BluetoothTalk() {
-                                            @Override
-                                            public void beforeSend() {
-                                                this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("010660030001")));
+                if (BluetoothTool.getInstance(getActivity()).hasSelectDeviceType()) {
+                    switch (position) {
+                        case 0: {
+                            Intent intent = new Intent(ConfigurationFragment.this.getActivity(),
+                                    ParameterUploadActivity.class);
+                            ConfigurationFragment.this.getActivity().startActivity(intent);
+                        }
+                        break;
+                        case 1: {
+                            Intent intent = new Intent(ConfigurationFragment.this.getActivity(),
+                                    ParameterDownloadActivity.class);
+                            ConfigurationFragment.this.getActivity().startActivity(intent);
+                        }
+                        break;
+                        case 2: {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(ConfigurationFragment.this.getActivity(),
+                                    R.style.CustomDialogStyle)
+                                    .setTitle(R.string.confirm_restore_title)
+                                    .setMessage(R.string.confirm_restore_message)
+                                    .setNegativeButton(R.string.dialog_btn_cancel, null)
+                                    .setPositiveButton(R.string.dialog_btn_ok, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            BluetoothTalk[] communications = new BluetoothTalk[1];
+                                            communications[0] = new BluetoothTalk() {
+                                                @Override
+                                                public void beforeSend() {
+                                                    this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("010660030001")));
+                                                }
+
+                                                @Override
+                                                public void afterSend() {
+
+                                                }
+
+                                                @Override
+                                                public void beforeReceive() {
+
+                                                }
+
+                                                @Override
+                                                public void afterReceive() {
+
+                                                }
+
+                                                @Override
+                                                public Object onParse() {
+                                                    return null;
+                                                }
+                                            };
+                                            if (BluetoothTool.getInstance(ConfigurationFragment.this.getActivity())
+                                                    .isConnected()) {
+                                                BluetoothTool.getInstance(ConfigurationFragment.this.getActivity())
+                                                        .setCommunications(communications)
+                                                        .send();
+                                            } else {
+                                                GlobalHandler.getInstance(getActivity())
+                                                        .sendMessage(GlobalHandler.NOT_CONNECTED);
                                             }
-
-                                            @Override
-                                            public void afterSend() {
-
-                                            }
-
-                                            @Override
-                                            public void beforeReceive() {
-
-                                            }
-
-                                            @Override
-                                            public void afterReceive() {
-
-                                            }
-
-                                            @Override
-                                            public Object onParse() {
-                                                return null;
-                                            }
-                                        };
-                                        if (BluetoothTool.getInstance(ConfigurationFragment.this.getActivity())
-                                                .isConnected()) {
-                                            BluetoothTool.getInstance(ConfigurationFragment.this.getActivity())
-                                                    .setCommunications(communications)
-                                                    .send();
-                                        } else {
-                                            Toast.makeText(ConfigurationFragment.this.getActivity(),
-                                                    R.string.not_connect_device_error,
-                                                    android.widget.Toast.LENGTH_SHORT)
-                                                    .show();
                                         }
-                                    }
-                                });
-                        builder.create().show();
+                                    });
+                            builder.create().show();
+                        }
+                        break;
                     }
-                    break;
                 }
             }
         });

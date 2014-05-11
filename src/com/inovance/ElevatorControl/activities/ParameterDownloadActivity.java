@@ -16,6 +16,7 @@ import com.bluetoothtool.BluetoothTool;
 import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.daos.ParameterGroupSettingsDao;
+import com.inovance.ElevatorControl.handlers.GlobalHandler;
 import com.inovance.ElevatorControl.models.ObjectListHolder;
 import com.inovance.ElevatorControl.models.ParameterGroupSettings;
 import com.inovance.ElevatorControl.models.ParameterSettings;
@@ -161,14 +162,14 @@ public class ParameterDownloadActivity extends Activity {
             downloadDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    BluetoothTool.getInstance(ParameterDownloadActivity.this)
+                            .setHandler(null);
                     downloadDialog.dismiss();
                 }
             });
         } else {
-            Toast.makeText(this,
-                    R.string.not_connect_device_error,
-                    android.widget.Toast.LENGTH_SHORT)
-                    .show();
+            GlobalHandler.getInstance(ParameterDownloadActivity.this)
+                    .sendMessage(GlobalHandler.NOT_CONNECTED);
         }
     }
 
@@ -288,13 +289,10 @@ public class ParameterDownloadActivity extends Activity {
                         .send();
                 if (confirmButton != null && cancelButton != null) {
                     confirmButton.setEnabled(false);
-                    cancelButton.setEnabled(false);
                 }
             } else {
-                Toast.makeText(this,
-                        R.string.not_connect_device_error,
-                        android.widget.Toast.LENGTH_SHORT)
-                        .show();
+                GlobalHandler.getInstance(ParameterDownloadActivity.this)
+                        .sendMessage(GlobalHandler.NOT_CONNECTED);
             }
         }
     }

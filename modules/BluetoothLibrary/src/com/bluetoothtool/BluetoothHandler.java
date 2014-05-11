@@ -74,7 +74,10 @@ public class BluetoothHandler extends Handler {
                 onDiscoveryFinished(msg);
                 break;
             case BluetoothState.onDisconnected:
-
+                onDisconnected(msg);
+                break;
+            case BluetoothState.onWillConnect:
+                onWillConnect(msg);
                 break;
         }
     }
@@ -259,6 +262,17 @@ public class BluetoothHandler extends Handler {
     public void onDisconnected(Message message) {
         if (DEBUG) {
             Log.v(TAG, "onDisconnected");
+        }
+    }
+
+    /**
+     * 将要进行设备连接
+     *
+     * @param message message
+     */
+    public void onWillConnect(Message message){
+        if (DEBUG) {
+            Log.v(TAG, "onWillConnect");
         }
     }
 }

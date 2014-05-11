@@ -10,11 +10,6 @@ import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.activities.TroubleAnalyzeActivity;
 import com.inovance.ElevatorControl.models.ErrorHelp;
 
-/**
- * 运行在CoreAcivity主线程,仅做一些ui操作
- *
- * @author jch
- */
 public class CurrentErrorHandler extends BluetoothHandler {
 
     private ErrorHelp errorHelp;
@@ -39,6 +34,7 @@ public class CurrentErrorHandler extends BluetoothHandler {
     public void onMultiTalkEnd(Message msg) {
         super.onMultiTalkEnd(msg);
         if (receiveCount == sendCount) {
+            ((TroubleAnalyzeActivity) activity).isGetCurrentTrouble = true;
             ViewPager pager = ((TroubleAnalyzeActivity) activity).pager;
             View loadView = pager.findViewById(R.id.load_view);
             View errorView = pager.findViewById(R.id.error_view);
@@ -74,8 +70,6 @@ public class CurrentErrorHandler extends BluetoothHandler {
                     noErrorView.setVisibility(View.VISIBLE);
                 }
             }
-        } else {
-            ((TroubleAnalyzeActivity) activity).loadCurrentTroubleView();
         }
     }
 
@@ -89,6 +83,6 @@ public class CurrentErrorHandler extends BluetoothHandler {
 
     @Override
     public void onTalkError(Message msg) {
-        ((TroubleAnalyzeActivity) activity).loadCurrentTroubleView();
+        super.onTalkError(msg);
     }
 }

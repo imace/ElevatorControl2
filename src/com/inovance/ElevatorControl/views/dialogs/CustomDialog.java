@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -27,6 +28,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -200,6 +202,12 @@ public class CustomDialog {
             ListView listView = (ListView) dialogView.findViewById(R.id.switch_list);
             List<ParameterStatusItem> itemList = new ArrayList<ParameterStatusItem>();
             boolean[] booleanArray = SerialUtility.byte2BoolArr(settings.getReceived()[4], settings.getReceived()[5]);
+            boolean[] newBooleanArray = new boolean[booleanArray.length];
+            int booleanArrayLength = booleanArray.length;
+            for (int i = booleanArrayLength - 1; i >= 0; i--) {
+                newBooleanArray[booleanArrayLength - i - 1] = booleanArray[i];
+            }
+            booleanArray = newBooleanArray;
             try {
                 JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
                 int size = jsonArray.length();

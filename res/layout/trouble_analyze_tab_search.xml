@@ -26,15 +26,16 @@
     </LinearLayout>
     <!-- 搜索结果 -->
     <LinearLayout
-            android:padding="8dp"
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginLeft="@dimen/card_view_margin"
-            android:layout_marginRight="@dimen/card_view_margin"
-            android:layout_marginBottom="@dimen/card_view_margin"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
             android:background="@drawable/card_view_background">
         <ScrollView
+                android:padding="8dp"
+                android:clipToPadding="false"
                 android:scrollbarStyle="outsideOverlay"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
@@ -55,16 +56,13 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/label_txt_error_code"
-                            android:layout_marginRight="5dp"
-                            android:textColor="#333333"
-                            android:textAppearance="?android:attr/textAppearanceMedium"/>
+                            android:textColor="#333333"/>
                     <org.holoeverywhere.widget.TextView
                             style="@style/Holo.TextAppearance.Light"
                             android:id="@+id/dictionary_error_help_display"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="#ff7f7f7f"
-                            android:textAppearance="?android:attr/textAppearanceMedium"/>
+                            android:textColor="#ff7f7f7f"/>
                 </LinearLayout>
                 <!-- 故障名称 -->
                 <LinearLayout
@@ -77,16 +75,13 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/label_txt_error_name"
-                            android:layout_marginRight="5dp"
-                            android:textColor="#333333"
-                            android:textAppearance="?android:attr/textAppearanceMedium"/>
+                            android:textColor="#333333"/>
                     <org.holoeverywhere.widget.TextView
                             style="@style/Holo.TextAppearance.Light"
                             android:id="@+id/dictionary_error_help_name"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="#ff7f7f7f"
-                            android:textAppearance="?android:attr/textAppearanceMedium"/>
+                            android:textColor="#ff7f7f7f"/>
                 </LinearLayout>
                 <!-- 故障级别 -->
                 <LinearLayout
@@ -99,16 +94,13 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/label_txt_error_level"
-                            android:layout_marginRight="5dp"
-                            android:textColor="#333333"
-                            android:textAppearance="?android:attr/textAppearanceMedium"/>
+                            android:textColor="#333333"/>
                     <org.holoeverywhere.widget.TextView
                             style="@style/Holo.TextAppearance.Light"
                             android:id="@+id/dictionary_error_help_level"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="#ff7f7f7f"
-                            android:textAppearance="?android:attr/textAppearanceMedium"/>
+                            android:textColor="#ff7f7f7f"/>
                 </LinearLayout>
                 <!-- 故障原因 -->
                 <LinearLayout
@@ -121,16 +113,13 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/label_txt_error_reason"
-                            android:layout_marginRight="5dp"
-                            android:textColor="#333333"
-                            android:textAppearance="?android:attr/textAppearanceMedium"/>
+                            android:textColor="#333333"/>
                     <org.holoeverywhere.widget.TextView
                             style="@style/Holo.TextAppearance.Light"
                             android:id="@+id/dictionary_error_help_reason"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="#ff7f7f7f"
-                            android:textAppearance="?android:attr/textAppearanceMedium"/>
+                            android:textColor="#ff7f7f7f"/>
                 </LinearLayout>
                 <!-- 故障解决方案 -->
                 <LinearLayout
@@ -143,16 +132,13 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/label_txt_error_solution"
-                            android:layout_marginRight="5dp"
-                            android:textColor="#333333"
-                            android:textAppearance="?android:attr/textAppearanceMedium"/>
+                            android:textColor="#333333"/>
                     <org.holoeverywhere.widget.TextView
                             style="@style/Holo.TextAppearance.Light"
                             android:id="@+id/dictionary_error_help_solution"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="#ff7f7f7f"
-                            android:textAppearance="?android:attr/textAppearanceMedium"/>
+                            android:textColor="#ff7f7f7f"/>
                 </LinearLayout>
             </LinearLayout>
         </ScrollView>

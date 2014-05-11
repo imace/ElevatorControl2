@@ -22,6 +22,7 @@ import com.bluetoothtool.BluetoothTool;
 import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
+import com.inovance.ElevatorControl.handlers.GlobalHandler;
 import com.inovance.ElevatorControl.handlers.SearchBluetoothHandler;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
 import com.inovance.ElevatorControl.views.customspinner.NoDefaultSpinner;
@@ -33,12 +34,14 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * TabActivity 导航
  */
 
-public class NavigationTabActivity extends TabActivity {
+public class NavigationTabActivity extends TabActivity implements Runnable {
 
     private static final String TAG = NavigationTabActivity.class.getSimpleName();
 
@@ -73,6 +76,24 @@ public class NavigationTabActivity extends TabActivity {
     @InjectView(R.id.refresh_button_progress)
     ProgressBar refreshButtonProgress;
 
+    public ImageView troubleAnalyzeIcon;
+
+    private List<BluetoothDevice> tempDeviceList;
+
+    private String[] tempDevicesName;
+
+    private static final int SEARCH_DEVICE = 1;
+
+    private static final int CONNECT_DEVICE = 2;
+
+    private static final int GET_DEVICE_TYPE = 3;
+
+    private int currentTask;
+
+    private BluetoothDevice tempDevice;
+
+    private ExecutorService pool = Executors.newSingleThreadExecutor();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,7 +110,8 @@ public class NavigationTabActivity extends TabActivity {
                 if (running) {
                     if (!hasGetDeviceTypeAndNumber) {
                         if (BluetoothTool.getInstance(NavigationTabActivity.this).isConnected()) {
-                            NavigationTabActivity.this.getDeviceTypeAndNumber();
+                            currentTask = GET_DEVICE_TYPE;
+                            pool.execute(NavigationTabActivity.this);
                             getDeviceTypeAndNumberHandler.postDelayed(getDeviceTypeNumberTask, LOOP_TIME);
                         }
                     }
@@ -101,13 +123,14 @@ public class NavigationTabActivity extends TabActivity {
             @Override
             public void onClick(View view) {
                 showRefreshButtonProgress(true);
-                searchDeviceTipsView.setVisibility(View.GONE);
-                deviceListSpinner.setVisibility(View.VISIBLE);
-                BluetoothTool.getInstance(NavigationTabActivity.this)
-                        .setSearchHandler(searchBluetoothHandler)
-                        .search();
+                searchDeviceTipsView.setText(R.string.searching_device_text);
+                searchDeviceTipsView.setVisibility(View.VISIBLE);
+                deviceListSpinner.setVisibility(View.GONE);
+                currentTask = SEARCH_DEVICE;
+                pool.execute(NavigationTabActivity.this);
             }
         });
+        GlobalHandler.getInstance(NavigationTabActivity.this);
     }
 
     @Override
@@ -116,10 +139,6 @@ public class NavigationTabActivity extends TabActivity {
         if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivity(intent);
-        } else {
-            if (BluetoothTool.getInstance(NavigationTabActivity.this).isConnected()) {
-                startGetDeviceTypeAndNumberTask();
-            }
         }
     }
 
@@ -179,7 +198,11 @@ public class NavigationTabActivity extends TabActivity {
                 tabIndicator = (LinearLayout) LayoutInflater.from(this)
                         .inflate(R.layout.navigation_tab_indicator, getTabWidget(), false);
                 ((TextView) tabIndicator.findViewById(R.id.title)).setText(title);
-                ((ImageView) tabIndicator.findViewById(R.id.icon)).setImageResource(icons[index]);
+                ImageView tabIcon = ((ImageView) tabIndicator.findViewById(R.id.icon));
+                tabIcon.setImageResource(icons[index]);
+                if (index == 0) {
+                    troubleAnalyzeIcon = tabIcon;
+                }
                 TabHost.TabSpec tabSpec = tabHost.newTabSpec("tab" + title)
                         .setIndicator(tabIndicator)
                         .setContent(new Intent(this, classes[index]));
@@ -188,6 +211,13 @@ public class NavigationTabActivity extends TabActivity {
             }
         }
         tabHost.setCurrentTab(2);
+        tabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
+            @Override
+            public void onTabChanged(String s) {
+                BluetoothTool.getInstance(NavigationTabActivity.this)
+                        .setHandler(null);
+            }
+        });
     }
 
     /**
@@ -284,21 +314,18 @@ public class NavigationTabActivity extends TabActivity {
         List<String> concatenateName = new ArrayList<String>();
         concatenateName.addAll(specialDevicesName);
         concatenateName.addAll(normalDevicesName);
-        final List<BluetoothDevice> concatenateDevices = new ArrayList<BluetoothDevice>();
-        concatenateDevices.addAll(specialDevices);
-        concatenateDevices.addAll(normalDevices);
-        String[] devicesName = concatenateName.toArray(new String[concatenateName.size()]);
-        if (devicesName.length > 0) {
-            ArrayAdapter<String> adapter = new ArrayAdapter<String>(getBaseContext(),
-                    R.layout.custom_white_spinner_item, devicesName);
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            deviceListSpinner.setAdapter(adapter);
+        tempDeviceList = new ArrayList<BluetoothDevice>();
+        tempDeviceList.addAll(specialDevices);
+        tempDeviceList.addAll(normalDevices);
+        tempDevicesName = concatenateName.toArray(new String[concatenateName.size()]);
+        if (tempDevicesName.length > 0) {
+            setSpinnerDataSource();
             deviceListSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
-                    BluetoothDevice device = concatenateDevices.get(position);
-                    BluetoothTool.getInstance(NavigationTabActivity.this)
-                            .connectDevice(device);
+                    tempDevice = tempDeviceList.get(position);
+                    currentTask = CONNECT_DEVICE;
+                    pool.execute(NavigationTabActivity.this);
                 }
 
                 @Override
@@ -307,6 +334,18 @@ public class NavigationTabActivity extends TabActivity {
                 }
             });
         }
+    }
+
+    /**
+     * Set spinner data source
+     */
+    public void setSpinnerDataSource() {
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getBaseContext(),
+                R.layout.custom_white_spinner_item, tempDevicesName);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        deviceListSpinner.setAdapter(adapter);
+        searchDeviceTipsView.setVisibility(View.GONE);
+        deviceListSpinner.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -378,10 +417,31 @@ public class NavigationTabActivity extends TabActivity {
                     .setCommunications(getDeviceTypeAndNumberCommunications)
                     .send();
         } else {
-            Toast.makeText(this,
-                    R.string.not_connect_device_error,
-                    android.widget.Toast.LENGTH_SHORT)
-                    .show();
+            GlobalHandler.getInstance(NavigationTabActivity.this)
+                    .sendMessage(GlobalHandler.NOT_CONNECTED);
+        }
+    }
+
+    @Override
+    public void run() {
+        switch (currentTask) {
+            case SEARCH_DEVICE: {
+                BluetoothTool.getInstance(NavigationTabActivity.this)
+                        .setSearchHandler(searchBluetoothHandler)
+                        .search();
+            }
+            break;
+            case CONNECT_DEVICE: {
+                if (tempDevice != null) {
+                    BluetoothTool.getInstance(NavigationTabActivity.this)
+                            .connectDevice(tempDevice);
+                }
+            }
+            break;
+            case GET_DEVICE_TYPE: {
+                NavigationTabActivity.this.getDeviceTypeAndNumber();
+            }
+            break;
         }
     }
 
@@ -422,6 +482,8 @@ public class NavigationTabActivity extends TabActivity {
                                                 @Override
                                                 public void onClick(DialogInterface dialogInterface, int i) {
                                                     // 选定设备型号后开始同步参数
+                                                    BluetoothTool.getInstance(NavigationTabActivity.this)
+                                                            .setHasSelectDeviceType(true);
                                                     NavigationTabActivity.this.startHomeActivityStatusSyncTask();
                                                 }
                                             }).create();
@@ -437,6 +499,8 @@ public class NavigationTabActivity extends TabActivity {
                                                 @Override
                                                 public void onClick(DialogInterface dialogInterface, int i) {
                                                     // 选定设备型号后开始同步参数
+                                                    BluetoothTool.getInstance(NavigationTabActivity.this)
+                                                            .setHasSelectDeviceType(true);
                                                     NavigationTabActivity.this.startHomeActivityStatusSyncTask();
                                                 }
                                             })
@@ -452,6 +516,8 @@ public class NavigationTabActivity extends TabActivity {
                                                 @Override
                                                 public void onClick(DialogInterface dialogInterface, int i) {
                                                     // 选定设备型号后开始同步参数
+                                                    BluetoothTool.getInstance(NavigationTabActivity.this)
+                                                            .setHasSelectDeviceType(true);
                                                     NavigationTabActivity.this.startHomeActivityStatusSyncTask();
                                                 }
                                             })

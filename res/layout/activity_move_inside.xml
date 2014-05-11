@@ -7,14 +7,44 @@
               android:background="@color/main_background"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
-    <com.inovance.ElevatorControl.views.viewpager.VerticalViewPager
-            android:id="@+id/vertical_view_pager"
+    <RelativeLayout
             android:layout_weight="1"
-            android:scrollbars="none"
-            android:layout_margin="@dimen/card_view_margin"
-            android:background="@drawable/card_view_background"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"/>
+            android:layout_width="wrap_content"
+            android:layout_height="0dp">
+        <LinearLayout
+                android:id="@+id/load_view"
+                android:gravity="center"
+                android:background="@drawable/card_view_background"
+                android:layout_margin="@dimen/card_view_margin"
+                android:orientation="vertical"
+                android:layout_centerInParent="true"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+            <org.holoeverywhere.widget.ProgressBar
+                    style="@style/Holo.ProgressBar"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:layout_marginBottom="10dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            <org.holoeverywhere.widget.TextView
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    style="@style/Holo.TextAppearance.Light"
+                    android:text="@string/get_floor_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+        </LinearLayout>
+        <com.inovance.ElevatorControl.views.viewpager.VerticalViewPager
+                android:visibility="gone"
+                android:layout_centerInParent="true"
+                android:id="@+id/vertical_view_pager"
+                android:scrollbars="none"
+                android:layout_margin="@dimen/card_view_margin"
+                android:background="@drawable/card_view_background"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+    </RelativeLayout>
     <!-- 底部操作按钮 -->
     <LinearLayout
             android:gravity="center"

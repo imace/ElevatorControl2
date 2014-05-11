@@ -1,9 +1,12 @@
 package com.inovance.ElevatorControl.handlers;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
+import android.content.DialogInterface;
 import android.os.Message;
 import com.bluetoothtool.BluetoothHandler;
+import com.bluetoothtool.BluetoothTool;
 import com.bluetoothtool.DevicesHolder;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.activities.NavigationTabActivity;
@@ -95,13 +98,59 @@ public class SearchBluetoothHandler extends BluetoothHandler {
     public void onConnectFailed(Message msg) {
         super.onConnectFailed(msg);
         mNavigationTabActivity.showRefreshButtonProgress(false);
-        String errorMessage = (null == msg.obj) ? activity.getResources().getString(R.string.failed_connect)
-                : msg.obj.toString();
-        Toast.makeText(activity, errorMessage, Toast.LENGTH_SHORT).show();
+        mNavigationTabActivity.setSpinnerDataSource();
+        Toast.makeText(activity, R.string.failed_connect, Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * 搜索结束
+     *
+     * @param message message
+     */
+    @Override
     public void onDiscoveryFinished(Message message) {
         super.onDiscoveryFinished(message);
         mNavigationTabActivity.showRefreshButtonProgress(false);
+    }
+
+    /**
+     * 将要连接
+     *
+     * @param message message
+     */
+    @Override
+    public void onWillConnect(Message message) {
+        super.onWillConnect(message);
+        mNavigationTabActivity.showRefreshButtonProgress(false);
+    }
+
+    /**
+     * 设备断开连接
+     *
+     * @param message message
+     */
+    @Override
+    public void onDisconnected(Message message) {
+        super.onDisconnected(message);
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
+                .setTitle(R.string.connect_lost_title)
+                .setMessage(R.string.connect_lost_message)
+                .setNegativeButton(R.string.dialog_btn_cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        mNavigationTabActivity.setSpinnerDataSource();
+                    }
+                })
+                .setPositiveButton(R.string.retry_connect_device, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        BluetoothDevice currentDevice = BluetoothTool.getInstance(activity).connectedDevice;
+                        if (currentDevice != null) {
+                            BluetoothTool.getInstance(activity).connectDevice(currentDevice);
+                        }
+                    }
+                });
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 }

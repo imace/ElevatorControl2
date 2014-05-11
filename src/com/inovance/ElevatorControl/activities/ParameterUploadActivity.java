@@ -21,6 +21,7 @@ import com.bluetoothtool.BluetoothTool;
 import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
+import com.inovance.ElevatorControl.handlers.GlobalHandler;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.models.Profile;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
@@ -279,10 +280,8 @@ public class ParameterUploadActivity extends Activity {
                         .setCommunications(communicationsList.get(position))
                         .send();
             } else {
-                Toast.makeText(this,
-                        R.string.not_connect_device_error,
-                        android.widget.Toast.LENGTH_SHORT)
-                        .show();
+                GlobalHandler.getInstance(ParameterUploadActivity.this)
+                        .sendMessage(GlobalHandler.NOT_CONNECTED);
             }
         }
     }
@@ -304,15 +303,15 @@ public class ParameterUploadActivity extends Activity {
             // 错误列表
             String errorAndWarningMessage = "";
             for (ParameterSettings settings : errorList) {
-                String errorString = settings.getCode()
-                        + "参数"
+                String errorString = settings.getCodeText()
+                        + " "
                         + ApplicationConfig.ERROR_NAME_ARRAY[settings.getWriteErrorCode()];
                 errorAndWarningMessage += errorString + "\n";
             }
             // 无返回列表
             for (ParameterSettings settings : noRespondList) {
-                String warningString = settings.getCode()
-                        + "参数"
+                String warningString = settings.getCodeText()
+                        + " "
                         + ApplicationConfig.NO_RESPOND;
                 errorAndWarningMessage += warningString + "\n";
             }
@@ -393,10 +392,8 @@ public class ParameterUploadActivity extends Activity {
                                 });
                         builder.create().show();
                     } else {
-                        Toast.makeText(ParameterUploadActivity.this,
-                                R.string.not_connect_device_error,
-                                android.widget.Toast.LENGTH_SHORT)
-                                .show();
+                        GlobalHandler.getInstance(ParameterUploadActivity.this)
+                                .sendMessage(GlobalHandler.NOT_CONNECTED);
                     }
                 }
             });

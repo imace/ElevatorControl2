@@ -146,8 +146,10 @@ public class ParameterSettings implements Cloneable {
 
     @InstantText(viewId = R.id.code_text)
     public String getCodeText() {
-        if (getCode().length() == 4) {
-            return getCode().substring(0, 2) + "-" + getCode().substring(2, 4);
+        String codeText = getCode();
+        if (codeText.length() == 4) {
+            codeText = codeText.replace("D2", "FR");
+            return codeText.substring(0, 2) + "-" + codeText.substring(2, 4);
         }
         return "";
     }

@@ -147,7 +147,8 @@ public class FirmwareManageActivity extends Activity {
                     FileInputStream fileInputStream = new FileInputStream("/storage/emulated/0/Nice3000+_Mcbs.bin");
                     if (BluetoothTool.getInstance(FirmwareManageActivity.this).isConnected()) {
                         BurnHandler burnHandler = new BurnHandler();
-                        BluetoothSocket socket = BluetoothTool.getInstance(FirmwareManageActivity.this).bluetoothSocket;
+                        BluetoothSocket socket = BluetoothTool.getInstance(FirmwareManageActivity.this)
+                                .bluetoothSocket;
                         IProgram.getInstance().SetProgramPara(socket, fileInputStream, burnHandler);
                         IProgram.getInstance().GetBinFileInfo();
                         firmwareMetaTextView.setText(IProgram.getInstance().GetBinFileInfo());

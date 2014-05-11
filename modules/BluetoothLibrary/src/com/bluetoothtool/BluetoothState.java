@@ -101,4 +101,9 @@ public class BluetoothState {
      */
     public static final int onDisconnected = 15;
 
+    /**
+     * 将要进行连接
+     */
+    public static final int onWillConnect = 16;
+
 }

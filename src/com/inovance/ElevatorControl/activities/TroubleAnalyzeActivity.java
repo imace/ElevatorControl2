@@ -2,6 +2,7 @@ package com.inovance.ElevatorControl.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.view.ViewPager;
@@ -16,6 +17,7 @@ import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ErrorHelpDao;
 import com.inovance.ElevatorControl.daos.ParameterGroupSettingsDao;
 import com.inovance.ElevatorControl.handlers.CurrentErrorHandler;
+import com.inovance.ElevatorControl.handlers.GlobalHandler;
 import com.inovance.ElevatorControl.handlers.HistoryErrorHandler;
 import com.inovance.ElevatorControl.models.HistoryError;
 import com.inovance.ElevatorControl.models.ObjectListHolder;
@@ -29,13 +31,17 @@ import org.holoeverywhere.widget.Toast;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * 故障分析
  *
  * @author jch
  */
-public class TroubleAnalyzeActivity extends Activity {
+public class TroubleAnalyzeActivity extends Activity implements Runnable {
 
     private static final String TAG = TroubleAnalyzeActivity.class.getSimpleName();
     /**
@@ -59,6 +65,12 @@ public class TroubleAnalyzeActivity extends Activity {
 
     public int pageIndex;
 
+    public boolean isGetCurrentTrouble = false;
+
+    private Handler getCurrentTroubleHandler;
+
+    private ExecutorService pool = Executors.newSingleThreadExecutor();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,6 +79,7 @@ public class TroubleAnalyzeActivity extends Activity {
         pager.setAdapter(new TroubleAnalyzeAdapter(this));
         pager.setOffscreenPageLimit(3);
         indicator.setViewPager(pager);
+        currentGetCurrentTroubleCommunications();
         createGetFCGroupValueCommunications();
         currentErrorHandler = new CurrentErrorHandler(this);
         historyErrorHandler = new HistoryErrorHandler(this);
@@ -75,6 +88,7 @@ public class TroubleAnalyzeActivity extends Activity {
 
             @Override
             public void onPageScrollStateChanged(int arg0) {
+
             }
 
             @Override
@@ -84,23 +98,56 @@ public class TroubleAnalyzeActivity extends Activity {
             @Override
             public void onPageSelected(int index) {
                 pageIndex = index;
-                Runnable runnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        switch (pageIndex) {
-                            case 0:
-                                loadCurrentTroubleView();
-                                break;
-                            case 1:
-                                loadHistoryTroubleView();
-                                break;
-                        }
-                    }
-                };
-                Thread thread = new Thread(runnable);
-                thread.start();
+                switch (pageIndex) {
+                    case 0:
+                        loadCurrentTroubleView();
+                        break;
+                    case 1:
+                        loadHistoryTroubleView();
+                        break;
+                }
             }
         });
+        getCurrentTroubleHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                switch (msg.what) {
+                    case 1: {
+                        isGetCurrentTrouble = false;
+                        new CountDownTimer(2000, 500) {
+
+                            @Override
+                            public void onTick(long l) {
+                                if (!isGetCurrentTrouble) {
+                                    new Timer().schedule(new TimerTask() {
+                                        @Override
+                                        public void run() {
+                                            pool.execute(TroubleAnalyzeActivity.this);
+                                        }
+                                    }, 500);
+                                } else {
+                                    this.cancel();
+                                }
+                            }
+
+                            @Override
+                            public void onFinish() {
+                                if (!isGetCurrentTrouble) {
+                                    if (!BluetoothTool.getInstance(TroubleAnalyzeActivity.this)
+                                            .hasAlertNotConnectMessage()) {
+                                        GlobalHandler.getInstance(TroubleAnalyzeActivity.this)
+                                                .sendMessage(GlobalHandler.NOT_CONNECTED);
+                                        BluetoothTool.getInstance(TroubleAnalyzeActivity.this)
+                                                .setHasAlertNotConnectMessage(true);
+                                    }
+                                }
+                            }
+                        }.start();
+                    }
+                    break;
+                }
+            }
+        };
     }
 
     @Override
@@ -110,6 +157,13 @@ public class TroubleAnalyzeActivity extends Activity {
             pager.setCurrentItem(pageIndex);
         }
         reSyncData();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        BluetoothTool.getInstance(TroubleAnalyzeActivity.this)
+                .setHandler(null);
     }
 
     /**
@@ -139,6 +193,44 @@ public class TroubleAnalyzeActivity extends Activity {
      */
     public void viewCurrentSystemStatus() {
         startActivity(new Intent(this, ViewErrorStatusActivity.class));
+    }
+
+    private void currentGetCurrentTroubleCommunications() {
+        if (currentCommunications == null) {
+            currentCommunications = new BluetoothTalk[]{
+                    new BluetoothTalk() {
+
+                        @Override
+                        public void beforeSend() {
+                            this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("010380000001")));
+                        }
+
+                        @Override
+                        public void afterSend() {
+
+                        }
+
+                        @Override
+                        public void beforeReceive() {
+
+                        }
+
+                        @Override
+                        public void afterReceive() {
+                        }
+
+                        @Override
+                        public Object onParse() {
+                            if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                                byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
+                                String errorCode = ParseSerialsUtils.getErrorCode(received);
+                                return ErrorHelpDao.findByDisplay(TroubleAnalyzeActivity.this, errorCode);
+                            }
+                            return null;
+                        }
+                    }
+            };
+        }
     }
 
     public void createGetFCGroupValueCommunications() {
@@ -212,49 +304,10 @@ public class TroubleAnalyzeActivity extends Activity {
      * 当前故障
      */
     public void loadCurrentTroubleView() {
-        if (currentCommunications == null) {
-            currentCommunications = new BluetoothTalk[]{
-                    new BluetoothTalk() {
-
-                        @Override
-                        public void beforeSend() {
-                            this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("010380000001")));
-                        }
-
-                        @Override
-                        public void afterSend() {
-
-                        }
-
-                        @Override
-                        public void beforeReceive() {
-                        }
-
-                        @Override
-                        public void afterReceive() {
-                        }
-
-                        @Override
-                        public Object onParse() {
-                            if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
-                                byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
-                                String errorCode = ParseSerialsUtils.getErrorCode(received);
-                                return ErrorHelpDao.findByDisplay(TroubleAnalyzeActivity.this, errorCode);
-                            }
-                            return null;
-                        }
-                    }
-            };
-        }
         if (BluetoothTool.getInstance(this).isConnected()) {
-            if (((NavigationTabActivity) getParent()).hasGetDeviceTypeAndNumber) {
-                handler.sendEmptyMessage(3);
-                currentErrorHandler.sendCount = currentCommunications.length;
-                BluetoothTool.getInstance(this)
-                        .setHandler(currentErrorHandler)
-                        .setCommunications(currentCommunications)
-                        .send();
-            }
+            handler.sendEmptyMessage(3);
+            getCurrentTroubleHandler.sendEmptyMessage(1);
+
         } else {
             handler.sendEmptyMessage(1);
         }
@@ -265,13 +318,13 @@ public class TroubleAnalyzeActivity extends Activity {
      */
     public void loadHistoryTroubleView() {
         if (BluetoothTool.getInstance(this).isConnected()) {
-            if (historyCommunications != null && historyCommunications.length > 0) {
-                fcGroupHandler.sendCount = historyCommunications.length;
-                BluetoothTool.getInstance(TroubleAnalyzeActivity.this)
-                        .setHandler(fcGroupHandler)
-                        .setCommunications(historyCommunications)
-                        .send();
-            }
+            handler.sendEmptyMessage(4);
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    pool.execute(TroubleAnalyzeActivity.this);
+                }
+            }, 500);
         } else {
             handler.sendEmptyMessage(2);
         }
@@ -338,6 +391,32 @@ public class TroubleAnalyzeActivity extends Activity {
         }
 
     };
+
+    @Override
+    public void run() {
+        switch (pageIndex) {
+            case 0: {
+                if (((NavigationTabActivity) getParent()).hasGetDeviceTypeAndNumber) {
+                    currentErrorHandler.sendCount = currentCommunications.length;
+                    BluetoothTool.getInstance(TroubleAnalyzeActivity.this)
+                            .setHandler(currentErrorHandler)
+                            .setCommunications(currentCommunications)
+                            .send();
+                }
+            }
+            break;
+            case 1: {
+                if (historyCommunications != null && historyCommunications.length > 0) {
+                    fcGroupHandler.sendCount = historyCommunications.length;
+                    BluetoothTool.getInstance(TroubleAnalyzeActivity.this)
+                            .setHandler(fcGroupHandler)
+                            .setCommunications(historyCommunications)
+                            .send();
+                }
+            }
+            break;
+        }
+    }
 
     // ================================== FC Group Handler ========================= //
     private class FCGroupHandler extends BluetoothHandler {

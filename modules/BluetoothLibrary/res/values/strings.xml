@@ -5,5 +5,12 @@
     <string name="cancel_bond">取消配对!</string>
     <string name="failed_connect">连接失败,蓝牙通讯异常!</string>
     <string name="success_connect">与蓝牙设备连接成功!</string>
-    <string name="connect_lost_text">蓝牙设备连接断开</string>
+    <string name="connect_lost_title">设备连接断开</string>
+    <string name="connect_lost_message">设备连接已断开，请重新连接。</string>
+
+    <integer-array name="array_ports">
+        <item>3</item>
+        <item>2</item>
+        <item>1</item>
+    </integer-array>
 </resources>

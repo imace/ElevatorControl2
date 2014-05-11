@@ -12,13 +12,13 @@ import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ParameterSettingsDao;
+import com.inovance.ElevatorControl.handlers.GlobalHandler;
 import com.inovance.ElevatorControl.models.ObjectListHolder;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
 import com.mobsandgeeks.adapters.InstantAdapter;
 import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.widget.ListView;
-import org.holoeverywhere.widget.Toast;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -36,6 +36,7 @@ public class ViewErrorStatusActivity extends Activity {
     ListView listView;
 
     private static final String[] filters = new String[]{
+            "最后一次故障",
             "最后一次子码",
             "最后一次月日",
             "最后一次时间",
@@ -165,10 +166,8 @@ public class ViewErrorStatusActivity extends Activity {
                         .setCommunications(communications)
                         .send();
             } else {
-                Toast.makeText(this,
-                        R.string.not_connect_device_error,
-                        android.widget.Toast.LENGTH_SHORT)
-                        .show();
+                GlobalHandler.getInstance(ViewErrorStatusActivity.this)
+                        .sendMessage(GlobalHandler.NOT_CONNECTED);
             }
         }
     }
@@ -199,11 +198,11 @@ public class ViewErrorStatusActivity extends Activity {
             super.onMultiTalkEnd(msg);
             if (receiveCount == sendCount) {
                 for (ParameterSettings item : tempList) {
-                    if (item.getName().equalsIgnoreCase(filters[1])) {
+                    if (item.getName().equalsIgnoreCase(filters[2])) {
                         int intValue = ParseSerialsUtils.getIntFromBytes(item.getReceived());
                         item.setFinalValue(intValue / 100 + "月" + intValue % 100 + "日");
                     }
-                    if (item.getName().equalsIgnoreCase(filters[2])) {
+                    if (item.getName().equalsIgnoreCase(filters[3])) {
                         int intValue = ParseSerialsUtils.getIntFromBytes(item.getReceived());
                         item.setFinalValue(intValue / 100 + ":" + intValue % 100);
                     }

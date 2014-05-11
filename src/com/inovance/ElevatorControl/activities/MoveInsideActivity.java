@@ -5,6 +5,7 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
 import android.view.MenuItem;
+import android.view.View;
 import butterknife.InjectView;
 import butterknife.OnClick;
 import butterknife.Views;
@@ -17,6 +18,7 @@ import com.inovance.ElevatorControl.adapters.MoveSidePagerAdapter;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ParameterSettingsDao;
 import com.inovance.ElevatorControl.daos.RealTimeMonitorDao;
+import com.inovance.ElevatorControl.handlers.GlobalHandler;
 import com.inovance.ElevatorControl.models.ObjectListHolder;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.models.RealTimeMonitor;
@@ -24,7 +26,9 @@ import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
 import com.inovance.ElevatorControl.views.TypefaceTextView;
 import com.inovance.ElevatorControl.views.viewpager.VerticalViewPager;
 import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.widget.Toast;
+import org.holoeverywhere.widget.ImageButton;
+import org.holoeverywhere.widget.LinearLayout;
+import org.holoeverywhere.widget.ProgressBar;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -51,6 +55,15 @@ public class MoveInsideActivity extends Activity implements Runnable {
 
     @InjectView(R.id.current_floor)
     TypefaceTextView currentFloorTextView;
+
+    @InjectView(R.id.open_door_button)
+    ImageButton openDoorButton;
+
+    @InjectView(R.id.close_door_button)
+    ImageButton closeDoorButton;
+
+    @InjectView(R.id.load_view)
+    LinearLayout loadView;
 
     private MoveInsideHandler mMoveInsideHandler;
 
@@ -129,6 +142,8 @@ public class MoveInsideActivity extends Activity implements Runnable {
                 }
             }
         };
+        openDoorButton.setEnabled(false);
+        closeDoorButton.setEnabled(false);
     }
 
     private void createGetMoveInsideInfoCommunications() {
@@ -246,7 +261,8 @@ public class MoveInsideActivity extends Activity implements Runnable {
                             .setCommunications(getMoveInsideInfoCommunications)
                             .send();
                 } else {
-                    errorHandler.sendEmptyMessage(0);
+                    GlobalHandler.getInstance(MoveInsideActivity.this)
+                            .sendMessage(GlobalHandler.NOT_CONNECTED);
                 }
             }
         }
@@ -259,10 +275,8 @@ public class MoveInsideActivity extends Activity implements Runnable {
             running = true;
             syncHandler.postDelayed(syncTask, SYNC_TIME);
         } else {
-            Toast.makeText(this,
-                    R.string.not_connect_device_error,
-                    android.widget.Toast.LENGTH_SHORT)
-                    .show();
+            GlobalHandler.getInstance(MoveInsideActivity.this)
+                    .sendMessage(GlobalHandler.NOT_CONNECTED);
         }
     }
 
@@ -287,6 +301,8 @@ public class MoveInsideActivity extends Activity implements Runnable {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
+                BluetoothTool.getInstance(MoveInsideActivity.this)
+                        .setHandler(null);
                 setResult(RESULT_OK);
                 finish();
                 return true;
@@ -374,10 +390,8 @@ public class MoveInsideActivity extends Activity implements Runnable {
                     .setCommunications(communications)
                     .send();
         } else {
-            Toast.makeText(this,
-                    R.string.not_connect_device_error,
-                    android.widget.Toast.LENGTH_SHORT)
-                    .show();
+            GlobalHandler.getInstance(MoveInsideActivity.this)
+                    .sendMessage(GlobalHandler.NOT_CONNECTED);
         }
     }
 
@@ -417,10 +431,8 @@ public class MoveInsideActivity extends Activity implements Runnable {
                     .setCommunications(communications)
                     .send();
         } else {
-            Toast.makeText(this,
-                    R.string.not_connect_device_error,
-                    android.widget.Toast.LENGTH_SHORT)
-                    .show();
+            GlobalHandler.getInstance(MoveInsideActivity.this)
+                    .sendMessage(GlobalHandler.NOT_CONNECTED);
         }
     }
 
@@ -472,10 +484,8 @@ public class MoveInsideActivity extends Activity implements Runnable {
                     .setCommunications(communications)
                     .send();
         } else {
-            Toast.makeText(this,
-                    R.string.not_connect_device_error,
-                    android.widget.Toast.LENGTH_SHORT)
-                    .show();
+            GlobalHandler.getInstance(MoveInsideActivity.this)
+                    .sendMessage(GlobalHandler.NOT_CONNECTED);
         }
     }
 
@@ -525,28 +535,11 @@ public class MoveInsideActivity extends Activity implements Runnable {
                         .setCommunications(communications)
                         .send();
             } else {
-                errorHandler.sendEmptyMessage(0);
+                GlobalHandler.getInstance(MoveInsideActivity.this)
+                        .sendMessage(GlobalHandler.NOT_CONNECTED);
             }
         }
     }
-
-    private Handler errorHandler = new Handler() {
-
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case 0: {
-                    Toast.makeText(MoveInsideActivity.this,
-                            R.string.not_connect_device_error,
-                            android.widget.Toast.LENGTH_SHORT)
-                            .show();
-                }
-                break;
-            }
-            super.handleMessage(msg);
-        }
-
-    };
 
     @Override
     public void run() {
@@ -605,9 +598,8 @@ public class MoveInsideActivity extends Activity implements Runnable {
 
                                 public void onFinish() {
                                     if (!MoveInsideActivity.this.isWriteSuccessful) {
-                                        Toast.makeText(MoveInsideActivity.this,
-                                                R.string.write_failed_text,
-                                                android.widget.Toast.LENGTH_SHORT).show();
+                                        GlobalHandler.getInstance(MoveInsideActivity.this)
+                                                .sendMessage(GlobalHandler.WRITE_DATA_FAILED);
                                     }
                                     MoveInsideActivity.this.isWritingData = false;
                                 }
@@ -617,6 +609,8 @@ public class MoveInsideActivity extends Activity implements Runnable {
                     MoveInsideActivity.this.viewPager.setAdapter(moveSidePagerAdapter);
                     MoveInsideActivity.this.createGetMoveInsideInfoCommunications();
                     MoveInsideActivity.this.hasGetFloors = true;
+                    MoveInsideActivity.this.loadView.setVisibility(View.GONE);
+                    MoveInsideActivity.this.viewPager.setVisibility(View.VISIBLE);
                 }
             }
         }

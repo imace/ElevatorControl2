@@ -3,20 +3,20 @@ package com.inovance.ElevatorControl.activities;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.bluetoothtool.BluetoothHandler;
-import com.bluetoothtool.BluetoothTool;
 import com.bluetoothtool.BluetoothTalk;
+import com.bluetoothtool.BluetoothTool;
 import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.adapters.ShortcutListViewAdapter;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.RealTimeMonitorDao;
 import com.inovance.ElevatorControl.daos.ShortcutDao;
+import com.inovance.ElevatorControl.handlers.GlobalHandler;
 import com.inovance.ElevatorControl.models.RealTimeMonitor;
 import com.inovance.ElevatorControl.models.Shortcut;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
@@ -24,19 +24,16 @@ import com.inovance.ElevatorControl.views.DoorAnimationView;
 import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.widget.ListView;
 import org.holoeverywhere.widget.TextView;
-import org.holoeverywhere.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
-public class HomeActivity extends Activity implements Runnable{
+public class HomeActivity extends Activity implements Runnable {
 
     private static final String TAG = HomeActivity.class.getSimpleName();
 
@@ -78,6 +75,12 @@ public class HomeActivity extends Activity implements Runnable{
 
     private List<Shortcut> shortcutList;
 
+    private Runnable textBlinkTask;
+
+    private Handler blinkHandler = new Handler();
+
+    private boolean isErrorStatus = false;
+
     private ExecutorService pool = Executors.newSingleThreadExecutor();
 
     /**
@@ -100,6 +103,24 @@ public class HomeActivity extends Activity implements Runnable{
                         pool.execute(HomeActivity.this);
                         handler.postDelayed(this, SYNC_TIME);
                     }
+                }
+            }
+        };
+        textBlinkTask = new Runnable() {
+            @Override
+            public void run() {
+                if (running) {
+                    if (isErrorStatus) {
+                        float alpha = HomeActivity.this.errorStatusTextView.getAlpha();
+                        if (alpha == 0.0f) {
+                            HomeActivity.this.errorStatusTextView.setAlpha(1.0f);
+                        } else {
+                            HomeActivity.this.errorStatusTextView.setAlpha(0.0f);
+                        }
+                    } else {
+                        HomeActivity.this.errorStatusTextView.setAlpha(1.0f);
+                    }
+                    blinkHandler.postDelayed(textBlinkTask, 500);
                 }
             }
         };
@@ -182,14 +203,21 @@ public class HomeActivity extends Activity implements Runnable{
         super.onResume();
         setListViewDataSource();
         if (BluetoothTool.getInstance(HomeActivity.this).isConnected()) {
+            BluetoothTool.getInstance(HomeActivity.this).setHandler(null);
             if (((NavigationTabActivity) getParent()).hasGetDeviceTypeAndNumber) {
-                reSyncData();
+                new Timer().schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        reSyncData();
+                    }
+                }, 500);
             }
         } else {
-            Toast.makeText(this,
-                    R.string.not_connect_device_error,
-                    android.widget.Toast.LENGTH_SHORT)
-                    .show();
+            if (!BluetoothTool.getInstance(HomeActivity.this).hasAlertNotConnectMessage()) {
+                GlobalHandler.getInstance(HomeActivity.this)
+                        .sendMessage(GlobalHandler.NOT_CONNECTED);
+                BluetoothTool.getInstance(HomeActivity.this).setHasAlertNotConnectMessage(true);
+            }
         }
     }
 
@@ -200,6 +228,7 @@ public class HomeActivity extends Activity implements Runnable{
     }
 
     public void reSyncData() {
+        blinkHandler.postDelayed(textBlinkTask, 500);
         loopSyncElevatorStatusTask();
     }
 
@@ -222,10 +251,8 @@ public class HomeActivity extends Activity implements Runnable{
                     .setCommunications(communications)
                     .send();
         } else {
-            Toast.makeText(this,
-                    R.string.not_connect_device_error,
-                    android.widget.Toast.LENGTH_SHORT)
-                    .show();
+            GlobalHandler.getInstance(HomeActivity.this)
+                    .sendMessage(GlobalHandler.NOT_CONNECTED);
         }
     }
 
@@ -281,12 +308,21 @@ public class HomeActivity extends Activity implements Runnable{
                     }
                     if (monitor.getName().equalsIgnoreCase(ApplicationConfig.ERROR_CODE_NAME)) {
                         String errorCode = ParseSerialsUtils.getErrorCode(monitor.getReceived());
+                        NavigationTabActivity tabActivity = (NavigationTabActivity) HomeActivity.this.getParent();
                         if (errorCode.equalsIgnoreCase("E00")) {
+                            isErrorStatus = false;
                             HomeActivity.this.errorStatusTextView.setTextColor(0xff989898);
                             HomeActivity.this.errorStatusTextView.setText(R.string.home_no_error_text);
+                            if (tabActivity != null && tabActivity.troubleAnalyzeIcon != null) {
+                                tabActivity.troubleAnalyzeIcon.setImageResource(R.drawable.tab_trouble_analyze);
+                            }
                         } else {
+                            isErrorStatus = true;
                             HomeActivity.this.errorStatusTextView.setTextColor(0xffff594b);
                             HomeActivity.this.errorStatusTextView.setText(errorCode);
+                            if (tabActivity != null && tabActivity.troubleAnalyzeIcon != null) {
+                                tabActivity.troubleAnalyzeIcon.setImageResource(R.drawable.tab_trouble_analyze_error);
+                            }
                         }
                     }
                     if (monitor.getName().equalsIgnoreCase(ApplicationConfig.STATUS_WORD_NAME)) {
@@ -343,8 +379,7 @@ public class HomeActivity extends Activity implements Runnable{
                                     .setText(HomeActivity.this.elevatorBoxStatus[elevatorBoxStatusCode]);
                             if (elevatorBoxStatusCode == 1 || elevatorBoxStatusCode == 2) {
                                 HomeActivity.this.doorAnimationView.openDoor();
-                            }
-                            if (elevatorBoxStatusCode == 3 || elevatorBoxStatusCode == 4) {
+                            } else {
                                 HomeActivity.this.doorAnimationView.closeDoor();
                             }
                         }

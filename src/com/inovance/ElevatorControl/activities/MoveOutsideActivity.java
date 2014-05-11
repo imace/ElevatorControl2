@@ -18,6 +18,7 @@ import com.inovance.ElevatorControl.adapters.MoveSidePagerAdapter;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ParameterSettingsDao;
 import com.inovance.ElevatorControl.daos.RealTimeMonitorDao;
+import com.inovance.ElevatorControl.handlers.GlobalHandler;
 import com.inovance.ElevatorControl.models.ObjectListHolder;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.models.RealTimeMonitor;
@@ -26,7 +27,7 @@ import com.inovance.ElevatorControl.views.TypefaceTextView;
 import com.inovance.ElevatorControl.views.viewpager.VerticalViewPager;
 import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.widget.ImageButton;
-import org.holoeverywhere.widget.Toast;
+import org.holoeverywhere.widget.LinearLayout;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -55,6 +56,9 @@ public class MoveOutsideActivity extends Activity implements Runnable {
 
     @InjectView(R.id.down_button)
     ImageButton downButton;
+
+    @InjectView(R.id.load_view)
+    LinearLayout loadView;
 
     private static final String codeType = "64";
 
@@ -153,10 +157,8 @@ public class MoveOutsideActivity extends Activity implements Runnable {
             running = true;
             syncHandler.postDelayed(syncTask, SYNC_TIME);
         } else {
-            Toast.makeText(this,
-                    R.string.not_connect_device_error,
-                    android.widget.Toast.LENGTH_SHORT)
-                    .show();
+            GlobalHandler.getInstance(MoveOutsideActivity.this)
+                    .sendMessage(GlobalHandler.NOT_CONNECTED);
         }
     }
 
@@ -332,6 +334,8 @@ public class MoveOutsideActivity extends Activity implements Runnable {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
+                BluetoothTool.getInstance(MoveOutsideActivity.this)
+                        .setHandler(null);
                 setResult(RESULT_OK);
                 finish();
                 return true;
@@ -355,9 +359,8 @@ public class MoveOutsideActivity extends Activity implements Runnable {
 
             public void onFinish() {
                 if (!MoveOutsideActivity.this.isWriteSuccessful) {
-                    Toast.makeText(MoveOutsideActivity.this,
-                            R.string.write_failed_text,
-                            android.widget.Toast.LENGTH_SHORT).show();
+                    GlobalHandler.getInstance(MoveOutsideActivity.this)
+                            .sendMessage(GlobalHandler.WRITE_DATA_FAILED);
                 }
                 MoveOutsideActivity.this.isWritingData = false;
             }
@@ -380,9 +383,8 @@ public class MoveOutsideActivity extends Activity implements Runnable {
 
             public void onFinish() {
                 if (!MoveOutsideActivity.this.isWriteSuccessful) {
-                    Toast.makeText(MoveOutsideActivity.this,
-                            R.string.write_failed_text,
-                            android.widget.Toast.LENGTH_SHORT).show();
+                    GlobalHandler.getInstance(MoveOutsideActivity.this)
+                            .sendMessage(GlobalHandler.WRITE_DATA_FAILED);
                 }
                 MoveOutsideActivity.this.isWritingData = false;
             }
@@ -495,10 +497,8 @@ public class MoveOutsideActivity extends Activity implements Runnable {
                     .setCommunications(communications)
                     .send();
         } else {
-            Toast.makeText(this,
-                    R.string.not_connect_device_error,
-                    android.widget.Toast.LENGTH_SHORT)
-                    .show();
+            GlobalHandler.getInstance(MoveOutsideActivity.this)
+                    .sendMessage(GlobalHandler.NOT_CONNECTED);
         }
     }
 
@@ -550,10 +550,8 @@ public class MoveOutsideActivity extends Activity implements Runnable {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case 0: {
-                    Toast.makeText(MoveOutsideActivity.this,
-                            R.string.not_connect_device_error,
-                            android.widget.Toast.LENGTH_SHORT)
-                            .show();
+                    GlobalHandler.getInstance(MoveOutsideActivity.this)
+                            .sendMessage(GlobalHandler.NOT_CONNECTED);
                 }
                 break;
             }
@@ -664,6 +662,8 @@ public class MoveOutsideActivity extends Activity implements Runnable {
                     MoveOutsideActivity.this.viewPager.setAdapter(moveSidePagerAdapter);
                     MoveOutsideActivity.this.createGetMoveOutsideInfoCommunications();
                     MoveOutsideActivity.this.hasGetFloors = true;
+                    MoveOutsideActivity.this.loadView.setVisibility(View.GONE);
+                    MoveOutsideActivity.this.viewPager.setVisibility(View.VISIBLE);
                 }
             }
         }

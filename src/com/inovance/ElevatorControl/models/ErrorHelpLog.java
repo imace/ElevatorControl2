@@ -31,21 +31,6 @@ public class ErrorHelpLog {
         return format1.format(errorTime);
     }
 
-    public ErrorHelp getErrorHelp() {
-        return ErrorHelpLogDao.findErrorHelp(ctx, errorHelpId);
-    }
-
-    /**
-     * @param eh
-     * @return
-     */
-    public static ErrorHelpLog Instance(ErrorHelp eh) {
-        ErrorHelpLog errorHelpLog = new ErrorHelpLog();
-        errorHelpLog.errorTime = new Date();
-        errorHelpLog.errorHelpId = eh.getId();
-        return errorHelpLog;
-    }
-
     public Date getErrorTime() {
         return errorTime;
     }

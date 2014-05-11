@@ -31,21 +31,6 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content">
             <!-- ///////////////////////////// 状态信息 - 文本 //////////////////////////// -->
-            <LinearLayout
-                    android:gravity="center"
-                    android:layout_marginBottom="5dp"
-                    android:orientation="vertical"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-                <org.holoeverywhere.widget.TextView
-                        style="@style/Holo.TextAppearance.Medium"
-                        android:textColor="#005387"
-                        android:gravity="center"
-                        android:layout_gravity="center"
-                        android:text="@string/elevator_status_text"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
-            </LinearLayout>
             <!-- 运行速度 -->
             <LinearLayout
                     android:gravity="center"
@@ -53,10 +38,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                 <org.holoeverywhere.widget.TextView
-                        style="@style/Holo.TextAppearance"
+                        style="@style/Holo.TextAppearance.Medium.Light"
+                        android:textSize="18sp"
                         android:gravity="center"
                         android:layout_gravity="center"
-                        android:textColor="#515151"
+                        android:textColor="#ff00639a"
                         android:text="@string/running_speed_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
@@ -76,8 +62,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                 <org.holoeverywhere.widget.TextView
-                        style="@style/Holo.TextAppearance"
-                        android:textColor="#515151"
+                        style="@style/Holo.TextAppearance.Medium.Light"
+                        android:textColor="#ff00639a"
+                        android:textSize="18sp"
                         android:gravity="center"
                         android:layout_gravity="center"
                         android:text="@string/system_status_text"
@@ -99,8 +86,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                 <org.holoeverywhere.widget.TextView
-                        style="@style/Holo.TextAppearance"
-                        android:textColor="#515151"
+                        style="@style/Holo.TextAppearance.Medium.Light"
+                        android:textColor="#ff00639a"
+                        android:textSize="18sp"
                         android:gravity="center"
                         android:layout_gravity="center"
                         android:text="@string/lock_elevator_status_text"
@@ -124,8 +112,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                 <org.holoeverywhere.widget.TextView
-                        style="@style/Holo.TextAppearance"
-                        android:textColor="#515151"
+                        style="@style/Holo.TextAppearance.Medium.Light"
+                        android:textColor="#ff00639a"
+                        android:textSize="18sp"
                         android:gravity="center"
                         android:layout_gravity="center"
                         android:text="@string/error_code_text"

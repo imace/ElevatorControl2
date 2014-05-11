@@ -11,11 +11,9 @@ import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.widget.Toast;
 import com.kio.bluetooth.R;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -46,7 +44,7 @@ public class BluetoothTool implements Runnable {
 
     private BroadcastReceiver broadcastReceiver;
 
-    private ExecutorService pool = Executors.newFixedThreadPool(3);
+    private ExecutorService pool = Executors.newFixedThreadPool(4);
 
     private List<BluetoothDevice> foundedDeviceList;
 
@@ -66,9 +64,19 @@ public class BluetoothTool implements Runnable {
 
     public BluetoothDevice connectedDevice;
 
-    private InputStream bluetoothInputStream;
+    private boolean hasAlertNotConnectMessage;
 
-    private BluetoothDevice willConnectDevice;
+    private static final UUID UUID_OTHER_DEVICE = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+    public boolean hasAlertNotConnectMessage() {
+        return hasAlertNotConnectMessage;
+    }
+
+    public void setHasAlertNotConnectMessage(boolean hasAlertNotConnectMessage) {
+        this.hasAlertNotConnectMessage = hasAlertNotConnectMessage;
+    }
+
+    private boolean hasSelectDeviceType = false;
 
     /**
      * 当前蓝牙状态
@@ -153,7 +161,6 @@ public class BluetoothTool implements Runnable {
                     bluetoothSocket = null;
                 }
             }
-            bluetoothInputStream = null;
             bluetoothSocket = null;
         }
         currentState = BluetoothState.DISCONNECTED;
@@ -201,13 +208,13 @@ public class BluetoothTool implements Runnable {
                 if (abortTalking) {
                     break;
                 }
-                if (bluetoothInputStream == null) {
+                if (bluetoothSocket.getInputStream() == null) {
                     break;
                 }
-                int length = bluetoothInputStream.available();
+                int length = bluetoothSocket.getInputStream().available();
                 if (length >= 8) {
                     byte[] readBuffer = new byte[length];
-                    bluetoothInputStream.read(readBuffer);
+                    bluetoothSocket.getInputStream().read(readBuffer);
                     communication.setReceivedBuffer(readBuffer);
                     communication.afterReceive();
                     Message mg = new Message();
@@ -234,7 +241,9 @@ public class BluetoothTool implements Runnable {
      */
     public void connectDevice(BluetoothDevice device) {
         stopDiscovery();
-        willConnectDevice = device;
+        if (searchHandler != null) {
+            searchHandler.sendEmptyMessage(BluetoothState.onWillConnect);
+        }
         boolean exist = false;
         if (bluetoothAdapter == null) {
             bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -257,6 +266,47 @@ public class BluetoothTool implements Runnable {
                 if (searchHandler != null) {
                     searchHandler.sendMessage(errorMessage);
                 }
+            }
+        }
+    }
+
+    /**
+     * 尝试建立连接
+     *
+     * @param device BluetoothDevice
+     */
+    private void buildConnection(BluetoothDevice device) {
+        socketClose();
+        currentState = BluetoothState.CONNECTING;
+        BluetoothSocket tempSocket = null;
+        try {
+            tempSocket = device.createRfcommSocketToServiceRecord(UUID_OTHER_DEVICE);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (tempSocket != null) {
+            bluetoothSocket = tempSocket;
+            try {
+                bluetoothSocket.connect();
+            } catch (IOException e) {
+                try {
+                    bluetoothSocket.close();
+                    currentState = BluetoothState.CONNECT_FAILED;
+                    if (searchHandler != null)
+                        searchHandler.sendEmptyMessage(BluetoothState.onConnectFailed);
+                } catch (IOException e1) {
+                    Log.v(TAG, "Connect Failed.");
+                }
+            }
+            if (bluetoothSocket.isConnected()) {
+                currentState = BluetoothState.CONNECTED;
+                connectedDevice = device;
+                if (searchHandler != null)
+                    searchHandler.sendEmptyMessage(BluetoothState.onConnected);
+            } else {
+                currentState = BluetoothState.CONNECT_FAILED;
+                if (searchHandler != null)
+                    searchHandler.sendEmptyMessage(BluetoothState.onConnectFailed);
             }
         }
     }
@@ -297,25 +347,6 @@ public class BluetoothTool implements Runnable {
     }
 
     /**
-     * 尝试建立连接
-     *
-     * @param device BluetoothDevice
-     */
-    private void buildConnection(BluetoothDevice device) {
-        socketClose();
-        currentState = BluetoothState.CONNECTING;
-        try {
-            bluetoothSocket = device.createRfcommSocketToServiceRecord(UUID
-                    .fromString("00001101-0000-1000-8000-00805F9B34FB"));
-            bluetoothSocket.connect();
-        } catch (IOException e) {
-            currentState = BluetoothState.CONNECT_FAILED;
-            if (searchHandler != null)
-                searchHandler.sendEmptyMessage(BluetoothState.onConnectFailed);
-        }
-    }
-
-    /**
      * 注册BroadcastReceiver
      *
      * @return BroadcastReceiver
@@ -344,27 +375,14 @@ public class BluetoothTool implements Runnable {
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                     switch (device.getBondState()) {
                         case BluetoothDevice.BOND_BONDED: {
-                            stopDiscovery();
                             buildConnection(device);
                         }
                         break;
                     }
-                } else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(intent.getAction())) {
-                    currentState = BluetoothState.CONNECTED;
-                    connectedDevice = willConnectDevice;
-                    try {
-                        bluetoothInputStream = bluetoothSocket.getInputStream();
-                        if (searchHandler != null)
-                            searchHandler.sendEmptyMessage(BluetoothState.onConnected);
-                    } catch (IOException e) {
-                        Log.v(TAG, "Create input stream failed.");
-                    }
-                } else if (BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED.equals(intent.getAction())) {
-                    currentState = BluetoothState.WILL_DISCONNECT;
                 } else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(intent.getAction())) {
                     currentState = BluetoothState.DISCONNECTED;
-                    if (activity != null) {
-                        Toast.makeText(activity, R.string.connect_lost_text, Toast.LENGTH_SHORT).show();
+                    if (searchHandler != null) {
+                        searchHandler.sendEmptyMessage(BluetoothState.onDisconnected);
                     }
                 } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(intent.getAction())) {
                     if (searchHandler != null) {
@@ -379,12 +397,7 @@ public class BluetoothTool implements Runnable {
         IntentFilter filter = new IntentFilter();
         filter.addAction(BluetoothDevice.ACTION_FOUND);
         filter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
-        filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
-        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED);
-        filter.addAction(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
-        filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
-        filter.addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         return filter;
     }
@@ -447,6 +460,14 @@ public class BluetoothTool implements Runnable {
         return currentState == BluetoothState.CONNECTED;
     }
 
+    public boolean hasSelectDeviceType() {
+        return hasSelectDeviceType;
+    }
+
+    public void setHasSelectDeviceType(boolean hasSelectDeviceType) {
+        this.hasSelectDeviceType = hasSelectDeviceType;
+    }
+
     public Handler getHandler() {
         return handler;
     }
@@ -501,7 +522,7 @@ public class BluetoothTool implements Runnable {
     private BluetoothTool interrupt() {
         try {
             abortTalking = true;
-            pool.awaitTermination(120, TimeUnit.MILLISECONDS);
+            pool.awaitTermination(100, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
         } finally {

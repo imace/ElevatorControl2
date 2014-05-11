@@ -1,5 +1,6 @@
 package com.inovance.ElevatorControl;
 
+import com.bluetoothtool.BluetoothTool;
 import com.inovance.ElevatorControl.cache.LruCacheTool;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ShortcutDao;

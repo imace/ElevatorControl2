@@ -69,7 +69,7 @@ public class ConfigurationHandler extends BluetoothHandler {
             if (inputMonitor.size() == 4) {
                 try {
                     RealTimeMonitor monitor = (RealTimeMonitor) inputMonitor.get(0).clone();
-                    monitor.setName("输入端子");
+                    monitor.setName("主控板输入端子");
                     byte[] combineBytes = new byte[]{
                             inputMonitor.get(0).getReceived()[4],
                             inputMonitor.get(0).getReceived()[5],
@@ -97,7 +97,7 @@ public class ConfigurationHandler extends BluetoothHandler {
             if (outputMonitor.size() == 1) {
                 try {
                     RealTimeMonitor monitor = (RealTimeMonitor) inputMonitor.get(0).clone();
-                    monitor.setName("输出端子");
+                    monitor.setName("主控板输出端子");
                     byte[] combineBytes = outputMonitor.get(0).getReceived();
                     monitor.setCombineBytes(combineBytes);
                     monitor.setCode(outputMonitor.get(0).getCode() + "+" + outputMonitor.get(0).getCode());

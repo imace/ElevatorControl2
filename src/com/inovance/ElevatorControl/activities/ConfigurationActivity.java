@@ -1,6 +1,7 @@
 package com.inovance.ElevatorControl.activities;
 
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -20,6 +21,7 @@ import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ParameterSettingsDao;
 import com.inovance.ElevatorControl.daos.RealTimeMonitorDao;
 import com.inovance.ElevatorControl.handlers.ConfigurationHandler;
+import com.inovance.ElevatorControl.handlers.GlobalHandler;
 import com.inovance.ElevatorControl.models.ObjectListHolder;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.models.ParameterStatusItem;
@@ -30,6 +32,9 @@ import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.widget.ListView;
 import org.holoeverywhere.widget.TextView;
 import org.holoeverywhere.widget.Toast;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -42,7 +47,7 @@ import java.util.concurrent.Executors;
  *
  * @author jch
  */
-public class ConfigurationActivity extends Activity implements Runnable{
+public class ConfigurationActivity extends Activity implements Runnable {
 
     private static final String TAG = ConfigurationActivity.class.getSimpleName();
 
@@ -75,6 +80,14 @@ public class ConfigurationActivity extends Activity implements Runnable{
     private static final int SYNC_TIME = 3000;
 
     public boolean isSyncing = false;
+
+    private static final int GET_SYSTEM_STATUS = 1;
+
+    private static final int SEE_X_TERMINAL_STATUS = 2;
+
+    private static final int SEE_Y_TERMINAL_STATUS = 3;
+
+    private int currentTask;
 
     private boolean isReadingTerminalStatus = false;
 
@@ -111,6 +124,7 @@ public class ConfigurationActivity extends Activity implements Runnable{
 
             @Override
             public void onPageScrolled(int arg0, float arg1, int arg2) {
+
             }
 
             @Override
@@ -135,6 +149,7 @@ public class ConfigurationActivity extends Activity implements Runnable{
             public void run() {
                 if (isRunning) {
                     if (BluetoothTool.getInstance(ConfigurationActivity.this).isConnected()) {
+                        currentTask = GET_SYSTEM_STATUS;
                         pool.execute(ConfigurationActivity.this);
                     }
                 }
@@ -153,14 +168,19 @@ public class ConfigurationActivity extends Activity implements Runnable{
                 syncHandler.postDelayed(syncStatusTask, SYNC_TIME);
             }
         } else {
-            handler.sendEmptyMessage(0);
+            if (!BluetoothTool.getInstance(ConfigurationActivity.this).hasAlertNotConnectMessage()) {
+                GlobalHandler.getInstance(ConfigurationActivity.this)
+                        .sendMessage(GlobalHandler.NOT_CONNECTED);
+                BluetoothTool.getInstance(ConfigurationActivity.this).setHasAlertNotConnectMessage(true);
+            }
         }
     }
-
 
     @Override
     protected void onPause() {
         super.onPause();
+        BluetoothTool.getInstance(ConfigurationActivity.this)
+                .setHandler(null);
         isRunning = false;
     }
 
@@ -236,7 +256,8 @@ public class ConfigurationActivity extends Activity implements Runnable{
                     .setCommunications(communications)
                     .send();
         } else {
-            handler.sendEmptyMessage(0);
+            GlobalHandler.getInstance(ConfigurationActivity.this)
+                    .sendMessage(GlobalHandler.NOT_CONNECTED);
         }
     }
 
@@ -331,7 +352,13 @@ public class ConfigurationActivity extends Activity implements Runnable{
                 R.style.CustomDialogStyle)
                 .setView(dialogView)
                 .setTitle(monitor.getName())
-                .setPositiveButton(R.string.dialog_btn_ok, null);
+                .setPositiveButton(R.string.dialog_btn_ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        BluetoothTool.getInstance(ConfigurationActivity.this)
+                                .setHandler(null);
+                    }
+                });
         terminalDialog = builder.create();
         terminalDialog.show();
         terminalDialog.setCancelable(false);
@@ -346,12 +373,8 @@ public class ConfigurationActivity extends Activity implements Runnable{
     private void startGetXTerminalCommunications() {
         if (getXTerminalCommunications != null) {
             if (BluetoothTool.getInstance(this).isConnected()) {
-                ConfigurationActivity.this.isReadingTerminalStatus = true;
-                getXTerminalStatusHandler.sendCount = getXTerminalCommunications.length;
-                BluetoothTool.getInstance(this)
-                        .setHandler(getXTerminalStatusHandler)
-                        .setCommunications(getXTerminalCommunications)
-                        .send();
+                currentTask = SEE_X_TERMINAL_STATUS;
+                pool.execute(ConfigurationActivity.this);
             } else {
                 Toast.makeText(ConfigurationActivity.this,
                         R.string.not_connect_device_error,
@@ -449,48 +472,45 @@ public class ConfigurationActivity extends Activity implements Runnable{
     private void startGetYTerminalCommunications() {
         if (getYTerminalCommunications != null) {
             if (BluetoothTool.getInstance(ConfigurationActivity.this).isConnected()) {
+                currentTask = SEE_Y_TERMINAL_STATUS;
+                pool.execute(ConfigurationActivity.this);
+            } else {
+                GlobalHandler.getInstance(ConfigurationActivity.this)
+                        .sendMessage(GlobalHandler.NOT_CONNECTED);
+            }
+        }
+    }
+
+    @Override
+    public void run() {
+        switch (currentTask) {
+            case GET_SYSTEM_STATUS: {
+                if (!isSyncing && !isReadingTerminalStatus) {
+                    ConfigurationActivity.this.reSyncData();
+                    syncHandler.postDelayed(syncStatusTask, SYNC_TIME);
+                }
+            }
+            break;
+            case SEE_X_TERMINAL_STATUS: {
+                ConfigurationActivity.this.isReadingTerminalStatus = true;
+                getXTerminalStatusHandler.sendCount = getXTerminalCommunications.length;
+                BluetoothTool.getInstance(this)
+                        .setHandler(getXTerminalStatusHandler)
+                        .setCommunications(getXTerminalCommunications)
+                        .send();
+            }
+            break;
+            case SEE_Y_TERMINAL_STATUS: {
                 getYTerminalStatusHandler.sendCount = getYTerminalCommunications.length;
                 ConfigurationActivity.this.isReadingTerminalStatus = true;
                 BluetoothTool.getInstance(ConfigurationActivity.this)
                         .setHandler(getYTerminalStatusHandler)
                         .setCommunications(getYTerminalCommunications)
                         .send();
-            } else {
-                Toast.makeText(this,
-                        R.string.not_connect_device_error,
-                        android.widget.Toast.LENGTH_SHORT)
-                        .show();
             }
-        }
-    }
-
-    /**
-     * Bluetooth socket error handler
-     */
-    private Handler handler = new Handler() {
-
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case 0: {
-                    Toast.makeText(ConfigurationActivity.this,
-                            R.string.not_connect_device_error,
-                            android.widget.Toast.LENGTH_SHORT)
-                            .show();
-                }
-                break;
-            }
-            super.handleMessage(msg);
+            break;
         }
 
-    };
-
-    @Override
-    public void run() {
-        if (!isSyncing && !isReadingTerminalStatus) {
-            ConfigurationActivity.this.reSyncData();
-            syncHandler.postDelayed(syncStatusTask, SYNC_TIME);
-        }
     }
 
     // =============================== Get X Terminal Status Handler ====================================== //
@@ -531,18 +551,36 @@ public class ConfigurationActivity extends Activity implements Runnable{
                     List<ParameterStatusItem> statusList = new ArrayList<ParameterStatusItem>();
                     for (ParameterSettings settings : settingsList) {
                         int indexValue = ParseSerialsUtils.getIntFromBytes(settings.getReceived());
+                        String openStatus = "(常开)";
                         if (indexValue > 31 && indexValue < 64) {
+                            openStatus = "(常闭)";
                             indexValue -= 32;
                         } else if (indexValue >= 64 && indexValue < 96) {
+                            openStatus = "(常开)";
                             indexValue -= 32;
                         } else if (indexValue >= 96) {
+                            openStatus = "(常闭)";
                             indexValue -= 64;
                         }
                         if (indexValue < length && indexValue >= 0) {
-                            ParameterStatusItem item = new ParameterStatusItem();
-                            item.setName(settings.getName());
-                            item.setStatus(bitValues[indexValue]);
-                            statusList.add(item);
+                            try {
+                                JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
+                                int size = jsonArray.length();
+                                String[] valueStringArray = new String[size];
+                                for (int i = 0; i < size; i++) {
+                                    JSONObject value = jsonArray.getJSONObject(i);
+                                    valueStringArray[i] = value.optString("id") + ":" + value.optString("value");
+                                }
+                                if (indexValue < valueStringArray.length) {
+                                    ParameterStatusItem item = new ParameterStatusItem();
+                                    item.setName(settings.getName().replace("功能选择", "端子   ")
+                                            + valueStringArray[indexValue] + openStatus);
+                                    item.setStatus(bitValues[indexValue]);
+                                    statusList.add(item);
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                     ParameterStatusAdapter adapter = new ParameterStatusAdapter(ConfigurationActivity.this, statusList);
@@ -612,10 +650,24 @@ public class ConfigurationActivity extends Activity implements Runnable{
                     for (ParameterSettings settings : settingsList) {
                         int indexValue = ParseSerialsUtils.getIntFromBytes(settings.getReceived());
                         if (indexValue >= 0 && indexValue < length) {
-                            ParameterStatusItem item = new ParameterStatusItem();
-                            item.setName(settings.getName());
-                            item.setStatus(bitValues[indexValue]);
-                            statusList.add(item);
+                            try {
+                                JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
+                                int size = jsonArray.length();
+                                String[] valueStringArray = new String[size];
+                                for (int i = 0; i < size; i++) {
+                                    JSONObject value = jsonArray.getJSONObject(i);
+                                    valueStringArray[i] = value.optString("id") + ":" + value.optString("value");
+                                }
+                                if (indexValue < valueStringArray.length) {
+                                    ParameterStatusItem item = new ParameterStatusItem();
+                                    item.setName(settings.getName().replace("功能选择", "端子   ")
+                                            + valueStringArray[indexValue]);
+                                    item.setStatus(bitValues[indexValue]);
+                                    statusList.add(item);
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                     ParameterStatusAdapter adapter = new ParameterStatusAdapter(ConfigurationActivity.this, statusList);

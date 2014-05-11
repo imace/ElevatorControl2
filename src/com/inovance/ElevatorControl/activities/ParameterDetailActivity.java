@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.os.Message;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,6 +24,7 @@ import com.inovance.ElevatorControl.adapters.DialogSwitchListViewAdapter;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ParameterGroupSettingsDao;
 import com.inovance.ElevatorControl.daos.RealTimeMonitorDao;
+import com.inovance.ElevatorControl.handlers.GlobalHandler;
 import com.inovance.ElevatorControl.handlers.ParameterDetailHandler;
 import com.inovance.ElevatorControl.models.*;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
@@ -36,6 +38,8 @@ import org.holoeverywhere.widget.*;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -87,13 +91,19 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
 
     private boolean hasGetElevatorStatus;
 
+    private boolean hasGetValueScope;
+
     private GetElevatorStatusHandler getElevatorStatusHandler;
 
     private BluetoothTalk[] getElevatorStatusCommunication;
 
-    private AlertDialog getElevatorStatusDialog;
-
     private String writeErrorString;
+
+    private String cacheValueString;
+
+    private static final int onGetValueScope = 1;
+
+    private static final int onGetElevatorStatus = 2;
 
     private ExecutorService pool = Executors.newSingleThreadExecutor();
 
@@ -162,36 +172,41 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                         if (mode == ApplicationConfig.modifyType[1]) {
                             final int index = position;
                             settings.setElevatorRunning(false);
-                            getElevatorStatusDialog = new AlertDialog.Builder(ParameterDetailActivity.this,
-                                    R.style.CustomDialogStyle)
-                                    .setTitle(settings.getCodeText() + " " + settings.getName())
-                                    .setMessage(R.string.get_elevator_status_message)
-                                    .create();
-                            getElevatorStatusDialog.show();
-                            getElevatorStatusDialog.setCancelable(false);
-                            getElevatorStatusDialog.setCanceledOnTouchOutside(false);
                             ParameterDetailActivity.this.hasGetElevatorStatus = false;
-                            new CountDownTimer(2000, 500) {
-
-                                @Override
-                                public void onTick(long l) {
-                                    if (!ParameterDetailActivity.this.hasGetElevatorStatus) {
-                                        ParameterDetailActivity.this.getElevatorStatus(index, settings);
+                            if (cacheValueString != null && cacheValueString.contains("3000")) {
+                                ParameterDetailActivity.this.hasGetElevatorStatus = true;
+                                String[] valueArray = cacheValueString.split("-");
+                                for (String item : valueArray) {
+                                    if (item.contains("3000")) {
+                                        String[] statusArray = item.split(":");
+                                        if (statusArray.length == 2) {
+                                            BluetoothTool.getInstance(ParameterDetailActivity.this).setHandler(null);
+                                            onGetElevatorStatus(index, Integer.parseInt(statusArray[1]), settings);
+                                        }
                                     }
                                 }
+                            } else {
+                                new CountDownTimer(2400, 800) {
 
-                                @Override
-                                public void onFinish() {
-                                    if (getElevatorStatusDialog != null) {
-                                        getElevatorStatusDialog.dismiss();
+                                    @Override
+                                    public void onTick(long l) {
+                                        if (!ParameterDetailActivity.this.hasGetElevatorStatus) {
+                                            ParameterDetailActivity.this.getElevatorStatus(index, settings);
+                                        } else {
+                                            this.cancel();
+                                        }
                                     }
-                                    if (!ParameterDetailActivity.this.hasGetElevatorStatus) {
-                                        Toast.makeText(ParameterDetailActivity.this,
-                                                R.string.get_elevator_status_failed,
-                                                Toast.LENGTH_SHORT).show();
+
+                                    @Override
+                                    public void onFinish() {
+                                        if (!ParameterDetailActivity.this.hasGetElevatorStatus) {
+                                            Toast.makeText(ParameterDetailActivity.this,
+                                                    R.string.get_elevator_status_failed,
+                                                    Toast.LENGTH_SHORT).show();
+                                        }
                                     }
-                                }
-                            }.start();
+                                }.start();
+                            }
                         }
                         // 不可修改
                         if (mode == ApplicationConfig.modifyType[2]) {
@@ -266,17 +281,18 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
             }
         }
         if (BluetoothTool.getInstance(this).isConnected()) {
-            getElevatorStatusHandler.index = index;
-            getElevatorStatusHandler.settings = settings;
-            BluetoothTool.getInstance(this)
-                    .setCommunications(getElevatorStatusCommunication)
-                    .setHandler(getElevatorStatusHandler)
-                    .send();
+            if (!ParameterDetailActivity.this.hasGetElevatorStatus) {
+                getElevatorStatusHandler.index = index;
+                getElevatorStatusHandler.settings = settings;
+                BluetoothTool.getInstance(this)
+                        .setCommunications(getElevatorStatusCommunication)
+                        .setHandler(getElevatorStatusHandler)
+                        .send();
+            }
+
         } else {
-            Toast.makeText(this,
-                    R.string.not_connect_device_error,
-                    android.widget.Toast.LENGTH_SHORT)
-                    .show();
+            GlobalHandler.getInstance(ParameterDetailActivity.this)
+                    .sendMessage(GlobalHandler.NOT_CONNECTED);
         }
     }
 
@@ -350,8 +366,32 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         if (count != 0) {
             cancelButton.setEnabled(false);
             confirmButton.setEnabled(false);
-            String[] codeArray = ParameterDetailActivity.this.getCodeStringArray(settings);
-            ParameterDetailActivity.this.createGetValueScopeCommunications(codeArray, index, settings);
+            final String[] codeArray = ParameterDetailActivity.this.getCodeStringArray(settings);
+            ParameterDetailActivity.this.hasGetValueScope = false;
+            BluetoothTool.getInstance(ParameterDetailActivity.this).setHandler(null);
+            new CountDownTimer(2400, 800) {
+
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    if (!hasGetValueScope) {
+                        ParameterDetailActivity.this.createGetValueScopeCommunications(codeArray, index, settings);
+                    } else {
+                        this.cancel();
+                    }
+                }
+
+                @Override
+                public void onFinish() {
+                    if (!hasGetValueScope) {
+                        if (detailDialog != null && detailDialog.isShowing()) {
+                            detailDialog.dismiss();
+                        }
+                        Toast.makeText(ParameterDetailActivity.this,
+                                R.string.get_value_scope_failed_text,
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }.start();
         } else {
             createNumberPickerAndBindListener(settings);
         }
@@ -389,9 +429,14 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
             dotIndex = -1;
             numberPickerList = new ArrayList<NumberPicker>();
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                    0,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT);
-            layoutParams.weight = 1;
+            if (totals > 3) {
+                layoutParams = new LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
+                layoutParams.weight = 1;
+            }
             layoutParams.setMargins(0, 0, 10, 0);
             LinearLayout.LayoutParams textViewLayoutParams = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -520,26 +565,11 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                             DialogSwitchListViewAdapter adapter = (DialogSwitchListViewAdapter) listView
                                     .getAdapterSource();
                             List<ParameterStatusItem> list = adapter.getItemList();
-                            byte[] data = settings.getReceived();
-                            boolean[] booleans = SerialUtility.byte2BoolArr(data[4], data[5]);
-                            int size = booleans.length;
                             String binaryString = "";
-                            for (int j = 0; j < size; j++) {
-                                boolean hasValue = false;
-                                boolean settingValue = false;
-                                for (ParameterStatusItem item : list) {
-                                    if (Integer.parseInt(item.getId()) == j) {
-                                        hasValue = true;
-                                        settingValue = item.getStatus();
-                                    }
-                                }
-                                if (hasValue) {
-                                    binaryString += settingValue ? 1 : 0;
-                                } else {
-                                    binaryString += booleans[j] ? 1 : 0;
-                                }
+                            int size = list.size();
+                            for (int i = size - 1; i >= 0; i--) {
+                                binaryString += list.get(i).getStatus() ? 1 : 0;
                             }
-                            //TODO 写入参数错误
                             startSetNewValueCommunications(index,
                                     String.format("%04x", Integer.parseInt(binaryString, 2)));
                         }
@@ -569,7 +599,8 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
      * @param index    ListView Index
      * @param settings ParameterSettings
      */
-    private void createGetValueScopeCommunications(final String[] codeArray, int index, final ParameterSettings settings) {
+    private void createGetValueScopeCommunications(final String[] codeArray, int index,
+                                                   final ParameterSettings settings) {
         int length = codeArray.length;
         BluetoothTalk[] communications = new BluetoothTalk[length];
         for (int i = 0; i < length; i++) {
@@ -617,12 +648,14 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         }
         if (communications.length > 0) {
             if (BluetoothTool.getInstance(ParameterDetailActivity.this).isConnected()) {
-                getValueScopeHandler.count = communications.length;
-                getValueScopeHandler.index = index;
-                BluetoothTool.getInstance(ParameterDetailActivity.this)
-                        .setCommunications(communications)
-                        .setHandler(getValueScopeHandler)
-                        .send();
+                if (!ParameterDetailActivity.this.hasGetValueScope) {
+                    getValueScopeHandler.count = communications.length;
+                    getValueScopeHandler.index = index;
+                    BluetoothTool.getInstance(ParameterDetailActivity.this)
+                            .setCommunications(communications)
+                            .setHandler(getValueScopeHandler)
+                            .send();
+                }
             }
         }
     }
@@ -634,10 +667,8 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
             ParameterDetailActivity.this.syncingParameter = true;
             startCombinationCommunications();
         } else {
-            Toast.makeText(this,
-                    R.string.not_connect_device_error,
-                    android.widget.Toast.LENGTH_SHORT)
-                    .show();
+            GlobalHandler.getInstance(ParameterDetailActivity.this)
+                    .sendMessage(GlobalHandler.NOT_CONNECTED);
         }
     }
 
@@ -677,8 +708,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                     @Override
                     public Object onParse() {
                         if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
-                            byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
-                            settings.setReceived(data);
+                            settings.setReceived(getReceivedBuffer());
                             return settings;
                         }
                         return null;
@@ -689,7 +719,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
             ParameterDetailActivity.this.isWriteSuccessful = false;
             updateHandler.index = position;
             updateHandler.writeCode = userValue;
-            new CountDownTimer(1500, 500) {
+            new CountDownTimer(3200, 800) {
                 public void onTick(long millisUntilFinished) {
                     if (!ParameterDetailActivity.this.isWriteSuccessful) {
                         updateHandler.index = position;
@@ -699,18 +729,15 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                                 .setCommunications(communications)
                                 .send();
                     } else {
-                        if (detailDialog != null && detailDialog.isShowing()) {
-                            detailDialog.dismiss();
-                        }
-                        Toast.makeText(ParameterDetailActivity.this,
-                                R.string.write_parameter_successful,
-                                Toast.LENGTH_SHORT).show();
-                        ParameterDetailActivity.this.isWriteSuccessful = true;
+                        this.cancel();
                     }
                 }
 
                 public void onFinish() {
                     if (!ParameterDetailActivity.this.isWriteSuccessful) {
+                        if (detailDialog != null && detailDialog.isShowing()) {
+                            detailDialog.dismiss();
+                        }
                         if (writeErrorString != null) {
                             Toast.makeText(ParameterDetailActivity.this,
                                     writeErrorString,
@@ -720,10 +747,8 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 }
             }.start();
         } else {
-            Toast.makeText(this,
-                    R.string.not_connect_device_error,
-                    android.widget.Toast.LENGTH_SHORT)
-                    .show();
+            GlobalHandler.getInstance(ParameterDetailActivity.this)
+                    .sendMessage(GlobalHandler.NOT_CONNECTED);
         }
     }
 
@@ -804,11 +829,106 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                     .setCommunications(communications)
                     .send();
         } else {
-            Toast.makeText(this,
-                    R.string.not_connect_device_error,
-                    android.widget.Toast.LENGTH_SHORT)
-                    .show();
+            GlobalHandler.getInstance(ParameterDetailActivity.this)
+                    .sendMessage(GlobalHandler.NOT_CONNECTED);
         }
+    }
+
+    /**
+     * 写入数据成功
+     *
+     * @param index    ListView Index
+     * @param settings ParameterSettings
+     */
+    private void onWriteDataSuccessful(int index, ParameterSettings settings) {
+        ParameterDetailActivity.this.listViewDataSource.set(index, settings);
+        ParameterDetailActivity.this.instantAdapter.notifyDataSetChanged();
+        if (detailDialog != null && detailDialog.isShowing()) {
+            detailDialog.dismiss();
+        }
+        Toast.makeText(ParameterDetailActivity.this,
+                R.string.write_parameter_successful,
+                Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * 已经取得电梯状态
+     *
+     * @param index    ListView Index
+     * @param status   Elevator status
+     * @param settings ParameterSettings
+     */
+    private void onGetElevatorStatus(final int index, int status, final ParameterSettings settings) {
+        settings.setElevatorRunning(status != 3);
+        if (settings.isElevatorRunning()) {
+            if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[2]) {
+                onClickListViewWithIndex(index);
+            }
+            Toast.makeText(ParameterDetailActivity.this,
+                    R.string.elevator_running_message,
+                    Toast.LENGTH_SHORT).show();
+        } else {
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    Message message = new Message();
+                    message.what = onGetElevatorStatus;
+                    message.obj = settings;
+                    onGetValueHandler.sendMessage(message);
+                }
+            }, 350);
+        }
+    }
+
+    /**
+     * 取得数值范围
+     *
+     * @param position  ListView Item Position
+     * @param count     Value Scope Count
+     * @param valueList Value List
+     */
+    private void onGetValueScope(int position, int count, List<String> valueList) {
+        final ParameterSettings settings = listViewDataSource.get(position);
+        if (count == 2) {
+            double value1 = Double.parseDouble(valueList.get(0));
+            double value2 = Double.parseDouble(valueList.get(1));
+            if (value1 < value2) {
+                settings.setScope(valueList.get(0) + "~" + valueList.get(1));
+            } else {
+                settings.setScope(valueList.get(1) + "~" + valueList.get(0));
+            }
+        }
+        if (count == 1) {
+            String[] valueArray = settings.getScope().split("~");
+            List<String> tempList = new ArrayList<String>();
+            for (String value : valueArray) {
+                if (value.contains("F")) {
+                    tempList.add(valueList.get(0));
+                } else {
+                    tempList.add(value);
+                }
+            }
+            String scopeString = "";
+            int size = tempList.size();
+            int index = 0;
+            for (String temp : tempList) {
+                scopeString += temp;
+                if (index != size - 1) {
+                    scopeString += "~";
+                }
+                index++;
+            }
+            settings.setTempScope(scopeString);
+        }
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Message message = new Message();
+                message.what = onGetValueScope;
+                message.obj = settings;
+                onGetValueHandler.sendMessage(message);
+            }
+        }, 350);
     }
 
     @Override
@@ -819,6 +939,9 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         mRefreshActionItem = (RefreshActionItem) item.getActionView();
         assert mRefreshActionItem != null;
         mRefreshActionItem.setMenuItem(item);
+        if (BluetoothTool.getInstance(ParameterDetailActivity.this).isConnected()) {
+            mRefreshActionItem.showProgress(true);
+        }
         mRefreshActionItem.setProgressIndicatorType(ProgressIndicatorType.INDETERMINATE);
         mRefreshActionItem.setRefreshActionListener(ParameterDetailActivity.this);
         return true;
@@ -828,6 +951,8 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
+                BluetoothTool.getInstance(ParameterDetailActivity.this)
+                        .setHandler(null);
                 setResult(RESULT_OK);
                 finish();
                 return true;
@@ -837,6 +962,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
 
     @Override
     public void onRefreshButtonClick(RefreshActionItem sender) {
+        cacheValueString = null;
         mRefreshActionItem.showProgress(true);
         syncingParameter = true;
         pool.execute(ParameterDetailActivity.this);
@@ -846,6 +972,33 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
     public void run() {
         startCombinationCommunications();
     }
+
+    private Handler onGetValueHandler = new Handler() {
+
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case onGetElevatorStatus: {
+                    if (msg.obj != null && msg.obj instanceof ParameterSettings) {
+                        ParameterSettings settings = (ParameterSettings) msg.obj;
+                        int index = listViewDataSource.indexOf(settings);
+                        if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[0]) {
+                            createPickerDialog(index, settings);
+                        } else {
+                            onClickListViewWithIndex(index);
+                        }
+                    }
+                }
+                break;
+                case onGetValueScope: {
+                    if (msg.obj != null && msg.obj instanceof ParameterSettings) {
+                        createNumberPickerAndBindListener((ParameterSettings) msg.obj);
+                    }
+                }
+                break;
+            }
+        }
+    };
 
     // ===================================== Update ListView Data Handler ======================================== //
 
@@ -877,8 +1030,8 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         public void onTalkReceive(Message msg) {
             super.onTalkReceive(msg);
             if (msg.obj != null && msg.obj instanceof ParameterSettings) {
-                ParameterSettings settings = (ParameterSettings) msg.obj;
-                String returnCodeString = SerialUtility.byte2HexStr(settings.getReceived());
+                ParameterSettings receiveObject = (ParameterSettings) msg.obj;
+                String returnCodeString = SerialUtility.byte2HexStr(receiveObject.getReceived());
                 boolean writeSuccessful = true;
                 int index = 0;
                 for (String item : ApplicationConfig.ERROR_CODE_ARRAY) {
@@ -889,10 +1042,12 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                     }
                     index++;
                 }
+                if (!SerialUtility.byte2HexStr(receiveObject.getReceived()).contains(writeCode.toUpperCase())) {
+                    writeSuccessful = false;
+                }
                 if (writeSuccessful) {
-                    ParameterDetailActivity.this.listViewDataSource.set(this.index, settings);
-                    ParameterDetailActivity.this.instantAdapter.notifyDataSetChanged();
-                    ParameterDetailActivity.this.isWriteSuccessful = true;
+                    ParameterDetailActivity.this.isWriteSuccessful = writeSuccessful;
+                    onWriteDataSuccessful(this.index, receiveObject);
                 }
             }
         }
@@ -923,43 +1078,8 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         public void onMultiTalkEnd(Message msg) {
             super.onMultiTalkEnd(msg);
             if (stringList.size() == count) {
-                final ParameterSettings settings = listViewDataSource.get(index);
-                if (count == 2) {
-                    double value1 = Double.parseDouble(stringList.get(0));
-                    double value2 = Double.parseDouble(stringList.get(1));
-                    if (value1 < value2) {
-                        settings.setScope(stringList.get(0) + "~" + stringList.get(1));
-                    } else {
-                        settings.setScope(stringList.get(1) + "~" + stringList.get(0));
-                    }
-                }
-                if (count == 1) {
-                    String[] valueArray = settings.getScope().split("~");
-                    List<String> tempList = new ArrayList<String>();
-                    for (String value : valueArray) {
-                        if (value.contains("F")) {
-                            tempList.add(stringList.get(0));
-                        } else {
-                            tempList.add(value);
-                        }
-                    }
-                    String scopeString = "";
-                    int size = tempList.size();
-                    int index = 0;
-                    for (String temp : tempList) {
-                        scopeString += temp;
-                        if (index != size - 1) {
-                            scopeString += "~";
-                        }
-                        index++;
-                    }
-                    settings.setTempScope(scopeString);
-                }
-                ParameterDetailActivity.this.createNumberPickerAndBindListener(settings);
-            } else {
-                ParameterSettings settings = listViewDataSource.get(index);
-                String[] codeArray = ParameterDetailActivity.this.getCodeStringArray(settings);
-                ParameterDetailActivity.this.createGetValueScopeCommunications(codeArray, index, settings);
+                ParameterDetailActivity.this.hasGetValueScope = true;
+                onGetValueScope(this.index, count, stringList);
             }
         }
 
@@ -1003,27 +1123,15 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         public void onTalkReceive(Message msg) {
             super.onTalkReceive(msg);
             if (msg.obj != null && msg.obj instanceof RealTimeMonitor) {
-                RealTimeMonitor monitor = (RealTimeMonitor) msg.obj;
-                int status = ParseSerialsUtils.getIntFromBytes(monitor.getReceived());
-                settings.setElevatorRunning(status != 3);
-                if (settings.isElevatorRunning()) {
-                    if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[2]) {
-                        onClickListViewWithIndex(index);
-                    }
-                    Toast.makeText(ParameterDetailActivity.this,
-                            R.string.elevator_running_message,
-                            Toast.LENGTH_SHORT).show();
-                } else {
-                    if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[0]) {
-                        createPickerDialog(index, settings);
-                    } else {
-                        onClickListViewWithIndex(index);
-                    }
-                }
-                if (getElevatorStatusDialog != null) {
-                    getElevatorStatusDialog.dismiss();
-                }
                 ParameterDetailActivity.this.hasGetElevatorStatus = true;
+                int status = ParseSerialsUtils.getIntFromBytes(((RealTimeMonitor) msg.obj).getReceived());
+                if (cacheValueString == null) {
+                    cacheValueString = "";
+                }
+                if (!cacheValueString.contains("3000")) {
+                    cacheValueString += "3000:" + status;
+                }
+                onGetElevatorStatus(this.index, status, this.settings);
             }
         }
 
