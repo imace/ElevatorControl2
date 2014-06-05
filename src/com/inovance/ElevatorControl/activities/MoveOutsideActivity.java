@@ -224,9 +224,6 @@ public class MoveOutsideActivity extends Activity implements Runnable {
         if (BluetoothTool.getInstance(this).isPrepared()) {
             running = true;
             syncHandler.postDelayed(syncTask, SYNC_TIME);
-        } else {
-            GlobalHandler.getInstance(MoveOutsideActivity.this)
-                    .sendMessage(GlobalHandler.NOT_CONNECTED);
         }
     }
 
@@ -512,12 +509,50 @@ public class MoveOutsideActivity extends Activity implements Runnable {
                     @Override
                     public Object onParse() {
                         if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
-                            return SerialUtility.trimEnd(getReceivedBuffer());
+                            return getReceivedBuffer();
                         }
                         return null;
                     }
                 }
         };
+    }
+
+    /**
+     * 读取到电梯最高层和最底层数据
+     *
+     * @param data byte[]
+     */
+    private void onGetFloors(byte[] data) {
+        if (data.length == 10) {
+            int length = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
+            if (length == 4) {
+                final int topFloor = ByteBuffer.wrap(new byte[]{data[4], data[5]}).getShort();
+                final int bottomFloor = ByteBuffer.wrap(new byte[]{data[6], data[7]}).getShort();
+                moveSidePagerAdapter = new MoveSidePagerAdapter(MoveOutsideActivity.this,
+                        new int[]{bottomFloor, topFloor});
+                moveSidePagerAdapter.setOnSelectFloorListener(new MoveSidePagerAdapter.OnSelectFloorListener() {
+                    @Override
+                    public void onSelect(int floor) {
+                        if (floor == Math.min(topFloor, bottomFloor)) {
+                            MoveOutsideActivity.this.upButton.setEnabled(true);
+                            MoveOutsideActivity.this.downButton.setEnabled(false);
+                        } else if (floor == Math.max(topFloor, bottomFloor)) {
+                            MoveOutsideActivity.this.upButton.setEnabled(false);
+                            MoveOutsideActivity.this.downButton.setEnabled(true);
+                        } else {
+                            MoveOutsideActivity.this.upButton.setEnabled(true);
+                            MoveOutsideActivity.this.downButton.setEnabled(true);
+                        }
+                        MoveOutsideActivity.this.selectedFloor = floor;
+                    }
+                });
+                MoveOutsideActivity.this.viewPager.setAdapter(moveSidePagerAdapter);
+                MoveOutsideActivity.this.createGetMoveOutsideInfoCommunications();
+                MoveOutsideActivity.this.hasGetFloors = true;
+                MoveOutsideActivity.this.loadView.setVisibility(View.GONE);
+                MoveOutsideActivity.this.viewPager.setVisibility(View.VISIBLE);
+            }
+        }
     }
 
     /**
@@ -697,7 +732,10 @@ public class MoveOutsideActivity extends Activity implements Runnable {
                     MoveOutsideActivity.this.isWriteSuccessful = true;
                     MoveOutsideActivity.this.isWritingData = false;
                     // 写入外召日志
-                    LogUtils.getInstance().write(ApplicationConfig.LogMoveOutside, writeCode, receive, floor, isUp ? 1 : 2);
+                    LogUtils.getInstance().write(ApplicationConfig.LogMoveOutside,
+                            writeCode,
+                            receive,
+                            floor, isUp ? 1 : 2);
                 }
             }
         }
@@ -706,10 +744,6 @@ public class MoveOutsideActivity extends Activity implements Runnable {
 
     // =================================== 读取电梯最高层和最底层 ==============================
     private class MoveOutsideHandler extends BluetoothHandler {
-
-        private int topFloor;
-
-        private int bottomFloor;
 
         public MoveOutsideHandler(Activity activity) {
             super(activity);
@@ -729,35 +763,7 @@ public class MoveOutsideActivity extends Activity implements Runnable {
         @Override
         public void onTalkReceive(Message msg) {
             if (msg.obj != null && msg.obj instanceof byte[]) {
-                byte[] data = (byte[]) msg.obj;
-                int length = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
-                if (length == 4) {
-                    topFloor = ByteBuffer.wrap(new byte[]{data[4], data[5]}).getShort();
-                    bottomFloor = ByteBuffer.wrap(new byte[]{data[6], data[7]}).getShort();
-                    moveSidePagerAdapter = new MoveSidePagerAdapter(MoveOutsideActivity.this,
-                            new int[]{bottomFloor, topFloor});
-                    moveSidePagerAdapter.setOnSelectFloorListener(new MoveSidePagerAdapter.OnSelectFloorListener() {
-                        @Override
-                        public void onSelect(int floor) {
-                            if (floor == Math.min(topFloor, bottomFloor)) {
-                                MoveOutsideActivity.this.upButton.setEnabled(true);
-                                MoveOutsideActivity.this.downButton.setEnabled(false);
-                            } else if (floor == Math.max(topFloor, bottomFloor)) {
-                                MoveOutsideActivity.this.upButton.setEnabled(false);
-                                MoveOutsideActivity.this.downButton.setEnabled(true);
-                            } else {
-                                MoveOutsideActivity.this.upButton.setEnabled(true);
-                                MoveOutsideActivity.this.downButton.setEnabled(true);
-                            }
-                            MoveOutsideActivity.this.selectedFloor = floor;
-                        }
-                    });
-                    MoveOutsideActivity.this.viewPager.setAdapter(moveSidePagerAdapter);
-                    MoveOutsideActivity.this.createGetMoveOutsideInfoCommunications();
-                    MoveOutsideActivity.this.hasGetFloors = true;
-                    MoveOutsideActivity.this.loadView.setVisibility(View.GONE);
-                    MoveOutsideActivity.this.viewPager.setVisibility(View.VISIBLE);
-                }
+                MoveOutsideActivity.this.onGetFloors((byte[]) msg.obj);
             }
         }
 

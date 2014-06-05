@@ -338,9 +338,6 @@ public class MoveInsideActivity extends Activity implements Runnable {
         if (BluetoothTool.getInstance(this).isPrepared()) {
             running = true;
             syncHandler.postDelayed(syncTask, SYNC_TIME);
-        } else {
-            GlobalHandler.getInstance(MoveInsideActivity.this)
-                    .sendMessage(GlobalHandler.NOT_CONNECTED);
         }
     }
 
@@ -410,12 +407,62 @@ public class MoveInsideActivity extends Activity implements Runnable {
                     @Override
                     public Object onParse() {
                         if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
-                            return SerialUtility.trimEnd(getReceivedBuffer());
+                            return getReceivedBuffer();
                         }
                         return null;
                     }
                 }
         };
+    }
+
+    /**
+     * 读取到电梯最高层和最底层数据
+     *
+     * @param data byte[]
+     */
+    private void onGetFloors(byte[] data) {
+        if (data.length == 10) {
+            int length = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
+            if (length == 4) {
+                int top = ByteBuffer.wrap(new byte[]{data[4], data[5]}).getShort();
+                int bottom = ByteBuffer.wrap(new byte[]{data[6], data[7]}).getShort();
+                moveSidePagerAdapter = new MoveSidePagerAdapter(MoveInsideActivity.this,
+                        new int[]{bottom, top});
+                moveSidePagerAdapter.setOnSelectFloorListener(new MoveSidePagerAdapter.OnSelectFloorListener() {
+                    @Override
+                    public void onSelect(int floor) {
+                        final int calledFloor = floor;
+                        MoveInsideActivity.this.isSyncing = false;
+                        MoveInsideActivity.this.isWritingData = true;
+                        MoveInsideActivity.this.isWriteSuccessful = false;
+                        new CountDownTimer(1500, 500) {
+                            public void onTick(long millisUntilFinished) {
+                                if (!MoveInsideActivity.this.isWriteSuccessful) {
+                                    MoveInsideActivity.this.moveInsideCallFloor(calledFloor);
+                                } else {
+                                    MoveInsideActivity.this.isWritingData = false;
+                                    this.cancel();
+                                    this.onFinish();
+                                }
+                            }
+
+                            public void onFinish() {
+                                if (!MoveInsideActivity.this.isWriteSuccessful) {
+                                    GlobalHandler.getInstance(MoveInsideActivity.this)
+                                            .sendMessage(GlobalHandler.WRITE_DATA_FAILED);
+                                }
+                                MoveInsideActivity.this.isWritingData = false;
+                            }
+                        }.start();
+                    }
+                });
+                MoveInsideActivity.this.viewPager.setAdapter(moveSidePagerAdapter);
+                MoveInsideActivity.this.createGetMoveInsideInfoCommunications();
+                MoveInsideActivity.this.hasGetFloors = true;
+                MoveInsideActivity.this.loadView.setVisibility(View.GONE);
+                MoveInsideActivity.this.viewPager.setVisibility(View.VISIBLE);
+            }
+        }
     }
 
     /**
@@ -535,8 +582,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
                     @Override
                     public Object onParse() {
                         if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
-                            byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
-                            return SerialUtility.byte2HexStr(received);
+                            return getReceivedBuffer();
                         }
                         return null;
                     }
@@ -632,48 +678,9 @@ public class MoveInsideActivity extends Activity implements Runnable {
 
         @Override
         public void onTalkReceive(Message msg) {
+            super.onTalkReceive(msg);
             if (msg.obj != null && msg.obj instanceof byte[]) {
-                byte[] data = (byte[]) msg.obj;
-                int length = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
-                if (length == 4) {
-                    int top = ByteBuffer.wrap(new byte[]{data[4], data[5]}).getShort();
-                    int bottom = ByteBuffer.wrap(new byte[]{data[6], data[7]}).getShort();
-                    moveSidePagerAdapter = new MoveSidePagerAdapter(MoveInsideActivity.this,
-                            new int[]{bottom, top});
-                    moveSidePagerAdapter.setOnSelectFloorListener(new MoveSidePagerAdapter.OnSelectFloorListener() {
-                        @Override
-                        public void onSelect(int floor) {
-                            final int calledFloor = floor;
-                            MoveInsideActivity.this.isSyncing = false;
-                            MoveInsideActivity.this.isWritingData = true;
-                            MoveInsideActivity.this.isWriteSuccessful = false;
-                            new CountDownTimer(1500, 500) {
-                                public void onTick(long millisUntilFinished) {
-                                    if (!MoveInsideActivity.this.isWriteSuccessful) {
-                                        MoveInsideActivity.this.moveInsideCallFloor(calledFloor);
-                                    } else {
-                                        MoveInsideActivity.this.isWritingData = false;
-                                        this.cancel();
-                                        this.onFinish();
-                                    }
-                                }
-
-                                public void onFinish() {
-                                    if (!MoveInsideActivity.this.isWriteSuccessful) {
-                                        GlobalHandler.getInstance(MoveInsideActivity.this)
-                                                .sendMessage(GlobalHandler.WRITE_DATA_FAILED);
-                                    }
-                                    MoveInsideActivity.this.isWritingData = false;
-                                }
-                            }.start();
-                        }
-                    });
-                    MoveInsideActivity.this.viewPager.setAdapter(moveSidePagerAdapter);
-                    MoveInsideActivity.this.createGetMoveInsideInfoCommunications();
-                    MoveInsideActivity.this.hasGetFloors = true;
-                    MoveInsideActivity.this.loadView.setVisibility(View.GONE);
-                    MoveInsideActivity.this.viewPager.setVisibility(View.VISIBLE);
-                }
+                MoveInsideActivity.this.onGetFloors((byte[]) msg.obj);
             }
         }
 
