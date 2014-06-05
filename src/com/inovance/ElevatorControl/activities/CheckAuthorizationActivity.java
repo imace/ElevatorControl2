@@ -63,7 +63,6 @@ public class CheckAuthorizationActivity extends Activity {
         setTitle(R.string.title_activity_login);
         Views.inject(this);
         initializeData();
-        // 检查软件更新
         UpdateApplication.getInstance().init(this);
         UpdateApplication.getInstance().setOnNoUpdateFoundListener(new OnNoUpdateFoundListener() {
             @Override
@@ -72,6 +71,12 @@ public class CheckAuthorizationActivity extends Activity {
                 btnLogin.setEnabled(true);
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // 检查软件更新
         UpdateApplication.getInstance().checkUpdate();
     }
 

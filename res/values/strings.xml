@@ -74,6 +74,14 @@
     <string name="unauthorized_title">未授权</string>
     <string name="unauthorized_message">当前用户授权失败！</string>
 
+    <!-- 启动页 -->
+    <string name="no_network_title">无网络</string>
+    <string name="setting_network_message">请先设置网络连接并确保网络连接可用</string>
+    <string name="exit_application_text">退出</string>
+    <string name="setting_wireless_text">设置3G</string>
+    <string name="setting_wifi_text">设置Wifi</string>
+    <string name="update_application_text">更新</string>
+
     <!-- 程序首页 Home -->
     <string name="elevator_status_text">电梯状态</string>
     <string name="running_speed_text">运行速度</string>

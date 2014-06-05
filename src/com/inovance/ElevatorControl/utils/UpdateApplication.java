@@ -2,13 +2,19 @@ package com.inovance.ElevatorControl.utils;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Message;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.TextView;
+import com.bluetoothtool.BluetoothTool;
 import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.views.dialogs.CustomDialog;
 import com.inovance.ElevatorControl.web.WebApi;
 import net.tsz.afinal.core.AsyncTask;
 import org.holoeverywhere.widget.LinearLayout;
@@ -77,23 +83,77 @@ public class UpdateApplication {
     }
 
     /**
+     * 检查网络连接是否可用
+     *
+     * @param context Context
+     * @return Available Status
+     */
+    public boolean isNetworkAvailable() {
+        ConnectivityManager connectivity = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivity == null) {
+            return false;
+        } else {
+            NetworkInfo[] info = connectivity.getAllNetworkInfo();
+            if (info != null) {
+                for (NetworkInfo anInfo : info) {
+                    if (anInfo.getState() == NetworkInfo.State.CONNECTED) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * 检查是否有新版本
      */
     public void checkUpdate() {
         if (activity != null) {
-            WebApi.getInstance().setOnResultListener(new WebApi.onGetResultListener() {
-                @Override
-                public void onResult(String tag, String responseString) {
-                    if (true) {
-                        confirmUpdateApplication("");
-                    } else {
-                        if (mListener != null) {
-                            mListener.onNoUpdate();
+            if (isNetworkAvailable()) {
+                WebApi.getInstance().setOnResultListener(new WebApi.onGetResultListener() {
+                    @Override
+                    public void onResult(String tag, String responseString) {
+                        // TODO Check Update
+                        if (true) {
+                            confirmUpdateApplication("");
+                        } else {
+                            if (mListener != null) {
+                                mListener.onNoUpdate();
+                            }
                         }
                     }
-                }
-            });
-            WebApi.getInstance().getLastSoftwareVersion(activity);
+                });
+                WebApi.getInstance().getLastSoftwareVersion(activity);
+            } else {
+                new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
+                        .setTitle(R.string.no_network_title)
+                        .setMessage(R.string.setting_network_message)
+                        .setNegativeButton(R.string.exit_application_text, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                WebApi.getInstance().removeListener();
+                                BluetoothTool.getInstance(activity).kill();
+                                activity.finish();
+                            }
+                        })
+                        .setNeutralButton(R.string.setting_wireless_text, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                Intent intent = new Intent(Settings.ACTION_WIRELESS_SETTINGS);
+                                activity.startActivity(intent);
+                            }
+                        })
+                        .setPositiveButton(R.string.setting_wifi_text, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                Intent intent = new Intent(Settings.ACTION_WIFI_SETTINGS);
+                                activity.startActivity(intent);
+                            }
+                        })
+                        .create()
+                        .show();
+            }
         }
     }
 
@@ -111,14 +171,18 @@ public class UpdateApplication {
             AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
                     .setView(dialogView)
                     .setTitle(R.string.confirm_update_title)
-                    .setNegativeButton(R.string.dialog_btn_cancel, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            CustomDialog.exitDialog(activity);
-                        }
-                    })
-                    .setPositiveButton(R.string.dialog_btn_ok, null);
+                    .setNegativeButton(R.string.exit_application_text, null)
+                    .setPositiveButton(R.string.update_application_text, null);
             AlertDialog dialog = builder.create();
+            dialog.show();
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    WebApi.getInstance().removeListener();
+                    BluetoothTool.getInstance(activity).kill();
+                    activity.finish();
+                }
+            });
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -127,14 +191,33 @@ public class UpdateApplication {
                     new DownloadTask().execute(url);
                 }
             });
-            dialog.show();
         }
     }
+
+    private static final int GetContentLength = 1;
+
+    private Handler handler = new Handler() {
+
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case GetContentLength: {
+                    if (msg.obj instanceof Integer) {
+                        int length = (Integer) msg.obj;
+                        downloadProgressBar.setMax(length);
+                        totalLengthTextView.setText(String.valueOf(length));
+                    }
+                }
+                break;
+            }
+        }
+
+    };
 
     /**
      * 下载安装包
      */
-    private class DownloadTask extends AsyncTask<String, Integer, Boolean> {
+    private class DownloadTask extends AsyncTask<String, Long, Boolean> {
 
         @Override
         protected Boolean doInBackground(String... params) {
@@ -144,13 +227,18 @@ public class UpdateApplication {
                 URLConnection connection = url.openConnection();
                 connection.connect();
                 int contentLength = connection.getContentLength();
-                downloadProgressBar.setMax(contentLength);
-                totalLengthTextView.setText(String.valueOf(contentLength));
-                InputStream inputStream = new BufferedInputStream(url.openStream(), 8192);
-                File fileName = new File(activity.getExternalCacheDir().getPath() + "/APK/update.apk");
+                Message message = new Message();
+                message.what = GetContentLength;
+                message.obj = contentLength;
+                handler.sendMessage(message);
+                InputStream inputStream = new BufferedInputStream(url.openStream());
+                File fileName = new File(activity.getExternalCacheDir().getPath() + "/update.apk");
+                if (!fileName.exists()) {
+                    fileName.createNewFile();
+                }
                 OutputStream output = new FileOutputStream(fileName);
                 byte data[] = new byte[1024];
-                int total = 0;
+                long total = 0;
                 while ((count = inputStream.read(data)) != -1) {
                     total += count;
                     // publishing the progress....
@@ -169,12 +257,12 @@ public class UpdateApplication {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            return null;
+            return true;
         }
 
         @Override
-        protected void onProgressUpdate(Integer... values) {
-            downloadProgressBar.setProgress(values[0]);
+        protected void onProgressUpdate(Long... values) {
+            downloadProgressBar.setProgress(values[0].intValue());
             currentLengthTextView.setText(String.valueOf(values[0]));
         }
 
@@ -182,7 +270,7 @@ public class UpdateApplication {
         protected void onPostExecute(Boolean result) {
             if (result) {
                 Intent intent = new Intent(Intent.ACTION_VIEW);
-                File file = new File(activity.getExternalCacheDir().getPath() + "/APK/update.apk");
+                File file = new File(activity.getExternalCacheDir().getPath() + "/update.apk");
                 intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 activity.startActivity(intent);
