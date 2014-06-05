@@ -41,8 +41,8 @@
         "productId": 725,
         "description": null,
         "childId": null,
-        "scope": "0-655.35",
-        "scale": 0.01,
+        "scope": "0-6553.5",
+        "scale": 0.1,
         "unit": "A",
         "type": 57,
         "showBit": "FALSE"

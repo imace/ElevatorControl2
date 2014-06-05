@@ -22,13 +22,15 @@
                 android:layout_height="wrap_content"/>
         <View
                 android:background="#ffdfdfdf"
-                android:layout_margin="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginLeft="10dp"
                 android:layout_width="1dp"
                 android:layout_height="match_parent"/>
         <org.holoeverywhere.widget.EditText
                 android:id="@+id/user_name"
                 android:layout_weight="1"
                 android:maxLines="1"
+                android:hint="@string/field_require_hint"
                 android:layout_marginTop="5dp"
                 android:layout_marginBottom="5dp"
                 android:layout_marginRight="10dp"
@@ -54,13 +56,15 @@
                 android:layout_height="wrap_content"/>
         <View
                 android:background="#ffdfdfdf"
-                android:layout_margin="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginLeft="10dp"
                 android:layout_width="1dp"
                 android:layout_height="match_parent"/>
         <org.holoeverywhere.widget.EditText
                 android:id="@+id/company"
                 android:layout_weight="1"
                 android:maxLines="1"
+                android:hint="@string/field_require_hint"
                 android:layout_marginTop="5dp"
                 android:layout_marginBottom="5dp"
                 android:layout_marginRight="10dp"
@@ -86,13 +90,15 @@
                 android:layout_height="wrap_content"/>
         <View
                 android:background="#ffdfdfdf"
-                android:layout_margin="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginLeft="10dp"
                 android:layout_width="1dp"
                 android:layout_height="match_parent"/>
         <org.holoeverywhere.widget.EditText
                 android:id="@+id/cell_phone"
                 android:layout_weight="1"
                 android:maxLines="1"
+                android:hint="@string/field_require_hint"
                 android:inputType="numberDecimal"
                 android:layout_marginTop="5dp"
                 android:layout_marginBottom="5dp"
@@ -119,7 +125,8 @@
                 android:layout_height="wrap_content"/>
         <View
                 android:background="#ffdfdfdf"
-                android:layout_margin="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginLeft="10dp"
                 android:layout_width="1dp"
                 android:layout_height="match_parent"/>
         <org.holoeverywhere.widget.EditText
@@ -152,7 +159,8 @@
                 android:layout_height="wrap_content"/>
         <View
                 android:background="#ffdfdfdf"
-                android:layout_margin="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginLeft="10dp"
                 android:layout_width="1dp"
                 android:layout_height="match_parent"/>
         <org.holoeverywhere.widget.EditText

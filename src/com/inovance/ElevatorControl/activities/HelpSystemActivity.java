@@ -15,7 +15,7 @@ import org.holoeverywhere.widget.ListView;
 import org.holoeverywhere.widget.TextView;
 
 /**
- * 帮助
+ * 帮助标签
  */
 public class HelpSystemActivity extends Activity {
 
@@ -60,6 +60,7 @@ public class HelpSystemActivity extends Activity {
                         startActivity(new Intent(HelpSystemActivity.this, BarcodeCaptureActivity.class));
                         break;
                     case 1:
+                        startActivity(new Intent(HelpSystemActivity.this, SystemLogActivity.class));
                         break;
                     case 2:
                         startActivity(new Intent(HelpSystemActivity.this, AboutActivity.class));

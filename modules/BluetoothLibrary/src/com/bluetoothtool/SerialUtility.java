@@ -17,11 +17,10 @@ public class SerialUtility {
         StringBuilder sb = new StringBuilder("");
         byte[] bs = str.getBytes();
         int bit;
-
-        for (int i = 0; i < bs.length; i++) {
-            bit = (bs[i] & 0x0f0) >> 4;
+        for (byte b : bs) {
+            bit = (b & 0x0f0) >> 4;
             sb.append(chars[bit]);
-            bit = bs[i] & 0x0f;
+            bit = b & 0x0f;
             sb.append(chars[bit]);
             sb.append(' ');
         }

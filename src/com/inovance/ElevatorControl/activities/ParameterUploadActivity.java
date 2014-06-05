@@ -6,11 +6,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Message;
-import android.text.format.DateFormat;
-import android.view.LayoutInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
+import android.support.v7.widget.PopupMenu;
+import android.view.*;
 import android.widget.BaseAdapter;
 import android.widget.ScrollView;
 import butterknife.InjectView;
@@ -21,9 +18,9 @@ import com.bluetoothtool.BluetoothTool;
 import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.handlers.GlobalHandler;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.models.Profile;
+import com.inovance.ElevatorControl.utils.LogUtils;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
 import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.widget.*;
@@ -32,6 +29,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -44,31 +43,64 @@ import java.util.List;
  */
 public class ParameterUploadActivity extends Activity {
 
-    private final static String DIRECTORY_NAME = "Profile";
-
     private static final String TAG = ParameterUploadActivity.class.getSimpleName();
 
+    /**
+     * 参数保存目录
+     */
+    private final static String DIRECTORY_NAME = "Profile";
+
+    /**
+     * 可写入的参数列表 List View
+     */
     @InjectView(R.id.upload_list)
     ListView listView;
 
-    private LocalProfileAdapter adapter;
+    /**
+     * 参数列表 ListView Adapter
+     */
+    private LocalProfileAdapter profileAdapter;
 
+    /**
+     * 写入参数的通信内容
+     */
     private List<BluetoothTalk[]> communicationsList;
 
     private List<ParameterSettings> parameterSettingsList;
 
+    /**
+     * 写入参数 Handler
+     */
     private UploadParameterHandler uploadParameterHandler;
 
+    /**
+     * 配置文件列表
+     */
     private List<Profile> profileList;
 
+    /**
+     * 写入 Dialog
+     */
     private AlertDialog uploadDialog;
 
+    /**
+     * 上传提示文字
+     */
     private TextView uploadTipsTextView;
 
+    /**
+     * 写入进度
+     */
     private ProgressBar uploadProgressBar;
 
+    /**
+     * 上传完毕后出错统计
+     */
     private ScrollView tipsView;
 
+    /**
+     * Dialog 取消按钮
+     */
     private Button dialogButton;
 
     public void onCreate(Bundle savedInstanceState) {
@@ -82,13 +114,20 @@ public class ParameterUploadActivity extends Activity {
         profileList = new ArrayList<Profile>();
         getProfileList();
         uploadParameterHandler = new UploadParameterHandler(this);
-        adapter = new LocalProfileAdapter(profileList);
-        listView.setAdapter(adapter);
+        profileAdapter = new LocalProfileAdapter();
+        listView.setAdapter(profileAdapter);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        BluetoothTool.getInstance(this).setHandler(null);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        BluetoothTool.getInstance(this).setHandler(null);
         overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
     }
 
@@ -101,6 +140,34 @@ public class ParameterUploadActivity extends Activity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * 读取电梯运行状态
+     *
+     * @param index ListView Item Index
+     */
+    private void getElevatorStatus(final int index) {
+        BluetoothHandler handler = new BluetoothHandler(this) {
+            @Override
+            public void onTalkReceive(Message msg) {
+                if (msg.obj != null && msg.obj instanceof Integer) {
+                    int status = ((Integer) msg.obj).intValue();
+                    if (status == 3) {
+                        onUploadButtonClick(index);
+                    } else {
+                        AlertDialog.Builder builder = new android.app.AlertDialog.Builder(ParameterUploadActivity.this,
+                                R.style.CustomDialogStyle)
+                                .setTitle(R.string.cannot_upload_profile_title)
+                                .setMessage(R.string.elevator_running_cannot_upload_message)
+                                .setNegativeButton(R.string.dialog_btn_cancel, null)
+                                .setPositiveButton(R.string.dialog_btn_ok, null);
+                        builder.create().show();
+                    }
+                }
+            }
+        };
+        BluetoothTool.getInstance(this).getRunningStatus(handler);
     }
 
     /**
@@ -117,11 +184,11 @@ public class ParameterUploadActivity extends Activity {
             File[] files = directory.listFiles();
             for (File inFile : files) {
                 if (inFile.isFile()) {
-                    Date date = new Date(inFile.lastModified());
-                    DateFormat dateFormat = new android.text.format.DateFormat();
+                    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    String timeString = dateFormat.format(new Date(inFile.lastModified()));
                     Profile profile = new Profile();
                     profile.setVersion("1.2");
-                    profile.setUpdateDate(DateFormat.format("yyyy年MM月dd日 kk:mm", date).toString());
+                    profile.setUpdateDate(timeString);
                     profile.setFileName(inFile.getName());
                     profileList.add(profile);
                 }
@@ -135,7 +202,7 @@ public class ParameterUploadActivity extends Activity {
      * @param position ListView index
      */
     private void onUploadButtonClick(int position) {
-        Profile profile = adapter.getItem(position);
+        Profile profile = profileList.get(position);
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             File directory = new File(getApplicationContext().getExternalCacheDir().getPath()
                     + "/"
@@ -155,6 +222,7 @@ public class ParameterUploadActivity extends Activity {
                 // 生成通讯内容
                 generateCommunicationsList(groups);
                 // 开始上传参数
+                uploadParameterHandler.receiveCount = 0;
                 ParameterUploadActivity.this.startCommunication(0);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -170,20 +238,25 @@ public class ParameterUploadActivity extends Activity {
         tipsView = (ScrollView) dialogView.findViewById(R.id.tips_view);
         uploadTipsTextView = (TextView) dialogView.findViewById(R.id.upload_tips);
         uploadProgressBar = (ProgressBar) dialogView.findViewById(R.id.progress_bar);
+        uploadProgressBar.setProgress(0);
         uploadProgressBar.setMax(parameterSettingsList.size());
         builder.setTitle(R.string.uploading_profile_text);
         builder.setView(dialogView);
-        builder.setNegativeButton(R.string.dialog_btn_cancel, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                BluetoothTool.getInstance(ParameterUploadActivity.this).setHandler(null);
-            }
-        });
+        builder.setNegativeButton(R.string.dialog_btn_cancel, null);
         uploadDialog = builder.create();
         uploadDialog.setCancelable(false);
         uploadDialog.setCanceledOnTouchOutside(false);
         uploadDialog.show();
-        dialogButton = (Button) uploadDialog.getButton(org.holoeverywhere.app.AlertDialog.BUTTON_NEGATIVE);
+        dialogButton = (Button) uploadDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+        dialogButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                BluetoothTool.getInstance(ParameterUploadActivity.this).setHandler(null);
+                uploadProgressBar.setProgress(0);
+                uploadDialog.dismiss();
+                uploadDialog = null;
+            }
+        });
     }
 
     /**
@@ -274,14 +347,11 @@ public class ParameterUploadActivity extends Activity {
     private void startCommunication(int position) {
         if (position >= 0 && position < communicationsList.size()) {
             uploadParameterHandler.index = position;
-            if (BluetoothTool.getInstance(this).isConnected()) {
+            if (BluetoothTool.getInstance(this).isPrepared()) {
                 BluetoothTool.getInstance(this)
                         .setHandler(uploadParameterHandler)
                         .setCommunications(communicationsList.get(position))
                         .send();
-            } else {
-                GlobalHandler.getInstance(ParameterUploadActivity.this)
-                        .sendMessage(GlobalHandler.NOT_CONNECTED);
             }
         }
     }
@@ -319,6 +389,86 @@ public class ParameterUploadActivity extends Activity {
             tipsView.setVisibility(View.VISIBLE);
         }
         dialogButton.setText(R.string.dialog_btn_ok);
+        // 写入日志
+        LogUtils.getInstance().write(ApplicationConfig.LogUploadProfile);
+    }
+
+    /**
+     * 点击 ListView 项目菜单动作
+     *
+     * @param view  View
+     * @param index Index
+     */
+    private void onClickListViewItemMenuWithIndex(View view, final int index) {
+        final Profile profile = profileList.get(index);
+        PopupMenu popupMenu = new PopupMenu(this, view);
+        MenuInflater inflater = popupMenu.getMenuInflater();
+        inflater.inflate(R.menu.parameter_upload_menu, popupMenu.getMenu());
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()) {
+                    // 查看配置文件
+                    case R.id.action_view: {
+                        Intent intent = new Intent(ParameterUploadActivity.this, ParameterViewerActivity.class);
+                        intent.putExtra("profileName", profile.getFileName());
+                        startActivity(intent);
+                    }
+                    break;
+                    // 写入配置文件
+                    case R.id.action_upload: {
+                        if (BluetoothTool.getInstance(ParameterUploadActivity.this).isPrepared()) {
+                            AlertDialog.Builder builder = new android.app.AlertDialog.Builder(ParameterUploadActivity.this, R.style.CustomDialogStyle)
+                                    .setTitle(R.string.upload_dialog_title)
+                                    .setMessage(R.string.upload_dialog_message)
+                                    .setNegativeButton(R.string.dialog_btn_cancel, null)
+                                    .setPositiveButton(R.string.dialog_btn_ok, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            getElevatorStatus(index);
+                                        }
+                                    });
+                            builder.create().show();
+                        }
+                    }
+                    break;
+                    // 删除配置文件
+                    case R.id.action_delete: {
+                        deleteProfile(profile.getFileName(), index);
+                    }
+                    break;
+                }
+                return false;
+            }
+        });
+        popupMenu.show();
+    }
+
+    /**
+     * 删除配置文件
+     *
+     * @param fileName 配置文件名称
+     */
+    private void deleteProfile(final String fileName, final int index) {
+        AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this, R.style.CustomDialogStyle)
+                .setTitle(R.string.upload_dialog_title)
+                .setMessage(R.string.upload_dialog_message)
+                .setNegativeButton(R.string.dialog_btn_cancel, null)
+                .setPositiveButton(R.string.dialog_btn_ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+                            File directory = new File(getApplicationContext().getExternalCacheDir().getPath()
+                                    + "/"
+                                    + DIRECTORY_NAME);
+                            File file = new File(directory, fileName);
+                            file.delete();
+                            profileList.remove(index);
+                            profileAdapter.notifyDataSetChanged();
+                        }
+                    }
+                });
+        builder.create().show();
     }
 
     // ========================= Local Profile Adapter =====================================
@@ -328,20 +478,18 @@ public class ParameterUploadActivity extends Activity {
      */
     private class LocalProfileAdapter extends BaseAdapter {
 
-        private List<Profile> profileLists;
+        public LocalProfileAdapter() {
 
-        public LocalProfileAdapter(List<Profile> lists) {
-            profileLists = lists;
         }
 
         @Override
         public int getCount() {
-            return profileLists.size();
+            return profileList.size();
         }
 
         @Override
         public Profile getItem(int i) {
-            return profileLists.get(i);
+            return profileList.get(i);
         }
 
         @Override
@@ -358,8 +506,7 @@ public class ParameterUploadActivity extends Activity {
                 holder = new ViewHolder();
                 holder.profileName = (TextView) convertView.findViewById(R.id.profile_name);
                 holder.createDate = (TextView) convertView.findViewById(R.id.create_date);
-                holder.viewButton = (Button) convertView.findViewById(R.id.view_button);
-                holder.uploadButton = (Button) convertView.findViewById(R.id.upload_button);
+                holder.operationButton = (ImageButton) convertView.findViewById(R.id.more_option);
                 convertView.setTag(holder);
             } else {
                 holder = (ViewHolder) convertView.getTag();
@@ -368,33 +515,10 @@ public class ParameterUploadActivity extends Activity {
             holder.profileName.setText(profile.getFileName());
             holder.createDate.setText(profile.getUpdateDate());
             final int index = position;
-            holder.viewButton.setOnClickListener(new View.OnClickListener() {
+            holder.operationButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Intent intent = new Intent(ParameterUploadActivity.this, ParameterViewerActivity.class);
-                    intent.putExtra("profileName", profile.getFileName());
-                    startActivity(intent);
-                }
-            });
-            holder.uploadButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (BluetoothTool.getInstance(ParameterUploadActivity.this).isConnected()) {
-                        AlertDialog.Builder builder = new android.app.AlertDialog.Builder(ParameterUploadActivity.this, R.style.CustomDialogStyle)
-                                .setTitle(R.string.upload_dialog_title)
-                                .setMessage(R.string.upload_dialog_message)
-                                .setNegativeButton(R.string.dialog_btn_cancel, null)
-                                .setPositiveButton(R.string.dialog_btn_ok, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        ParameterUploadActivity.this.onUploadButtonClick(index);
-                                    }
-                                });
-                        builder.create().show();
-                    } else {
-                        GlobalHandler.getInstance(ParameterUploadActivity.this)
-                                .sendMessage(GlobalHandler.NOT_CONNECTED);
-                    }
+                    onClickListViewItemMenuWithIndex(view, index);
                 }
             });
             return convertView;
@@ -406,8 +530,7 @@ public class ParameterUploadActivity extends Activity {
         private class ViewHolder {
             TextView profileName;
             TextView createDate;
-            Button viewButton;
-            Button uploadButton;
+            ImageButton operationButton;
         }
 
     }
@@ -421,7 +544,7 @@ public class ParameterUploadActivity extends Activity {
 
         public int index = 0;
 
-        private int receiveCount = 0;
+        public int receiveCount = 0;
 
         public UploadParameterHandler(Activity activity) {
             super(activity);
@@ -473,7 +596,6 @@ public class ParameterUploadActivity extends Activity {
                 ParameterUploadActivity.this.uploadProgressBar.setProgress(receiveCount);
             }
         }
-
     }
 
 }

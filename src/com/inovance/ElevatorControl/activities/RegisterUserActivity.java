@@ -12,12 +12,10 @@ import butterknife.Views;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.models.User;
+import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
 import com.inovance.ElevatorControl.web.WebApi;
 import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.widget.EditText;
-import org.holoeverywhere.widget.LinearLayout;
-import org.holoeverywhere.widget.ProgressBar;
-import org.holoeverywhere.widget.TextView;
+import org.holoeverywhere.widget.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -28,6 +26,8 @@ import org.json.JSONException;
  * Time: 11:23.
  */
 public class RegisterUserActivity extends Activity {
+
+    private static final String TAG = RegisterUserActivity.class.getSimpleName();
 
     @InjectView(R.id.user_name)
     EditText userName;
@@ -56,6 +56,8 @@ public class RegisterUserActivity extends Activity {
     @InjectView(R.id.error_text)
     TextView errorTextView;
 
+    private static final int REQUEST_BLUETOOTH_ENABLE = 1;
+
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
@@ -75,8 +77,6 @@ public class RegisterUserActivity extends Activity {
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                submitProgress.setVisibility(View.VISIBLE);
-                submitTextView.setVisibility(View.INVISIBLE);
                 submitRegisterRequest();
             }
         });
@@ -85,6 +85,10 @@ public class RegisterUserActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+            Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(intent, REQUEST_BLUETOOTH_ENABLE);
+        }
     }
 
     @Override
@@ -104,39 +108,80 @@ public class RegisterUserActivity extends Activity {
      * 提交用户注册
      */
     private void submitRegisterRequest() {
-        User user = new User();
-        user.setName(userName.getText().toString());
-        user.setCompany(company.getText().toString());
-        user.setCellPhone(cellPhone.getText().toString());
-        user.setTelephone(telPhone.getText().toString());
-        user.setEmail(email.getText().toString());
-        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        user.setBluetoothAddress(bluetoothAdapter.getAddress());
-        WebApi.getInstance().setOnResultListener(new WebApi.onGetResultListener() {
-            @Override
-            public void onResult(String tag, String responseString) {
-                if (tag.equalsIgnoreCase(ApplicationConfig.RegisterUser)) {
-                    boolean successful = false;
-                    try {
-                        JSONArray jsonArray = new JSONArray(responseString);
-                        RegisterUserActivity
-                                .this
-                                .startActivity(new Intent(RegisterUserActivity.this, NavigationTabActivity.class));
-                    } catch (JSONException e) {
-                        submitProgress.setVisibility(View.INVISIBLE);
-                        submitTextView.setVisibility(View.VISIBLE);
-                        errorTextView.setText(responseString);
+        if (validateUserInputInformation()) {
+            submitProgress.setVisibility(View.VISIBLE);
+            submitTextView.setVisibility(View.GONE);
+            User user = new User();
+            user.setName(userName.getText().toString());
+            user.setCompany(company.getText().toString());
+            user.setCellPhone(cellPhone.getText().toString());
+            user.setTelephone(telPhone.getText().toString());
+            user.setEmail(email.getText().toString());
+            BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            user.setBluetoothAddress(bluetoothAdapter.getAddress());
+            WebApi.getInstance().setOnResultListener(new WebApi.onGetResultListener() {
+                @Override
+                public void onResult(String tag, String responseString) {
+                    if (tag.equalsIgnoreCase(ApplicationConfig.RegisterUser)) {
+                        try {
+                            JSONArray jsonArray = new JSONArray(responseString);
+                            RegisterUserActivity
+                                    .this
+                                    .startActivity(new Intent(RegisterUserActivity.this, NavigationTabActivity.class));
+                        } catch (JSONException e) {
+                            submitProgress.setVisibility(View.GONE);
+                            submitTextView.setVisibility(View.VISIBLE);
+                            errorTextView.setText(responseString);
+                        }
                     }
                 }
-            }
-        });
-        WebApi.getInstance().setOnFailureListener(new WebApi.onRequestFailureListener() {
-            @Override
-            public void onFailure(int statusCode, Throwable throwable) {
+            });
+            WebApi.getInstance().setOnFailureListener(new WebApi.onRequestFailureListener() {
+                @Override
+                public void onFailure(int statusCode, Throwable throwable) {
+                    Toast.makeText(RegisterUserActivity.this, R.string.register_failed_text, Toast.LENGTH_SHORT)
+                            .show();
+                    submitProgress.setVisibility(View.GONE);
+                    submitTextView.setVisibility(View.VISIBLE);
+                }
+            });
+            WebApi.getInstance().registerUser(this, user);
+        }
+    }
 
-            }
-        });
-        WebApi.getInstance().registerUser(this, user);
+    /**
+     * 验证用户注册信息
+     *
+     * @return 验证结果
+     */
+    private boolean validateUserInputInformation() {
+        boolean userNameCheck = userName.getText().toString().length() > 0 && userName.getText().toString().length() <= 6;
+        boolean companyCheck = company.getText().toString().length() > 0;
+        boolean cellPhoneCheck = cellPhone.getText().toString().length() > 0;
+        boolean emailCheck = ParseSerialsUtils.isValidEmail(email.getText().toString());
+        boolean isValidated = true;
+        String validateResult = "";
+        if (!userNameCheck) {
+            isValidated = false;
+            validateResult += getResources().getString(R.string.user_name_error) + "\n";
+        }
+        if (!companyCheck) {
+            isValidated = false;
+            validateResult += getResources().getString(R.string.company_name_error) + "\n";
+        }
+        if (!cellPhoneCheck) {
+            isValidated = false;
+            validateResult += getResources().getString(R.string.cellphone_error) + "\n";
+        }
+        if (!emailCheck) {
+            isValidated = false;
+            validateResult += getResources().getString(R.string.email_address_error) + "\n";
+        }
+        if (!isValidated) {
+            Toast.makeText(this, validateResult.trim(), Toast.LENGTH_SHORT)
+                    .show();
+        }
+        return isValidated;
     }
 
     @Override
@@ -148,6 +193,17 @@ public class RegisterUserActivity extends Activity {
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_BLUETOOTH_ENABLE) {
+            if (resultCode == RESULT_CANCELED) {
+                setResult(RESULT_OK);
+                finish();
+            }
         }
     }
 

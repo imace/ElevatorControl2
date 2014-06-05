@@ -13,6 +13,7 @@ import android.webkit.WebView;
  * see http://stackoverflow.com/a/9925980
  */
 public class ExtendedWebView extends WebView {
+
     public ExtendedWebView(Context context) {
         super(context);
     }

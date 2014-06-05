@@ -22,13 +22,13 @@ import com.inovance.ElevatorControl.handlers.GlobalHandler;
 import com.inovance.ElevatorControl.models.ObjectListHolder;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.models.RealTimeMonitor;
+import com.inovance.ElevatorControl.utils.LogUtils;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
 import com.inovance.ElevatorControl.views.TypefaceTextView;
 import com.inovance.ElevatorControl.views.viewpager.VerticalViewPager;
 import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.widget.ImageButton;
 import org.holoeverywhere.widget.LinearLayout;
-import org.holoeverywhere.widget.ProgressBar;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -38,6 +38,7 @@ import java.util.concurrent.Executors;
 
 /**
  * Created by IntelliJ IDEA.
+ * 电梯内召
  * User: keith.
  * Date: 14-3-6.
  * Time: 11:03.
@@ -46,45 +47,99 @@ public class MoveInsideActivity extends Activity implements Runnable {
 
     private static final String TAG = MoveInsideActivity.class.getSimpleName();
 
+    /**
+     * 内召指令
+     */
     private static final String codeType = "62";
 
+    /**
+     * 用于召唤楼层的指令列表
+     */
     private List<RealTimeMonitor> realTimeMonitors;
 
+    /**
+     * View Pager
+     */
     @InjectView(R.id.vertical_view_pager)
     VerticalViewPager viewPager;
 
+    /**
+     * 当前楼层
+     */
     @InjectView(R.id.current_floor)
     TypefaceTextView currentFloorTextView;
 
+    /**
+     * 开门按钮
+     */
     @InjectView(R.id.open_door_button)
     ImageButton openDoorButton;
 
+    /**
+     * 关门按钮
+     */
     @InjectView(R.id.close_door_button)
     ImageButton closeDoorButton;
 
+    /**
+     * 获取电梯最高层、最底层进度指示
+     */
     @InjectView(R.id.load_view)
     LinearLayout loadView;
 
+    /**
+     * 获取电梯最高层、最底层 Handler
+     */
     private MoveInsideHandler mMoveInsideHandler;
 
+    /**
+     * 召唤楼层 Handler
+     */
     private FloorHandler floorHandler;
 
+    /**
+     * 同步电梯召唤状态 Handler
+     */
     private SyncMoveInsideInfoHandler mSyncMoveInsideInfoHandler;
 
+    /**
+     * 取得电梯最高层、最底层通信内容
+     */
     private BluetoothTalk[] communications;
 
+    /**
+     * 同步电梯召唤状态 Task
+     */
     private Runnable syncTask;
 
+    /**
+     * 是否暂停同步 Task
+     */
     private boolean running = false;
 
+    /**
+     * 用于同步的 Handler
+     */
     private Handler syncHandler = new Handler();
 
+    /**
+     * 是否正在召唤楼层
+     */
     private boolean isWritingData = false;
 
+    /**
+     * 是否召唤成功
+     */
     private boolean isWriteSuccessful = false;
 
+    /**
+     * 是否正在同步电梯召唤信息
+     */
     private boolean isSyncing = false;
 
+    /**
+     * Vertical View Pager Adapter
+     */
     private MoveSidePagerAdapter moveSidePagerAdapter;
 
     private ExecutorService pool = Executors.newSingleThreadExecutor();
@@ -94,8 +149,14 @@ public class MoveInsideActivity extends Activity implements Runnable {
      */
     private static final int SYNC_TIME = 1000;
 
+    /**
+     * 获取电梯召唤状态的通信内容
+     */
     private BluetoothTalk[] getMoveInsideInfoCommunications;
 
+    /**
+     * 是否已经获取到电梯最高层、最底层
+     */
     private boolean hasGetFloors = false;
 
     public void onCreate(Bundle savedInstanceState) {
@@ -135,7 +196,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
             @Override
             public void run() {
                 if (running) {
-                    if (BluetoothTool.getInstance(MoveInsideActivity.this).isConnected()) {
+                    if (BluetoothTool.getInstance(MoveInsideActivity.this).isPrepared()) {
                         pool.execute(MoveInsideActivity.this);
                         syncHandler.postDelayed(this, SYNC_TIME);
                     }
@@ -146,6 +207,9 @@ public class MoveInsideActivity extends Activity implements Runnable {
         closeDoorButton.setEnabled(false);
     }
 
+    /**
+     * 生成用于读取电梯召唤信息的通信内容
+     */
     private void createGetMoveInsideInfoCommunications() {
         if (getMoveInsideInfoCommunications == null) {
             final List<RealTimeMonitor> monitorLists = RealTimeMonitorDao
@@ -252,7 +316,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
      */
     private void syncMoveInsideInfoStatus() {
         if (!isSyncing) {
-            if (BluetoothTool.getInstance(MoveInsideActivity.this).isConnected()) {
+            if (BluetoothTool.getInstance(MoveInsideActivity.this).isPrepared()) {
                 if (mSyncMoveInsideInfoHandler != null && getMoveInsideInfoCommunications != null) {
                     MoveInsideActivity.this.isSyncing = true;
                     mSyncMoveInsideInfoHandler.sendCount = getMoveInsideInfoCommunications.length;
@@ -271,7 +335,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
     @Override
     protected void onResume() {
         super.onResume();
-        if (BluetoothTool.getInstance(this).isConnected()) {
+        if (BluetoothTool.getInstance(this).isPrepared()) {
             running = true;
             syncHandler.postDelayed(syncTask, SYNC_TIME);
         } else {
@@ -311,7 +375,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
     }
 
     /**
-     * Create Get Floors Communication
+     * 生成用于取得电梯最高层和最底层的通信内容
      */
     private void createGetFloorsCommunication() {
         ArrayList<String> names = new ArrayList<String>();
@@ -354,7 +418,9 @@ public class MoveInsideActivity extends Activity implements Runnable {
         };
     }
 
-    // 开门
+    /**
+     * 开门
+     */
     @OnClick(R.id.open_door_button)
     void openDoorButtonClick() {
         BluetoothTalk[] communications = new BluetoothTalk[]{
@@ -385,7 +451,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
                     }
                 }
         };
-        if (BluetoothTool.getInstance(MoveInsideActivity.this).isConnected()) {
+        if (BluetoothTool.getInstance(MoveInsideActivity.this).isPrepared()) {
             BluetoothTool.getInstance(MoveInsideActivity.this)
                     .setCommunications(communications)
                     .send();
@@ -395,7 +461,9 @@ public class MoveInsideActivity extends Activity implements Runnable {
         }
     }
 
-    // 关门
+    /**
+     * 关门
+     */
     @OnClick(R.id.close_door_button)
     void closeDoorButtonClick() {
         BluetoothTalk[] communications = new BluetoothTalk[]{
@@ -426,13 +494,10 @@ public class MoveInsideActivity extends Activity implements Runnable {
                     }
                 }
         };
-        if (BluetoothTool.getInstance(MoveInsideActivity.this).isConnected()) {
+        if (BluetoothTool.getInstance(MoveInsideActivity.this).isPrepared()) {
             BluetoothTool.getInstance(MoveInsideActivity.this)
                     .setCommunications(communications)
                     .send();
-        } else {
-            GlobalHandler.getInstance(MoveInsideActivity.this)
-                    .sendMessage(GlobalHandler.NOT_CONNECTED);
         }
     }
 
@@ -477,20 +542,18 @@ public class MoveInsideActivity extends Activity implements Runnable {
                     }
                 }
         };
-        if (BluetoothTool.getInstance(MoveInsideActivity.this).isConnected()) {
+        if (BluetoothTool.getInstance(MoveInsideActivity.this).isPrepared()) {
             floorHandler.writeCode = codeArray[0];
+            floorHandler.floor = floor;
             BluetoothTool.getInstance(MoveInsideActivity.this)
                     .setHandler(floorHandler)
                     .setCommunications(communications)
                     .send();
-        } else {
-            GlobalHandler.getInstance(MoveInsideActivity.this)
-                    .sendMessage(GlobalHandler.NOT_CONNECTED);
         }
     }
 
     /**
-     * 取得需要发送的Code
+     * 取得需要发送的用于召唤楼层的指令
      *
      * @param position GridView Item Index
      * @return String[]
@@ -529,14 +592,11 @@ public class MoveInsideActivity extends Activity implements Runnable {
      */
     private void loadDataAndRenderView() {
         if (communications != null) {
-            if (BluetoothTool.getInstance(MoveInsideActivity.this).isConnected()) {
+            if (BluetoothTool.getInstance(MoveInsideActivity.this).isPrepared()) {
                 BluetoothTool.getInstance(MoveInsideActivity.this)
                         .setHandler(mMoveInsideHandler)
                         .setCommunications(communications)
                         .send();
-            } else {
-                GlobalHandler.getInstance(MoveInsideActivity.this)
-                        .sendMessage(GlobalHandler.NOT_CONNECTED);
             }
         }
     }
@@ -552,7 +612,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
         }
     }
 
-    // ================================= MoveInside handler ========================================== //
+    // ================================= 获取电梯最高层和最底层 ========================================== //
     private class MoveInsideHandler extends BluetoothHandler {
 
         public MoveInsideHandler(Activity activity) {
@@ -580,7 +640,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
                     int bottom = ByteBuffer.wrap(new byte[]{data[6], data[7]}).getShort();
                     moveSidePagerAdapter = new MoveSidePagerAdapter(MoveInsideActivity.this,
                             new int[]{bottom, top});
-                    moveSidePagerAdapter.setOnSelectFloorListener(new MoveSidePagerAdapter.onSelectFloorListener() {
+                    moveSidePagerAdapter.setOnSelectFloorListener(new MoveSidePagerAdapter.OnSelectFloorListener() {
                         @Override
                         public void onSelect(int floor) {
                             final int calledFloor = floor;
@@ -593,6 +653,8 @@ public class MoveInsideActivity extends Activity implements Runnable {
                                         MoveInsideActivity.this.moveInsideCallFloor(calledFloor);
                                     } else {
                                         MoveInsideActivity.this.isWritingData = false;
+                                        this.cancel();
+                                        this.onFinish();
                                     }
                                 }
 
@@ -626,6 +688,8 @@ public class MoveInsideActivity extends Activity implements Runnable {
 
         public String writeCode;
 
+        public int floor;
+
         public FloorHandler(Activity activity) {
             super(activity);
             TAG = FloorHandler.class.getSimpleName();
@@ -644,9 +708,12 @@ public class MoveInsideActivity extends Activity implements Runnable {
         @Override
         public void onTalkReceive(Message msg) {
             if (msg.obj != null && msg.obj instanceof String) {
-                if (((String) msg.obj).contains(writeCode)) {
+                String receive = (String) msg.obj;
+                if (receive.contains(writeCode)) {
                     MoveInsideActivity.this.isWriteSuccessful = true;
                     MoveInsideActivity.this.isWritingData = false;
+                    // 写入内召日志
+                    LogUtils.getInstance().write(ApplicationConfig.LogMoveInside, writeCode, receive, floor);
                 }
             }
         }
@@ -696,7 +763,9 @@ public class MoveInsideActivity extends Activity implements Runnable {
                                 int length02 = ApplicationConfig.moveInsideName.length;
                                 for (int n = 0; n < length02; n++) {
                                     if (monitor.getName().equalsIgnoreCase(ApplicationConfig.moveInsideName[n])) {
-                                        // 召唤的楼层
+                                        /**
+                                         * 当前所有召唤的楼层
+                                         */
                                         calledFloorList.add(n * 8 + m + 1);
                                     }
                                 }
@@ -705,6 +774,9 @@ public class MoveInsideActivity extends Activity implements Runnable {
                     }
                 }
                 if (calledFloorList.size() > 0) {
+                    /**
+                     * 更新已召唤的楼层UI
+                     */
                     if (moveSidePagerAdapter != null) {
                         moveSidePagerAdapter.updateCurrentCalledFloor(calledFloorList);
                     }

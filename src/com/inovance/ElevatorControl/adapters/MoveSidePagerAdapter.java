@@ -10,9 +10,9 @@ import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.activities.MoveInsideActivity;
 import com.inovance.ElevatorControl.activities.MoveOutsideActivity;
 import com.inovance.ElevatorControl.views.TypefaceTextView;
+import com.inovance.ElevatorControl.views.component.ExpandGridView;
 import com.inovance.ElevatorControl.views.viewpager.PagerAdapter;
 import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.widget.GridView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,13 +25,15 @@ import java.util.List;
  */
 public class MoveSidePagerAdapter extends PagerAdapter {
 
-    private int PER_PAGER_SIZE = 12;
+    private static final String TAG = MoveSidePagerAdapter.class.getSimpleName();
+
+    private int pagerSize = 9;
 
     private int[] floorsArray;
 
     private Activity baseActivity;
 
-    private int contentViewHeight;
+    private int verticalSpacing;
 
     private int selectIndex;
 
@@ -41,13 +43,13 @@ public class MoveSidePagerAdapter extends PagerAdapter {
 
     private List<MoveSideGridViewAdapter> gridViewAdapterList;
 
-    public interface onSelectFloorListener {
+    public interface OnSelectFloorListener {
         void onSelect(int floor);
     }
 
-    private onSelectFloorListener selectListener;
+    private OnSelectFloorListener selectListener;
 
-    public void setOnSelectFloorListener(onSelectFloorListener listener) {
+    public void setOnSelectFloorListener(OnSelectFloorListener listener) {
         selectListener = listener;
     }
 
@@ -61,7 +63,7 @@ public class MoveSidePagerAdapter extends PagerAdapter {
         this.baseActivity = activity;
         this.floorsArray = floors;
         gridViewAdapterList = new ArrayList<MoveSideGridViewAdapter>();
-        getContentViewHeight();
+        calculatorPagerSizeAndVerticalSpacing();
     }
 
     /**
@@ -74,7 +76,7 @@ public class MoveSidePagerAdapter extends PagerAdapter {
         this.baseActivity = activity;
         this.floorsArray = floors;
         gridViewAdapterList = new ArrayList<MoveSideGridViewAdapter>();
-        getContentViewHeight();
+        calculatorPagerSizeAndVerticalSpacing();
     }
 
     /**
@@ -102,9 +104,9 @@ public class MoveSidePagerAdapter extends PagerAdapter {
     @Override
     public int getCount() {
         int totalFloors = Math.abs(floorsArray[0] - floorsArray[1]) + 1;
-        return totalFloors <= PER_PAGER_SIZE ? 1
-                : ((totalFloors - totalFloors % PER_PAGER_SIZE) / PER_PAGER_SIZE
-                + (totalFloors % PER_PAGER_SIZE == 0 ? 0 : 1));
+        return totalFloors <= pagerSize ? 1
+                : ((totalFloors - totalFloors % pagerSize) / pagerSize
+                + (totalFloors % pagerSize == 0 ? 0 : 1));
     }
 
     @Override
@@ -112,13 +114,14 @@ public class MoveSidePagerAdapter extends PagerAdapter {
         LayoutInflater mInflater = LayoutInflater.from(baseActivity);
         View contentView = mInflater.inflate(R.layout.move_side_view, null);
         firstRender = true;
-        GridView gridView = (GridView) contentView.findViewById(R.id.grid_view);
+        ExpandGridView gridView = (ExpandGridView) contentView.findViewById(R.id.grid_view);
+        gridView.setVerticalSpacing(verticalSpacing);
         final MoveSideGridViewAdapter adapter = new MoveSideGridViewAdapter(getFloors(position));
         gridViewAdapterList.add(adapter);
         gridView.setAdapter(adapter);
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int index, long l) {
+            public void onItemClick(AdapterView<?> parent, View view, int index, long id) {
                 selectIndex = index;
                 firstRender = false;
                 if (selectListener != null) {
@@ -148,24 +151,27 @@ public class MoveSidePagerAdapter extends PagerAdapter {
         int minFloor = Math.min(floorsArray[0], floorsArray[1]);
         int maxFloor = Math.max(floorsArray[0], floorsArray[1]);
         int totalFloors = Math.abs(minFloor - maxFloor) + 1;
-        boolean aliquot = totalFloors % PER_PAGER_SIZE == 0;
-        int startFloors = position * PER_PAGER_SIZE + minFloor;
-        int endFloors = totalFloors <= PER_PAGER_SIZE
+        boolean aliquot = totalFloors % pagerSize == 0;
+        int startFloors = position * pagerSize + minFloor;
+        int endFloors = totalFloors <= pagerSize
                 ? maxFloor
-                : (aliquot ? PER_PAGER_SIZE * (position + 1) + minFloor - 1 : (position == getCount() - 1
-                ? maxFloor : PER_PAGER_SIZE * (position + 1) + minFloor - 1));
+                : (aliquot ? pagerSize * (position + 1) + minFloor - 1 : (position == getCount() - 1
+                ? maxFloor : pagerSize * (position + 1) + minFloor - 1));
         return new int[]{startFloors, endFloors};
     }
 
-    private void getContentViewHeight() {
-        WindowManager wm = (WindowManager) baseActivity.getSystemService(Context.WINDOW_SERVICE);
-        Display display = wm.getDefaultDisplay();
+    private void calculatorPagerSizeAndVerticalSpacing() {
+        WindowManager windowManager = (WindowManager) baseActivity.getSystemService(Context.WINDOW_SERVICE);
+        Display display = windowManager.getDefaultDisplay();
         Point size = new Point();
+        int screenWidth;
         int screenHeight;
         if (android.os.Build.VERSION.SDK_INT >= 13) {
             display.getSize(size);
+            screenWidth = size.x;
             screenHeight = size.y;
         } else {
+            screenWidth = display.getWidth();
             screenHeight = display.getHeight();
         }
         int actionBarHeight = Math.round(baseActivity.getResources()
@@ -175,7 +181,17 @@ public class MoveSidePagerAdapter extends PagerAdapter {
         if (statusBarResource > 0) {
             statusBarHeight = baseActivity.getResources().getDimensionPixelSize(statusBarResource);
         }
-        contentViewHeight = screenHeight - statusBarHeight - actionBarHeight - getPixelFromDimension(180);
+        int margin = getPixelFromDimension(10);
+        int space = getPixelFromDimension(130);
+        int contentViewHeight = screenHeight - statusBarHeight - actionBarHeight - space;
+        int cellSize = (screenWidth - 6 * margin) / 3;
+        if (contentViewHeight >= cellSize * 4 + margin * 5) {
+            pagerSize = 12;
+            verticalSpacing = (contentViewHeight - cellSize * 4 - margin * 3) / 3;
+        } else {
+            pagerSize = 9;
+            verticalSpacing = (contentViewHeight - cellSize * 3 - margin * 2) / 2;
+        }
     }
 
     /**
@@ -221,7 +237,6 @@ public class MoveSidePagerAdapter extends PagerAdapter {
             LayoutInflater mInflater = LayoutInflater.from(MoveSidePagerAdapter.this.baseActivity);
             if (convertView == null) {
                 convertView = mInflater.inflate(R.layout.move_side_item, null);
-                convertView.setMinimumHeight(MoveSidePagerAdapter.this.contentViewHeight / 4);
                 holder = new ViewHolder();
                 holder.floorTextView = (TypefaceTextView) convertView.findViewById(R.id.floor_text);
                 convertView.setTag(holder);

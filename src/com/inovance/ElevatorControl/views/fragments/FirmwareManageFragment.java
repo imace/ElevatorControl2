@@ -6,10 +6,9 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.PopupMenu;
 import android.util.Base64;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import com.inovance.ElevatorControl.R;
@@ -18,10 +17,7 @@ import com.inovance.ElevatorControl.adapters.FirmwareBurnAdapter;
 import com.inovance.ElevatorControl.adapters.FirmwareDownloadAdapter;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.FirmwareDao;
-import com.inovance.ElevatorControl.models.Firmware;
-import com.inovance.ElevatorControl.models.GeneralDevice;
-import com.inovance.ElevatorControl.models.SpecialDevice;
-import com.inovance.ElevatorControl.models.Vendor;
+import com.inovance.ElevatorControl.models.*;
 import com.inovance.ElevatorControl.web.WebApi;
 import org.holoeverywhere.widget.*;
 import org.json.JSONArray;
@@ -34,6 +30,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by IntelliJ IDEA.
@@ -78,8 +75,19 @@ public class FirmwareManageFragment extends Fragment implements WebApi.onGetResu
 
     private List<SpecialDevice> specialDeviceList;
 
+    /**
+     * 读取提取固件列表进度
+     */
     private LinearLayout downloadListLoadView;
 
+    /**
+     * 没有可以提取的固件显示的视图
+     */
+    private LinearLayout emptyFirmwareView;
+
+    /**
+     * 可以提取的固件列表
+     */
     private ListView firmwareDownloadListView;
 
     private AlertDialog downloadDialog;
@@ -216,12 +224,14 @@ public class FirmwareManageFragment extends Fragment implements WebApi.onGetResu
      */
     public void loadFirmwareDownloadView() {
         downloadListLoadView = (LinearLayout) getActivity().findViewById(R.id.load_view);
+        emptyFirmwareView = (LinearLayout) getActivity().findViewById(R.id.empty_view);
         firmwareDownloadListView = (ListView) getActivity().findViewById(R.id.download_list);
         try {
             String bluetoothAddress = BluetoothAdapter.getDefaultAdapter().getAddress();
             WebApi.getInstance().setOnResultListener(this);
             WebApi.getInstance().setOnFailureListener(this);
             downloadListLoadView.setVisibility(View.VISIBLE);
+            emptyFirmwareView.setVisibility(View.GONE);
             firmwareDownloadListView.setVisibility(View.GONE);
             WebApi.getInstance().getAllFirmwareNotDownload(getActivity(), bluetoothAddress);
         } catch (Exception e) {
@@ -233,32 +243,46 @@ public class FirmwareManageFragment extends Fragment implements WebApi.onGetResu
      * 固件烧录
      */
     public void loadFirmwareBurnView() {
+        TextView deviceType = (TextView) getActivity().findViewById(R.id.device_type);
+        deviceType.setText(DeviceFactory.getInstance().getDeviceType());
+        TextView supplierCode = (TextView) getActivity().findViewById(R.id.supplier_code);
+        supplierCode.setText(DeviceFactory.getInstance().getSupplierCode());
         GridView gridView = (GridView) getActivity().findViewById(R.id.firmware_list);
-        List<Firmware> firmwareLists = new ArrayList<Firmware>();
+        List<Firmware> firmwareLists = FirmwareDao.findAll(context);
         FirmwareBurnAdapter adapter = new FirmwareBurnAdapter((FirmwareManageActivity) getActivity(),
                 firmwareLists);
         gridView.setAdapter(adapter);
     }
 
     /**
-     * Download Firmware
+     * 下载固件
      *
      * @param firmware Firmware
      */
-    private void downloadFirmware(Firmware firmware) {
-        View dialogView = getActivity().getLayoutInflater().inflate(R.layout.firmware_download_dialog, null);
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(),
-                R.style.CustomDialogStyle)
-                .setView(dialogView)
-                .setTitle(R.string.download_firmware_dialog_title);
-        downloadDialog = builder.create();
-        downloadDialog.show();
-        downloadDialog.setCancelable(false);
-        downloadDialog.setCanceledOnTouchOutside(false);
-        this.firmware = firmware;
-        WebApi.getInstance().setOnFailureListener(this);
-        WebApi.getInstance().setOnResultListener(this);
-        WebApi.getInstance().downloadFirmwareFromServer(getActivity(), firmware.getID());
+    private void downloadFirmware(View view, final Firmware firmware) {
+        PopupMenu popupMenu = new PopupMenu(this.getActivity(), view);
+        MenuInflater inflater = popupMenu.getMenuInflater();
+        inflater.inflate(R.menu.firmware_download_menu, popupMenu.getMenu());
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                View dialogView = getActivity().getLayoutInflater().inflate(R.layout.firmware_download_dialog, null);
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(),
+                        R.style.CustomDialogStyle)
+                        .setView(dialogView)
+                        .setTitle(R.string.download_firmware_dialog_title);
+                downloadDialog = builder.create();
+                downloadDialog.show();
+                downloadDialog.setCancelable(false);
+                downloadDialog.setCanceledOnTouchOutside(false);
+                FirmwareManageFragment.this.firmware = firmware;
+                WebApi.getInstance().setOnFailureListener(FirmwareManageFragment.this);
+                WebApi.getInstance().setOnResultListener(FirmwareManageFragment.this);
+                WebApi.getInstance().downloadFirmwareFromServer(getActivity(), firmware.getID());
+                return false;
+            }
+        });
+        popupMenu.show();
     }
 
     // ============================================= Web APi Listener ================================= //
@@ -366,33 +390,37 @@ public class FirmwareManageFragment extends Fragment implements WebApi.onGetResu
                         adapter.setOnDownloadButtonClickListener(new FirmwareDownloadAdapter
                                 .onDownloadButtonClickListener() {
                             @Override
-                            public void onClick(int position, Firmware firmware) {
-                                FirmwareManageFragment.this.downloadFirmware(firmware);
+                            public void onClick(View view, int position, Firmware firmware) {
+                                FirmwareManageFragment.this.downloadFirmware(view, firmware);
                             }
                         });
-                        if (downloadListLoadView != null && firmwareDownloadListView != null) {
-                            downloadListLoadView.setVisibility(View.GONE);
-                            firmwareDownloadListView.setVisibility(View.VISIBLE);
-                            firmwareDownloadListView.setAdapter(adapter);
-                        }
+                        firmwareDownloadListView.setAdapter(adapter);
+                        downloadListLoadView.setVisibility(View.GONE);
+                        emptyFirmwareView.setVisibility(View.GONE);
+                        firmwareDownloadListView.setVisibility(View.VISIBLE);
                     } catch (JSONException e) {
                         Toast.makeText(getActivity(), R.string.read_data_error, Toast.LENGTH_SHORT).show();
                     }
+                } else {
+                    firmwareDownloadListView.setVisibility(View.GONE);
+                    downloadListLoadView.setVisibility(View.GONE);
+                    emptyFirmwareView.setVisibility(View.VISIBLE);
                 }
             }
             if (tag.equalsIgnoreCase(ApplicationConfig.DownloadFirmware)) {
                 byte[] binData = Base64.decode(responseString, Base64.DEFAULT);
-                boolean exist = createDirIfNotExists("/FirmwareBin");
+                boolean exist = createDirIfNotExists("/" + ApplicationConfig.FIRMWARE_FOLDER);
                 if (exist) {
+                    String fileName = UUID.randomUUID().toString();
                     File file = new File(Environment.getExternalStorageDirectory().getPath()
-                            + "/FirmwareBin"
-                            + "/Test.bin");
+                            + "/" + ApplicationConfig.FIRMWARE_FOLDER + "/" + fileName + ".bin");
                     try {
                         FileOutputStream outputStream = new FileOutputStream(file);
                         outputStream.write(binData);
                         outputStream.close();
                         if (firmware != null) {
                             // 存储到数据库中
+                            firmware.setFileName(fileName);
                             FirmwareDao.saveItem(getActivity(), firmware);
                             // 从服务器删除已提取的程序
                             WebApi.getInstance().deleteFileFromServer(getActivity(), firmware.getID());
@@ -405,11 +433,15 @@ public class FirmwareManageFragment extends Fragment implements WebApi.onGetResu
                 }
             }
             if (tag.equalsIgnoreCase(ApplicationConfig.DeleteFile)) {
-                if (responseString.equalsIgnoreCase("True")) {
-                    if (downloadDialog != null) {
+                if (responseString.equalsIgnoreCase("success")) {
+                    if (downloadDialog != null && downloadDialog.isShowing()) {
                         downloadDialog.dismiss();
                     }
                     Toast.makeText(getActivity(), R.string.download_successful_message, Toast.LENGTH_SHORT).show();
+                    downloadListLoadView.setVisibility(View.VISIBLE);
+                    firmwareDownloadListView.setVisibility(View.GONE);
+                    String bluetoothAddress = BluetoothAdapter.getDefaultAdapter().getAddress();
+                    WebApi.getInstance().getAllFirmwareNotDownload(getActivity(), bluetoothAddress);
                 }
             }
         }

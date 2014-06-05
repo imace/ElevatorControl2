@@ -111,6 +111,7 @@ public class SearchBluetoothHandler extends BluetoothHandler {
     public void onDiscoveryFinished(Message message) {
         super.onDiscoveryFinished(message);
         mNavigationTabActivity.showRefreshButtonProgress(false);
+        mNavigationTabActivity.updateSearchResult();
     }
 
     /**

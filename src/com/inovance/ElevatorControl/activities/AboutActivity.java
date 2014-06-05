@@ -8,6 +8,7 @@ import org.holoeverywhere.app.Activity;
 
 /**
  * Created by IntelliJ IDEA.
+ * 关于页面
  * User: keith.
  * Date: 14-4-10.
  * Time: 11:32.

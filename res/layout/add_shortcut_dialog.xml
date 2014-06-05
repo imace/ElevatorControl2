@@ -19,6 +19,7 @@
                 android:layout_height="wrap_content"/>
         <org.holoeverywhere.widget.EditText
                 android:id="@+id/shortcut_name"
+                android:text="@string/shortcut_action_text"
                 android:layout_weight="1"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"/>

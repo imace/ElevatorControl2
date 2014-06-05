@@ -25,6 +25,7 @@ import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
+ * 快捷菜单设置
  * User: keith.
  * Date: 14-4-3.
  * Time: 11:28.

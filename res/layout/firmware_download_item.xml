@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:gravity="center_vertical"
                 android:minHeight="54dp"
-                android:background="@drawable/card_view_selector"
+                android:background="@drawable/card_view_background"
                 android:paddingBottom="5dp"
                 android:paddingTop="5dp"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
     <org.holoeverywhere.widget.TextView
@@ -15,24 +12,21 @@
             style="@style/Holo.TextAppearance.Light"
             android:textColor="#515151"
             android:gravity="center"
+            android:layout_marginLeft="10dp"
             android:layout_centerVertical="true"
             android:layout_alignParentLeft="true"
             android:layout_width="wrap_content"
-            android:layout_height="44dp"/>
+            android:layout_height="wrap_content"/>
     <LinearLayout
-            android:id="@+id/download_button"
-            android:background="@drawable/upload_button_selector"
-            android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
-            android:gravity="center"
-            android:minWidth="60dp"
+            android:layout_alignParentRight="true"
             android:layout_width="wrap_content"
-            android:layout_height="44dp">
-        <org.holoeverywhere.widget.TextView
-                style="@style/Holo.TextAppearance.Small.Light"
-                android:textColor="#989898"
-                android:gravity="center"
-                android:text="@string/download_text"
+            android:layout_height="wrap_content">
+        <ImageButton
+                android:id="@+id/more_option"
+                android:contentDescription="@null"
+                android:background="#00000000"
+                android:src="@drawable/ic_overflow"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
     </LinearLayout>

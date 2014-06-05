@@ -3,6 +3,7 @@ package com.inovance.ElevatorControl.utils;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.text.TextUtils;
 import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
@@ -152,9 +153,8 @@ public class ParseSerialsUtils {
      */
     @SuppressLint("GetIntFromBytes")
     public static int getIntFromBytes(byte[] data) {
-        byte[] newData = data;
         if (data.length == 7) {
-            newData = concatenateByteArrays(data, new byte[]{0});
+            data = concatenateByteArrays(data, new byte[]{0});
         }
         if (data.length == 8) {
             return data[4] << 8 & 0xFF00 | data[5] & 0xFF;
@@ -200,7 +200,7 @@ public class ParseSerialsUtils {
             int value = getIntFromBytes(data);
             return String.format("E%02d", value);
         }
-        return null;
+        return "E00";
     }
 
     /**
@@ -309,6 +309,22 @@ public class ParseSerialsUtils {
     }
 
     /**
+     * Get boolean value array
+     *
+     * @param data byte[] data
+     * @return boolean array
+     */
+    public static boolean[] getBooleanValueArray(byte[] data) {
+        boolean[] bits = new boolean[data.length * 8];
+        int count = data.length * 8;
+        for (int i = 0; i < count; i++) {
+            if ((data[i / 8] & (1 << (7 - (i % 8)))) > 0)
+                bits[count - i - 1] = true;
+        }
+        return bits;
+    }
+
+    /**
      * Reverse String
      *
      * @param inputString String To Reverse
@@ -321,5 +337,13 @@ public class ParseSerialsUtils {
             reverseBinaryString = reverseBinaryString + inputString.charAt(i);
         }
         return reverseBinaryString;
+    }
+
+    public static boolean isValidEmail(CharSequence target) {
+        if (TextUtils.isEmpty(target)) {
+            return true;
+        } else {
+            return android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();
+        }
     }
 }

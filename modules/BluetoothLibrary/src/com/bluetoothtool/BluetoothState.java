@@ -63,8 +63,14 @@ public class BluetoothState {
      */
     public static final int onResetBluetooth = 2;
 
+    /**
+     * 结束蓝牙 Socket
+     */
     public static final int onKillBluetooth = 3;
 
+    /**
+     * 选择蓝牙设备
+     */
     public static final int onChooseDevice = 4;
 
     /**
@@ -77,18 +83,39 @@ public class BluetoothState {
      */
     public static final int onConnectFailed = 6;
 
+    /**
+     * 通信开始
+     */
     public static final int onMultiTalkBegin = 7;
 
+    /**
+     * 通信结束
+     */
     public static final int onMultiTalkEnd = 8;
 
+    /**
+     * 单个指令发送前
+     */
     public static final int onBeforeTalkSend = 9;
 
+    /**
+     * 单个指令发送后
+     */
     public static final int onAfterTalkSend = 10;
 
+    /**
+     * 通信错误
+     */
     public static final int onTalkError = 11;
 
+    /**
+     * 接收到指令
+     */
     public static final int onTalkReceive = 12;
 
+    /**
+     * Handler 改变
+     */
     public static final int onHandlerChanged = 13;
 
     /**

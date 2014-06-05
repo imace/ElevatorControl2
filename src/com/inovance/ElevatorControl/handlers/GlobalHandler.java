@@ -89,7 +89,7 @@ public class GlobalHandler {
         }
     }
 
-    private void onNoDataReceived(){
+    private void onNoDataReceived() {
         if (activity != null) {
             Toast.makeText(activity,
                     R.string.error_no_data_received,

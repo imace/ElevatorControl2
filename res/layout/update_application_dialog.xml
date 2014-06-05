@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:minHeight="150dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+    <org.holoeverywhere.widget.TextView
+            android:id="@+id/confirm_text"
+            style="@style/Holo.TextAppearance.Light"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:text="@string/confirm_update_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    <LinearLayout
+            android:id="@+id/progress_view"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_centerInParent="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <org.holoeverywhere.widget.ProgressBar
+                android:id="@+id/download_progress"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+            <org.holoeverywhere.widget.TextView
+                    android:id="@+id/current_length"
+                    style="@style/Holo.TextAppearance.Small.Light"
+                    android:layout_alignParentLeft="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            <org.holoeverywhere.widget.TextView
+                    android:id="@+id/total_length"
+                    style="@style/Holo.TextAppearance.Small.Light"
+                    android:layout_alignParentRight="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+        </RelativeLayout>
+    </LinearLayout>
+
+</RelativeLayout>

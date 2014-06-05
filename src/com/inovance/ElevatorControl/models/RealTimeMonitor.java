@@ -37,6 +37,8 @@ public class RealTimeMonitor implements Cloneable {
     private String type;// 种类
     private boolean showBit = false;// 是否详细描述每一位上的值,默认是false
 
+    private byte[] HVInputTerminalBytes;
+
     private byte[] combineBytes;
     /**
      * 无描述返回     0
@@ -112,6 +114,9 @@ public class RealTimeMonitor implements Cloneable {
             return received.length == 0 ? "" : "查看详细->";
         }
         listViewItemText = ParseSerialsUtils.getValueTextFromRealTimeMonitor(this);
+        if (listViewItemText.contains("E00")) {
+            return "无故障";
+        }
         return this.listViewItemText;
     }
 
@@ -346,6 +351,14 @@ public class RealTimeMonitor implements Cloneable {
 
     public void setCombineBytes(byte[] combineBytes) {
         this.combineBytes = combineBytes;
+    }
+
+    public byte[] getHVInputTerminalBytes() {
+        return HVInputTerminalBytes;
+    }
+
+    public void setHVInputTerminalBytes(byte[] HVInputTerminalBytes) {
+        this.HVInputTerminalBytes = HVInputTerminalBytes;
     }
 
     public Object clone() throws CloneNotSupportedException {

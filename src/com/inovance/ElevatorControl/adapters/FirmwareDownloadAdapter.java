@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.models.Firmware;
+import org.holoeverywhere.widget.ImageButton;
 import org.holoeverywhere.widget.TextView;
 
 import java.util.List;
@@ -26,7 +27,7 @@ public class FirmwareDownloadAdapter extends BaseAdapter {
     private onDownloadButtonClickListener clickListener;
 
     public static interface onDownloadButtonClickListener {
-        void onClick(int position, Firmware firmware);
+        void onClick(View view, int position, Firmware firmware);
     }
 
     public void setOnDownloadButtonClickListener(onDownloadButtonClickListener listener) {
@@ -61,7 +62,7 @@ public class FirmwareDownloadAdapter extends BaseAdapter {
             convertView = mInflater.inflate(R.layout.firmware_download_item, null);
             holder = new ViewHolder();
             holder.approveDate = (TextView) convertView.findViewById(R.id.approve_date);
-            holder.downloadButton = convertView.findViewById(R.id.download_button);
+            holder.moreOptionButton = (ImageButton) convertView.findViewById(R.id.more_option);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
@@ -69,11 +70,11 @@ public class FirmwareDownloadAdapter extends BaseAdapter {
         final Firmware firmware = getItem(position);
         final int index = position;
         holder.approveDate.setText(firmware.getApproveDate());
-        holder.downloadButton.setOnClickListener(new View.OnClickListener() {
+        holder.moreOptionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (clickListener != null) {
-                    clickListener.onClick(index, firmware);
+                    clickListener.onClick(view, index, firmware);
                 }
             }
         });
@@ -84,7 +85,7 @@ public class FirmwareDownloadAdapter extends BaseAdapter {
 
     private class ViewHolder {
         TextView approveDate;
-        View downloadButton;
+        ImageButton moreOptionButton;
     }
 
 }

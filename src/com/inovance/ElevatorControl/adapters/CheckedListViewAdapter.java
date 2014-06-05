@@ -67,10 +67,9 @@ public class CheckedListViewAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
         holder.checkedTextView.setText(getItem(position));
-        if (checkedIndex == position){
+        if (checkedIndex == position) {
             holder.checkedMarkView.setImageResource(R.drawable.btn_radio_on_holo_light);
-        }
-        else {
+        } else {
             holder.checkedMarkView.setImageResource(R.drawable.btn_radio_off_holo_light);
         }
         return convertView;

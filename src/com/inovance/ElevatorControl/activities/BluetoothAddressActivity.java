@@ -21,15 +21,27 @@ import org.holoeverywhere.widget.TextView;
 
 public class BluetoothAddressActivity extends Activity {
 
+    /**
+     * 设备名称
+     */
     @InjectView(R.id.device_name)
     TextView deviceName;
 
+    /**
+     * 设备地址
+     */
     @InjectView(R.id.device_address)
     TextView deviceAddress;
 
+    /**
+     * 已连接设备信息Container
+     */
     @InjectView(R.id.connected_device_view)
     LinearLayout connectedDeviceView;
 
+    /**
+     * 未连接设备文字提示
+     */
     @InjectView(R.id.no_connected_device)
     TextView noConnectedDevice;
 

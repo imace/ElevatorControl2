@@ -79,11 +79,6 @@ public class ChooseDeviceActivity extends Activity {
             BluetoothTool.getInstance(ChooseDeviceActivity.this)
                     .setSearchHandler(searchHandler)
                     .search();
-        } else {
-            Toast.makeText(this,
-                    R.string.not_connect_device_error,
-                    android.widget.Toast.LENGTH_SHORT)
-                    .show();
         }
     }
 

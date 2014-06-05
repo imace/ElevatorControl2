@@ -41,16 +41,17 @@
     </LinearLayout>
     <!-- 故障视图 -->
     <LinearLayout
-            android:orientation="vertical"
             android:id="@+id/error_view"
+            android:orientation="vertical"
             android:tag="error_view"
             android:visibility="gone"
             android:layout_alignParentTop="true"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent">
         <LinearLayout
+                android:layout_weight="1"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:layout_margin="@dimen/card_view_margin"
                 android:background="@drawable/card_view_background"
                 android:orientation="vertical">
@@ -158,24 +159,54 @@
                 </LinearLayout>
             </ScrollView>
         </LinearLayout>
+        <!-- 故障复位、查看故障信息 -->
         <LinearLayout
-                android:id="@+id/view_system_status"
-                android:layout_width="match_parent"
+                android:orientation="horizontal"
+                android:layout_gravity="center"
                 android:gravity="center"
+                android:layout_marginBottom="@dimen/card_view_margin"
                 android:layout_marginRight="@dimen/card_view_margin"
                 android:layout_marginLeft="@dimen/card_view_margin"
-                android:layout_gravity="center"
-                android:background="@drawable/card_view_selector"
+                android:layout_width="match_parent"
                 android:layout_height="@dimen/card_cell_height">
-            <org.holoeverywhere.widget.TextView
-                    style="@style/Holo.TextAppearance.Light"
-                    android:layout_gravity="center"
+            <LinearLayout
+                    android:layout_weight="1"
+                    android:id="@+id/view_system_status"
                     android:gravity="center"
-                    android:text="@string/view_error_status_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_width="0dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/card_view_selector"
+                    android:layout_height="match_parent">
+                <org.holoeverywhere.widget.TextView
+                        style="@style/Holo.TextAppearance.Light"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:text="@string/view_error_status_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+            </LinearLayout>
+            <View
+                    android:layout_width="10dp"
+                    android:layout_height="match_parent"/>
+            <LinearLayout
+                    android:layout_weight="1"
+                    android:id="@+id/restore_error_status"
+                    android:gravity="center"
+                    android:layout_width="0dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/card_view_selector"
+                    android:layout_height="match_parent">
+                <org.holoeverywhere.widget.TextView
+                        style="@style/Holo.TextAppearance.Light"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:text="@string/restore_error_status_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
+    <!-- 无故障视图 -->
     <LinearLayout
             android:visibility="gone"
             android:id="@+id/no_error_view"

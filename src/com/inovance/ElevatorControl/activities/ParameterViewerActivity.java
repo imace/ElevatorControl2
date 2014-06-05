@@ -29,6 +29,7 @@ import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
+ * 查看已保存的参数内容
  * User: keith.
  * Date: 14-4-30.
  * Time: 14:25.
@@ -37,6 +38,9 @@ public class ParameterViewerActivity extends Activity {
 
     private final static String DIRECTORY_NAME = "Profile";
 
+    /**
+     * Expandable ListView
+     */
     @InjectView(R.id.expandable_list_view)
     ExpandableListView expandableListView;
 
@@ -69,6 +73,11 @@ public class ParameterViewerActivity extends Activity {
         };
     }
 
+    /**
+     * 读取参数配置文件并生成List
+     *
+     * @param fileName 文件名
+     */
     private void readFileAndParseJSONString(final String fileName) {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             new Thread(new Runnable() {

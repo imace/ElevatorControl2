@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 /**
  * Created by IntelliJ IDEA.
@@ -28,6 +29,8 @@ import java.io.UnsupportedEncodingException;
  * Time: 9:20.
  */
 public class WebApi {
+
+    private static final String TAG = WebApi.class.getSimpleName();
 
     private static final String STRING_TAG = "string";
 
@@ -86,13 +89,13 @@ public class WebApi {
             String postURL = ApplicationConfig.DomainName + ApplicationConfig.RegisterUser;
             String params = "username={param0}&company={param1}&mobilephone" +
                     "={param2}&contacttel={param3}&email={param4}&blue={param5}";
-            params = params.replace("{param0}", user.getName());
-            params = params.replace("{param1}", user.getCompany());
-            params = params.replace("{param2}", user.getCellPhone());
-            params = params.replace("{param3}", user.getTelephone());
-            params = params.replace("{param4}", user.getEmail());
-            params = params.replace("{param5}", user.getBluetoothAddress());
             try {
+                params = params.replace("{param0}", URLEncoder.encode(user.getName(), "UTF-8"));
+                params = params.replace("{param1}", URLEncoder.encode(user.getCompany(), "UTF-8"));
+                params = params.replace("{param2}", user.getCellPhone());
+                params = params.replace("{param3}", user.getTelephone());
+                params = params.replace("{param4}", user.getEmail());
+                params = params.replace("{param5}", user.getBluetoothAddress());
                 HttpEntity entity = new StringEntity(params);
                 client.post(context,
                         postURL,
@@ -220,8 +223,8 @@ public class WebApi {
             String params = "blue={param0}&deviceID={param1}&remark={param2}";
             params = params.replace("{param0}", bluetoothAddress);
             params = params.replace("{param1}", deviceID);
-            params = params.replace("{param2}", remark);
             try {
+                params = params.replace("{param2}", URLEncoder.encode(remark, "UTF-8"));
                 HttpEntity entity = new StringEntity(params);
                 client.post(context,
                         postURL,
@@ -262,22 +265,21 @@ public class WebApi {
      * @param approveID 审批记录的ID
      */
     public void deleteFileFromServer(Context context, int approveID) {
-        if (isNetworkAvailable(context)) {
-            String requestURL = ApplicationConfig.DomainName
-                    + ApplicationConfig.DeleteFile
-                    + approveID;
-            client.get(requestURL, new ResponseHandler() {
-                @Override
-                public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-                    if (onResultListener != null) {
-                        onResultListener.onResult(ApplicationConfig.DeleteFile,
-                                getResponseString(response, STRING_TAG));
-                    }
-                }
-            });
-        } else {
-            alertUserNetworkNotAvailable(context);
-        }
+        String requestURL = ApplicationConfig.DomainName
+                + ApplicationConfig.DeleteFile
+                + approveID;
+        startGetRequest(context, requestURL, ApplicationConfig.DeleteFile);
+    }
+
+    /**
+     * 取得最新软件版本信息
+     *
+     * @param context Context
+     */
+    public void getLastSoftwareVersion(Context context) {
+        String requestURL = ApplicationConfig.DomainName
+                + ApplicationConfig.GetLastSoftwareVersion;
+        startGetRequest(context, requestURL, ApplicationConfig.GetLastSoftwareVersion);
     }
 
     /**

@@ -2,7 +2,6 @@ package com.inovance.ElevatorControl.handlers;
 
 import android.app.Activity;
 import android.os.Message;
-import android.util.Log;
 import com.bluetoothtool.BluetoothHandler;
 import com.inovance.ElevatorControl.activities.ParameterDetailActivity;
 import com.inovance.ElevatorControl.config.ApplicationConfig;

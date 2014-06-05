@@ -1,8 +1,6 @@
 package com.inovance.ElevatorControl.daos;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
-import android.util.Log;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.models.ErrorHelp;
 import net.tsz.afinal.FinalDb;
@@ -13,7 +11,6 @@ public class ErrorHelpDao {
 
     private static final boolean DEBUG = true;
 
-    @SuppressLint("DefaultLocale")
     public static ErrorHelp findByDisplay(Context context, String display) {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         List<ErrorHelp> helpList = db.findAllByWhere(ErrorHelp.class, " display = '"

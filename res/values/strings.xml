@@ -13,7 +13,7 @@
     <string name="restore_factory">恢复出厂设置</string>
     <string name="label_txt_name">名称</string>
     <string name="label_txt_code">功能码</string>
-    <string name="label_txt_productId">Id</string>
+    <string name="label_txt_productId">ID</string>
     <string name="label_txt_value">值</string>
     <string name="label_txt_type">种类</string>
     <string name="label_txt_mode">★</string>
@@ -35,12 +35,15 @@
     <string name="login_text">登陆</string>
     <string name="sign_up_text">注册</string>
     <string name="retry_connect_device">重试</string>
+    <string name="device_not_select_text">未选择设备型号</string>
+    <string name="supplier_default_code_text">00000000</string>
 
     <string name="read_data_error">读取列表信息错误</string>
     <string name="get_bluetooth_address_error">请打开蓝牙，以便获取蓝牙硬件地址。</string>
     <string name="current_network_not_available">当前网络连接不可用</string>
     <string name="search_device_tips_text">点击按钮搜索设备</string>
     <string name="searching_device_text">正在搜索蓝牙设备</string>
+    <string name="found_none_device_text">未搜索到蓝牙设备，请重新搜索</string>
     <string name="always_open_text">常开</string>
     <string name="always_close_text">常闭</string>
 
@@ -64,6 +67,7 @@
     <!-- 条形码扫描 -->
     <string name="focus_to_scan_text">对焦扫描</string>
     <string name="restart_scan_text">继续扫描</string>
+    <string name="save_picture_text">保存图片</string>
     <string name="scan_tips_text">扫描条形码中，请稍后…</string>
 
     <string name="input_cell_phone_number">输入手机号码</string>
@@ -84,12 +88,18 @@
     <string name="register_user_text">用户注册</string>
     <string name="user_name_text">用户名</string>
     <string name="company_text">公司</string>
-    <string name="cell_phone_text">手机</string>
-    <string name="tel_phone_text">电话</string>
+    <string name="cell_phone_text">移动电话</string>
+    <string name="tel_phone_text">办公电话</string>
     <string name="email_text">邮箱</string>
     <string name="submit_text">提交</string>
     <string name="register_failed_text">注册失败</string>
     <string name="verify_user_text">验证中…</string>
+    <string name="field_require_hint">必填</string>
+    <string name="user_name_error">用户名长度不符合要求最大6个字符</string>
+    <string name="company_name_error">公司名称必填</string>
+    <string name="cellphone_error">移动电话必填</string>
+    <string name="email_address_error">邮箱填写错误</string>
+    <string name="register_failed_text">提交失败，请重试。</string>
 
     <!-- 选择设备型号 -->
     <string name="select_device_type_text">选择设备型号</string>
@@ -98,6 +108,8 @@
     <!-- 当前故障 -->
     <string name="no_error_text">当前未发生故障</string>
     <string name="view_error_status_text">查看故障详细信息</string>
+    <string name="restore_error_status_text">故障复位</string>
+    <string name="restore_error_successful_text">故障复位成功</string>
 
     <!-- 历史故障 -->
     <string name="history_error_code">故障码</string>
@@ -158,9 +170,15 @@
     <string name="choose_bluetooth_device">选择蓝牙设备…</string>
 
     <!-- 参数上传 -->
+    <string name="cannot_upload_profile_title">无法上传</string>
+    <string name="elevator_running_cannot_upload_message">电梯正在运行，无法上传参数。</string>
+    <string name="cannot_download_profile_title">无法读取</string>
+    <string name="elevator_running_cannot_download_message">电梯正在运行，无法读取参数。</string>
+
     <string name="parameter_file_package_text">参数文件包</string>
     <string name="view_button_text">查看</string>
     <string name="upload_button_text">写入</string>
+    <string name="delete_button_text">删除</string>
     <string name="profile_version_text">版本</string>
     <string name="profile_file_name_text">文件名</string>
     <string name="profile_create_date_text">日期</string>
@@ -180,6 +198,7 @@
     <string name="local_save_file_name_hint">保存的文件名</string>
     <string name="save_file_failed_title">保存失败</string>
     <string name="cannot_save_file">未能保存文件，请检查SD卡！</string>
+    <string name="file_repeat_text">文件名重复，请选择其他文件名。</string>
     <string name="parameter_download_button_text">读取</string>
     <string name="download_parameter_save_successful">参数读取并保存完毕</string>
     <string name="save_parameter_failed">参数保存失败，请重试。</string>
@@ -203,12 +222,15 @@
         <item>已下载</item>
         <item>未下载</item>
     </string-array>
+    <string name="download_firmware_menu_text">下载</string>
+    <string name="none_firmware_download_text">当前没有固件可以提取</string>
 
     <string name="burn_firmware_text">烧录</string>
     <string name="will_burn_firmware_text">烧录程序</string>
     <string name="burning_firmware_text">正在烧录程序</string>
 
-    <string name="update_date_text">更新时间</string>
+    <string name="firmware_name_text">固件名称</string>
+    <string name="create_date_text">提取时间</string>
     <string name="expire_date_text">过期时间</string>
     <string name="residue_time_text">剩余次数</string>
     <string name="time_unit_text">次</string>
@@ -232,6 +254,43 @@
 
     <!-- 系统当前状态 -->
     <string name="error_status_title">故障详细信息</string>
+
+    <!-- 系统日志 -->
+    <string name="system_log_title">系统日志</string>
+    <string-array name="log_name_array">
+        <item>修改</item>
+        <item>故障复位</item>
+        <item>烧录程序</item>
+        <item>电梯内召</item>
+        <item>电梯外召</item>
+        <item>参数批量读取</item>
+        <item>参数批量写入</item>
+        <item>恢复出厂设置</item>
+    </string-array>
+    <string name="log_device">设备型号: </string>
+    <string name="log_name">操作: </string>
+    <string name="log_start_value">起始值: </string>
+    <string name="log_final_value">最终值: </string>
+    <string name="log_send">发送: </string>
+    <string name="log_result">结果: </string>
+    <string name="log_time">时间: </string>
+    <string name="log_floor">召唤楼层: </string>
+    <string name="log_direction">召唤方式: </string>
+    <string name="log_error_message">失败信息: </string>
+    <string-array name="log_result_array">
+        <item>成功</item>
+        <item>失败</item>
+        <item>错误: </item>
+    </string-array>
+    <string-array name="log_direction_array">
+        <item>上召</item>
+        <item>下召</item>
+    </string-array>
+
+    <!-- 更新应用程序 -->
+    <string name="confirm_update_title">更新软件</string>
+    <string name="confirm_update_message">需要更新软件吗</string>
+    <string name="download_application_title">下载更新包中</string>
 
     <!-- //////////////////////////////////// 标签选项卡 START ////////////////////////////////// -->
     <!-- 主标签页选项卡 -->

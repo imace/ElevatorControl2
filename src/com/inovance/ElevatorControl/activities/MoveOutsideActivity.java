@@ -22,6 +22,7 @@ import com.inovance.ElevatorControl.handlers.GlobalHandler;
 import com.inovance.ElevatorControl.models.ObjectListHolder;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.models.RealTimeMonitor;
+import com.inovance.ElevatorControl.utils.LogUtils;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
 import com.inovance.ElevatorControl.views.TypefaceTextView;
 import com.inovance.ElevatorControl.views.viewpager.VerticalViewPager;
@@ -37,6 +38,7 @@ import java.util.concurrent.Executors;
 
 /**
  * Created by IntelliJ IDEA.
+ * 电梯外召
  * User: keith.
  * Date: 14-3-6.
  * Time: 11:04.
@@ -45,49 +47,109 @@ public class MoveOutsideActivity extends Activity implements Runnable {
 
     private static final String TAG = MoveOutsideActivity.class.getSimpleName();
 
+    /**
+     * Vertical View Pager
+     */
     @InjectView(R.id.vertical_view_pager)
     VerticalViewPager viewPager;
 
+    /**
+     * 当前楼层
+     */
     @InjectView(R.id.current_floor)
     TypefaceTextView currentFloorTextView;
 
+    /**
+     * 上召按钮
+     */
     @InjectView(R.id.up_button)
     ImageButton upButton;
 
+    /**
+     * 下召按钮
+     */
     @InjectView(R.id.down_button)
     ImageButton downButton;
 
+    /**
+     * 获取电梯最高层和最底层进度指示
+     */
     @InjectView(R.id.load_view)
     LinearLayout loadView;
 
+    /**
+     * 外召指令
+     */
     private static final String codeType = "64";
 
+    /**
+     * 用于召唤楼层的指令列表
+     */
     private List<RealTimeMonitor> realTimeMonitors;
 
+    /**
+     * 用于获取电梯最高层和最底层的 Handler
+     */
     private MoveOutsideHandler mMoveOutsideHandler;
 
+    /**
+     * 获取最高层和最底层的通信内容
+     */
     private BluetoothTalk[] getFloorsCommunications;
 
+    /**
+     * 是否已取得电梯最高层和最底层
+     */
     private boolean hasGetFloors = false;
 
+    /**
+     * 选定的召唤楼层
+     */
     private int selectedFloor;
 
+    /**
+     * 用于同步电梯召唤状态信息的 Handler
+     */
     private SyncMoveOutsideInfoHandler mSyncMoveOutsideInfoHandler;
 
+    /**
+     * 用于同步状态的 Task
+     */
     private Runnable syncTask;
 
+    /**
+     * 是否终止同步状态 Task
+     */
     private boolean running = false;
 
+    /**
+     * 用于同步状态的 Handler
+     */
     private Handler syncHandler = new Handler();
 
+    /**
+     * 用于召唤楼层的 Handler
+     */
     private FloorHandler floorHandler;
 
+    /**
+     * 是否正在召唤楼层
+     */
     private boolean isWritingData = false;
 
+    /**
+     * 是否召唤成功
+     */
     private boolean isWriteSuccessful = false;
 
+    /**
+     * 是否正在同步电梯召唤状态信息
+     */
     private boolean isSyncing = false;
 
+    /**
+     * 用于读取电梯外召信息的指令
+     */
     private static final String[] CallCode = new String[]{
             "0001:0002", // 召唤一楼
             "0004:0008", // 召唤二楼
@@ -95,6 +157,9 @@ public class MoveOutsideActivity extends Activity implements Runnable {
             "0040:0080" // 召唤四楼
     };
 
+    /**
+     * Vertical View Pager Adapter
+     */
     private MoveSidePagerAdapter moveSidePagerAdapter;
 
     private ExecutorService pool = Executors.newSingleThreadExecutor();
@@ -104,6 +169,9 @@ public class MoveOutsideActivity extends Activity implements Runnable {
      */
     private static final int SYNC_TIME = 1000;
 
+    /**
+     * 用于读取电梯外召信息的通信内容
+     */
     private BluetoothTalk[] getMoveOutsideInfoCommunications;
 
     public void onCreate(Bundle savedInstanceState) {
@@ -141,7 +209,7 @@ public class MoveOutsideActivity extends Activity implements Runnable {
             @Override
             public void run() {
                 if (running) {
-                    if (BluetoothTool.getInstance(MoveOutsideActivity.this).isConnected()) {
+                    if (BluetoothTool.getInstance(MoveOutsideActivity.this).isPrepared()) {
                         pool.execute(MoveOutsideActivity.this);
                         syncHandler.postDelayed(this, SYNC_TIME);
                     }
@@ -153,7 +221,7 @@ public class MoveOutsideActivity extends Activity implements Runnable {
     @Override
     protected void onResume() {
         super.onResume();
-        if (BluetoothTool.getInstance(this).isConnected()) {
+        if (BluetoothTool.getInstance(this).isPrepared()) {
             running = true;
             syncHandler.postDelayed(syncTask, SYNC_TIME);
         } else {
@@ -162,6 +230,9 @@ public class MoveOutsideActivity extends Activity implements Runnable {
         }
     }
 
+    /**
+     * 生成获取电梯召唤信息的通信内容
+     */
     private void createGetMoveOutsideInfoCommunications() {
         if (getMoveOutsideInfoCommunications == null) {
             final List<RealTimeMonitor> monitorLists = RealTimeMonitorDao
@@ -298,7 +369,7 @@ public class MoveOutsideActivity extends Activity implements Runnable {
      */
     private void syncMoveOutsideInfoStatus() {
         if (!isSyncing) {
-            if (BluetoothTool.getInstance(MoveOutsideActivity.this).isConnected()) {
+            if (BluetoothTool.getInstance(MoveOutsideActivity.this).isPrepared()) {
                 if (mSyncMoveOutsideInfoHandler != null && getMoveOutsideInfoCommunications != null) {
                     MoveOutsideActivity.this.isSyncing = true;
                     mSyncMoveOutsideInfoHandler.sendCount = getMoveOutsideInfoCommunications.length;
@@ -343,6 +414,11 @@ public class MoveOutsideActivity extends Activity implements Runnable {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * 电梯上召
+     *
+     * @param view Button View
+     */
     @OnClick(R.id.up_button)
     void OnUpButtonClick(View view) {
         MoveOutsideActivity.this.isSyncing = false;
@@ -354,30 +430,8 @@ public class MoveOutsideActivity extends Activity implements Runnable {
                     moveOutsideCallFloor(selectedFloor, true);
                 } else {
                     MoveOutsideActivity.this.isWritingData = false;
-                }
-            }
-
-            public void onFinish() {
-                if (!MoveOutsideActivity.this.isWriteSuccessful) {
-                    GlobalHandler.getInstance(MoveOutsideActivity.this)
-                            .sendMessage(GlobalHandler.WRITE_DATA_FAILED);
-                }
-                MoveOutsideActivity.this.isWritingData = false;
-            }
-        }.start();
-    }
-
-    @OnClick(R.id.down_button)
-    void OnDownButtonClick(View view) {
-        MoveOutsideActivity.this.isSyncing = false;
-        MoveOutsideActivity.this.isWritingData = true;
-        MoveOutsideActivity.this.isWriteSuccessful = false;
-        new CountDownTimer(1500, 500) {
-            public void onTick(long millisUntilFinished) {
-                if (!MoveOutsideActivity.this.isWriteSuccessful) {
-                    moveOutsideCallFloor(selectedFloor, false);
-                } else {
-                    MoveOutsideActivity.this.isWritingData = false;
+                    this.cancel();
+                    this.onFinish();
                 }
             }
 
@@ -392,7 +446,38 @@ public class MoveOutsideActivity extends Activity implements Runnable {
     }
 
     /**
-     * Create Get Floors Communication
+     * 电梯下召
+     *
+     * @param view Button View
+     */
+    @OnClick(R.id.down_button)
+    void OnDownButtonClick(View view) {
+        MoveOutsideActivity.this.isSyncing = false;
+        MoveOutsideActivity.this.isWritingData = true;
+        MoveOutsideActivity.this.isWriteSuccessful = false;
+        new CountDownTimer(1500, 500) {
+            public void onTick(long millisUntilFinished) {
+                if (!MoveOutsideActivity.this.isWriteSuccessful) {
+                    moveOutsideCallFloor(selectedFloor, false);
+                } else {
+                    MoveOutsideActivity.this.isWritingData = false;
+                    this.cancel();
+                    this.onFinish();
+                }
+            }
+
+            public void onFinish() {
+                if (!MoveOutsideActivity.this.isWriteSuccessful) {
+                    GlobalHandler.getInstance(MoveOutsideActivity.this)
+                            .sendMessage(GlobalHandler.WRITE_DATA_FAILED);
+                }
+                MoveOutsideActivity.this.isWritingData = false;
+            }
+        }.start();
+    }
+
+    /**
+     * 生成取得电梯最高层和最底层的通信内容
      */
     private void createGetFloorsCommunication() {
         ArrayList<String> names = new ArrayList<String>();
@@ -435,9 +520,12 @@ public class MoveOutsideActivity extends Activity implements Runnable {
         };
     }
 
+    /**
+     * 读取电梯最高层和最底层
+     */
     private void loadDataAndRenderView() {
         if (getFloorsCommunications != null) {
-            if (BluetoothTool.getInstance(MoveOutsideActivity.this).isConnected()) {
+            if (BluetoothTool.getInstance(MoveOutsideActivity.this).isPrepared()) {
                 BluetoothTool.getInstance(MoveOutsideActivity.this)
                         .setHandler(mMoveOutsideHandler)
                         .setCommunications(getFloorsCommunications)
@@ -449,10 +537,10 @@ public class MoveOutsideActivity extends Activity implements Runnable {
     }
 
     /**
-     * 外召
+     * 外召楼层
      *
-     * @param floor Floor
-     * @param isUp  Is up
+     * @param floor 召唤的楼层
+     * @param isUp  上召还是下召
      */
     private void moveOutsideCallFloor(int floor, boolean isUp) {
         final String[] codeArray = getCallCode(floor, isUp);
@@ -490,8 +578,10 @@ public class MoveOutsideActivity extends Activity implements Runnable {
                     }
                 }
         };
-        if (BluetoothTool.getInstance(MoveOutsideActivity.this).isConnected()) {
+        if (BluetoothTool.getInstance(MoveOutsideActivity.this).isPrepared()) {
             floorHandler.writeCode = codeArray[0];
+            floorHandler.floor = floor;
+            floorHandler.isUp = isUp;
             BluetoothTool.getInstance(MoveOutsideActivity.this)
                     .setHandler(floorHandler)
                     .setCommunications(communications)
@@ -580,6 +670,10 @@ public class MoveOutsideActivity extends Activity implements Runnable {
 
         public String writeCode;
 
+        public int floor;
+
+        public boolean isUp;
+
         public FloorHandler(Activity activity) {
             super(activity);
             TAG = FloorHandler.class.getSimpleName();
@@ -598,20 +692,19 @@ public class MoveOutsideActivity extends Activity implements Runnable {
         @Override
         public void onTalkReceive(Message msg) {
             if (msg.obj != null && msg.obj instanceof String) {
-                if (((String) msg.obj).contains(writeCode)) {
+                String receive = (String) msg.obj;
+                if (receive.contains(writeCode)) {
                     MoveOutsideActivity.this.isWriteSuccessful = true;
                     MoveOutsideActivity.this.isWritingData = false;
+                    // 写入外召日志
+                    LogUtils.getInstance().write(ApplicationConfig.LogMoveOutside, writeCode, receive, floor, isUp ? 1 : 2);
                 }
             }
         }
 
     }
 
-    // =================================== MoveOutside Handler ==============================
-
-    /**
-     * 蓝牙 Socket handler
-     */
+    // =================================== 读取电梯最高层和最底层 ==============================
     private class MoveOutsideHandler extends BluetoothHandler {
 
         private int topFloor;
@@ -643,7 +736,7 @@ public class MoveOutsideActivity extends Activity implements Runnable {
                     bottomFloor = ByteBuffer.wrap(new byte[]{data[6], data[7]}).getShort();
                     moveSidePagerAdapter = new MoveSidePagerAdapter(MoveOutsideActivity.this,
                             new int[]{bottomFloor, topFloor});
-                    moveSidePagerAdapter.setOnSelectFloorListener(new MoveSidePagerAdapter.onSelectFloorListener() {
+                    moveSidePagerAdapter.setOnSelectFloorListener(new MoveSidePagerAdapter.OnSelectFloorListener() {
                         @Override
                         public void onSelect(int floor) {
                             if (floor == Math.min(topFloor, bottomFloor)) {
@@ -713,7 +806,9 @@ public class MoveOutsideActivity extends Activity implements Runnable {
                                 int length02 = ApplicationConfig.moveOutsideName.length;
                                 for (int n = 0; n < length02; n++) {
                                     if (monitor.getName().equalsIgnoreCase(ApplicationConfig.moveOutsideName[n])) {
-                                        // 召唤的楼层
+                                        /**
+                                         * 当前所有被召唤的楼层
+                                         */
                                         calledFloorList.add(n * 4 + m + 1);
                                     }
                                 }

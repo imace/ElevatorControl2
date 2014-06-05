@@ -1,10 +1,11 @@
 package com.inovance.ElevatorControl;
 
-import com.bluetoothtool.BluetoothTool;
 import com.inovance.ElevatorControl.cache.LruCacheTool;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ShortcutDao;
+import com.inovance.ElevatorControl.models.DeviceFactory;
 import com.inovance.ElevatorControl.models.Shortcut;
+import com.inovance.ElevatorControl.utils.LogUtils;
 import org.holoeverywhere.HoloEverywhere;
 import org.holoeverywhere.app.Application;
 import org.holoeverywhere.preference.SharedPreferences;
@@ -25,7 +26,7 @@ import org.holoeverywhere.preference.SharedPreferences;
 public class ElevatorControlApplication extends Application {
 
     static {
-        HoloEverywhere.DEBUG = true;
+        HoloEverywhere.DEBUG = false;
     }
 
     @Override
@@ -33,7 +34,12 @@ public class ElevatorControlApplication extends Application {
         super.onCreate();
         // 初始化缓存组件
         LruCacheTool.getInstance().initCache(getApplicationContext());
+        LogUtils.getInstance().init(getApplicationContext());
         writeDefaultShortcutData();
+        DeviceFactory.getInstance().setDeviceType(getApplicationContext().getResources()
+                .getString(R.string.device_not_select_text));
+        DeviceFactory.getInstance().setSupplierCode(getApplicationContext().getResources()
+                .getString(R.string.supplier_default_code_text));
         //ACRA.init(this);
         /*
         String JSON = AssetUtils.readDefaultFunCode(getApplicationContext(), "NICE3000+_FunCode.json");
@@ -73,12 +79,28 @@ public class ElevatorControlApplication extends Application {
         SharedPreferences.Editor editor = settings.edit();
         boolean hasWriteDefaultData = settings.getBoolean("hasWriteDefaultData", false);
         if (!hasWriteDefaultData) {
-            for (int i = 0; i < 4; i++) {
-                Shortcut shortcut = new Shortcut();
-                shortcut.setName("快捷菜单");
-                shortcut.setCommand("0:0:0");
-                ShortcutDao.saveItem(getApplicationContext(), shortcut);
-            }
+            Shortcut shortcut;
+
+            shortcut = new Shortcut();
+            shortcut.setName("当前故障");
+            shortcut.setCommand("0:0:0");
+            ShortcutDao.saveItem(getApplicationContext(), shortcut);
+
+            shortcut = new Shortcut();
+            shortcut.setName("故障查询");
+            shortcut.setCommand("0:2:0");
+            ShortcutDao.saveItem(getApplicationContext(), shortcut);
+
+            shortcut = new Shortcut();
+            shortcut.setName("参数设置");
+            shortcut.setCommand("1:1:0");
+            ShortcutDao.saveItem(getApplicationContext(), shortcut);
+
+            shortcut = new Shortcut();
+            shortcut.setName("程序申请");
+            shortcut.setCommand("3:0:0");
+            ShortcutDao.saveItem(getApplicationContext(), shortcut);
+
             editor.putBoolean("hasWriteDefaultData", true);
             editor.commit();
         }

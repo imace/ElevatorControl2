@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:background="@color/main_background"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+                android:background="@color/main_background"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
     <LinearLayout
             android:orientation="vertical"
             android:id="@+id/load_view"
@@ -17,6 +17,23 @@
             android:layout_height="wrap_content">
         <org.holoeverywhere.widget.ProgressBar
                 style="@style/Holo.ProgressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+    </LinearLayout>
+    <LinearLayout
+            android:id="@+id/empty_view"
+            android:tag="empty_view"
+            android:visibility="gone"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:minHeight="150dp"
+            android:background="@drawable/card_view_background"
+            android:layout_margin="@dimen/card_view_margin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <org.holoeverywhere.widget.TextView
+                style="@style/Holo.TextAppearance.Light"
+                android:text="@string/none_firmware_download_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
     </LinearLayout>

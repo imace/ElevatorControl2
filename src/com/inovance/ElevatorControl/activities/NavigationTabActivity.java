@@ -30,10 +30,7 @@ import com.inovance.ElevatorControl.views.dialogs.CustomDialog;
 import org.holoeverywhere.app.AlertDialog;
 import org.holoeverywhere.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -45,52 +42,117 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
 
     private static final String TAG = NavigationTabActivity.class.getSimpleName();
 
+    /**
+     * 优先显示的设备名称
+     */
     private static final String SpecialDeviceName = "M-Tools";
 
+    /**
+     * 用于搜索蓝牙的 Handler
+     */
     private SearchBluetoothHandler searchBluetoothHandler;
 
+    /**
+     * 是否已读取到设备型号和名称
+     */
     public boolean hasGetDeviceTypeAndNumber = false;
 
+    /**
+     * 用于读取设备型号的 Handler
+     */
     private GetDeviceTypeAndNumberHandler getDeviceTypeAndNumberHandler;
 
+    /**
+     * 用于取得设备型号的通信内容
+     */
     private BluetoothTalk[] getDeviceTypeAndNumberCommunications;
 
+    /**
+     * 用于读取设备型号的 Task
+     */
     private Runnable getDeviceTypeNumberTask;
 
+    /**
+     * 读取间隔
+     */
     private static final int LOOP_TIME = 2000;
 
+    /**
+     * 是否暂停读取
+     */
     private boolean running = false;
 
+    /**
+     * 正在搜索蓝牙设备提示
+     */
     @InjectView(R.id.search_device_tips)
     TextView searchDeviceTipsView;
 
+    /**
+     * 搜索到得设备列表显示
+     */
     @InjectView(R.id.custom_spinner)
     NoDefaultSpinner deviceListSpinner;
 
+    /**
+     * 重新搜索蓝牙设备按钮
+     */
     @InjectView(R.id.research_devices_button)
     public View researchDevicesButton;
 
+    /**
+     * 重新搜索设备按钮图标ImageView
+     */
     @InjectView(R.id.refresh_button_icon)
     ImageView refreshButtonIcon;
 
+    /**
+     * 重新搜索设备按钮ProgressBar
+     */
     @InjectView(R.id.refresh_button_progress)
     ProgressBar refreshButtonProgress;
 
+    /**
+     * 故障分析 Tab Icon ImageView
+     */
     public ImageView troubleAnalyzeIcon;
 
+    /**
+     * 已经搜索到的蓝牙设备列表
+     */
     private List<BluetoothDevice> tempDeviceList;
 
+    /**
+     * 已经搜索到的蓝牙设备列表名称
+     */
     private String[] tempDevicesName;
 
+    /**
+     * 搜索蓝牙设备状态
+     */
     private static final int SEARCH_DEVICE = 1;
 
+    /**
+     * 连接蓝牙设备状态
+     */
     private static final int CONNECT_DEVICE = 2;
 
+    /**
+     * 取得设备型号状态
+     */
     private static final int GET_DEVICE_TYPE = 3;
 
+    /**
+     * 当前的 Task 状态
+     */
     private int currentTask;
 
+    /**
+     * 上一次连接的蓝牙设备
+     */
     private BluetoothDevice tempDevice;
+
+    private static final int REQUEST_BLUETOOTH_ENABLE = 1;
 
     private ExecutorService pool = Executors.newSingleThreadExecutor();
 
@@ -119,6 +181,9 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
             }
         };
         showRefreshButtonProgress(false);
+        /**
+         * 绑定搜索按钮动作
+         */
         researchDevicesButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -138,12 +203,27 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
         super.onResume();
         if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivity(intent);
+            startActivityForResult(intent, REQUEST_BLUETOOTH_ENABLE);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_BLUETOOTH_ENABLE) {
+            if (resultCode == RESULT_CANCELED) {
+                BluetoothTool.getInstance(this).kill();
+                Intent intent = new Intent(this, CheckAuthorizationActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent.putExtra("Exit", true);
+                startActivity(intent);
+                finish();
+            }
         }
     }
 
     /**
-     * Start Get Device Type And Number Task
+     * 取得当前连接的蓝牙设备型号
      */
     public void startGetDeviceTypeAndNumberTask() {
         if (!hasGetDeviceTypeAndNumber) {
@@ -257,6 +337,20 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
                         handler.postDelayed(runnable, 300);
                     }
                 }
+                if (tabIndex == 2) {
+                    if (getCurrentActivity() instanceof HomeActivity) {
+                        final HomeActivity homeActivity = (HomeActivity) getCurrentActivity();
+                        BluetoothTool.getInstance(NavigationTabActivity.this).setHandler(null);
+                        if (BluetoothTool.getInstance(NavigationTabActivity.this).isPrepared()) {
+                            new Timer().schedule(new TimerTask() {
+                                @Override
+                                public void run() {
+                                    homeActivity.reSyncData();
+                                }
+                            }, 1000);
+                        }
+                    }
+                }
                 if (tabIndex == 3) {
                     if (getCurrentActivity() instanceof FirmwareManageActivity) {
                         final FirmwareManageActivity firmwareManageActivity = (FirmwareManageActivity) getCurrentActivity();
@@ -275,6 +369,12 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
         this.getTabHost().setCurrentTab(tabIndex);
     }
 
+    /**
+     * 绑定导航按键动作
+     *
+     * @param event KeyEvent
+     * @return True or false
+     */
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_DOWN && event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
             CustomDialog.exitDialog(this).show();
@@ -321,6 +421,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
         if (tempDevicesName.length > 0) {
             setSpinnerDataSource();
             deviceListSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
                 @Override
                 public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
                     tempDevice = tempDeviceList.get(position);
@@ -346,6 +447,14 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
         deviceListSpinner.setAdapter(adapter);
         searchDeviceTipsView.setVisibility(View.GONE);
         deviceListSpinner.setVisibility(View.VISIBLE);
+    }
+
+    public void updateSearchResult() {
+        if (tempDevicesName.length == 0) {
+            searchDeviceTipsView.setText(R.string.found_none_device_text);
+            searchDeviceTipsView.setVisibility(View.VISIBLE);
+            deviceListSpinner.setVisibility(View.GONE);
+        }
     }
 
     /**
@@ -416,9 +525,6 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
                     .setHandler(getDeviceTypeAndNumberHandler)
                     .setCommunications(getDeviceTypeAndNumberCommunications)
                     .send();
-        } else {
-            GlobalHandler.getInstance(NavigationTabActivity.this)
-                    .sendMessage(GlobalHandler.NOT_CONNECTED);
         }
     }
 

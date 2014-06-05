@@ -12,6 +12,8 @@ import butterknife.Views;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.RestoreFactoryDao;
+import com.inovance.ElevatorControl.utils.UpdateApplication;
+import com.inovance.ElevatorControl.utils.UpdateApplication.OnNoUpdateFoundListener;
 import com.inovance.ElevatorControl.web.WebApi;
 import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.widget.ImageButton;
@@ -26,15 +28,27 @@ public class CheckAuthorizationActivity extends Activity {
 
     private static final int WRITE_FINISH = 0;
 
+    /**
+     * 登录按钮
+     */
     @InjectView(R.id.btn_login)
     ImageButton btnLogin;
 
+    /**
+     * 注册按钮
+     */
     @InjectView(R.id.btn_sign_up)
     ImageButton btnSignUp;
 
+    /**
+     * 操作指示器
+     */
     @InjectView(R.id.progress_view)
     LinearLayout progressView;
 
+    /**
+     * 操作等待提示文字
+     */
     @InjectView(R.id.wait_text)
     TextView waitTextView;
 
@@ -49,6 +63,16 @@ public class CheckAuthorizationActivity extends Activity {
         setTitle(R.string.title_activity_login);
         Views.inject(this);
         initializeData();
+        // 检查软件更新
+        UpdateApplication.getInstance().init(this);
+        UpdateApplication.getInstance().setOnNoUpdateFoundListener(new OnNoUpdateFoundListener() {
+            @Override
+            public void onNoUpdate() {
+                btnLogin.setEnabled(true);
+                btnLogin.setEnabled(true);
+            }
+        });
+        UpdateApplication.getInstance().checkUpdate();
     }
 
     @Override

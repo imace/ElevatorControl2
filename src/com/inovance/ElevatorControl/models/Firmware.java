@@ -51,12 +51,21 @@ public class Firmware {
     /**
      * 烧录次数
      */
-    private String burnTimes;
+    private int burnTimes;
 
     /**
      * 总的烧录次数
      */
-    private String totalBurnTimes;
+    private int totalBurnTimes;
+
+    /**
+     * 过期时间
+     */
+    private String expireDate;
+
+    public Firmware() {
+
+    }
 
     public Firmware(JSONObject object) {
         this.ID = object.optInt("ID");
@@ -70,7 +79,8 @@ public class Firmware {
         this.approveRemark = object.optString("ApproveRemark");
         this.fileURL = object.optString("FileUrl");
         this.downloadDate = object.optString("GetFileDate");
-        this.totalBurnTimes = object.optString("UseTimes");
+        this.totalBurnTimes = object.optInt("UseTimes");
+        this.expireDate = object.optString("DateLimit");
     }
 
     public int getID() {
@@ -169,20 +179,28 @@ public class Firmware {
         this.downloadDate = downloadDate;
     }
 
-    public String getBurnTimes() {
+    public int getBurnTimes() {
         return burnTimes;
     }
 
-    public void setBurnTimes(String burnTimes) {
+    public void setBurnTimes(int burnTimes) {
         this.burnTimes = burnTimes;
     }
 
-    public String getTotalBurnTimes() {
+    public int getTotalBurnTimes() {
         return totalBurnTimes;
     }
 
-    public void setTotalBurnTimes(String totalBurnTimes) {
+    public void setTotalBurnTimes(int totalBurnTimes) {
         this.totalBurnTimes = totalBurnTimes;
+    }
+
+    public String getExpireDate() {
+        return expireDate;
+    }
+
+    public void setExpireDate(String expireDate) {
+        this.expireDate = expireDate;
     }
 
 }

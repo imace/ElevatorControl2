@@ -2,18 +2,24 @@ package com.inovance.ElevatorControl.activities;
 
 /**
  * Created by IntelliJ IDEA.
+ * 条形码扫描
  * User: keith.
  * Date: 14-3-4.
  * Time: 13:42.
  */
 
 import android.content.pm.ActivityInfo;
+import android.graphics.ImageFormat;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.hardware.Camera.AutoFocusCallback;
 import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.Size;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -24,24 +30,40 @@ import com.inovance.ElevatorControl.views.zbar.CameraPreview;
 import net.sourceforge.zbar.*;
 import org.holoeverywhere.app.Activity;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /* Import ZBar Class files */
 
 public class BarcodeCaptureActivity extends Activity {
 
+    private static final String TAG = BarcodeCaptureActivity.class.getSimpleName();
+
     private Camera mCamera;
 
+    /**
+     * 扫描窗口
+     */
     private CameraPreview mPreview;
 
     private Handler autoFocusHandler;
 
-    TextView scanText;
+    private TextView scanText;
 
-    Button scanButton;
+    private Button scanButton;
 
-    ImageScanner scanner;
+    private Button saveButton;
+
+    private ImageScanner scanner;
 
     private boolean barcodeScanned = false;
+
     private boolean previewing = true;
+
+    private byte[] bitmapData;
 
     static {
         System.loadLibrary("iconv");
@@ -67,12 +89,14 @@ public class BarcodeCaptureActivity extends Activity {
         preview.addView(mPreview);
 
         scanText = (TextView) findViewById(R.id.scan_result_text);
-
         scanButton = (Button) findViewById(R.id.start_scan_button);
+        saveButton = (Button) findViewById(R.id.save_picture_button);
 
         scanButton.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
                 if (barcodeScanned) {
+                    scanButton.setEnabled(false);
+                    saveButton.setEnabled(false);
                     barcodeScanned = false;
                     scanText.setText(R.string.scan_tips_text);
                     mCamera.setPreviewCallback(previewCb);
@@ -82,6 +106,49 @@ public class BarcodeCaptureActivity extends Activity {
                 }
             }
         });
+
+        saveButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (bitmapData != null) {
+                    saveButton.setEnabled(false);
+                    File pictureFile = getOutputMediaFile();
+                    if (pictureFile == null) {
+                        return;
+                    }
+                    try {
+                        FileOutputStream fileOutputStream = new FileOutputStream(pictureFile);
+                        fileOutputStream.write(bitmapData);
+                        fileOutputStream.close();
+                    } catch (Exception e) {
+                        Log.e(TAG, "Save Error.");
+                    }
+                }
+            }
+        });
+
+        scanButton.setEnabled(false);
+        saveButton.setEnabled(false);
+    }
+
+    private static File getOutputMediaFile() {
+        // To be safe, you should check that the SDCard is mounted
+        // using Environment.getExternalStorageState() before doing this.
+
+        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DCIM), "/Picture");
+        // This location works best if you want the created images to be shared
+        // between applications and persist after your app has been uninstalled.
+
+        // Create the storage directory if it does not exist
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
+                return null;
+            }
+        }
+        // Create a media file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        return new File(mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg");
     }
 
     @Override
@@ -124,21 +191,24 @@ public class BarcodeCaptureActivity extends Activity {
         public void onPreviewFrame(byte[] data, Camera camera) {
             Camera.Parameters parameters = camera.getParameters();
             Size size = parameters.getPreviewSize();
+            YuvImage yuvimage = new YuvImage(data, ImageFormat.NV21, size.width, size.height, null);
+            ByteArrayOutputStream jpgData = new ByteArrayOutputStream();
+            yuvimage.compressToJpeg(new Rect(0, 0, size.width, size.height), 80, jpgData);
+            bitmapData = jpgData.toByteArray();
 
             Image barcode = new Image(size.width, size.height, "Y800");
             barcode.setData(data);
-
             int result = scanner.scanImage(barcode);
-
             if (result != 0) {
                 previewing = false;
                 mCamera.setPreviewCallback(null);
                 mCamera.stopPreview();
-
-                SymbolSet syms = scanner.getResults();
-                for (Symbol sym : syms) {
+                SymbolSet symbols = scanner.getResults();
+                for (Symbol sym : symbols) {
                     String prefix = getResources().getString(R.string.scan_result_text);
                     scanText.setText(prefix + sym.getData());
+                    scanButton.setEnabled(true);
+                    saveButton.setEnabled(true);
                     barcodeScanned = true;
                 }
             }

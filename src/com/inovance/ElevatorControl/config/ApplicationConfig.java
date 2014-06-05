@@ -88,7 +88,9 @@ public class ApplicationConfig {
             "输入端子低位",
             "输入端子高位",
             "端子输入状态3",
-            "端子输入状态4"};
+            "端子输入状态4",
+            "高压端子输入状态"
+    };
 
     public static final String[] normalFilters = new String[]{
             "运行速度",
@@ -117,6 +119,8 @@ public class ApplicationConfig {
             "端子输入状态3",
             "端子输入状态4"
     };
+
+    public static final String HVInputTerminalStatusName = "高压端子输入状态";
 
     /**
      * 内召信息
@@ -239,9 +243,55 @@ public class ApplicationConfig {
      */
     public static final int[] DESCRIPTION_TYPE = new int[]{0, 1, 2, 3};
 
+    // ====================================== 系统日志类型 ============================================
+
     /**
-     * ============================= Web API接口 ==================================== *
+     * 单个参数修改
      */
+    public static final int LogWriteParameter = 1;
+
+    /**
+     * 故障复位
+     */
+    public static final int LogRestoreErrorStatus = 2;
+
+    /**
+     * 烧录程序
+     */
+    public static final int LogBurn = 3;
+
+    /**
+     * 电梯内召
+     */
+    public static final int LogMoveInside = 4;
+
+    /**
+     * 电梯外召
+     */
+    public static final int LogMoveOutside = 5;
+
+    /**
+     * 参数批量读取
+     */
+    public static final int LogDownloadProfile = 6;
+
+    /**
+     * 参数批量写入
+     */
+    public static final int LogUploadProfile = 7;
+
+    /**
+     * 恢复出厂设置
+     */
+    public static final int LogRestoreFactory = 8;
+
+    /**
+     * 下载的固件存储文件件
+     */
+    public static final String FIRMWARE_FOLDER = "FirmwareBin";
+
+    // ==================================== Web API接口 =======================================
+
     public static final String DomainName = "http://222.92.112.36:6954/HuiChuanAPI.asmx/";
 
     // 验证是否注册用户
@@ -299,7 +349,7 @@ public class ApplicationConfig {
     // 记录用户提取文件的日期，并删除服务器上的文件
     // 参数：approveID 审批记录的ID(从上面的方法中获得的ID)
     // 返回值：执行成功返回"success",否则返回错误信息
-    public static final String DeleteFile = "DeleteFile";
+    public static final String DeleteFile = "DeleteFile?approveID=";
 
     // 从服务器下载固件文件
     // 参数：approveID 审批记录的ID
@@ -315,5 +365,10 @@ public class ApplicationConfig {
     // 参数：vendorID 厂商ID
     // 返回值：返回JSON格式的设备信息列表
     public static final String GetDeviceListByVendorID = "GetDeviceListFromVendor?vendorID=";
+
+    // 取得软件最新版本
+    // 参数：无
+    // 返回值：返回JSON格式的软件版本信息
+    public static final String GetLastSoftwareVersion = "";
 
 }

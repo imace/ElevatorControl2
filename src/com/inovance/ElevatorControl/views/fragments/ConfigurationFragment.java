@@ -11,15 +11,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import com.bluetoothtool.BluetoothTalk;
 import com.bluetoothtool.BluetoothTool;
-import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.activities.*;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ParameterGroupSettingsDao;
 import com.inovance.ElevatorControl.daos.RealTimeMonitorDao;
-import com.inovance.ElevatorControl.handlers.GlobalHandler;
 import com.inovance.ElevatorControl.models.MoveInsideOutside;
 import com.inovance.ElevatorControl.models.ParameterDuplicate;
 import com.inovance.ElevatorControl.models.ParameterGroupSettings;
@@ -280,7 +277,9 @@ public class ConfigurationFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                if (BluetoothTool.getInstance(getActivity()).hasSelectDeviceType()) {
+
+                //if (BluetoothTool.getInstance(getActivity()).isPrepared()) {
+                if (true) {
                     switch (position) {
                         case 0: {
                             Intent intent = new Intent(ConfigurationFragment.this.getActivity(),
@@ -295,7 +294,9 @@ public class ConfigurationFragment extends Fragment {
                         }
                         break;
                         case 2: {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(ConfigurationFragment.this.getActivity(),
+                            final ConfigurationActivity activity = (ConfigurationActivity)
+                                    ConfigurationFragment.this.getActivity();
+                            AlertDialog.Builder builder = new AlertDialog.Builder(activity,
                                     R.style.CustomDialogStyle)
                                     .setTitle(R.string.confirm_restore_title)
                                     .setMessage(R.string.confirm_restore_message)
@@ -303,41 +304,8 @@ public class ConfigurationFragment extends Fragment {
                                     .setPositiveButton(R.string.dialog_btn_ok, new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialogInterface, int i) {
-                                            BluetoothTalk[] communications = new BluetoothTalk[1];
-                                            communications[0] = new BluetoothTalk() {
-                                                @Override
-                                                public void beforeSend() {
-                                                    this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("010660030001")));
-                                                }
-
-                                                @Override
-                                                public void afterSend() {
-
-                                                }
-
-                                                @Override
-                                                public void beforeReceive() {
-
-                                                }
-
-                                                @Override
-                                                public void afterReceive() {
-
-                                                }
-
-                                                @Override
-                                                public Object onParse() {
-                                                    return null;
-                                                }
-                                            };
-                                            if (BluetoothTool.getInstance(ConfigurationFragment.this.getActivity())
-                                                    .isConnected()) {
-                                                BluetoothTool.getInstance(ConfigurationFragment.this.getActivity())
-                                                        .setCommunications(communications)
-                                                        .send();
-                                            } else {
-                                                GlobalHandler.getInstance(getActivity())
-                                                        .sendMessage(GlobalHandler.NOT_CONNECTED);
+                                            if (activity != null) {
+                                                activity.restoreFactory();
                                             }
                                         }
                                     });

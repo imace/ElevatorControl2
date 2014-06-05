@@ -8,6 +8,7 @@ import android.os.Message;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.view.View;
+import android.widget.TextView;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.bluetoothtool.*;
@@ -16,44 +17,36 @@ import com.inovance.ElevatorControl.adapters.TroubleAnalyzeAdapter;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ErrorHelpDao;
 import com.inovance.ElevatorControl.daos.ParameterGroupSettingsDao;
-import com.inovance.ElevatorControl.handlers.CurrentErrorHandler;
-import com.inovance.ElevatorControl.handlers.GlobalHandler;
 import com.inovance.ElevatorControl.handlers.HistoryErrorHandler;
-import com.inovance.ElevatorControl.models.HistoryError;
-import com.inovance.ElevatorControl.models.ObjectListHolder;
-import com.inovance.ElevatorControl.models.ParameterGroupSettings;
-import com.inovance.ElevatorControl.models.ParameterSettings;
+import com.inovance.ElevatorControl.models.*;
+import com.inovance.ElevatorControl.utils.LogUtils;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
 import com.viewpagerindicator.TabPageIndicator;
 import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.widget.Toast;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
  * 故障分析
- *
- * @author jch
  */
 public class TroubleAnalyzeActivity extends Activity implements Runnable {
 
     private static final String TAG = TroubleAnalyzeActivity.class.getSimpleName();
     /**
-     * 注入页面元素
+     * View Pager
      */
     @InjectView(R.id.pager)
     public ViewPager pager;
 
+    /**
+     * View Pager Indicator
+     */
     @InjectView(R.id.indicator)
     public TabPageIndicator indicator;
-
-    private CurrentErrorHandler currentErrorHandler;
 
     private HistoryErrorHandler historyErrorHandler;
 
@@ -63,11 +56,15 @@ public class TroubleAnalyzeActivity extends Activity implements Runnable {
 
     private FCGroupHandler fcGroupHandler;
 
+    private RestoreErrorHandler restoreErrorHandler;
+
     public int pageIndex;
 
-    public boolean isGetCurrentTrouble = false;
-
     private Handler getCurrentTroubleHandler;
+
+    private boolean isRestoreSuccessful = false;
+
+    private static final int RestoreErrorSuccessful = 10;
 
     private ExecutorService pool = Executors.newSingleThreadExecutor();
 
@@ -81,8 +78,8 @@ public class TroubleAnalyzeActivity extends Activity implements Runnable {
         indicator.setViewPager(pager);
         currentGetCurrentTroubleCommunications();
         createGetFCGroupValueCommunications();
-        currentErrorHandler = new CurrentErrorHandler(this);
         historyErrorHandler = new HistoryErrorHandler(this);
+        restoreErrorHandler = new RestoreErrorHandler(this);
         fcGroupHandler = new FCGroupHandler(this);
         indicator.setOnPageChangeListener(new OnPageChangeListener() {
 
@@ -112,35 +109,21 @@ public class TroubleAnalyzeActivity extends Activity implements Runnable {
             @Override
             public void handleMessage(Message msg) {
                 switch (msg.what) {
+                    case 0:
+                        readCurrentTroubleStatus();
+                        break;
                     case 1: {
-                        isGetCurrentTrouble = false;
                         new CountDownTimer(2000, 500) {
 
                             @Override
                             public void onTick(long l) {
-                                if (!isGetCurrentTrouble) {
-                                    new Timer().schedule(new TimerTask() {
-                                        @Override
-                                        public void run() {
-                                            pool.execute(TroubleAnalyzeActivity.this);
-                                        }
-                                    }, 500);
-                                } else {
-                                    this.cancel();
-                                }
+                                pool.execute(TroubleAnalyzeActivity.this);
+                                sendEmptyMessage(0);
                             }
 
                             @Override
                             public void onFinish() {
-                                if (!isGetCurrentTrouble) {
-                                    if (!BluetoothTool.getInstance(TroubleAnalyzeActivity.this)
-                                            .hasAlertNotConnectMessage()) {
-                                        GlobalHandler.getInstance(TroubleAnalyzeActivity.this)
-                                                .sendMessage(GlobalHandler.NOT_CONNECTED);
-                                        BluetoothTool.getInstance(TroubleAnalyzeActivity.this)
-                                                .setHasAlertNotConnectMessage(true);
-                                    }
-                                }
+
                             }
                         }.start();
                     }
@@ -162,8 +145,8 @@ public class TroubleAnalyzeActivity extends Activity implements Runnable {
     @Override
     protected void onPause() {
         super.onPause();
-        BluetoothTool.getInstance(TroubleAnalyzeActivity.this)
-                .setHandler(null);
+        BluetoothTool.getInstance(this).setTalkType(BluetoothTalk.NORMAL_TALK);
+        BluetoothTool.getInstance(TroubleAnalyzeActivity.this).setHandler(null);
     }
 
     /**
@@ -195,6 +178,68 @@ public class TroubleAnalyzeActivity extends Activity implements Runnable {
         startActivity(new Intent(this, ViewErrorStatusActivity.class));
     }
 
+    /**
+     * 恢复故障状态
+     */
+    public void restoreErrorStatus() {
+        final BluetoothTalk[] talks = new BluetoothTalk[]{
+                new BluetoothTalk() {
+                    @Override
+                    public void beforeSend() {
+                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0106"
+                                + DeviceFactory.getInstance().getRestoreErrorCode()
+                                + "0001")));
+                    }
+
+                    @Override
+                    public void afterSend() {
+
+                    }
+
+                    @Override
+                    public void beforeReceive() {
+
+                    }
+
+                    @Override
+                    public void afterReceive() {
+
+                    }
+
+                    @Override
+                    public Object onParse() {
+                        byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
+                        return SerialUtility.byte2HexStr(received);
+                    }
+                }
+        };
+        isRestoreSuccessful = false;
+        new CountDownTimer(1500, 500) {
+            public void onTick(long millisUntilFinished) {
+                if (!isRestoreSuccessful) {
+                    if (BluetoothTool.getInstance(TroubleAnalyzeActivity.this).isPrepared()) {
+                        restoreErrorHandler.sendCode = DeviceFactory.getInstance().getRestoreErrorCode();
+                        BluetoothTool.getInstance(TroubleAnalyzeActivity.this)
+                                .setHandler(restoreErrorHandler)
+                                .setCommunications(talks)
+                                .send();
+                    }
+                } else {
+                    handler.sendEmptyMessage(RestoreErrorSuccessful);
+                    this.cancel();
+                    this.onFinish();
+                }
+            }
+
+            public void onFinish() {
+
+            }
+        }.start();
+    }
+
+    /**
+     * 生成读取当前故障通信内容
+     */
     private void currentGetCurrentTroubleCommunications() {
         if (currentCommunications == null) {
             currentCommunications = new BluetoothTalk[]{
@@ -221,11 +266,6 @@ public class TroubleAnalyzeActivity extends Activity implements Runnable {
 
                         @Override
                         public Object onParse() {
-                            if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
-                                byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
-                                String errorCode = ParseSerialsUtils.getErrorCode(received);
-                                return ErrorHelpDao.findByDisplay(TroubleAnalyzeActivity.this, errorCode);
-                            }
                             return null;
                         }
                     }
@@ -304,12 +344,70 @@ public class TroubleAnalyzeActivity extends Activity implements Runnable {
      * 当前故障
      */
     public void loadCurrentTroubleView() {
-        if (BluetoothTool.getInstance(this).isConnected()) {
+        if (BluetoothTool.getInstance(this).isPrepared()) {
             handler.sendEmptyMessage(3);
-            getCurrentTroubleHandler.sendEmptyMessage(1);
-
+            BluetoothTool.getInstance(this).setHandler(null);
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    getCurrentTroubleHandler.sendEmptyMessage(1);
+                }
+            }, 1000);
         } else {
             handler.sendEmptyMessage(1);
+        }
+    }
+
+    /**
+     * 读取当前故障状态
+     */
+    private void readCurrentTroubleStatus() {
+        Hashtable<String, byte[]> trouble = BluetoothTool.getInstance(this).getCurrentTroubleValueSet();
+        if (trouble != null && trouble.size() == 1) {
+            byte[] received = SerialUtility.trimEnd(trouble.get("8000"));
+            String errorCode = ParseSerialsUtils.getErrorCode(received);
+            ErrorHelp errorHelp = ErrorHelpDao.findByDisplay(TroubleAnalyzeActivity.this, errorCode);
+            View loadView = pager.findViewById(R.id.load_view);
+            View errorView = pager.findViewById(R.id.error_view);
+            View noErrorView = pager.findViewById(R.id.no_error_view);
+            View noDeviceView = pager.findViewById(R.id.no_device_view);
+            View viewSystemStatus = pager.findViewById(R.id.view_system_status);
+            View restoreErrorStatus = pager.findViewById(R.id.restore_error_status);
+            if (loadView != null && errorView != null && noErrorView != null && noDeviceView != null) {
+                if (errorHelp != null) {
+                    TextView display = (TextView) pager.findViewById(R.id.current_error_help_display);
+                    TextView level = (TextView) pager.findViewById(R.id.current_error_help_level);
+                    TextView name = (TextView) pager.findViewById(R.id.current_error_help_name);
+                    TextView reason = (TextView) pager.findViewById(R.id.current_error_help_reason);
+                    TextView solution = (TextView) pager.findViewById(R.id.current_error_help_solution);
+                    name.setText(errorHelp.getName());
+                    display.setText(errorHelp.getDisplay());
+                    level.setText(errorHelp.getLevel());
+                    reason.setText(errorHelp.getReason());
+                    solution.setText(errorHelp.getSolution());
+                    loadView.setVisibility(View.GONE);
+                    noErrorView.setVisibility(View.GONE);
+                    noDeviceView.setVisibility(View.GONE);
+                    errorView.setVisibility(View.VISIBLE);
+                    viewSystemStatus.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            viewCurrentSystemStatus();
+                        }
+                    });
+                    restoreErrorStatus.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            restoreErrorStatus();
+                        }
+                    });
+                } else {
+                    loadView.setVisibility(View.GONE);
+                    noDeviceView.setVisibility(View.GONE);
+                    errorView.setVisibility(View.GONE);
+                    noErrorView.setVisibility(View.VISIBLE);
+                }
+            }
         }
     }
 
@@ -317,14 +415,15 @@ public class TroubleAnalyzeActivity extends Activity implements Runnable {
      * 历史故障
      */
     public void loadHistoryTroubleView() {
-        if (BluetoothTool.getInstance(this).isConnected()) {
+        if (BluetoothTool.getInstance(this).isPrepared()) {
             handler.sendEmptyMessage(4);
+            BluetoothTool.getInstance(this).setHandler(null);
             new Timer().schedule(new TimerTask() {
                 @Override
                 public void run() {
                     pool.execute(TroubleAnalyzeActivity.this);
                 }
-            }, 500);
+            }, 1000);
         } else {
             handler.sendEmptyMessage(2);
         }
@@ -334,6 +433,7 @@ public class TroubleAnalyzeActivity extends Activity implements Runnable {
 
         @Override
         public void handleMessage(Message msg) {
+            super.handleMessage(msg);
             switch (msg.what) {
                 case 0: {
                     Toast.makeText(TroubleAnalyzeActivity.this,
@@ -386,8 +486,14 @@ public class TroubleAnalyzeActivity extends Activity implements Runnable {
                     }
                 }
                 break;
+                case RestoreErrorSuccessful: {
+                    Toast.makeText(TroubleAnalyzeActivity.this,
+                            R.string.restore_error_successful_text,
+                            Toast.LENGTH_SHORT)
+                            .show();
+                }
+                break;
             }
-            super.handleMessage(msg);
         }
 
     };
@@ -397,9 +503,9 @@ public class TroubleAnalyzeActivity extends Activity implements Runnable {
         switch (pageIndex) {
             case 0: {
                 if (((NavigationTabActivity) getParent()).hasGetDeviceTypeAndNumber) {
-                    currentErrorHandler.sendCount = currentCommunications.length;
+                    BluetoothTool.getInstance(TroubleAnalyzeActivity.this).setTalkType(BluetoothTalk.CURRENT_TROUBLE_TALK);
                     BluetoothTool.getInstance(TroubleAnalyzeActivity.this)
-                            .setHandler(currentErrorHandler)
+                            .setHandler(null)
                             .setCommunications(currentCommunications)
                             .send();
                 }
@@ -408,6 +514,7 @@ public class TroubleAnalyzeActivity extends Activity implements Runnable {
             case 1: {
                 if (historyCommunications != null && historyCommunications.length > 0) {
                     fcGroupHandler.sendCount = historyCommunications.length;
+                    BluetoothTool.getInstance(TroubleAnalyzeActivity.this).setTalkType(BluetoothTalk.NORMAL_TALK);
                     BluetoothTool.getInstance(TroubleAnalyzeActivity.this)
                             .setHandler(fcGroupHandler)
                             .setCommunications(historyCommunications)
@@ -519,5 +626,46 @@ public class TroubleAnalyzeActivity extends Activity implements Runnable {
             super.onTalkError(msg);
         }
 
+    }
+
+    // ================================== 故障复位 ========================= //
+
+    private class RestoreErrorHandler extends BluetoothHandler {
+
+        public String sendCode;
+
+        public RestoreErrorHandler(android.app.Activity activity) {
+            super(activity);
+            TAG = RestoreErrorHandler.class.getSimpleName();
+        }
+
+        @Override
+        public void onMultiTalkBegin(Message msg) {
+            super.onMultiTalkBegin(msg);
+        }
+
+        @Override
+        public void onMultiTalkEnd(Message msg) {
+            super.onMultiTalkEnd(msg);
+        }
+
+        @Override
+        public void onTalkReceive(Message msg) {
+            super.onTalkReceive(msg);
+            if (msg.obj != null && msg.obj instanceof String) {
+                String receive = (String) msg.obj;
+                if (receive.contains(sendCode)) {
+                    isRestoreSuccessful = true;
+                    LogUtils.getInstance().write(ApplicationConfig.LogRestoreErrorStatus,
+                            "0106" + DeviceFactory.getInstance().getRestoreErrorCode() + "0001",
+                            receive);
+                }
+            }
+        }
+
+        @Override
+        public void onTalkError(Message msg) {
+            super.onTalkError(msg);
+        }
     }
 }

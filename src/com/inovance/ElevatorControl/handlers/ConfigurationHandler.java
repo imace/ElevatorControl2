@@ -43,10 +43,14 @@ public class ConfigurationHandler extends BluetoothHandler {
             final List<RealTimeMonitor> finalList = new ArrayList<RealTimeMonitor>();
             List<RealTimeMonitor> inputMonitor = new ArrayList<RealTimeMonitor>();
             List<RealTimeMonitor> outputMonitor = new ArrayList<RealTimeMonitor>();
+            RealTimeMonitor hvMonitor = null;
             for (String normal : ApplicationConfig.normalFilters) {
                 for (RealTimeMonitor monitor : monitorList) {
                     if (monitor.getName().equalsIgnoreCase(normal)) {
                         finalList.add(monitor);
+                    }
+                    if (monitor.getName().equalsIgnoreCase(ApplicationConfig.HVInputTerminalStatusName)) {
+                        hvMonitor = monitor;
                     }
                 }
             }
@@ -71,19 +75,23 @@ public class ConfigurationHandler extends BluetoothHandler {
                     RealTimeMonitor monitor = (RealTimeMonitor) inputMonitor.get(0).clone();
                     monitor.setName("主控板输入端子");
                     byte[] combineBytes = new byte[]{
-                            inputMonitor.get(0).getReceived()[4],
-                            inputMonitor.get(0).getReceived()[5],
-
-                            inputMonitor.get(1).getReceived()[4],
-                            inputMonitor.get(1).getReceived()[5],
+                            inputMonitor.get(3).getReceived()[4],
+                            inputMonitor.get(3).getReceived()[5],
 
                             inputMonitor.get(2).getReceived()[4],
                             inputMonitor.get(2).getReceived()[5],
 
-                            inputMonitor.get(3).getReceived()[4],
-                            inputMonitor.get(3).getReceived()[5],
+                            inputMonitor.get(1).getReceived()[4],
+                            inputMonitor.get(1).getReceived()[5],
+
+                            inputMonitor.get(0).getReceived()[4],
+                            inputMonitor.get(0).getReceived()[5],
                     };
                     monitor.setCombineBytes(combineBytes);
+                    if (hvMonitor != null) {
+                        monitor.setHVInputTerminalBytes(new byte[]{hvMonitor.getReceived()[4],
+                                hvMonitor.getReceived()[5]});
+                    }
                     monitor.setCode(inputMonitor.get(0).getCode()
                             + "+" + inputMonitor.get(1).getCode()
                             + "+" + inputMonitor.get(2).getCode()
@@ -110,7 +118,7 @@ public class ConfigurationHandler extends BluetoothHandler {
             ConfigurationActivity parentActivity = ((ConfigurationActivity) activity);
             ConfigurationFragment fragment = parentActivity.mConfigurationAdapter.getItem(parentActivity.pageIndex);
             fragment.syncMonitorViewData(finalList);
-            parentActivity.isSyncing = false;
+            parentActivity.isSyncingSystemStatus = false;
         } else {
             ((ConfigurationActivity) activity).loadMonitorView();
         }

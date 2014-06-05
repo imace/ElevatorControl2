@@ -1,5 +1,6 @@
 package com.inovance.ElevatorControl.activities;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Message;
@@ -7,6 +8,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import butterknife.OnClick;
 import butterknife.Views;
@@ -15,12 +17,13 @@ import com.bluetoothtool.BluetoothTalk;
 import com.bluetoothtool.BluetoothTool;
 import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
+import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ParameterGroupSettingsDao;
-import com.inovance.ElevatorControl.handlers.GlobalHandler;
 import com.inovance.ElevatorControl.models.ObjectListHolder;
 import com.inovance.ElevatorControl.models.ParameterGroupSettings;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.utils.GenerateJSON;
+import com.inovance.ElevatorControl.utils.LogUtils;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
 import org.holoeverywhere.LayoutInflater;
 import org.holoeverywhere.app.Activity;
@@ -39,6 +42,7 @@ import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
+ * 参数读取
  * User: keith.
  * Date: 14-3-10.
  * Time: 11:35.
@@ -47,26 +51,59 @@ public class ParameterDownloadActivity extends Activity {
 
     private final static String TAG = ParameterDownloadActivity.class.getSimpleName();
 
+    /**
+     * 默认的读取并保存参数目录名称
+     */
     private final static String DIRECTORY_NAME = "Profile";
 
+    /**
+     * 读取参数 Handler
+     */
     private DownloadParameterHandler downloadParameterHandler;
 
+    /**
+     * 读取参数进度 Parent View
+     */
     private View progressView;
 
+    /**
+     * 读取参数进度
+     */
     private ProgressBar downloadProgressBar;
 
+    /**
+     * 总的需要读取的参数数量
+     */
     private TextView totalTextView;
 
+    /**
+     * 当前读取的参数位置
+     */
     private TextView currentTextView;
 
+    /**
+     * 保存的参数文件名称
+     */
     private EditText fileNameEditText;
 
+    /**
+     * 用于读取参数的通信内容
+     */
     private List<BluetoothTalk[]> communicationsList;
 
+    /**
+     * 读取 Dialog
+     */
     private AlertDialog downloadDialog;
 
+    /**
+     * 读取确认按钮
+     */
     private Button confirmButton;
 
+    /**
+     * 读取消按钮
+     */
     private Button cancelButton;
 
     private List<ParameterGroupSettings> parameterGroupLists;
@@ -85,11 +122,13 @@ public class ParameterDownloadActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        BluetoothTool.getInstance(this).setHandler(null);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        BluetoothTool.getInstance(this).setHandler(null);
         overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
     }
 
@@ -109,8 +148,14 @@ public class ParameterDownloadActivity extends Activity {
      */
     @OnClick(R.id.download_button)
     void onDownloadButtonClick() {
-        //弹出下载框
-        if (BluetoothTool.getInstance(this).isConnected()) {
+        getElevatorStatus();
+    }
+
+    /**
+     * 下载配置参数
+     */
+    private void downloadProfile() {
+        if (BluetoothTool.getInstance(this).isPrepared()) {
             AlertDialog.Builder builder = new AlertDialog.Builder(ParameterDownloadActivity.this);
             LayoutInflater inflater = ParameterDownloadActivity.this.getLayoutInflater();
             View dialogView = inflater.inflate(R.layout.parameters_duplicate_dialog, null);
@@ -156,7 +201,7 @@ public class ParameterDownloadActivity extends Activity {
             downloadDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    ParameterDownloadActivity.this.saveProfileToLocal(fileNameEditText.getText().toString());
+                    ParameterDownloadActivity.this.saveProfileToLocal();
                 }
             });
             downloadDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener(new View.OnClickListener() {
@@ -167,45 +212,76 @@ public class ParameterDownloadActivity extends Activity {
                     downloadDialog.dismiss();
                 }
             });
-        } else {
-            GlobalHandler.getInstance(ParameterDownloadActivity.this)
-                    .sendMessage(GlobalHandler.NOT_CONNECTED);
         }
     }
 
     /**
-     * 保存配置文件
+     * 读取电梯运行状态
      *
-     * @param fileName 保存的文件名
+     * @param index ListView Item Index
      */
-    private void saveProfileToLocal(String fileName) {
-        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            File directory = new File(getApplicationContext().getExternalCacheDir().getPath()
-                    + "/"
-                    + DIRECTORY_NAME);
-            if (!directory.exists()) {
-                directory.mkdir();
+    private void getElevatorStatus() {
+        BluetoothHandler handler = new BluetoothHandler(this) {
+            @Override
+            public void onTalkReceive(Message msg) {
+                if (msg.obj != null && msg.obj instanceof Integer) {
+                    int status = ((Integer) msg.obj).intValue();
+                    if (status == 3) {
+                        downloadProfile();
+                    } else {
+                        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(ParameterDownloadActivity.this,
+                                R.style.CustomDialogStyle)
+                                .setTitle(R.string.cannot_download_profile_title)
+                                .setMessage(R.string.elevator_running_cannot_download_message)
+                                .setNegativeButton(R.string.dialog_btn_cancel, null)
+                                .setPositiveButton(R.string.dialog_btn_ok, null);
+                        builder.create().show();
+                    }
+                }
             }
-            int maxProgress = 0;
-            fileNameEditText.setVisibility(View.GONE);
-            parameterGroupLists = ParameterGroupSettingsDao.findAll(ParameterDownloadActivity.this);
-            communicationsList = new ArrayList<BluetoothTalk[]>();
-            for (ParameterGroupSettings groupItem : parameterGroupLists) {
-                BluetoothTalk[] communications = createCommunications(groupItem.getParametersettings().getList());
-                maxProgress += communications.length;
-                communicationsList.add(communications);
+        };
+        BluetoothTool.getInstance(this).getRunningStatus(handler);
+    }
+
+    /**
+     * 保存配置文件
+     */
+    private void saveProfileToLocal() {
+        File file = new File(getApplicationContext().getExternalCacheDir().getPath()
+                + "/"
+                + DIRECTORY_NAME
+                + "/"
+                + fileNameEditText.getText().toString());
+        if (!file.exists()) {
+            if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+                InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                inputMethodManager.hideSoftInputFromWindow(fileNameEditText.getWindowToken(),
+                        InputMethodManager.HIDE_NOT_ALWAYS);
+                int maxProgress = 0;
+                fileNameEditText.setVisibility(View.GONE);
+                parameterGroupLists = ParameterGroupSettingsDao.findAll(ParameterDownloadActivity.this);
+                communicationsList = new ArrayList<BluetoothTalk[]>();
+                for (ParameterGroupSettings groupItem : parameterGroupLists) {
+                    BluetoothTalk[] communications = createCommunications(groupItem.getParametersettings().getList());
+                    maxProgress += communications.length;
+                    communicationsList.add(communications);
+                }
+                downloadProgressBar.setMax(maxProgress);
+                downloadProgressBar.setProgress(0);
+                totalTextView.setText("100");
+                currentTextView.setText("0/100");
+                progressView.setVisibility(View.VISIBLE);
+                ParameterDownloadActivity.this.startCommunication(0);
+            } else {
+                AlertDialog.Builder builder = new AlertDialog.Builder(ParameterDownloadActivity.this);
+                builder.setTitle(R.string.save_file_failed_title);
+                builder.setMessage(R.string.cannot_save_file);
+                builder.setPositiveButton(R.string.dialog_btn_ok, null);
+                builder.create().show();
             }
-            downloadProgressBar.setMax(maxProgress);
-            downloadProgressBar.setProgress(0);
-            totalTextView.setText("100");
-            currentTextView.setText("0/100");
-            progressView.setVisibility(View.VISIBLE);
-            ParameterDownloadActivity.this.startCommunication(0);
         } else {
-            AlertDialog.Builder builder = new AlertDialog.Builder(ParameterDownloadActivity.this);
-            builder.setTitle(R.string.save_file_failed_title);
-            builder.setMessage(R.string.cannot_save_file);
-            builder.setPositiveButton(R.string.dialog_btn_ok, null);
+            // 文件名重复
+            Toast.makeText(this, R.string.file_repeat_text, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -282,7 +358,7 @@ public class ParameterDownloadActivity extends Activity {
     private void startCommunication(int position) {
         if (position >= 0 && position < communicationsList.size()) {
             downloadParameterHandler.index = position;
-            if (BluetoothTool.getInstance(this).isConnected()) {
+            if (BluetoothTool.getInstance(this).isPrepared()) {
                 BluetoothTool.getInstance(this)
                         .setHandler(downloadParameterHandler)
                         .setCommunications(communicationsList.get(position))
@@ -290,18 +366,11 @@ public class ParameterDownloadActivity extends Activity {
                 if (confirmButton != null && cancelButton != null) {
                     confirmButton.setEnabled(false);
                 }
-            } else {
-                GlobalHandler.getInstance(ParameterDownloadActivity.this)
-                        .sendMessage(GlobalHandler.NOT_CONNECTED);
             }
         }
     }
 
-    // ===================================== Download Parameter Handler ======================================
-
-    /**
-     * 下载参数配置Handler
-     */
+    // =====================================下载参数配置 Handler======================================
     private class DownloadParameterHandler extends BluetoothHandler {
 
         private int index = 0;
@@ -369,6 +438,8 @@ public class ParameterDownloadActivity extends Activity {
                         FileOutputStream outputStream = new FileOutputStream(fileName);
                         outputStream.write(JSONString.getBytes());
                         outputStream.close();
+                        // 写入日志
+                        LogUtils.getInstance().write(ApplicationConfig.LogDownloadProfile);
                         Toast.makeText(ParameterDownloadActivity.this,
                                 R.string.download_parameter_save_successful,
                                 Toast.LENGTH_SHORT).show();

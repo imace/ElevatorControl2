@@ -27,9 +27,20 @@
                     android:text="@string/equipment_model_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
+            <View
+                    android:background="#ffdfdfdf"
+                    android:layout_margin="10dp"
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"/>
+            <org.holoeverywhere.widget.TextView
+                    android:id="@+id/device_type"
+                    style="@style/Holo.TextAppearance.Light"
+                    android:textColor="#515151"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
         </LinearLayout>
         <View
-                android:background="@android:drawable/divider_horizontal_bright"
+                android:background="#ffdfdfdf"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"/>
         <LinearLayout
@@ -44,6 +55,17 @@
                     style="@style/Holo.TextAppearance.Light"
                     android:textColor="#515151"
                     android:text="@string/manufacturers_serial_number_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            <View
+                    android:background="#ffdfdfdf"
+                    android:layout_margin="10dp"
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"/>
+            <org.holoeverywhere.widget.TextView
+                    android:id="@+id/supplier_code"
+                    style="@style/Holo.TextAppearance.Light"
+                    android:textColor="#515151"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
         </LinearLayout>

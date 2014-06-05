@@ -12,7 +12,6 @@ import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ParameterSettingsDao;
-import com.inovance.ElevatorControl.handlers.GlobalHandler;
 import com.inovance.ElevatorControl.models.ObjectListHolder;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
@@ -159,15 +158,12 @@ public class ViewErrorStatusActivity extends Activity {
 
     public void startCommunication() {
         if (communications != null) {
-            if (BluetoothTool.getInstance(ViewErrorStatusActivity.this).isConnected()) {
+            if (BluetoothTool.getInstance(ViewErrorStatusActivity.this).isPrepared()) {
                 errorStatusHandler.sendCount = communications.length;
                 BluetoothTool.getInstance(ViewErrorStatusActivity.this)
                         .setHandler(errorStatusHandler)
                         .setCommunications(communications)
                         .send();
-            } else {
-                GlobalHandler.getInstance(ViewErrorStatusActivity.this)
-                        .sendMessage(GlobalHandler.NOT_CONNECTED);
             }
         }
     }
