@@ -21,23 +21,23 @@
                 android:layout_marginLeft="@dimen/card_view_margin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-            <org.holoeverywhere.widget.EditText
+            <EditText
                     android:id="@+id/setting_value"
                     android:layout_marginRight="@dimen/card_view_margin"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"/>
-            <org.holoeverywhere.widget.TextView
+            <TextView
                     android:text="x"
                     android:layout_marginRight="@dimen/card_view_margin"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
-            <org.holoeverywhere.widget.TextView
+            <TextView
                     android:id="@+id/scale_new_value"
                     android:layout_marginRight="@dimen/card_view_margin"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
-            <org.holoeverywhere.widget.TextView
+            <TextView
                     android:id="@+id/unit"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
@@ -56,14 +56,14 @@
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-            <org.holoeverywhere.widget.TextView
+            <TextView
                     android:layout_centerVertical="true"
                     android:layout_alignParentLeft="true"
                     android:text="@string/parameter_default_value_text"
                     android:layout_marginRight="3dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
-            <org.holoeverywhere.widget.TextView
+            <TextView
                     android:id="@+id/default_value"
                     android:layout_centerVertical="true"
                     android:layout_alignParentRight="true"
@@ -84,14 +84,14 @@
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-            <org.holoeverywhere.widget.TextView
+            <TextView
                     android:layout_centerVertical="true"
                     android:layout_alignParentLeft="true"
                     android:text="@string/parameter_value_scope_text"
                     android:layout_marginRight="3dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
-            <org.holoeverywhere.widget.TextView
+            <TextView
                     android:id="@+id/value_scope"
                     android:layout_centerVertical="true"
                     android:layout_alignParentRight="true"
@@ -113,14 +113,14 @@
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-            <org.holoeverywhere.widget.TextView
+            <TextView
                     android:layout_centerVertical="true"
                     android:layout_alignParentLeft="true"
                     android:text="@string/parameter_scale_text"
                     android:layout_marginRight="3dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
-            <org.holoeverywhere.widget.TextView
+            <TextView
                     android:id="@+id/scale"
                     android:layout_centerVertical="true"
                     android:layout_alignParentRight="true"

@@ -8,8 +8,6 @@ import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
 import com.mobsandgeeks.adapters.InstantText;
 import net.tsz.afinal.annotation.sqlite.Id;
 import net.tsz.afinal.annotation.sqlite.ManyToOne;
-import net.tsz.afinal.annotation.sqlite.OneToMany;
-import net.tsz.afinal.db.sqlite.OneToManyLazyLoader;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONStringer;
@@ -65,7 +63,9 @@ public class ParameterSettings implements Cloneable {
      * 修改方式 '★' : 1 任意修改 '☆' : 2 停机修改 '*' : 3 不可修改
      */
     private String mode;
+
     private boolean Valid;
+
     private Date lasttime;
 
     private byte[] received;
@@ -79,11 +79,18 @@ public class ParameterSettings implements Cloneable {
 
     private boolean elevatorRunning = true;
 
+    private int deviceID;
+
+    public int getDeviceID() {
+        return deviceID;
+    }
+
+    public void setDeviceID(int deviceID) {
+        this.deviceID = deviceID;
+    }
+
     @ManyToOne(column = "FKGroupId")
     private ParameterGroupSettings parametergroupsettings;
-
-    @OneToMany(manyColumn = "OptExplainId")
-    private OneToManyLazyLoader<ParameterOptExplain, ParameterOptExplain> parameteroptexplain;
 
     /**
      * 无描述返回     0
@@ -148,8 +155,8 @@ public class ParameterSettings implements Cloneable {
     public String getCodeText() {
         String codeText = getCode();
         if (codeText.length() == 4) {
-            codeText = codeText.replace("D2", "FR");
-            return codeText.substring(0, 2) + "-" + codeText.substring(2, 4);
+            return codeText.substring(0, 2).replace("D2", "FR")
+                    + "-" + codeText.substring(2, 4);
         }
         return "";
     }
@@ -290,15 +297,6 @@ public class ParameterSettings implements Cloneable {
 
     public void setParametergroupsettings(ParameterGroupSettings parametergroupsettings) {
         this.parametergroupsettings = parametergroupsettings;
-    }
-
-    public OneToManyLazyLoader<ParameterOptExplain, ParameterOptExplain> getParameteroptexplain() {
-        return parameteroptexplain;
-    }
-
-    public void setParameteroptexplain(OneToManyLazyLoader<ParameterOptExplain, ParameterOptExplain>
-                                               parameteroptexplain) {
-        this.parameteroptexplain = parameteroptexplain;
     }
 
     public int getDescriptiontype() {

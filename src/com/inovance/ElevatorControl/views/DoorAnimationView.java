@@ -2,13 +2,13 @@ package com.inovance.ElevatorControl.views;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import com.inovance.ElevatorControl.R;
-import org.holoeverywhere.LayoutInflater;
-import org.holoeverywhere.widget.LinearLayout;
 
 /**
  * Created by IntelliJ IDEA.

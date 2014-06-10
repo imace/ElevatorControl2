@@ -3,8 +3,8 @@ package com.inovance.ElevatorControl.utils;
 import android.content.Context;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.models.DeviceFactory;
 import com.inovance.ElevatorControl.models.SystemLog;
+import com.inovance.ElevatorControl.models.UserFactory;
 import net.tsz.afinal.FinalDb;
 
 import java.util.List;
@@ -139,7 +139,7 @@ public class LogUtils {
     public void write(int type, String send, String result, String startValue, String finalValue) {
         SystemLog systemLog = new SystemLog();
         systemLog.setType(type);
-        systemLog.setDeviceType(DeviceFactory.getInstance().getDeviceType());
+        systemLog.setDeviceType(UserFactory.getInstance().getDeviceName());
         systemLog.setSendCommand(send);
         systemLog.setReturnCommand(result);
         systemLog.setStartValue(startValue);
@@ -158,7 +158,7 @@ public class LogUtils {
     public void write(int type, String send, String result) {
         SystemLog systemLog = new SystemLog();
         systemLog.setType(type);
-        systemLog.setDeviceType(DeviceFactory.getInstance().getDeviceType());
+        systemLog.setDeviceType(UserFactory.getInstance().getDeviceName());
         systemLog.setSendCommand(send);
         systemLog.setReturnCommand(result);
         systemLog.setTimestamp(System.currentTimeMillis());
@@ -175,7 +175,7 @@ public class LogUtils {
     public void write(int type, boolean result, String errorMessage) {
         SystemLog systemLog = new SystemLog();
         systemLog.setType(type);
-        systemLog.setDeviceType(DeviceFactory.getInstance().getDeviceType());
+        systemLog.setDeviceType(UserFactory.getInstance().getDeviceName());
         systemLog.setBurnResult(result);
         systemLog.setBurnErrorMessage(errorMessage);
         systemLog.setTimestamp(System.currentTimeMillis());
@@ -193,7 +193,7 @@ public class LogUtils {
     public void write(int type, String send, String result, int floor) {
         SystemLog systemLog = new SystemLog();
         systemLog.setType(type);
-        systemLog.setDeviceType(DeviceFactory.getInstance().getDeviceType());
+        systemLog.setDeviceType(UserFactory.getInstance().getDeviceName());
         systemLog.setSendCommand(send);
         systemLog.setReturnCommand(result);
         systemLog.setMoveSideFloor(floor);
@@ -213,7 +213,7 @@ public class LogUtils {
     public void write(int type, String send, String result, int floor, int direction) {
         SystemLog systemLog = new SystemLog();
         systemLog.setType(type);
-        systemLog.setDeviceType(DeviceFactory.getInstance().getDeviceType());
+        systemLog.setDeviceType(UserFactory.getInstance().getDeviceName());
         systemLog.setSendCommand(send);
         systemLog.setReturnCommand(result);
         systemLog.setMoveSideFloor(floor);
@@ -230,7 +230,7 @@ public class LogUtils {
     public void write(int type) {
         SystemLog systemLog = new SystemLog();
         systemLog.setType(type);
-        systemLog.setDeviceType(DeviceFactory.getInstance().getDeviceType());
+        systemLog.setDeviceType(UserFactory.getInstance().getDeviceName());
         systemLog.setTimestamp(System.currentTimeMillis());
         save(systemLog);
     }

@@ -1,37 +1,34 @@
 package com.inovance.ElevatorControl.activities;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.os.StrictMode;
-import android.util.Log;
+import android.provider.ContactsContract;
+import android.provider.MediaStore;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.Toast;
 import butterknife.InjectView;
 import butterknife.Views;
+import com.bluetoothtool.BluetoothTool;
 import com.inovance.ElevatorControl.R;
-import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.widget.LinearLayout;
-import org.jivesoftware.smack.AccountManager;
-import org.jivesoftware.smack.ConnectionConfiguration;
-import org.jivesoftware.smack.XMPPConnection;
-import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.provider.PrivacyProvider;
-import org.jivesoftware.smack.provider.ProviderManager;
-import org.jivesoftware.smackx.Form;
-import org.jivesoftware.smackx.GroupChatInvitation;
-import org.jivesoftware.smackx.PrivateDataManager;
-import org.jivesoftware.smackx.ReportedData;
-import org.jivesoftware.smackx.ReportedData.Row;
-import org.jivesoftware.smackx.bytestreams.socks5.provider.BytestreamsProvider;
-import org.jivesoftware.smackx.packet.*;
-import org.jivesoftware.smackx.provider.*;
-import org.jivesoftware.smackx.search.UserSearch;
-import org.jivesoftware.smackx.search.UserSearchManager;
+import com.inovance.ElevatorControl.utils.ProfileDownloadUtils;
 
-import java.util.Iterator;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Created by IntelliJ IDEA.
@@ -40,46 +37,225 @@ import java.util.concurrent.Executors;
  * Time: 10:29.
  */
 
-public class RemoteHelpActivity extends Activity implements Runnable {
+public class RemoteHelpActivity extends Activity {
 
     private static final String TAG = RemoteHelpActivity.class.getSimpleName();
 
-    private static final String serverHost = "192.168.5.64";
+    private static final int PICK_CONTACT = 1;
 
-    private static final int serverPort = 5222;
+    private static final int REQUEST_IMAGE_CAPTURE = 2;
 
-    private XMPPConnection connection;
+    private static final int REQUEST_VIDEO_CAPTURE = 3;
 
-    @InjectView(R.id.login_view)
-    LinearLayout loginView;
+    private static final int REQUEST_AUDIO_CAPTURE = 4;
 
-    private static final int WILL_CONNECT = 1;
+    @InjectView(R.id.pick_contact)
+    ImageButton pickContactButton;
 
-    private static final int CONNECTED = 2;
+    @InjectView(R.id.phone_number)
+    EditText phoneNumberEditText;
 
-    private static final int CONNECT_FAILED = 3;
-
-    private static final int WILL_CHECK_USER_EXIST = 4;
-
-    private static final int WILL_CREATE_ACCOUNT = 5;
-
-    private int currentTask = -1;
-
-    private ExecutorService pool = Executors.newSingleThreadExecutor();
+    @InjectView(R.id.send_file)
+    ImageButton sendButton;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
         setTitle(R.string.remote_help_text);
         setContentView(R.layout.activity_remote_help);
         Views.inject(this);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
-        configure(ProviderManager.getInstance());
-        currentTask = WILL_CONNECT;
-        pool.execute(RemoteHelpActivity.this);
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setHomeButtonEnabled(true);
+        pickContactButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
+                startActivityForResult(intent, PICK_CONTACT);
+            }
+        });
+        phoneNumberEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+                sendButton.setEnabled(charSequence.length() > 0);
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+        sendButton.setEnabled(false);
+        sendButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                inputMethodManager.hideSoftInputFromWindow(phoneNumberEditText.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                selectContentToSend();
+            }
+        });
+    }
+
+    /**
+     * 选择操作类型
+     */
+    private void selectContentToSend() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.choice_send_type_title)
+                .setItems(R.array.send_type_array, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int position) {
+                        switch (position) {
+                            case 0:
+                                sendSceneProfile();
+                                break;
+                            case 1:
+                                sendScenePicture();
+                                break;
+                            case 2:
+                                sendSceneVideo();
+                                break;
+                            case 3:
+                                sendSceneAudio();
+                                break;
+                        }
+                    }
+                }).setNegativeButton(R.string.dialog_btn_cancel, null);
+        builder.create().show();
+    }
+
+    /**
+     * 发送现场参数
+     */
+    private void sendSceneProfile() {
+        if (BluetoothTool.getInstance(this).isPrepared()) {
+            ProfileDownloadUtils downloadUtils = new ProfileDownloadUtils(this);
+            downloadUtils.startDownloadProfile(new ProfileDownloadUtils.OnDownloadCompleteListener() {
+                @Override
+                public void onComplete(String JSONString) {
+
+                }
+            });
+        } else {
+            Toast.makeText(this, R.string.no_connected_device, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * 发送现场图片
+     */
+    private void sendScenePicture() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(intent, REQUEST_IMAGE_CAPTURE);
+    }
+
+    /**
+     * 发送现场视频
+     */
+    private void sendSceneVideo() {
+        Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+        startActivityForResult(intent, REQUEST_VIDEO_CAPTURE);
+    }
+
+    /**
+     * 发送现场音频
+     */
+    private void sendSceneAudio() {
+        Intent intent = new Intent(MediaStore.Audio.Media.RECORD_SOUND_ACTION);
+        startActivityForResult(intent, REQUEST_AUDIO_CAPTURE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        // 选择联系人
+        if (requestCode == PICK_CONTACT && resultCode == RESULT_OK) {
+            Uri contactData = data.getData();
+            Cursor contactCursor = getContentResolver().query(contactData,
+                    new String[]{ContactsContract.Contacts._ID}, null, null,
+                    null);
+            String id = null;
+            if (contactCursor.moveToFirst()) {
+                id = contactCursor.getString(contactCursor
+                        .getColumnIndex(ContactsContract.Contacts._ID));
+            }
+            contactCursor.close();
+            String phoneNumber = null;
+            Cursor phoneCursor = getContentResolver().query(
+                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                    new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER},
+                    ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "= ? ",
+                    new String[]{id}, null);
+            if (phoneCursor.moveToFirst()) {
+                phoneNumber = phoneCursor
+                        .getString(phoneCursor
+                                .getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+            }
+            if (phoneNumber != null) {
+                phoneNumberEditText.setText(phoneNumber.replace(" ", "").replace("-", "").trim());
+            }
+            phoneCursor.close();
+        }
+        // 拍照
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            Bundle extras = data.getExtras();
+            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            imageBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byte[] sendData = stream.toByteArray();
+            // TODO
+        }
+        // 录制视频
+        if (requestCode == REQUEST_VIDEO_CAPTURE && resultCode == RESULT_OK) {
+            Uri videoUri = data.getData();
+            InputStream iStream = null;
+            try {
+                iStream = getContentResolver().openInputStream(videoUri);
+                byte[] sendData = getBytes(iStream);
+                // TODO
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        // 录音
+        if (requestCode == REQUEST_AUDIO_CAPTURE && resultCode == RESULT_OK) {
+            Uri audioUri = data.getData();
+            InputStream iStream = null;
+            try {
+                iStream = getContentResolver().openInputStream(audioUri);
+                byte[] sendData = getBytes(iStream);
+                // TODO
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Get byte from inputStream
+     *
+     * @param inputStream inputStream
+     * @return byte[]
+     * @throws IOException
+     */
+    public byte[] getBytes(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+        int bufferSize = 1024;
+        byte[] buffer = new byte[bufferSize];
+
+        int len = 0;
+        while ((len = inputStream.read(buffer)) != -1) {
+            byteBuffer.write(buffer, 0, len);
+        }
+        return byteBuffer.toByteArray();
     }
 
     @Override
@@ -92,208 +268,11 @@ public class RemoteHelpActivity extends Activity implements Runnable {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                if (connection != null) {
-                    connection.disconnect();
-                }
                 setResult(RESULT_OK);
                 finish();
                 return true;
         }
         return super.onOptionsItemSelected(item);
     }
-
-    @Override
-    public void run() {
-        switch (currentTask) {
-            case WILL_CONNECT:
-                createConnection();
-                break;
-            case WILL_CHECK_USER_EXIST:
-                if (checkUserExist("Demo")) {
-                    Log.v(TAG, "TRUE");
-                } else {
-                    currentTask = WILL_CREATE_ACCOUNT;
-                    pool.execute(RemoteHelpActivity.this);
-                }
-                break;
-            case WILL_CREATE_ACCOUNT:
-                tryToCreateUser();
-                break;
-        }
-    }
-
-    private void createConnection() {
-        ConnectionConfiguration config = new ConnectionConfiguration(
-                serverHost, serverPort);
-        config.setDebuggerEnabled(true);
-        try {
-            connection = new XMPPConnection(config);
-            connection.connect();
-            handler.sendEmptyMessage(CONNECTED);
-            currentTask = WILL_CHECK_USER_EXIST;
-            pool.execute(RemoteHelpActivity.this);
-        } catch (XMPPException e) {
-            handler.sendEmptyMessage(CONNECT_FAILED);
-        }
-    }
-
-    private boolean checkUserExist(String userName) {
-        UserSearchManager userSearchManager = new UserSearchManager(connection);
-        try {
-            Log.v(TAG, connection.getServiceName());
-            Form searchForm = userSearchManager.getSearchForm("search." + connection.getServiceName());
-            Log.v(TAG, searchForm.toString());
-            Form answerForm = searchForm.createAnswerForm();
-            answerForm.setAnswer("Username", true);
-            answerForm.setAnswer("search", userName);
-            ReportedData reportedData = userSearchManager.getSearchResults(answerForm, "search."
-                    + connection.getServiceName());
-            Log.v(TAG, "0001");
-            if (reportedData.getRows() != null) {
-                Log.v(TAG, "0002");
-                Iterator<Row> it = reportedData.getRows();
-                while (it.hasNext()) {
-                    Row row = it.next();
-                    Iterator iterator = row.getValues("jid");
-                    if (iterator.hasNext()) {
-                        String value = iterator.next().toString();
-                        if (value.equalsIgnoreCase(userName)) {
-                            Log.v(TAG, value);
-                            return true;
-                        }
-                    }
-                }
-            }
-        } catch (XMPPException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    private void tryToCreateUser() {
-        AccountManager accountManager = new AccountManager(connection);
-        try {
-            accountManager.createAccount("Demo", "1234");
-        } catch (XMPPException e) {
-            Log.v(TAG, e.getMessage());
-        }
-    }
-
-    private void loginUser() {
-
-    }
-
-    public void configure(ProviderManager pm) {
-        //  Private Data Storage
-        pm.addIQProvider("query", "jabber:iq:private", new PrivateDataManager.PrivateDataIQProvider());
-
-        //  Time
-        try {
-            pm.addIQProvider("query", "jabber:iq:time", Class.forName("org.jivesoftware.smackx.packet.Time"));
-        } catch (ClassNotFoundException e) {
-            Log.w("TestClient", "Can't load class for org.jivesoftware.smackx.packet.Time");
-        }
-
-        //  Roster Exchange
-        pm.addExtensionProvider("x", "jabber:x:roster", new RosterExchangeProvider());
-
-        //  Message Events
-        pm.addExtensionProvider("x", "jabber:x:event", new MessageEventProvider());
-
-        //  Chat State
-        pm.addExtensionProvider("active", "http://jabber.org/protocol/chatstates", new ChatStateExtension.Provider());
-        pm.addExtensionProvider("composing", "http://jabber.org/protocol/chatstates", new ChatStateExtension.Provider());
-        pm.addExtensionProvider("paused", "http://jabber.org/protocol/chatstates", new ChatStateExtension.Provider());
-        pm.addExtensionProvider("inactive", "http://jabber.org/protocol/chatstates", new ChatStateExtension.Provider());
-        pm.addExtensionProvider("gone", "http://jabber.org/protocol/chatstates", new ChatStateExtension.Provider());
-
-        //  XHTML
-        pm.addExtensionProvider("html", "http://jabber.org/protocol/xhtml-im", new XHTMLExtensionProvider());
-
-        //  Group Chat Invitations
-        pm.addExtensionProvider("x", "jabber:x:conference", new GroupChatInvitation.Provider());
-
-        //  Service Discovery # Items
-        pm.addIQProvider("query", "http://jabber.org/protocol/disco#items", new DiscoverItemsProvider());
-
-        //  Service Discovery # Info
-        pm.addIQProvider("query", "http://jabber.org/protocol/disco#info", new DiscoverInfoProvider());
-
-        //  Data Forms
-        pm.addExtensionProvider("x", "jabber:x:data", new DataFormProvider());
-
-        //  MUC User
-        pm.addExtensionProvider("x", "http://jabber.org/protocol/muc#user", new MUCUserProvider());
-
-        //  MUC Admin
-        pm.addIQProvider("query", "http://jabber.org/protocol/muc#admin", new MUCAdminProvider());
-
-        //  MUC Owner
-        pm.addIQProvider("query", "http://jabber.org/protocol/muc#owner", new MUCOwnerProvider());
-
-        //  Delayed Delivery
-        pm.addExtensionProvider("x", "jabber:x:delay", new DelayInformationProvider());
-
-        //  Version
-        try {
-            pm.addIQProvider("query", "jabber:iq:version", Class.forName("org.jivesoftware.smackx.packet.Version"));
-        } catch (ClassNotFoundException e) {
-            //  Not sure what's happening here.
-        }
-
-        //  VCard
-        pm.addIQProvider("vCard", "vcard-temp", new VCardProvider());
-
-        //  Offline Message Requests
-        pm.addIQProvider("offline", "http://jabber.org/protocol/offline", new OfflineMessageRequest.Provider());
-
-        //  Offline Message Indicator
-        pm.addExtensionProvider("offline", "http://jabber.org/protocol/offline", new OfflineMessageInfo.Provider());
-
-        //  Last Activity
-        pm.addIQProvider("query", "jabber:iq:last", new LastActivity.Provider());
-
-        //  User Search
-        pm.addIQProvider("query", "jabber:iq:search", new UserSearch.Provider());
-
-        //  SharedGroupsInfo
-        pm.addIQProvider("sharedgroup", "http://www.jivesoftware.org/protocol/sharedgroup", new SharedGroupsInfo.Provider());
-
-        //  JEP-33: Extended Stanza Addressing
-        pm.addExtensionProvider("addresses", "http://jabber.org/protocol/address", new MultipleAddressesProvider());
-
-        //   FileTransfer
-        pm.addIQProvider("si", "http://jabber.org/protocol/si", new StreamInitiationProvider());
-
-        pm.addIQProvider("query", "http://jabber.org/protocol/bytestreams", new BytestreamsProvider());
-
-        //  Privacy
-        pm.addIQProvider("query", "jabber:iq:privacy", new PrivacyProvider());
-        pm.addIQProvider("command", "http://jabber.org/protocol/commands", new AdHocCommandDataProvider());
-        pm.addExtensionProvider("malformed-action", "http://jabber.org/protocol/commands", new AdHocCommandDataProvider.MalformedActionError());
-        pm.addExtensionProvider("bad-locale", "http://jabber.org/protocol/commands", new AdHocCommandDataProvider.BadLocaleError());
-        pm.addExtensionProvider("bad-payload", "http://jabber.org/protocol/commands", new AdHocCommandDataProvider.BadPayloadError());
-        pm.addExtensionProvider("bad-sessionid", "http://jabber.org/protocol/commands", new AdHocCommandDataProvider.BadSessionIDError());
-        pm.addExtensionProvider("session-expired", "http://jabber.org/protocol/commands", new AdHocCommandDataProvider.SessionExpiredError());
-    }
-
-    /**
-     * Chat Server Message Handler
-     */
-    private Handler handler = new Handler() {
-
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case CONNECTED: {
-                    loginView.setVisibility(View.GONE);
-                }
-                break;
-                case CONNECT_FAILED:
-                    break;
-            }
-        }
-
-    };
 
 }

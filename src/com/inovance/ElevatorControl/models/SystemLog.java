@@ -246,7 +246,7 @@ public class SystemLog {
                         + LogUtils.getInstance().LogNameLabel + logName + "\n"
                         + LogUtils.getInstance().LogFloorLabel + moveSideFloor + "\n"
                         + LogUtils.getInstance().LogDirectionLabel
-                        + LogUtils.getInstance().getDirectionString(direction)
+                        + LogUtils.getInstance().getDirectionString(direction) + "\n"
                         + LogUtils.getInstance().LogSendLabel + send + "\n"
                         + LogUtils.getInstance().LogResultLabel + receive + "\n"
                         + LogUtils.getInstance().LogTimeLabel + timeString;

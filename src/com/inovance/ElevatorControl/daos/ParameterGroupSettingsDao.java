@@ -3,17 +3,19 @@ package com.inovance.ElevatorControl.daos;
 import android.content.Context;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.models.ParameterGroupSettings;
+import com.inovance.ElevatorControl.models.UserFactory;
 import net.tsz.afinal.FinalDb;
 
 import java.util.List;
 
 public class ParameterGroupSettingsDao {
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     public static List<ParameterGroupSettings> findAll(Context context) {
+        String condition = " deviceID = '" + UserFactory.getInstance().getDeviceType() + "'";
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
-        return db.findAll(ParameterGroupSettings.class);
+        return db.findAllByWhere(ParameterGroupSettings.class, condition);
     }
 
     public static ParameterGroupSettings findById(Context context, int id) {
@@ -21,18 +23,9 @@ public class ParameterGroupSettingsDao {
         return db.findById(id, ParameterGroupSettings.class);
     }
 
-    /**
-     * Find By Name
-     *
-     * @param context context
-     * @param name    Name
-     * @return ParameterGroupSettings
-     */
-    public static ParameterGroupSettings findByName(Context context, String name) {
+    public static void deleteAllByDeviceID(Context context, int deviceID) {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
-        List<ParameterGroupSettings> lists = db.findAllByWhere(ParameterGroupSettings.class,
-                " groupText = '" + name + "'");
-        return lists.size() > 0 ? lists.get(0) : null;
+        db.deleteByWhere(ParameterGroupSettings.class, " deviceID = '" + deviceID + "'");
     }
 
 }

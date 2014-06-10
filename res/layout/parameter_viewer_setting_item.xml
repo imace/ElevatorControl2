@@ -9,8 +9,8 @@
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="0dp">
-        <org.holoeverywhere.widget.TextView
-                style="@style/Holo.TextAppearance.Small.Light"
+        <TextView
+                style="@android:style/TextAppearance.Small"
                 android:textColor="#646464"
                 android:id="@+id/setting_title"
                 android:layout_alignParentLeft="true"
@@ -18,8 +18,8 @@
                 android:layout_marginLeft="15dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
-        <org.holoeverywhere.widget.TextView
-                style="@style/Holo.TextAppearance.Small.Light"
+        <TextView
+                style="@android:style/TextAppearance.Small"
                 android:textColor="#646464"
                 android:id="@+id/setting_value"
                 android:layout_alignParentRight="true"

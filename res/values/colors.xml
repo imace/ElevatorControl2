@@ -13,4 +13,8 @@
     <color name="highlight_text_color">#3498DB</color>
     <color name="elevator_button">#ff848484</color>
     <color name="elevator_button_highlighted">#ff9dcd0c</color>
+
+    <color name="preference_highlighted_color">#ffebebeb</color>
+
+    <color name="image_button_highlighted_color">#60dedede</color>
 </resources>

@@ -1,10 +1,10 @@
 package com.inovance.ElevatorControl.activities;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.view.MenuItem;
 import butterknife.Views;
 import com.inovance.ElevatorControl.R;
-import org.holoeverywhere.app.Activity;
 
 /**
  * Created by IntelliJ IDEA.
@@ -21,8 +21,8 @@ public class AboutActivity extends Activity {
         setContentView(R.layout.activity_about_layout);
         setTitle(R.string.about_text);
         Views.inject(this);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setHomeButtonEnabled(true);
     }
 
     @Override

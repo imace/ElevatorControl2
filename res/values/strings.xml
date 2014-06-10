@@ -35,8 +35,7 @@
     <string name="login_text">登陆</string>
     <string name="sign_up_text">注册</string>
     <string name="retry_connect_device">重试</string>
-    <string name="device_not_select_text">未选择设备型号</string>
-    <string name="supplier_default_code_text">00000000</string>
+    <string name="connect_server_timeout">服务器连接超时</string>
 
     <string name="read_data_error">读取列表信息错误</string>
     <string name="get_bluetooth_address_error">请打开蓝牙，以便获取蓝牙硬件地址。</string>
@@ -63,7 +62,7 @@
     <string name="choose_device_tips_text">选择需要连接的设备</string>
     <string name="research_text">重新搜索</string>
 
-   <string name="not_connect_device_error">当前未连接设备，无法获取数据！</string>
+    <string name="not_connect_device_error">当前未连接设备，无法获取数据！</string>
     <!-- 条形码扫描 -->
     <string name="focus_to_scan_text">对焦扫描</string>
     <string name="restart_scan_text">继续扫描</string>
@@ -72,7 +71,7 @@
 
     <string name="input_cell_phone_number">输入手机号码</string>
     <string name="unauthorized_title">未授权</string>
-    <string name="unauthorized_message">当前用户授权失败！</string>
+    <string name="unauthorized_message">该设备未授权！请先注册。</string>
 
     <!-- 启动页 -->
     <string name="no_network_title">无网络</string>
@@ -130,16 +129,18 @@
     <string name="no_error_code_result">未查询到结果</string>
 
     <!-- 帮助 -->
-    <string name="system_setting_section">程序设置</string>
-    <string name="other_setting_section">其他</string>
-    <string-array name="system_setting_array">
+    <string-array name="preference_array">
+        <item>程序设置</item>
         <item>快捷菜单设置</item>
         <item>软件更新</item>
+
+        <item>工具</item>
+        <item>专有权限申请</item>
+        <item>扫描条形码</item>
         <item>远程协助</item>
         <item>蓝牙地址</item>
-    </string-array>
-    <string-array name="other_setting_array">
-        <item>扫描条形码</item>
+
+        <item>其他</item>
         <item>日志</item>
         <item>关于</item>
     </string-array>
@@ -223,8 +224,14 @@
     <string name="submit_application_text">提交申请</string>
     <string name="dialog_btn_over">完成</string>
     <string name="wait_for_approve_text">程序申请提交成功，请等待审批。</string>
-    <string name="general_device_apply">通用设备</string>
-    <string name="special_device_apply">专用设备</string>
+
+    <string-array name="permission_array_normal">
+        <item>标准设备</item>
+    </string-array>
+    <string-array name="permission_array_special">
+        <item>标准设备</item>
+        <item>专用设备</item>
+    </string-array>
 
     <string-array name="firmware_download_status">
         <item>已下载</item>
@@ -275,20 +282,20 @@
         <item>参数批量写入</item>
         <item>恢复出厂设置</item>
     </string-array>
-    <string name="log_device">设备型号: </string>
-    <string name="log_name">操作: </string>
-    <string name="log_start_value">起始值: </string>
-    <string name="log_final_value">最终值: </string>
-    <string name="log_send">发送: </string>
-    <string name="log_result">结果: </string>
-    <string name="log_time">时间: </string>
-    <string name="log_floor">召唤楼层: </string>
-    <string name="log_direction">召唤方式: </string>
-    <string name="log_error_message">失败信息: </string>
+    <string name="log_device">设备型号:</string>
+    <string name="log_name">操作:</string>
+    <string name="log_start_value">起始值:</string>
+    <string name="log_final_value">最终值:</string>
+    <string name="log_send">发送:</string>
+    <string name="log_result">结果:</string>
+    <string name="log_time">时间:</string>
+    <string name="log_floor">召唤楼层:</string>
+    <string name="log_direction">召唤方式:</string>
+    <string name="log_error_message">失败信息:</string>
     <string-array name="log_result_array">
         <item>成功</item>
         <item>失败</item>
-        <item>错误: </item>
+        <item>错误:</item>
     </string-array>
     <string-array name="log_direction_array">
         <item>上召</item>
@@ -299,6 +306,60 @@
     <string name="confirm_update_title">更新软件</string>
     <string name="confirm_update_message">需要更新软件吗</string>
     <string name="download_application_title">下载更新包中</string>
+
+    <!-- 申请权限 -->
+    <string name="apply_permission_text">专有权限申请</string>
+    <string name="apply_true_name_text">真实姓名</string>
+    <string name="apply_company_name_text">公司名称</string>
+    <string name="apply_position_text">职务</string>
+    <string name="apply_tel_phone_text">联系电话</string>
+    <string name="apply_email_text">联系邮箱</string>
+
+    <!-- 远程协助 -->
+    <string name="input_tel_phone_hint">请输入电话号码</string>
+    <string name="choice_send_type_title">选择操作类型</string>
+    <string-array name="send_type_array">
+        <item>发送现场参数</item>
+        <item>发送现场照片</item>
+        <item>发送现场视频</item>
+        <item>发送现场音频</item>
+    </string-array>
+
+    <!-- 固件烧录错误信息 -->
+    <string-array name="burn_error_code_array">
+        <item>0x001:串口不存在</item>
+        <item>0x002:串口被占用</item>
+        <item>0x003:未知错误(打开串口)</item>
+        <item>0x004:设置串口参数失败</item>
+        <item>0x101:下位机没有响应。
+            ①请检查串口号是否选错;
+            ②请检查串口线是否连接正常;
+            ③请检查设备是否上电。
+        </item>
+        <item>0x102:上位机指令发送失败，请重新上电！</item>
+        <item>0x103:下位机报0x80错误，请重新上电！</item>
+        <item>0x104:设备未就绪，请重新上电！</item>
+        <item>0x105:设备正在运行，禁止升级！</item>
+        <item>0x106:boot引脚未使用，请插上引脚再试一次！</item>
+        <item>0x107:响应帧的CRC校验错误，请重新上电！</item>
+        <item>0x201:下位机没有响应。
+            ①请检查串口号是否选错;
+            ②请检查串口线是否连接正常;
+            ③请检查设备是否上电。
+        </item>
+        <item>0x202:上位机指令发送失败，请重新上电！</item>
+        <item>0x203:响应帧的CRC校验错误，请重新上电！</item>
+        <item>0x204: arm芯片解保护失败，请重试！</item>
+        <item>0x205:arm芯片未定义的应答，请重试！</item>
+        <item>0x206:升级程序不允许跳线，请去掉跳！</item>
+        <item>0x309:无OTP(boot)，请先烧录BootLoader！</item>
+        <item>0x30a:帧地址错误</item>
+        <item>0x30b:设置文件的CRC32与实际CRC32不匹配</item>
+        <item>0x30c:修改Boot地址超过范围</item>
+        <item>0x30d:编程起始地址越界</item>
+        <item>0x30e:编程长度越界</item>
+        <item>0x30f:数据帧帧号错误</item>
+    </string-array>
 
     <!-- //////////////////////////////////// 标签选项卡 START ////////////////////////////////// -->
     <!-- 主标签页选项卡 -->

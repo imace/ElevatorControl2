@@ -12,7 +12,7 @@
             android:layout_height="@dimen/card_cell_height"
             android:padding="8dp"
             android:background="@drawable/card_view_background">
-        <org.holoeverywhere.widget.EditText
+        <EditText
                 android:id="@+id/dictionary_edit"
                 android:background="@android:color/transparent"
                 android:textSize="17sp"
@@ -50,15 +50,15 @@
                         android:orientation="horizontal"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
-                    <org.holoeverywhere.widget.TextView
-                            style="@style/Holo.TextAppearance.Light"
+                    <TextView
+                            style="@android:style/TextAppearance"
                             android:id="@+id/TextView09"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/label_txt_error_code"
                             android:textColor="#333333"/>
-                    <org.holoeverywhere.widget.TextView
-                            style="@style/Holo.TextAppearance.Light"
+                    <TextView
+                            style="@android:style/TextAppearance"
                             android:id="@+id/dictionary_error_help_display"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -69,15 +69,15 @@
                         android:orientation="horizontal"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
-                    <org.holoeverywhere.widget.TextView
-                            style="@style/Holo.TextAppearance.Light"
+                    <TextView
+                            style="@android:style/TextAppearance"
                             android:id="@+id/TextView07"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/label_txt_error_name"
                             android:textColor="#333333"/>
-                    <org.holoeverywhere.widget.TextView
-                            style="@style/Holo.TextAppearance.Light"
+                    <TextView
+                            style="@android:style/TextAppearance"
                             android:id="@+id/dictionary_error_help_name"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -88,15 +88,15 @@
                         android:orientation="horizontal"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
-                    <org.holoeverywhere.widget.TextView
-                            style="@style/Holo.TextAppearance.Light"
+                    <TextView
+                            style="@android:style/TextAppearance"
                             android:id="@+id/TextView05"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/label_txt_error_level"
                             android:textColor="#333333"/>
-                    <org.holoeverywhere.widget.TextView
-                            style="@style/Holo.TextAppearance.Light"
+                    <TextView
+                            style="@android:style/TextAppearance"
                             android:id="@+id/dictionary_error_help_level"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -107,15 +107,15 @@
                         android:orientation="vertical"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
-                    <org.holoeverywhere.widget.TextView
-                            style="@style/Holo.TextAppearance.Light"
+                    <TextView
+                            style="@android:style/TextAppearance"
                             android:id="@+id/TextView04"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/label_txt_error_reason"
                             android:textColor="#333333"/>
-                    <org.holoeverywhere.widget.TextView
-                            style="@style/Holo.TextAppearance.Light"
+                    <TextView
+                            style="@android:style/TextAppearance"
                             android:id="@+id/dictionary_error_help_reason"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -126,15 +126,15 @@
                         android:orientation="vertical"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
-                    <org.holoeverywhere.widget.TextView
-                            style="@style/Holo.TextAppearance.Light"
+                    <TextView
+                            style="@android:style/TextAppearance"
                             android:id="@+id/textView1"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/label_txt_error_solution"
                             android:textColor="#333333"/>
-                    <org.holoeverywhere.widget.TextView
-                            style="@style/Holo.TextAppearance.Light"
+                    <TextView
+                            style="@android:style/TextAppearance"
                             android:id="@+id/dictionary_error_help_solution"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"

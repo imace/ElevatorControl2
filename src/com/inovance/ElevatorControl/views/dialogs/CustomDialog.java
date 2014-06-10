@@ -5,8 +5,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+import android.widget.*;
 import com.bluetoothtool.BluetoothTool;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.activities.CheckAuthorizationActivity;
@@ -18,10 +17,6 @@ import com.inovance.ElevatorControl.daos.ErrorHelpDao;
 import com.inovance.ElevatorControl.models.*;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
 import com.inovance.ElevatorControl.web.WebApi;
-import org.holoeverywhere.widget.ListView;
-import org.holoeverywhere.widget.Spinner;
-import org.holoeverywhere.widget.TextView;
-import org.holoeverywhere.widget.ToggleButton;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -123,10 +118,15 @@ public class CustomDialog {
                 int size = jsonArray.length();
                 String[] statusList = new String[size];
                 String[] spinnerList = new String[size];
+                int type = Integer.parseInt(settings.getType());
                 for (int i = 0; i < size; i++) {
                     JSONObject value = jsonArray.getJSONObject(i);
                     int alwaysClose = Integer.parseInt(value.optString("id")) + 32;
-                    statusList[i] = value.optString("id") + "/" + alwaysClose + ":" + value.optString("value");
+                    if (type == 3 || type == 25) {
+                        statusList[i] = value.optString("id") + "/" + alwaysClose + ":" + value.optString("value");
+                    } else {
+                        statusList[i] = value.optString("id") + ":" + value.optString("value");
+                    }
                     spinnerList[i] = value.optString("value");
                 }
                 // 端子 X1 - x24

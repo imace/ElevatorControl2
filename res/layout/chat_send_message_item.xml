@@ -15,7 +15,7 @@
             android:background="@drawable/card_view_background"
             android:layout_width="wrap_content"
             android:layout_height="match_parent">
-        <org.holoeverywhere.widget.TextView
+        <TextView
                 android:id="@+id/message_content"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>

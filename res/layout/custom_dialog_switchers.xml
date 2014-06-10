@@ -15,14 +15,14 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp">
 
-        <org.holoeverywhere.widget.Switch
+        <Switch
                 android:id="@+id/X01"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:hint="X01"
                 android:textSize="12sp"/>
 
-        <org.holoeverywhere.widget.Switch
+        <Switch
                 android:id="@+id/X02"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -37,14 +37,14 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp">
 
-        <org.holoeverywhere.widget.Switch
+        <Switch
                 android:id="@+id/X03"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:hint="X03"
                 android:textSize="12sp"/>
 
-        <org.holoeverywhere.widget.Switch
+        <Switch
                 android:id="@+id/X04"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -58,14 +58,14 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp">
 
-        <org.holoeverywhere.widget.Switch
+        <Switch
                 android:id="@+id/X05"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:hint="X05"
                 android:textSize="12sp"/>
 
-        <org.holoeverywhere.widget.Switch
+        <Switch
                 android:id="@+id/X06"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -79,14 +79,14 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp">
 
-        <org.holoeverywhere.widget.Switch
+        <Switch
                 android:id="@+id/X07"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:hint="X07"
                 android:textSize="12sp"/>
 
-        <org.holoeverywhere.widget.Switch
+        <Switch
                 android:id="@+id/X08"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -100,14 +100,14 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp">
 
-        <org.holoeverywhere.widget.Switch
+        <Switch
                 android:id="@+id/X09"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:hint="X09"
                 android:textSize="12sp"/>
 
-        <org.holoeverywhere.widget.Switch
+        <Switch
                 android:id="@+id/X10"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -121,14 +121,14 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp">
 
-        <org.holoeverywhere.widget.Switch
+        <Switch
                 android:id="@+id/X11"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:hint="X11"
                 android:textSize="12sp"/>
 
-        <org.holoeverywhere.widget.Switch
+        <Switch
                 android:id="@+id/X12"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -142,14 +142,14 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp">
 
-        <org.holoeverywhere.widget.Switch
+        <Switch
                 android:id="@+id/X13"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:hint="X13"
                 android:textSize="12sp"/>
 
-        <org.holoeverywhere.widget.Switch
+        <Switch
                 android:id="@+id/X14"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -163,14 +163,14 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp">
 
-        <org.holoeverywhere.widget.Switch
+        <Switch
                 android:id="@+id/X15"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:hint="X15"
                 android:textSize="12sp"/>
 
-        <org.holoeverywhere.widget.Switch
+        <Switch
                 android:id="@+id/X16"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

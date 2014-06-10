@@ -1,11 +1,14 @@
 package com.inovance.ElevatorControl.activities;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import butterknife.InjectView;
 import butterknife.OnClick;
 import butterknife.Views;
@@ -26,9 +29,6 @@ import com.inovance.ElevatorControl.utils.LogUtils;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
 import com.inovance.ElevatorControl.views.TypefaceTextView;
 import com.inovance.ElevatorControl.views.viewpager.VerticalViewPager;
-import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.widget.ImageButton;
-import org.holoeverywhere.widget.LinearLayout;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

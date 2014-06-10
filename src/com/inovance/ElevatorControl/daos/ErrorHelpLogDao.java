@@ -10,7 +10,7 @@ import java.util.List;
 
 public class ErrorHelpLogDao {
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     /**
      * 失败返回-1

@@ -1,13 +1,13 @@
 package com.inovance.ElevatorControl.adapters;
 
+import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.TextView;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.models.Shortcut;
-import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.widget.TextView;
 
 import java.util.List;
 
@@ -20,10 +20,6 @@ import java.util.List;
 public class ShortcutListViewAdapter extends BaseAdapter {
 
     private List<Shortcut> shortcutList;
-
-    private static interface sss {
-
-    }
 
     private Activity baseActivity;
 
@@ -60,9 +56,15 @@ public class ShortcutListViewAdapter extends BaseAdapter {
             convertView = mInflater.inflate(R.layout.list_shortcut_item, null);
             holder = new ViewHolder();
             holder.mShortcutName = (TextView) convertView.findViewById(R.id.shortcut);
+            holder.dividerView = convertView.findViewById(R.id.divider);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
+        }
+        if (position == getCount() - 1) {
+            holder.dividerView.setVisibility(View.INVISIBLE);
+        } else {
+            holder.dividerView.setVisibility(View.VISIBLE);
         }
         Shortcut item = getItem(position);
         holder.mShortcutName.setText(item.getName());
@@ -71,5 +73,6 @@ public class ShortcutListViewAdapter extends BaseAdapter {
 
     private class ViewHolder {
         TextView mShortcutName;
+        View dividerView;
     }
 }

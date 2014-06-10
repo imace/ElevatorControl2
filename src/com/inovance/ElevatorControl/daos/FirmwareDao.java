@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class FirmwareDao {
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     public static List<Firmware> findAll(Context context) {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);

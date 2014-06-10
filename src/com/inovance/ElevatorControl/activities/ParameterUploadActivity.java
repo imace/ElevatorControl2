@@ -1,15 +1,14 @@
 package com.inovance.ElevatorControl.activities;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Message;
-import android.support.v7.widget.PopupMenu;
 import android.view.*;
-import android.widget.BaseAdapter;
-import android.widget.ScrollView;
+import android.widget.*;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.bluetoothtool.BluetoothHandler;
@@ -22,8 +21,6 @@ import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.models.Profile;
 import com.inovance.ElevatorControl.utils.LogUtils;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
-import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.widget.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -147,6 +144,7 @@ public class ParameterUploadActivity extends Activity {
      *
      * @param index ListView Item Index
      */
+    // TODO
     private void getElevatorStatus(final int index) {
         BluetoothHandler handler = new BluetoothHandler(this) {
             @Override
@@ -167,7 +165,12 @@ public class ParameterUploadActivity extends Activity {
                 }
             }
         };
-        BluetoothTool.getInstance(this).getRunningStatus(handler);
+        if (BluetoothTool.getInstance(this).isPrepared()) {
+            BluetoothTool.getInstance(this)
+                    .setHandler(handler)
+                    .setCommunications(null)
+                    .send();
+        }
     }
 
     /**

@@ -3,8 +3,8 @@ package com.inovance.ElevatorControl.handlers;
 import android.app.Activity;
 import android.os.Handler;
 import android.os.Message;
+import android.widget.Toast;
 import com.inovance.ElevatorControl.R;
-import org.holoeverywhere.widget.Toast;
 
 /**
  * Created by IntelliJ IDEA.

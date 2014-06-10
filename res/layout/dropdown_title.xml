@@ -12,6 +12,7 @@
             android:layout_height="wrap_content">
     </com.inovance.ElevatorControl.views.customspinner.HCustomSpinner>
     <ProgressBar
+            style="@android:style/Widget.Holo.Light.ProgressBar.Inverse"
             android:id="@+id/title_process_bar"
             android:layout_width="36dp"
             android:layout_height="36dp"

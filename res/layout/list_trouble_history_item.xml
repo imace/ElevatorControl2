@@ -3,8 +3,8 @@
                 android:minHeight="@dimen/card_cell_height"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
-    <org.holoeverywhere.widget.TextView
-            style="@style/Holo.TextAppearance.Light"
+    <TextView
+            style="@android:style/TextAppearance"
             android:id="@+id/text_failure_history"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -12,8 +12,8 @@
             android:layout_alignParentLeft="true"
             android:textColor="#515151"
             android:layout_marginLeft="10dp"/>
-    <org.holoeverywhere.widget.TextView
-            style="@style/Holo.TextAppearance.Light"
+    <TextView
+            style="@android:style/TextAppearance"
             android:id="@+id/time_failure_history"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

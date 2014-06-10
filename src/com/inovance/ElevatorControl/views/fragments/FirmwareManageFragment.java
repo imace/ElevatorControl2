@@ -6,11 +6,9 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.PopupMenu;
 import android.util.Base64;
 import android.view.*;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+import android.widget.*;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.activities.FirmwareManageActivity;
 import com.inovance.ElevatorControl.adapters.FirmwareBurnAdapter;
@@ -18,8 +16,10 @@ import com.inovance.ElevatorControl.adapters.FirmwareDownloadAdapter;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.FirmwareDao;
 import com.inovance.ElevatorControl.models.*;
+import com.inovance.ElevatorControl.views.component.SegmentControl;
+import com.inovance.ElevatorControl.views.form.NormalApplyForm;
+import com.inovance.ElevatorControl.views.form.SpecialApplyForm;
 import com.inovance.ElevatorControl.web.WebApi;
-import org.holoeverywhere.widget.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,8 +38,8 @@ import java.util.UUID;
  * Date: 14-3-5.
  * Time: 15:04.
  */
-public class FirmwareManageFragment extends Fragment implements WebApi.onGetResultListener,
-        WebApi.onRequestFailureListener {
+public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResultListener,
+        WebApi.OnRequestFailureListener {
 
     private static final String TAG = FirmwareManageFragment.class.getSimpleName();
 
@@ -49,31 +49,11 @@ public class FirmwareManageFragment extends Fragment implements WebApi.onGetResu
 
     private Context context;
 
-    private View mContentView;
+    private SegmentControl segmentControl;
 
-    private AutoCompleteTextView vendorSelectView;
+    private NormalApplyForm normalApplyView;
 
-    private TextView generalApply;
-
-    private TextView specialApply;
-
-    private LinearLayout vendorView;
-
-    private Spinner deviceSelectView;
-
-    private EditText remarkEditText;
-
-    private View submitView;
-
-    private View progressView;
-
-    private View submitTextView;
-
-    private List<Vendor> vendorList;
-
-    private List<GeneralDevice> generalDeviceList;
-
-    private List<SpecialDevice> specialDeviceList;
+    private SpecialApplyForm specialApplyView;
 
     /**
      * 读取提取固件列表进度
@@ -130,93 +110,77 @@ public class FirmwareManageFragment extends Fragment implements WebApi.onGetResu
     }
 
     /**
+     * 切换固件申请视图
+     *
+     * @param container View Container
+     * @param type      申请类型
+     */
+    private void switchApplyView(LinearLayout container, int type) {
+        container.removeAllViews();
+        if (type == UserFactory.Normal) {
+            if (normalApplyView == null) {
+                normalApplyView = new NormalApplyForm(getActivity());
+            }
+            container.addView(normalApplyView);
+            WebApi.getInstance().setOnFailureListener(this);
+            WebApi.getInstance().setOnResultListener(this);
+            WebApi.getInstance().getDeviceList(getActivity());
+        }
+        if (type == UserFactory.Special) {
+            if (specialApplyView == null) {
+                specialApplyView = new SpecialApplyForm(getActivity());
+            }
+            container.addView(specialApplyView);
+            WebApi.getInstance().setOnFailureListener(this);
+            WebApi.getInstance().setOnResultListener(this);
+            WebApi.getInstance().getVendorList(getActivity());
+        }
+    }
+
+    /**
      * 固件申请
      */
     public void loadFirmwareApplyView() {
-        vendorView = (LinearLayout) getActivity().findViewById(R.id.vendor_view);
-        vendorSelectView = (AutoCompleteTextView) getActivity().findViewById(R.id.vendor);
-        deviceSelectView = (Spinner) getActivity().findViewById(R.id.equipment_model);
-        remarkEditText = (EditText) getActivity().findViewById(R.id.remark);
-        submitView = getActivity().findViewById(R.id.submit_apply);
-        progressView = getActivity().findViewById(R.id.submit_progress);
-        submitTextView = getActivity().findViewById(R.id.submit_text);
-        vendorSelectView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                if (i < vendorList.size()) {
-                    submitView.setEnabled(false);
-                    WebApi.getInstance().getDeviceListByVendorIDS(getActivity(), vendorList.get(i).getSerialNumber());
-                }
+        if (segmentControl == null) {
+            final LinearLayout container = (LinearLayout) getActivity().findViewById(R.id.apply_view_container);
+            segmentControl = (SegmentControl) getActivity().findViewById(R.id.segment_control);
+            if (UserFactory.getInstance().getPermission() == UserFactory.Normal) {
+                segmentControl.setItems(getResources().getStringArray(R.array.permission_array_normal));
+                normalApplyView = new NormalApplyForm(getActivity());
+                segmentControl.setCurrentItem(0);
+                switchApplyView(container, UserFactory.Normal);
             }
-        });
-        generalApply = (TextView) getActivity().findViewById(R.id.general_device);
-        specialApply = (TextView) getActivity().findViewById(R.id.special_device);
-        generalApply.setSelected(true);
-        generalApply.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (!generalApply.isSelected()) {
-                    generalApply.setSelected(true);
-                    specialApply.setSelected(false);
-                    vendorView.setVisibility(View.GONE);
-                    WebApi.getInstance().getDeviceList(getActivity());
-                }
-            }
-        });
-        specialApply.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (!specialApply.isSelected()) {
-                    generalApply.setSelected(false);
-                    specialApply.setSelected(true);
-                    vendorView.setVisibility(View.VISIBLE);
-                    WebApi.getInstance().getVendorList(getActivity());
-                }
-            }
-        });
-        submitView.setEnabled(false);
-        WebApi.getInstance().setOnFailureListener(this);
-        WebApi.getInstance().setOnResultListener(this);
-        WebApi.getInstance().getDeviceList(getActivity());
-        submitView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-                    String bluetoothAddress = BluetoothAdapter.getDefaultAdapter().getAddress();
-                    if (deviceSelectView.getCount() > 0) {
-                        int deviceIndex = deviceSelectView.getSelectedItemPosition();
-                        if (generalApply.isSelected()) {
-                            if (deviceIndex < generalDeviceList.size()) {
-                                int deviceID = generalDeviceList.get(deviceIndex).getID();
-                                WebApi.getInstance().applyFirmware(getActivity(),
-                                        bluetoothAddress,
-                                        String.valueOf(deviceID),
-                                        remarkEditText.getText().toString());
-                                progressView.setVisibility(View.VISIBLE);
-                                submitTextView.setVisibility(View.GONE);
-                                submitView.setEnabled(false);
-                            }
-                        }
-                        if (specialApply.isSelected()) {
-                            if (deviceIndex < specialDeviceList.size()) {
-                                String deviceID = specialDeviceList.get(deviceIndex).getNumber();
-                                WebApi.getInstance().applyFirmware(getActivity(),
-                                        bluetoothAddress,
-                                        deviceID,
-                                        remarkEditText.getText().toString());
-                                progressView.setVisibility(View.VISIBLE);
-                                submitTextView.setVisibility(View.GONE);
-                                submitView.setEnabled(false);
-                            }
+            if (UserFactory.getInstance().getPermission() == UserFactory.Special) {
+                segmentControl.setItems(getResources().getStringArray(R.array.permission_array_special));
+                normalApplyView = new NormalApplyForm(getActivity());
+                specialApplyView = new SpecialApplyForm(getActivity());
+                switchApplyView(container, UserFactory.Normal);
+                segmentControl.setCurrentItem(0);
+                segmentControl.setOnItemClickListener(new SegmentControl.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(View view, int position) {
+                        switch (position) {
+                            case 0:
+                                switchApplyView(container, UserFactory.Normal);
+                                break;
+                            case 1:
+                                switchApplyView(container, UserFactory.Special);
+                                break;
                         }
                     }
-                } catch (Exception e) {
-                    Toast.makeText(getActivity(),
-                            R.string.get_bluetooth_address_error,
-                            Toast.LENGTH_SHORT).show();
-                }
+                });
             }
-        });
+        } else {
+            switch (segmentControl.getCurrentItem()) {
+                case 0:
+                    WebApi.getInstance().setOnFailureListener(this);
+                    WebApi.getInstance().setOnResultListener(this);
+                    WebApi.getInstance().getDeviceList(getActivity());
+                    break;
+                case 1:
+                    break;
+            }
+        }
     }
 
     /**
@@ -244,9 +208,9 @@ public class FirmwareManageFragment extends Fragment implements WebApi.onGetResu
      */
     public void loadFirmwareBurnView() {
         TextView deviceType = (TextView) getActivity().findViewById(R.id.device_type);
-        deviceType.setText(DeviceFactory.getInstance().getDeviceType());
+        deviceType.setText(UserFactory.getInstance().getDeviceName());
         TextView supplierCode = (TextView) getActivity().findViewById(R.id.supplier_code);
-        supplierCode.setText(DeviceFactory.getInstance().getSupplierCode());
+        supplierCode.setText(UserFactory.getInstance().getSupplierCode());
         GridView gridView = (GridView) getActivity().findViewById(R.id.firmware_list);
         List<Firmware> firmwareLists = FirmwareDao.findAll(context);
         FirmwareBurnAdapter adapter = new FirmwareBurnAdapter((FirmwareManageActivity) getActivity(),
@@ -292,85 +256,47 @@ public class FirmwareManageFragment extends Fragment implements WebApi.onGetResu
         if (currentPager == 0) {
             if (tag.equalsIgnoreCase(ApplicationConfig.GetDeviceList)) {
                 try {
-                    ArrayList<String> modeNames = new ArrayList<String>();
-                    generalDeviceList = new ArrayList<GeneralDevice>();
+                    List<NormalDevice> deviceList = new ArrayList<NormalDevice>();
                     JSONArray jsonArray = new JSONArray(responseString);
                     int size = jsonArray.length();
                     for (int i = 0; i < size; i++) {
                         JSONObject object = jsonArray.getJSONObject(i);
-                        GeneralDevice device = new GeneralDevice(object);
-                        modeNames.add(object.optString("DeviceName") + "-" + object.optString("DeviceNum"));
-                        generalDeviceList.add(device);
+                        NormalDevice device = new NormalDevice(object);
+                        deviceList.add(device);
                     }
-                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),
-                            android.R.layout.simple_spinner_item,
-                            modeNames.toArray(new String[modeNames.size()]));
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    if (deviceSelectView != null) {
-                        deviceSelectView.setAdapter(adapter);
-                        FirmwareManageFragment.this.submitView.setEnabled(true);
-                    }
+                    normalApplyView.setSpinnerDataSource(deviceList);
                 } catch (JSONException e) {
                     Toast.makeText(getActivity(), R.string.read_data_error, Toast.LENGTH_SHORT).show();
                 }
             }
             if (tag.equalsIgnoreCase(ApplicationConfig.GetVendorList)) {
                 try {
-                    ArrayList<String> vendorNames = new ArrayList<String>();
-                    vendorList = new ArrayList<Vendor>();
+                    List<Vendor> vendorList = new ArrayList<Vendor>();
                     JSONArray jsonArray = new JSONArray(responseString);
                     int size = jsonArray.length();
                     for (int i = 0; i < size; i++) {
                         JSONObject object = jsonArray.getJSONObject(i);
-                        Vendor vendor = new Vendor();
-                        vendor.setSerialNumber(object.optString("VendorNum"));
-                        vendor.setName(object.optString("VendorName"));
-                        vendorNames.add(vendor.getName());
+                        Vendor vendor = new Vendor(object);
                         vendorList.add(vendor);
                     }
-                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),
-                            android.R.layout.simple_dropdown_item_1line,
-                            vendorNames.toArray(new String[vendorNames.size()]));
-                    if (vendorSelectView != null) {
-                        vendorSelectView.setAdapter(adapter);
-                    }
+                    specialApplyView.setVendorList(vendorList);
                 } catch (JSONException e) {
                     Toast.makeText(getActivity(), R.string.read_data_error, Toast.LENGTH_SHORT).show();
                 }
             }
             if (tag.equalsIgnoreCase(ApplicationConfig.GetDeviceListByVendorID)) {
                 try {
-                    ArrayList<String> modeNames = new ArrayList<String>();
-                    specialDeviceList = new ArrayList<SpecialDevice>();
+                    List<SpecialDevice> deviceList = new ArrayList<SpecialDevice>();
                     JSONArray jsonArray = new JSONArray(responseString);
                     int size = jsonArray.length();
                     for (int i = 0; i < size; i++) {
                         JSONObject object = jsonArray.getJSONObject(i);
                         SpecialDevice device = new SpecialDevice(object);
-                        modeNames.add(device.getNumber());
-                        specialDeviceList.add(device);
+                        deviceList.add(device);
                     }
-                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),
-                            android.R.layout.simple_spinner_item,
-                            modeNames.toArray(new String[modeNames.size()]));
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    if (deviceSelectView != null) {
-                        deviceSelectView.setAdapter(adapter);
-                    }
+                    specialApplyView.setDeviceList(deviceList);
                 } catch (JSONException e) {
                     Toast.makeText(getActivity(), R.string.read_data_error, Toast.LENGTH_SHORT).show();
-                }
-            }
-            if (tag.equalsIgnoreCase(ApplicationConfig.ApplyFirmwareApplication)) {
-                if (responseString.equalsIgnoreCase("True")) {
-                    if (progressView != null && submitTextView != null && submitView != null) {
-                        progressView.setVisibility(View.GONE);
-                        submitTextView.setVisibility(View.VISIBLE);
-                        submitView.setEnabled(true);
-                        Toast.makeText(getActivity(), R.string.wait_for_approve_text, Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    Toast.makeText(getActivity(), responseString, Toast.LENGTH_SHORT).show();
                 }
             }
         }
@@ -449,16 +375,15 @@ public class FirmwareManageFragment extends Fragment implements WebApi.onGetResu
 
     @Override
     public void onFailure(int statusCode, Throwable throwable) {
-        int currentPager = ((FirmwareManageActivity) getActivity()).pager.getCurrentItem();
-        if (currentPager == 0) {
-            if (progressView != null && submitTextView != null && submitView != null) {
-                progressView.setVisibility(View.GONE);
-                submitTextView.setVisibility(View.VISIBLE);
-                submitView.setEnabled(true);
-            }
-        }
+        Toast.makeText(getActivity(), throwable.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * 检测并创建目录
+     *
+     * @param path Path
+     * @return Created
+     */
     public static boolean createDirIfNotExists(String path) {
         boolean created = true;
         File file = new File(Environment.getExternalStorageDirectory(), path);

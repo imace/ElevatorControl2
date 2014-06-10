@@ -1,25 +1,25 @@
 package com.inovance.ElevatorControl.activities;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.view.View;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 import butterknife.InjectView;
 import butterknife.OnClick;
 import butterknife.Views;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.daos.RestoreFactoryDao;
+import com.inovance.ElevatorControl.daos.ParamterFactoryDao;
 import com.inovance.ElevatorControl.utils.UpdateApplication;
 import com.inovance.ElevatorControl.utils.UpdateApplication.OnNoUpdateFoundListener;
 import com.inovance.ElevatorControl.web.WebApi;
-import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.widget.ImageButton;
-import org.holoeverywhere.widget.LinearLayout;
-import org.holoeverywhere.widget.TextView;
-import org.holoeverywhere.widget.Toast;
 
 /**
  * 检查当前用户是否被授权
@@ -109,7 +109,7 @@ public class CheckAuthorizationActivity extends Activity {
      * 验证用户登录
      */
     private void verifyCurrentUser() {
-        WebApi.getInstance().setOnResultListener(new WebApi.onGetResultListener() {
+        WebApi.getInstance().setOnResultListener(new WebApi.OnGetResultListener() {
             @Override
             public void onResult(String tag, String responseString) {
                 if (tag.equalsIgnoreCase(ApplicationConfig.VerifyUser)) {
@@ -125,18 +125,10 @@ public class CheckAuthorizationActivity extends Activity {
                                 R.string.unauthorized_message,
                                 android.widget.Toast.LENGTH_SHORT).show();
                     }
-                /*
-                CheckAuthorizationActivity.this.progressView.setVisibility(View.INVISIBLE);
-                CheckAuthorizationActivity.this.btnSignUp.setEnabled(true);
-                CheckAuthorizationActivity.this.btnLogin.setEnabled(true);
-                CheckAuthorizationActivity.this
-                        .startActivity(new Intent(CheckAuthorizationActivity.this,
-                                NavigationTabActivity.class));
-                                */
                 }
             }
         });
-        WebApi.getInstance().setOnFailureListener(new WebApi.onRequestFailureListener() {
+        WebApi.getInstance().setOnFailureListener(new WebApi.OnRequestFailureListener() {
             @Override
             public void onFailure(int statusCode, Throwable throwable) {
                 CheckAuthorizationActivity.this.progressView.setVisibility(View.INVISIBLE);
@@ -156,7 +148,7 @@ public class CheckAuthorizationActivity extends Activity {
      * 写入功能码、帮助、状态数据
      */
     private void initializeData() {
-        if (RestoreFactoryDao.dbEmpty(CheckAuthorizationActivity.this)) {
+        if (ParamterFactoryDao.dbEmpty(CheckAuthorizationActivity.this)) {
             progressView.setVisibility(View.VISIBLE);
             waitTextView.setText(R.string.init_data_wait_text);
             btnLogin.setEnabled(false);
@@ -185,7 +177,7 @@ public class CheckAuthorizationActivity extends Activity {
 
         @Override
         public void run() {
-            RestoreFactoryDao.dbInit(CheckAuthorizationActivity.this);
+            ParamterFactoryDao.dbInit(CheckAuthorizationActivity.this);
             mHandler.obtainMessage(WRITE_FINISH).sendToTarget();
         }
 

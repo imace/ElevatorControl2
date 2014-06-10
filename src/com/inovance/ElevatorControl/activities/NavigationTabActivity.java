@@ -1,6 +1,7 @@
 package com.inovance.ElevatorControl.activities;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.TabActivity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -27,10 +28,11 @@ import com.inovance.ElevatorControl.handlers.SearchBluetoothHandler;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
 import com.inovance.ElevatorControl.views.customspinner.NoDefaultSpinner;
 import com.inovance.ElevatorControl.views.dialogs.CustomDialog;
-import org.holoeverywhere.app.AlertDialog;
-import org.holoeverywhere.widget.TextView;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -55,7 +57,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
     /**
      * 是否已读取到设备型号和名称
      */
-    public boolean hasGetDeviceTypeAndNumber = false;
+    private boolean hasGetDeviceTypeAndNumber = false;
 
     /**
      * 用于读取设备型号的 Handler
@@ -80,7 +82,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
     /**
      * 是否暂停读取
      */
-    private boolean running = false;
+    private boolean isRunning = false;
 
     /**
      * 正在搜索蓝牙设备提示
@@ -169,7 +171,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
         getDeviceTypeNumberTask = new Runnable() {
             @Override
             public void run() {
-                if (running) {
+                if (isRunning) {
                     if (!hasGetDeviceTypeAndNumber) {
                         if (BluetoothTool.getInstance(NavigationTabActivity.this).isConnected()) {
                             currentTask = GET_DEVICE_TYPE;
@@ -227,8 +229,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
      */
     public void startGetDeviceTypeAndNumberTask() {
         if (!hasGetDeviceTypeAndNumber) {
-            NavigationTabActivity.this.getDeviceTypeAndNumber();
-            running = true;
+            isRunning = true;
             getDeviceTypeAndNumberHandler.postDelayed(getDeviceTypeNumberTask, LOOP_TIME);
         }
     }
@@ -335,20 +336,6 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
                         };
                         Handler handler = new Handler();
                         handler.postDelayed(runnable, 300);
-                    }
-                }
-                if (tabIndex == 2) {
-                    if (getCurrentActivity() instanceof HomeActivity) {
-                        final HomeActivity homeActivity = (HomeActivity) getCurrentActivity();
-                        BluetoothTool.getInstance(NavigationTabActivity.this).setHandler(null);
-                        if (BluetoothTool.getInstance(NavigationTabActivity.this).isPrepared()) {
-                            new Timer().schedule(new TimerTask() {
-                                @Override
-                                public void run() {
-                                    homeActivity.reSyncData();
-                                }
-                            }, 1000);
-                        }
                     }
                 }
                 if (tabIndex == 3) {
@@ -539,8 +526,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
             break;
             case CONNECT_DEVICE: {
                 if (tempDevice != null) {
-                    BluetoothTool.getInstance(NavigationTabActivity.this)
-                            .connectDevice(tempDevice);
+                    BluetoothTool.getInstance(NavigationTabActivity.this).connectDevice(tempDevice);
                 }
             }
             break;
@@ -576,7 +562,8 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
         public void onMultiTalkEnd(Message msg) {
             super.onMultiTalkEnd(msg);
             if (sendCount == receiveCount) {
-                NavigationTabActivity.this.hasGetDeviceTypeAndNumber = true;
+                hasGetDeviceTypeAndNumber = true;
+                isRunning = false;
                 for (String item : responseStringList) {
                     if (item.contains("type")) {
                         if (item.contains("1000")) {

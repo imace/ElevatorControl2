@@ -5,9 +5,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.TextView;
 import com.inovance.ElevatorControl.R;
-import org.holoeverywhere.widget.TextView;
 
 /**
  * Created by IntelliJ IDEA.
@@ -61,22 +61,22 @@ public class CheckedListViewAdapter extends BaseAdapter {
             convertView = mInflater.inflate(R.layout.checked_listview_item, null);
             holder = new ViewHolder();
             holder.checkedTextView = (TextView) convertView.findViewById(R.id.checked_text_view);
-            holder.checkedMarkView = (ImageView) convertView.findViewById(R.id.checked_mark);
+            holder.radioButton = (RadioButton) convertView.findViewById(R.id.radio_button);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
         holder.checkedTextView.setText(getItem(position));
         if (checkedIndex == position) {
-            holder.checkedMarkView.setImageResource(R.drawable.btn_radio_on_holo_light);
+            holder.radioButton.setChecked(true);
         } else {
-            holder.checkedMarkView.setImageResource(R.drawable.btn_radio_off_holo_light);
+            holder.radioButton.setChecked(false);
         }
         return convertView;
     }
 
     private class ViewHolder {
         TextView checkedTextView;
-        ImageView checkedMarkView;
+        RadioButton radioButton;
     }
 }

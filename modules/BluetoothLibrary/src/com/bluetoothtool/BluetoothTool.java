@@ -8,7 +8,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -16,7 +15,6 @@ import com.kio.bluetooth.R;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -79,11 +77,6 @@ public class BluetoothTool implements Runnable {
     public BluetoothDevice connectedDevice;
 
     /**
-     * 读取电梯运行状态的通信内容
-     */
-    private BluetoothTalk[] getRunningStatusTalk;
-
-    /**
      * RfcommSocket UUID
      */
     private static final UUID UUID_OTHER_DEVICE = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
@@ -97,45 +90,6 @@ public class BluetoothTool implements Runnable {
      * 当前蓝牙状态
      */
     public int currentState;
-
-    /**
-     * 首页状态值内存区域
-     */
-    private Hashtable<String, byte[]> homeStatusValueSet = new Hashtable<String, byte[]>();
-
-    /**
-     * 当前故障值内存区域
-     */
-    private Hashtable<String, byte[]> currentTroubleValueSet = new Hashtable<String, byte[]>();
-
-    /**
-     * 当前通信内容类型
-     */
-    private int currentTalkType = BluetoothTalk.NORMAL_TALK;
-
-    /**
-     * 当前故障
-     */
-    private static final String getCurrentTroubleCode = "8000";
-
-    /**
-     * 运行速度
-     * 故障信息
-     * 状态字功能
-     * 当前楼层
-     * 系统状态
-     */
-    private static final String[] getHomeStatusCode = new String[]{"1010", "8000", "3000", "1018", "101D"};
-
-    /**
-     * 状态字命令
-     */
-    private static final String statusWordCode = "3000";
-
-    /**
-     * 是否已经读取到电梯运行状态
-     */
-    private boolean hasGetRunningStatus = false;
 
     /**
      * 设置当前的实例 Activity Context
@@ -155,7 +109,6 @@ public class BluetoothTool implements Runnable {
      * 关闭连接,释放对象
      */
     public void kill() {
-        interrupt();
         reset(true);
         if (null != handler) {
             handler.sendEmptyMessage(BluetoothState.onKillBluetooth);
@@ -168,7 +121,7 @@ public class BluetoothTool implements Runnable {
      * @param closeConnected Close Connect Device
      */
     public void reset(boolean closeConnected) {
-        abortTalking = false;
+        abortTalking = true;
         currentState = BluetoothState.DISCONNECTED;
         stopDiscovery();
         if (closeConnected) {
@@ -227,50 +180,50 @@ public class BluetoothTool implements Runnable {
      * @param communication BluetoothTalk[]
      */
     private void talk(final BluetoothTalk communication) {
-        Message msgError = new Message();
-        msgError.what = BluetoothState.onTalkError;
-        try {
-            if (null == communication || null == bluetoothSocket || !bluetoothSocket.isConnected()) {
-                final String errorMessage = "cannot send or receive! "
-                        + ((communication == null) ? "communication==null" : "")
-                        + ((bluetoothSocket == null) ? "bluetoothSocket" : "")
-                        + ((bluetoothSocket.isConnected()) ? "connected" : "unconnected");
-                msgError.obj = errorMessage;
-                if (null != handler)
-                    handler.sendMessage(msgError);
-                Log.d(TAG, errorMessage);
-            }
-            if (null != handler) {
-                handler.sendEmptyMessage(BluetoothState.onBeforeTalkSend);
-            }
-            communication.beforeSend();
-            byte[] sendBuffer = communication.getSendBuffer();
-            if (!(null != sendBuffer && sendBuffer.length > 0)) {
-                msgError.obj = "Null data!";
-                if (null != handler)
-                    handler.sendMessage(msgError);
-            }
-            bluetoothSocket.getOutputStream().write(sendBuffer);
-            bluetoothSocket.getOutputStream().flush();
-            if (null != handler) {
-                Message mg = new Message();
-                mg.what = BluetoothState.onAfterTalkSend;
-                mg.obj = sendBuffer;
-                handler.sendMessage(mg);
-            }
-            communication.afterSend();
-            while (true) {
-                if (abortTalking) {
-                    break;
+        if (!abortTalking) {
+            Message msgError = new Message();
+            msgError.what = BluetoothState.onTalkError;
+            try {
+                if (null == communication || null == bluetoothSocket || !bluetoothSocket.isConnected()) {
+                    final String errorMessage = "cannot send or receive! "
+                            + ((communication == null) ? "communication==null" : "")
+                            + ((bluetoothSocket == null) ? "bluetoothSocket" : "")
+                            + ((bluetoothSocket.isConnected()) ? "connected" : "unconnected");
+                    msgError.obj = errorMessage;
+                    if (null != handler)
+                        handler.sendMessage(msgError);
+                    Log.d(TAG, errorMessage);
                 }
-                if (bluetoothSocket.getInputStream() == null) {
-                    break;
+                if (null != handler) {
+                    handler.sendEmptyMessage(BluetoothState.onBeforeTalkSend);
                 }
-                int length = bluetoothSocket.getInputStream().available();
-                if (length >= 8) {
-                    byte[] readBuffer = new byte[length];
-                    bluetoothSocket.getInputStream().read(readBuffer);
-                    if (currentTalkType == BluetoothTalk.NORMAL_TALK) {
+                communication.beforeSend();
+                byte[] sendBuffer = communication.getSendBuffer();
+                if (!(null != sendBuffer && sendBuffer.length > 0)) {
+                    msgError.obj = "Null data!";
+                    if (null != handler)
+                        handler.sendMessage(msgError);
+                }
+                bluetoothSocket.getOutputStream().write(sendBuffer);
+                bluetoothSocket.getOutputStream().flush();
+                if (null != handler) {
+                    Message mg = new Message();
+                    mg.what = BluetoothState.onAfterTalkSend;
+                    mg.obj = sendBuffer;
+                    handler.sendMessage(mg);
+                }
+                communication.afterSend();
+                while (true) {
+                    if (abortTalking) {
+                        break;
+                    }
+                    if (bluetoothSocket.getInputStream() == null) {
+                        break;
+                    }
+                    int length = bluetoothSocket.getInputStream().available();
+                    if (length >= 8) {
+                        byte[] readBuffer = new byte[length];
+                        bluetoothSocket.getInputStream().read(readBuffer);
                         communication.setReceivedBuffer(readBuffer);
                         communication.afterReceive();
                         Message mg = new Message();
@@ -279,57 +232,16 @@ public class BluetoothTool implements Runnable {
                         if (handler != null) {
                             handler.sendMessage(mg);
                         }
+                        break;
                     }
-                    if (currentTalkType == BluetoothTalk.HOME_STATUS_TALK) {
-                        String sendHexString = SerialUtility.byte2HexStr(communication.getSendBuffer());
-                        for (String code : getHomeStatusCode) {
-                            if (sendHexString.contains(code)) {
-                                homeStatusValueSet.put(code, readBuffer);
-                            }
-                        }
-                    }
-                    if (currentTalkType == BluetoothTalk.CURRENT_TROUBLE_TALK) {
-                        String sendHexString = SerialUtility.byte2HexStr(communication.getSendBuffer());
-                        if (sendHexString.contains(getCurrentTroubleCode)) {
-                            currentTroubleValueSet.put(getCurrentTroubleCode, readBuffer);
-                        }
-                    }
-                    break;
+                }
+            } catch (Exception e) {
+                msgError.obj = e.getMessage();
+                if (null != handler) {
+                    handler.sendMessage(msgError);
                 }
             }
-        } catch (Exception e) {
-            msgError.obj = e.getMessage();
-            if (null != handler) {
-                handler.sendMessage(msgError);
-            }
         }
-    }
-
-    /**
-     * 设置当前通信内容类型
-     *
-     * @param currentTalkType Talk Type
-     */
-    public void setTalkType(int currentTalkType) {
-        this.currentTalkType = currentTalkType;
-    }
-
-    /**
-     * 读取首页状态值
-     *
-     * @return HashTable
-     */
-    public Hashtable<String, byte[]> getHomeStatusValueSet() {
-        return homeStatusValueSet;
-    }
-
-    /**
-     * 读取当前故障值
-     *
-     * @return HashTable
-     */
-    public Hashtable<String, byte[]> getCurrentTroubleValueSet() {
-        return currentTroubleValueSet;
     }
 
     /**
@@ -507,7 +419,6 @@ public class BluetoothTool implements Runnable {
      */
     public BluetoothTool search() {
         currentState = BluetoothState.WILL_DISCOVERING;
-        interrupt();
         pool.execute(this);
         return this;
     }
@@ -518,8 +429,28 @@ public class BluetoothTool implements Runnable {
      * @return BluetoothTool Instance
      */
     public BluetoothTool send() {
-        interrupt();
-        pool.execute(this);
+        while (true) {
+            try {
+                if (bluetoothSocket != null) {
+                    int length = bluetoothSocket.getInputStream().available();
+                    Log.v(TAG, String.valueOf(length));
+                    if (length <= 0) {
+                        abortTalking = false;
+                        pool.execute(this);
+                        break;
+                    } else {
+                        byte[] temp = new byte[1024];
+                        bluetoothSocket.getInputStream().read(temp);
+                    }
+                } else {
+                    break;
+                }
+            } catch (IOException e) {
+                Log.v(TAG, e.getMessage());
+                e.printStackTrace();
+                break;
+            }
+        }
         return this;
     }
 
@@ -537,14 +468,15 @@ public class BluetoothTool implements Runnable {
                 if (null != handler)
                     handler.sendEmptyMessage(BluetoothState.onMultiTalkBegin);
                 if (communications != null) {
-                    for (BluetoothTalk comm : communications) {
+                    for (BluetoothTalk content : communications) {
                         if (abortTalking)
                             break;
-                        talk(comm);
+                        talk(content);
                     }
                 }
-                if (null != handler)
+                if (null != handler) {
                     handler.sendEmptyMessage(BluetoothState.onMultiTalkEnd);
+                }
                 communications = null;
             }
             break;
@@ -558,10 +490,6 @@ public class BluetoothTool implements Runnable {
      */
     public boolean isConnected() {
         return currentState == BluetoothState.CONNECTED;
-    }
-
-    public boolean hasSelectDeviceType() {
-        return hasSelectDeviceType;
     }
 
     /**
@@ -582,72 +510,6 @@ public class BluetoothTool implements Runnable {
     }
 
     /**
-     * 读取电梯运行状态
-     * 最多读取三次
-     */
-    public BluetoothTool getRunningStatus(BluetoothHandler handler) {
-        setHandler(handler);
-        setCommunications(getRunningStatusTalk);
-        hasGetRunningStatus = false;
-        if (getRunningStatusTalk == null) {
-            getRunningStatusTalk = new BluetoothTalk[]{
-                    new BluetoothTalk() {
-                        @Override
-                        public void beforeSend() {
-                            this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0103"
-                                    + statusWordCode
-                                    + "0001")));
-                        }
-
-                        @Override
-                        public void afterSend() {
-
-                        }
-
-                        @Override
-                        public void beforeReceive() {
-
-                        }
-
-                        @Override
-                        public void afterReceive() {
-
-                        }
-
-                        @Override
-                        public Object onParse() {
-                            if (getReceivedBuffer().length == 8) {
-                                int status = getReceivedBuffer()[4] << 8 & 0xFF00 | getReceivedBuffer()[5] & 0xFF;
-                                hasGetRunningStatus = true;
-                                return new Integer(status);
-                            }
-                            return null;
-                        }
-                    }
-            };
-        }
-        new CountDownTimer(2400, 800) {
-            @Override
-            public void onTick(long l) {
-                if (!hasGetRunningStatus) {
-                    if (isPrepared()) {
-                        send();
-                    }
-                } else {
-                    this.cancel();
-                    this.onFinish();
-                }
-            }
-
-            @Override
-            public void onFinish() {
-
-            }
-        }.start();
-        return this;
-    }
-
-    /**
      * 当转换handler的时候应该终止串口通信
      *
      * @param handler BluetoothHandler
@@ -657,8 +519,9 @@ public class BluetoothTool implements Runnable {
         Message msg = new Message();
         msg.what = BluetoothState.onHandlerChanged;
         msg.obj = this.handler;
-        if (null != this.handler)
+        if (null != this.handler) {
             this.handler.sendMessage(msg);
+        }
         this.abortTalking = true;
         this.handler = handler;
         interrupt();

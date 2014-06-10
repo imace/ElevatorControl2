@@ -3,7 +3,7 @@ package com.inovance.ElevatorControl.views.component;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import org.holoeverywhere.widget.GridView;
+import android.widget.GridView;
 
 /**
  * Created by keith on 14-5-29.

@@ -1,5 +1,6 @@
 package com.inovance.ElevatorControl.activities;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -8,16 +9,15 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseExpandableListAdapter;
+import android.widget.ExpandableListView;
 import android.widget.ImageView;
+import android.widget.TextView;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.models.ParameterGroupSettings;
 import com.inovance.ElevatorControl.models.ParameterSettings;
-import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.widget.BaseExpandableListAdapter;
-import org.holoeverywhere.widget.ExpandableListView;
-import org.holoeverywhere.widget.TextView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -55,8 +55,8 @@ public class ParameterViewerActivity extends Activity {
         overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
         setContentView(R.layout.activity_parameter_viewer_layout);
         Views.inject(this);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setHomeButtonEnabled(true);
         readFileAndParseJSONString(profileName);
         handler = new Handler() {
 

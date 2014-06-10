@@ -12,15 +12,15 @@
             android:gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
-        <org.holoeverywhere.widget.TextView
-                style="@style/Holo.TextAppearance.Light"
+        <TextView
+                style="@android:style/TextAppearance"
                 android:id="@+id/code_text"
                 android:textColor="#515151"
                 android:layout_marginRight="10dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
-        <org.holoeverywhere.widget.TextView
-                style="@style/Holo.TextAppearance.Light"
+        <TextView
+                style="@android:style/TextAppearance"
                 android:id="@+id/text_parameter_setting"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -35,14 +35,14 @@
             android:gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
-        <org.holoeverywhere.widget.TextView
-                style="@style/Holo.TextAppearance.Light"
+        <TextView
+                style="@android:style/TextAppearance"
                 android:id="@+id/value_parameter_setting"
                 android:textColor="#515151"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
-        <org.holoeverywhere.widget.TextView
-                style="@style/Holo.TextAppearance.Light"
+        <TextView
+                style="@android:style/TextAppearance"
                 android:id="@+id/unit_parameter_setting"
                 android:textColor="#515151"
                 android:layout_width="wrap_content"

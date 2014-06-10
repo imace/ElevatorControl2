@@ -68,6 +68,16 @@ public class RealTimeMonitor implements Cloneable {
     @Transient
     private String listViewItemText;
 
+    private int deviceID;
+
+    public int getDeviceID() {
+        return deviceID;
+    }
+
+    public void setDeviceID(int deviceID) {
+        this.deviceID = deviceID;
+    }
+
     public RealTimeMonitor() {
 
     }

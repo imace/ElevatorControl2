@@ -1,9 +1,10 @@
 <resources>
-    <style name="Theme.Global" parent="Holo.Theme.Light.DarkActionBar">
+    <style name="Theme.Global" parent="Theme.Blue">
         <item name="vpiTabPageIndicatorStyle">@style/CustomTabPageIndicator</item>
+        <item name="android:popupMenuStyle">@android:style/Widget.Holo.Light.PopupMenu</item>
     </style>
 
-    <style name="CustomDialogStyle" parent="Holo.Theme.Dialog.Light">
+    <style name="CustomDialogStyle" parent="@android:style/Theme.Holo.Light.Dialog">
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
     </style>

@@ -3,6 +3,7 @@ package com.inovance.ElevatorControl.daos;
 import android.content.Context;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.models.RealTimeMonitor;
+import com.inovance.ElevatorControl.models.UserFactory;
 import net.tsz.afinal.FinalDb;
 
 import java.util.ArrayList;
@@ -10,13 +11,14 @@ import java.util.List;
 
 public class RealTimeMonitorDao {
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     private static final String TAG = RealTimeMonitorDao.class.getSimpleName();
 
     public static List<RealTimeMonitor> findAll(Context context) {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
-        return db.findAll(RealTimeMonitor.class);
+        String condition = " deviceID = '" + UserFactory.getInstance().getDeviceType() + "'";
+        return db.findAllByWhere(RealTimeMonitor.class, condition);
     }
 
     /**
@@ -28,7 +30,9 @@ public class RealTimeMonitorDao {
      */
     public static List<RealTimeMonitor> findByType(Context context, String type) {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
-        return db.findAllByWhere(RealTimeMonitor.class, " type = '" + type + "'");
+        String condition = " type = '" + type + "'" + " and "
+                + " deviceID = '" + UserFactory.getInstance().getDeviceType() + "'";
+        return db.findAllByWhere(RealTimeMonitor.class, condition);
     }
 
     /**
@@ -56,9 +60,16 @@ public class RealTimeMonitorDao {
                     }
                 }
             }
+            condition = "(" + condition + ")" + " and "
+                    + " deviceID = '" + UserFactory.getInstance().getDeviceType() + "'";
             return db.findAllByWhere(RealTimeMonitor.class, condition);
         }
         return new ArrayList<RealTimeMonitor>();
+    }
+
+    public static void deleteAllByDeviceID(Context context, int deviceID) {
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
+        db.deleteByWhere(RealTimeMonitor.class, " deviceID = '" + deviceID + "'");
     }
 
 }

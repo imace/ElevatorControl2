@@ -5,11 +5,11 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
     <LinearLayout
-            android:background="@drawable/ab_solid_deepgray"
+            android:background="@drawable/ab_solid_blue"
             android:layout_width="match_parent"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_height="@dimen/abc_action_bar_default_height">
+            android:layout_height="?android:attr/actionBarSize">
         <ImageView
                 android:id="@+id/logo_view"
                 android:background="#00000000"
@@ -23,9 +23,9 @@
                 android:layout_weight="1"
                 android:layout_width="0dp"
                 android:layout_height="@dimen/rai__action_bar_default_height">
-            <org.holoeverywhere.widget.TextView
+            <TextView
                     android:id="@+id/search_device_tips"
-                    style="@style/Holo.TextAppearance.Light"
+                    style="@android:style/TextAppearance"
                     android:textColor="#FFFFFFFF"
                     android:layout_centerInParent="true"
                     android:text="@string/search_device_tips_text"
@@ -35,11 +35,11 @@
                     android:visibility="gone"
                     android:id="@+id/custom_spinner"
                     xmlns:android="http://schemas.android.com/apk/res/android"
-                    android:minHeight="@dimen/abc_action_bar_stacked_max_height"
+                    android:minHeight="?android:attr/actionBarSize"
                     android:prompt="@string/choose_bluetooth_device"
                     android:layout_centerInParent="true"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/abc_action_bar_stacked_max_height"/>
+                    android:layout_height="?android:attr/actionBarSize"/>
         </RelativeLayout>
         <RelativeLayout
                 android:gravity="center"
@@ -55,8 +55,9 @@
                     android:layout_height="match_parent"
                     android:padding="@dimen/rai__action_bar_icon_vertical_padding"
                     android:scaleType="center"/>
-            <org.holoeverywhere.widget.ProgressBar
+            <ProgressBar
                     android:visibility="gone"
+                    style="@android:style/Widget.Holo.Light.ProgressBar.Inverse"
                     android:layout_centerInParent="true"
                     android:id="@+id/refresh_button_progress"
                     android:layout_width="match_parent"
@@ -84,7 +85,7 @@
                     android:divider="#00000000"
                     android:background="@drawable/navigation_bar_background"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/abc_action_bar_default_height"/>
+                    android:layout_height="?android:attr/actionBarSize"/>
         </LinearLayout>
     </TabHost>
 </LinearLayout>

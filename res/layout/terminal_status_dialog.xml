@@ -5,15 +5,15 @@
                 android:minHeight="150dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
-    <org.holoeverywhere.widget.TextView
+    <TextView
             android:id="@+id/wait_text"
             android:layout_centerInParent="true"
             android:text="读取端子状态中，请稍后…"
-            style="@style/Holo.TextAppearance.Large.Light"
+            style="@android:style/TextAppearance.Large"
             android:textSize="14sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
-    <org.holoeverywhere.widget.ListView
+    <ListView
             android:id="@+id/list_view"
             android:visibility="gone"
             android:layout_width="match_parent"

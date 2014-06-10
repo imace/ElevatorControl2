@@ -12,7 +12,8 @@
             android:layout_centerInParent="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-        <org.holoeverywhere.widget.ImageButton
+        <ImageButton
+                android:contentDescription="@null"
                 android:id="@+id/btn_sign_up"
                 android:src="@drawable/sign_up_button"
                 android:background="#00000000"
@@ -20,7 +21,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/sign_up_text"/>
-        <org.holoeverywhere.widget.ImageButton
+        <ImageButton
+                android:contentDescription="@null"
                 android:id="@+id/btn_login"
                 android:src="@drawable/login_button"
                 android:background="#00000000"
@@ -37,12 +39,13 @@
             android:visibility="invisible"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-        <org.holoeverywhere.widget.ProgressBar
+        <ProgressBar
+                style="@android:style/Widget.Holo.Light.ProgressBar.Inverse"
                 android:layout_marginBottom="10dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/progress_bar"/>
-        <org.holoeverywhere.widget.TextView
+        <TextView
                 android:id="@+id/wait_text"
                 android:textColor="#FFFFFF"
                 android:layout_width="wrap_content"

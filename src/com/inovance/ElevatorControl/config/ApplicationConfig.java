@@ -11,6 +11,8 @@ public class ApplicationConfig {
 
     public static final String PREFS_NAME = "application_preference";
 
+    public static final String DefaultDevice = "NICE 3000+";
+
     /**
      * 数据库名称
      */
@@ -292,7 +294,7 @@ public class ApplicationConfig {
 
     // ==================================== Web API接口 =======================================
 
-    public static final String DomainName = "http://222.92.112.36:6954/HuiChuanAPI.asmx/";
+    public static final String DomainName = "http://192.168.5.209:8087/HuiChuanAPI.asmx/";
 
     // 验证是否注册用户
     // 参数：blueAddress 设备蓝牙地址
@@ -340,6 +342,13 @@ public class ApplicationConfig {
     // remark 备注
     // 返回值：申请成功返回 True,失败返回错误信息
     public static final String ApplyFirmwareApplication = "FirmwareApplication";
+
+    // 申请非标设备固件
+    // 参数：blue：手机蓝牙地址
+    // deviceID：设备ID
+    // remark：备注
+    // 返回值：申请成功返回"True"，否则返回错误信息
+    public static final String ApplySpecialFirmwareApplication = "SpecailFirmwareApplication";
 
     // 获取所有已审批但未提取的信息列表（用于查看是否有已经审批通过，但还没有提取的固件）
     // 参数：blue 手机蓝牙地址

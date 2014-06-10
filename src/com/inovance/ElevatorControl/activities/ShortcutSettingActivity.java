@@ -1,23 +1,19 @@
 package com.inovance.ElevatorControl.activities;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+import android.widget.*;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.adapters.ShortcutListViewAdapter;
 import com.inovance.ElevatorControl.daos.ShortcutDao;
 import com.inovance.ElevatorControl.models.Shortcut;
-import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.widget.EditText;
-import org.holoeverywhere.widget.ListView;
-import org.holoeverywhere.widget.Spinner;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,8 +49,8 @@ public class ShortcutSettingActivity extends Activity {
         setContentView(R.layout.activity_shortcut_setting_layout);
         setTitle(R.string.shortcut_setting_text);
         Views.inject(this);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setHomeButtonEnabled(true);
         troubleAnalyzeTabArray = getResources().getStringArray(R.array.trouble_analyze_tab_text);
         configurationTabArray = getResources().getStringArray(R.array.configuration_tab_text);
         firmwareManageTabArray = getResources().getStringArray(R.array.firmware_manage_tab_text);

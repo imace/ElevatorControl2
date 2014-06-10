@@ -4,9 +4,9 @@
                 android:minHeight="100dp"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
-    <org.holoeverywhere.widget.TextView
+    <TextView
             android:id="@+id/confirm_text"
-            style="@style/Holo.TextAppearance.Light"
+            style="@android:style/TextAppearance"
             android:layout_centerInParent="true"
             android:gravity="center"
             android:text="@string/confirm_update_message"
@@ -21,24 +21,24 @@
             android:layout_centerInParent="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-        <org.holoeverywhere.widget.ProgressBar
+        <ProgressBar
                 android:id="@+id/download_progress"
                 android:layout_gravity="center"
-                style="?android:attr/progressBarStyleHorizontal"
+                style="@android:style/Widget.Holo.Light.ProgressBar.Horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
         <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-            <org.holoeverywhere.widget.TextView
+            <TextView
                     android:id="@+id/current_length"
-                    style="@style/Holo.TextAppearance.Small.Light"
+                    style="@android:style/TextAppearance.Small"
                     android:layout_alignParentLeft="true"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
-            <org.holoeverywhere.widget.TextView
+            <TextView
                     android:id="@+id/total_length"
-                    style="@style/Holo.TextAppearance.Small.Light"
+                    style="@android:style/TextAppearance.Small"
                     android:layout_alignParentRight="true"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>

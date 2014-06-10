@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class ShortcutDao {
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     public static List<Shortcut> findAll(Context context) {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);

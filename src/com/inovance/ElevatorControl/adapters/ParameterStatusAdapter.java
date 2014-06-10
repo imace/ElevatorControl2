@@ -5,9 +5,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.TextView;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.models.ParameterStatusItem;
-import org.holoeverywhere.widget.TextView;
 
 import java.util.List;
 
@@ -29,6 +29,11 @@ public class ParameterStatusAdapter extends BaseAdapter {
         this.activity = activity;
         this.statusItemList = list;
         this.statusTextArray = activity.getResources().getStringArray(R.array.status_text_array);
+    }
+
+    public void setStatusList(List<ParameterStatusItem> list) {
+        statusItemList = list;
+        notifyDataSetChanged();
     }
 
     @Override

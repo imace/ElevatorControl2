@@ -5,10 +5,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageButton;
+import android.widget.TextView;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.models.Firmware;
-import org.holoeverywhere.widget.ImageButton;
-import org.holoeverywhere.widget.TextView;
 
 import java.util.List;
 

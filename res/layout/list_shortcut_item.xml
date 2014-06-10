@@ -1,32 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
               android:minHeight="@dimen/card_cell_height"
-              android:background="@drawable/card_view_selector"
-              android:gravity="center_vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
-    <org.holoeverywhere.widget.TextView
-            android:id="@+id/shortcut"
-            android:textSize="16sp"
-            android:textColor="#515151"
-            android:layout_marginLeft="10dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-    <View
-            android:background="@drawable/dotted_line"
-            android:layout_marginRight="10dp"
-            android:layout_marginLeft="10dp"
+    <LinearLayout
             android:layout_weight="1"
-            android:layerType="software"
-            android:layout_width="0dp"
+            android:paddingLeft="15dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="0dp">
+        <TextView
+                android:id="@+id/shortcut"
+                android:textSize="16sp"
+                android:textColor="#515151"
+                android:layout_marginLeft="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        <View
+                android:background="@drawable/dotted_line"
+                android:layout_marginRight="10dp"
+                android:layout_marginLeft="10dp"
+                android:layout_weight="1"
+                android:layerType="software"
+                android:layout_width="0dp"
+                android:layout_height="1dp"/>
+        <ImageView
+                android:background="#00000000"
+                android:id="@+id/operation_button"
+                android:src="@drawable/ic_external_link"
+                android:contentDescription="@null"
+                android:layout_marginRight="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+    </LinearLayout>
+    <View
+            android:id="@+id/divider"
+            android:background="@drawable/line_drawable"
+            android:layout_marginLeft="10dp"
+            android:layout_width="match_parent"
             android:layout_height="1dp"/>
-    <ImageView
-            android:background="#00000000"
-            android:id="@+id/operation_button"
-            android:src="@drawable/ic_external_link"
-            android:contentDescription="@null"
-            android:layout_marginRight="10dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
 </LinearLayout>

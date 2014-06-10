@@ -7,9 +7,9 @@
                 android:paddingTop="5dp"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
-    <org.holoeverywhere.widget.TextView
+    <TextView
             android:id="@+id/approve_date"
-            style="@style/Holo.TextAppearance.Light"
+            style="@android:style/TextAppearance"
             android:textColor="#515151"
             android:gravity="center"
             android:layout_marginLeft="10dp"

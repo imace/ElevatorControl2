@@ -1,16 +1,16 @@
 package com.inovance.ElevatorControl.activities;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.bluetoothtool.BluetoothTool;
 import com.inovance.ElevatorControl.R;
-import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.widget.LinearLayout;
-import org.holoeverywhere.widget.TextView;
 
 /**
  * Created by IntelliJ IDEA.

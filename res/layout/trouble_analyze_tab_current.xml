@@ -14,8 +14,8 @@
             android:background="@drawable/card_view_background"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-        <org.holoeverywhere.widget.ProgressBar
-                style="@style/Holo.ProgressBar"
+        <ProgressBar
+                style="@android:style/Widget.Holo.Light.ProgressBar.Inverse"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
     </LinearLayout>
@@ -31,10 +31,10 @@
             android:background="@drawable/card_view_background"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-        <org.holoeverywhere.widget.TextView
+        <TextView
                 android:gravity="center"
                 android:layout_gravity="center"
-                style="@style/Holo.TextAppearance.Light"
+                style="@android:style/TextAppearance"
                 android:text="@string/no_connected_device"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
@@ -70,15 +70,15 @@
                             android:orientation="horizontal"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content">
-                        <org.holoeverywhere.widget.TextView
-                                style="@style/Holo.TextAppearance.Light"
+                        <TextView
+                                style="@android:style/TextAppearance"
                                 android:id="@+id/TextView09"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/label_txt_error_code"
                                 android:textColor="#333333"/>
-                        <org.holoeverywhere.widget.TextView
-                                style="@style/Holo.TextAppearance.Light"
+                        <TextView
+                                style="@android:style/TextAppearance"
                                 android:id="@+id/current_error_help_display"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -88,15 +88,15 @@
                             android:orientation="horizontal"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content">
-                        <org.holoeverywhere.widget.TextView
-                                style="@style/Holo.TextAppearance.Light"
+                        <TextView
+                                style="@android:style/TextAppearance"
                                 android:id="@+id/TextView07"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textColor="#333333"
                                 android:text="@string/label_txt_error_name"/>
-                        <org.holoeverywhere.widget.TextView
-                                style="@style/Holo.TextAppearance.Light"
+                        <TextView
+                                style="@android:style/TextAppearance"
                                 android:id="@+id/current_error_help_name"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -106,15 +106,15 @@
                             android:orientation="horizontal"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content">
-                        <org.holoeverywhere.widget.TextView
-                                style="@style/Holo.TextAppearance.Light"
+                        <TextView
+                                style="@android:style/TextAppearance"
                                 android:id="@+id/TextView05"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textColor="#333333"
                                 android:text="@string/label_txt_error_level"/>
-                        <org.holoeverywhere.widget.TextView
-                                style="@style/Holo.TextAppearance.Light"
+                        <TextView
+                                style="@android:style/TextAppearance"
                                 android:id="@+id/current_error_help_level"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -124,15 +124,15 @@
                             android:orientation="vertical"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content">
-                        <org.holoeverywhere.widget.TextView
-                                style="@style/Holo.TextAppearance.Light"
+                        <TextView
+                                style="@android:style/TextAppearance"
                                 android:id="@+id/TextView04"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textColor="#333333"
                                 android:text="@string/label_txt_error_reason"/>
-                        <org.holoeverywhere.widget.TextView
-                                style="@style/Holo.TextAppearance.Light"
+                        <TextView
+                                style="@android:style/TextAppearance"
                                 android:id="@+id/current_error_help_reason"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -142,15 +142,15 @@
                             android:orientation="vertical"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content">
-                        <org.holoeverywhere.widget.TextView
-                                style="@style/Holo.TextAppearance.Light"
+                        <TextView
+                                style="@android:style/TextAppearance"
                                 android:id="@+id/textView1"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textColor="#333333"
                                 android:text="@string/label_txt_error_solution"/>
-                        <org.holoeverywhere.widget.TextView
-                                style="@style/Holo.TextAppearance.Light"
+                        <TextView
+                                style="@android:style/TextAppearance"
                                 android:id="@+id/current_error_help_solution"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -177,8 +177,8 @@
                     android:layout_gravity="center"
                     android:background="@drawable/card_view_selector"
                     android:layout_height="match_parent">
-                <org.holoeverywhere.widget.TextView
-                        style="@style/Holo.TextAppearance.Light"
+                <TextView
+                        style="@android:style/TextAppearance"
                         android:layout_gravity="center"
                         android:gravity="center"
                         android:text="@string/view_error_status_text"
@@ -196,8 +196,8 @@
                     android:layout_gravity="center"
                     android:background="@drawable/card_view_selector"
                     android:layout_height="match_parent">
-                <org.holoeverywhere.widget.TextView
-                        style="@style/Holo.TextAppearance.Light"
+                <TextView
+                        style="@android:style/TextAppearance"
                         android:layout_gravity="center"
                         android:gravity="center"
                         android:text="@string/restore_error_status_text"
@@ -220,10 +220,10 @@
             android:layout_margin="@dimen/card_view_margin"
             android:background="@drawable/card_view_background"
             android:orientation="vertical">
-        <org.holoeverywhere.widget.TextView
+        <TextView
                 android:gravity="center"
                 android:layout_gravity="center"
-                style="@style/Holo.TextAppearance.Light"
+                style="@android:style/TextAppearance"
                 android:text="@string/no_error_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>

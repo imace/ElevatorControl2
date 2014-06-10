@@ -1,5 +1,6 @@
 package com.inovance.ElevatorControl.activities;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
@@ -7,6 +8,7 @@ import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.*;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.inovance.ElevatorControl.R;
@@ -14,8 +16,6 @@ import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.models.User;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
 import com.inovance.ElevatorControl.web.WebApi;
-import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.widget.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -64,8 +64,8 @@ public class RegisterUserActivity extends Activity {
         setContentView(R.layout.activity_register_user_layout);
         setTitle(R.string.register_user_text);
         Views.inject(this);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setHomeButtonEnabled(true);
         TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         String phoneNumber = telephonyManager.getLine1Number();
         if (phoneNumber != null) {
@@ -119,15 +119,14 @@ public class RegisterUserActivity extends Activity {
             user.setEmail(email.getText().toString());
             BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
             user.setBluetoothAddress(bluetoothAdapter.getAddress());
-            WebApi.getInstance().setOnResultListener(new WebApi.onGetResultListener() {
+            WebApi.getInstance().setOnResultListener(new WebApi.OnGetResultListener() {
                 @Override
                 public void onResult(String tag, String responseString) {
                     if (tag.equalsIgnoreCase(ApplicationConfig.RegisterUser)) {
                         try {
                             JSONArray jsonArray = new JSONArray(responseString);
-                            RegisterUserActivity
-                                    .this
-                                    .startActivity(new Intent(RegisterUserActivity.this, NavigationTabActivity.class));
+                            setResult(RESULT_OK);
+                            finish();
                         } catch (JSONException e) {
                             submitProgress.setVisibility(View.GONE);
                             submitTextView.setVisibility(View.VISIBLE);
@@ -136,7 +135,7 @@ public class RegisterUserActivity extends Activity {
                     }
                 }
             });
-            WebApi.getInstance().setOnFailureListener(new WebApi.onRequestFailureListener() {
+            WebApi.getInstance().setOnFailureListener(new WebApi.OnRequestFailureListener() {
                 @Override
                 public void onFailure(int statusCode, Throwable throwable) {
                     Toast.makeText(RegisterUserActivity.this, R.string.register_failed_text, Toast.LENGTH_SHORT)

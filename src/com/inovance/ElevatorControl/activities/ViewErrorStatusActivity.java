@@ -1,8 +1,10 @@
 package com.inovance.ElevatorControl.activities;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.os.Message;
 import android.view.MenuItem;
+import android.widget.ListView;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.bluetoothtool.BluetoothHandler;
@@ -16,8 +18,6 @@ import com.inovance.ElevatorControl.models.ObjectListHolder;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
 import com.mobsandgeeks.adapters.InstantAdapter;
-import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.widget.ListView;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

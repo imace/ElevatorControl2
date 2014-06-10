@@ -1,13 +1,16 @@
 package com.inovance.ElevatorControl.activities;
 
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothSocket;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
-import android.support.v7.widget.PopupMenu;
+import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.*;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.bluetoothtool.BluetoothTool;
@@ -22,13 +25,6 @@ import com.inovance.ElevatorControl.web.WebApi;
 import com.inovance.elevatorprogram.IProgram;
 import com.inovance.elevatorprogram.MsgHandler;
 import com.viewpagerindicator.TabPageIndicator;
-import org.holoeverywhere.LayoutInflater;
-import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.app.AlertDialog;
-import org.holoeverywhere.widget.Button;
-import org.holoeverywhere.widget.ProgressBar;
-import org.holoeverywhere.widget.TextView;
-import org.holoeverywhere.widget.Toast;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,7 +33,7 @@ import java.io.FileNotFoundException;
 /**
  * 固件管理
  */
-public class FirmwareManageActivity extends Activity {
+public class FirmwareManageActivity extends FragmentActivity {
 
     private static final String TAG = FirmwareManageActivity.class.getSimpleName();
 

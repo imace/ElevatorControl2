@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class ProfileDao {
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     public static List<Profile> findAll(Context context) {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);

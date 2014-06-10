@@ -19,10 +19,21 @@
                 android:minHeight="@dimen/card_cell_height"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-            <org.holoeverywhere.widget.TextView
-                    style="@style/Holo.TextAppearance.Light"
+            <TextView
+                    style="@android:style/TextAppearance"
                     android:textColor="#515151"
                     android:text="@string/equipment_model_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            <View
+                    android:background="#ffdfdfdf"
+                    android:layout_margin="10dp"
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"/>
+            <TextView
+                    android:id="@+id/device_type"
+                    style="@android:style/TextAppearance"
+                    android:textColor="#515151"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
         </LinearLayout>
@@ -38,10 +49,21 @@
                 android:minHeight="@dimen/card_cell_height"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-            <org.holoeverywhere.widget.TextView
-                    style="@style/Holo.TextAppearance.Light"
+            <TextView
+                    style="@android:style/TextAppearance"
                     android:textColor="#515151"
                     android:text="@string/manufacturers_serial_number_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            <View
+                    android:background="#ffdfdfdf"
+                    android:layout_margin="10dp"
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"/>
+            <TextView
+                    android:id="@+id/supplier_code"
+                    style="@android:style/TextAppearance"
+                    android:textColor="#515151"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
         </LinearLayout>
@@ -58,7 +80,7 @@
             android:padding="5dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-        <org.holoeverywhere.widget.TextView
+        <TextView
                 android:textSize="18sp"
                 android:textColor="#333"
                 android:text="@string/parameter_download_button_text"

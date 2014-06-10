@@ -3,6 +3,7 @@ package com.inovance.ElevatorControl.daos;
 import android.content.Context;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.models.ParameterSettings;
+import com.inovance.ElevatorControl.models.UserFactory;
 import net.tsz.afinal.FinalDb;
 
 import java.util.ArrayList;
@@ -10,12 +11,7 @@ import java.util.List;
 
 public class ParameterSettingsDao {
 
-    private static final boolean DEBUG = true;
-
-    public static ParameterSettings findById(Context context, int id) {
-        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
-        return db.findById(id, ParameterSettings.class);
-    }
+    private static final boolean DEBUG = false;
 
     /**
      * Find By Names Array
@@ -42,6 +38,8 @@ public class ParameterSettingsDao {
                     }
                 }
             }
+            condition = "(" + condition + ")" + " and "
+                    + " deviceID = '" + UserFactory.getInstance().getDeviceType() + "'";
             return db.findAllByWhere(ParameterSettings.class, condition);
         }
         return new ArrayList<ParameterSettings>();
@@ -56,7 +54,13 @@ public class ParameterSettingsDao {
      */
     public static List<ParameterSettings> findByType(Context context, int type) {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
-        return db.findAllByWhere(ParameterSettings.class, " type = '" + String.valueOf(type) + "'");
+        String condition = " type = '" + type + "'" + " and "
+                + " deviceID = '" + UserFactory.getInstance().getDeviceType() + "'";
+        return db.findAllByWhere(ParameterSettings.class, condition);
     }
 
+    public static void deleteAllByDeviceID(Context context, int deviceID) {
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
+        db.deleteByWhere(ParameterSettings.class, " deviceID = '" + deviceID + "'");
+    }
 }

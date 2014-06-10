@@ -1,34 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:background="@color/main_background"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:background="@color/main_background"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
     <LinearLayout
-            android:id="@+id/login_view"
-            android:orientation="vertical"
-            android:minHeight="100dp"
-            android:gravity="center"
-            android:padding="@dimen/card_view_margin"
-            android:background="@drawable/card_view_background"
-            android:layout_margin="@dimen/card_view_margin"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@android:color/white"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-        <org.holoeverywhere.widget.ProgressBar
-                style="@style/Holo.ProgressBar"
-                android:layout_marginBottom="10dp"
-                android:layout_width="36dp"
-                android:layout_height="36dp"/>
-        <org.holoeverywhere.widget.TextView
-                style="@style/Holo.TextAppearance.Small.Light"
-                android:text="@string/login_wait_text"
+            android:paddingRight="10dp"
+            android:paddingLeft="10dp"
+            android:layout_height="50dp">
+        <ImageButton
+                android:id="@+id/pick_contact"
+                android:background="@drawable/send_button_selector"
+                android:contentDescription="@null"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_new_person"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"/>
+        <View
+                android:layout_width="10dp"
+                android:layout_height="wrap_content"/>
+        <EditText
+                android:id="@+id/phone_number"
+                android:layout_weight="1"
+                android:inputType="phone"
+                android:layout_width="0dp"
+                android:hint="@string/input_tel_phone_hint"
+                android:layout_height="wrap_content"/>
+        <View
+                android:layout_width="10dp"
+                android:layout_height="wrap_content"/>
+        <ImageButton
+                android:id="@+id/send_file"
+                android:background="@drawable/send_button_selector"
+                android:contentDescription="@null"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_email_send"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"/>
+    </LinearLayout>
+    <View
+            android:background="#ffdfdfdf"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"/>
+    <LinearLayout
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="0dp">
+        <ListView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
     </LinearLayout>
-    <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_centerInParent="true"
-            android:layout_height="wrap_content">
-    </LinearLayout>
-</RelativeLayout>
+</LinearLayout>

@@ -1,15 +1,15 @@
 package com.inovance.ElevatorControl.activities;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.ListView;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.models.SystemLog;
 import com.inovance.ElevatorControl.utils.LogUtils;
 import com.mobsandgeeks.adapters.InstantAdapter;
-import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.widget.ListView;
 
 import java.util.List;
 
@@ -30,8 +30,8 @@ public class SystemLogActivity extends Activity {
         setContentView(R.layout.activity_system_log);
         setTitle(R.string.system_log_title);
         Views.inject(this);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setHomeButtonEnabled(true);
     }
 
     @Override

@@ -1,13 +1,13 @@
 package com.inovance.ElevatorControl.adapters;
 
+import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.TextView;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.models.ChatMessage;
-import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.widget.TextView;
 
 import java.util.List;
 

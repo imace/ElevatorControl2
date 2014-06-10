@@ -8,6 +8,7 @@ import net.tsz.afinal.annotation.sqlite.Property;
 import java.util.Date;
 
 public class ErrorHelp {
+
     @Id
     private int Id;
 
@@ -20,6 +21,16 @@ public class ErrorHelp {
     private String childIdb;// 子Idb
     private String solution;//故障解决方案
     private String level;//故障级
+
+    private int deviceID;
+
+    public int getDeviceID() {
+        return deviceID;
+    }
+
+    public void setDeviceID(int deviceID) {
+        this.deviceID = deviceID;
+    }
 
     private boolean Valid;
     private Date lastTime;

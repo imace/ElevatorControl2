@@ -5,7 +5,7 @@
               android:background="@color/main_background"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
-    <org.holoeverywhere.widget.ExpandableListView
+    <ExpandableListView
             android:id="@+id/expandable_list_view"
             android:clipToPadding="false"
             android:divider="#00000000"

@@ -1,19 +1,19 @@
 package com.inovance.ElevatorControl.activities;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.ProgressBar;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.models.SpecialDevice;
 import com.inovance.ElevatorControl.web.WebApi;
 import com.mobsandgeeks.adapters.InstantAdapter;
-import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.widget.LinearLayout;
-import org.holoeverywhere.widget.ListView;
-import org.holoeverywhere.widget.ProgressBar;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,8 +46,8 @@ public class SelectDeviceTypeActivity extends Activity {
         setContentView(R.layout.activity_select_device_type_layout);
         setTitle(R.string.select_device_type_text);
         Views.inject(this);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setHomeButtonEnabled(true);
         getDeviceList();
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -67,7 +67,7 @@ public class SelectDeviceTypeActivity extends Activity {
      * 取得设备列表
      */
     private void getDeviceList() {
-        WebApi.getInstance().setOnResultListener(new WebApi.onGetResultListener() {
+        WebApi.getInstance().setOnResultListener(new WebApi.OnGetResultListener() {
             @Override
             public void onResult(String tag, String responseString) {
                 try {
@@ -91,7 +91,7 @@ public class SelectDeviceTypeActivity extends Activity {
                 }
             }
         });
-        WebApi.getInstance().setOnFailureListener(new WebApi.onRequestFailureListener() {
+        WebApi.getInstance().setOnFailureListener(new WebApi.OnRequestFailureListener() {
             @Override
             public void onFailure(int statusCode, Throwable throwable) {
 

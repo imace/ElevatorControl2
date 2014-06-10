@@ -13,11 +13,11 @@
             android:background="@drawable/card_view_background"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-        <org.holoeverywhere.widget.TextView
+        <TextView
                 android:text="@string/cannot_match_device_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="@style/Holo.TextAppearance.Inverse"/>
+                style="@android:style/TextAppearance"/>
     </LinearLayout>
     <RelativeLayout
             android:minHeight="100dp"
@@ -26,7 +26,8 @@
             android:background="@drawable/card_view_background"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-        <org.holoeverywhere.widget.ProgressBar
+        <ProgressBar
+                style="@android:style/Widget.Holo.Light.ProgressBar.Inverse"
                 android:id="@+id/progress_bar"
                 android:layout_centerInParent="true"
                 android:layout_width="wrap_content"
@@ -38,7 +39,7 @@
                 android:layout_alignParentTop="true"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-            <org.holoeverywhere.widget.ListView
+            <ListView
                     android:id="@+id/device_list"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>

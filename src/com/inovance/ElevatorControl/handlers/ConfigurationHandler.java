@@ -118,9 +118,7 @@ public class ConfigurationHandler extends BluetoothHandler {
             ConfigurationActivity parentActivity = ((ConfigurationActivity) activity);
             ConfigurationFragment fragment = parentActivity.mConfigurationAdapter.getItem(parentActivity.pageIndex);
             fragment.syncMonitorViewData(finalList);
-            parentActivity.isSyncingSystemStatus = false;
-        } else {
-            ((ConfigurationActivity) activity).loadMonitorView();
+            parentActivity.isSyncing = false;
         }
     }
 
@@ -134,6 +132,6 @@ public class ConfigurationHandler extends BluetoothHandler {
 
     @Override
     public void onTalkError(Message msg) {
-        ((ConfigurationActivity) activity).loadMonitorView();
+        super.onTalkError(msg);
     }
 }

@@ -6,7 +6,7 @@
               android:background="@drawable/guide_background"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
-    <org.holoeverywhere.widget.TextView
+    <TextView
             android:textColor="#FFFFFF"
             android:textSize="20sp"
             android:text="@string/choose_device_tips_text"
@@ -18,15 +18,16 @@
             android:layout_marginBottom="8dp"
             android:layout_width="340dp"
             android:layout_height="300dp">
-        <org.holoeverywhere.widget.ListView
+        <ListView
                 android:id="@+id/list_view"
                 android:visibility="invisible"
                 android:layout_centerInParent="true"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scrollbarStyle="outsideOverlay"/>
-        <org.holoeverywhere.widget.ProgressBar
+        <ProgressBar
                 android:id="@+id/progress_bar"
+                style="@android:style/Widget.Holo.Light.ProgressBar.Inverse"
                 android:layout_centerInParent="true"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
@@ -37,7 +38,7 @@
             android:gravity="center"
             android:layout_width="340dp"
             android:layout_height="50dp">
-        <org.holoeverywhere.widget.TextView
+        <TextView
                 android:text="@string/research_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>

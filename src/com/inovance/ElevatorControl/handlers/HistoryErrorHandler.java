@@ -9,13 +9,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
 import com.bluetoothtool.BluetoothHandler;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.activities.TroubleAnalyzeActivity;
 import com.inovance.ElevatorControl.models.HistoryError;
 import com.inovance.ElevatorControl.views.dialogs.CustomDialog;
-import org.holoeverywhere.widget.ListView;
-import org.holoeverywhere.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;

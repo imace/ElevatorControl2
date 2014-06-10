@@ -1,14 +1,13 @@
 package com.inovance.ElevatorControl;
 
+import android.app.Application;
+import android.content.SharedPreferences;
 import com.inovance.ElevatorControl.cache.LruCacheTool;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ShortcutDao;
-import com.inovance.ElevatorControl.models.DeviceFactory;
 import com.inovance.ElevatorControl.models.Shortcut;
+import com.inovance.ElevatorControl.models.UserFactory;
 import com.inovance.ElevatorControl.utils.LogUtils;
-import org.holoeverywhere.HoloEverywhere;
-import org.holoeverywhere.app.Application;
-import org.holoeverywhere.preference.SharedPreferences;
 
 /**
  * Created by keith on 14-3-8.
@@ -25,10 +24,6 @@ import org.holoeverywhere.preference.SharedPreferences;
 */
 public class ElevatorControlApplication extends Application {
 
-    static {
-        HoloEverywhere.DEBUG = false;
-    }
-
     @Override
     public void onCreate() {
         super.onCreate();
@@ -36,10 +31,7 @@ public class ElevatorControlApplication extends Application {
         LruCacheTool.getInstance().initCache(getApplicationContext());
         LogUtils.getInstance().init(getApplicationContext());
         writeDefaultShortcutData();
-        DeviceFactory.getInstance().setDeviceType(getApplicationContext().getResources()
-                .getString(R.string.device_not_select_text));
-        DeviceFactory.getInstance().setSupplierCode(getApplicationContext().getResources()
-                .getString(R.string.supplier_default_code_text));
+        UserFactory.getInstance().init(getApplicationContext());
         //ACRA.init(this);
         /*
         String JSON = AssetUtils.readDefaultFunCode(getApplicationContext(), "NICE3000+_FunCode.json");

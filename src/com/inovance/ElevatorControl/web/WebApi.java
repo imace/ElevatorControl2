@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Xml;
+import android.widget.Toast;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.models.User;
@@ -12,7 +13,6 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.StringEntity;
-import org.holoeverywhere.widget.Toast;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -39,14 +39,14 @@ public class WebApi {
     /**
      * 请求失败
      */
-    public static interface onRequestFailureListener {
+    public static interface OnRequestFailureListener {
         void onFailure(int statusCode, Throwable throwable);
     }
 
     /**
      * 请求成功
      */
-    public static interface onGetResultListener {
+    public static interface OnGetResultListener {
         void onResult(String tag, String responseString);
     }
 
@@ -54,15 +54,15 @@ public class WebApi {
 
     private static AsyncHttpClient client = new AsyncHttpClient();
 
-    private onRequestFailureListener onFailureListener;
+    private OnRequestFailureListener onFailureListener;
 
-    private onGetResultListener onResultListener;
+    private OnGetResultListener onResultListener;
 
-    public void setOnResultListener(onGetResultListener onResultListener) {
+    public void setOnResultListener(OnGetResultListener onResultListener) {
         this.onResultListener = onResultListener;
     }
 
-    public void setOnFailureListener(onRequestFailureListener onFailureListener) {
+    public void setOnFailureListener(OnRequestFailureListener onFailureListener) {
         this.onFailureListener = onFailureListener;
     }
 
@@ -140,10 +140,22 @@ public class WebApi {
 
     /**
      * 取得错误帮助信息
+     *
+     * @param deviceType 设备型号
      */
-    public void getErrorHelpList(Context context) {
-        String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetErrorHelp;
+    public void getErrorHelpList(Context context, String deviceType) {
+        String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetErrorHelp + deviceType;
         startGetRequest(context, requestURL, ApplicationConfig.GetErrorHelp);
+    }
+
+    /**
+     * 取得设备状态参数
+     *
+     * @param deviceType 设备型号
+     */
+    public void getStateCode(Context context, String deviceType) {
+        String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetStateCode + deviceType;
+        startGetRequest(context, requestURL, ApplicationConfig.GetStateCode);
     }
 
     /**
@@ -151,7 +163,7 @@ public class WebApi {
      *
      * @param deviceType 设备型号
      */
-    public void getParameterListUpdateTime(Context context, String deviceType) {
+    public void getDeviceCodeUpdateTime(Context context, String deviceType) {
         if (isNetworkAvailable(context)) {
             String requestURL = ApplicationConfig.DomainName
                     + ApplicationConfig.GetParameterListUpdateTime
@@ -169,16 +181,6 @@ public class WebApi {
         } else {
             alertUserNetworkNotAvailable(context);
         }
-    }
-
-    /**
-     * 取得设备状态参数
-     *
-     * @param deviceType 设备型号
-     */
-    public void getStateCode(Context context, String deviceType) {
-        String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetStateCode + deviceType;
-        startGetRequest(context, requestURL, ApplicationConfig.GetStateCode);
     }
 
     /**
@@ -202,7 +204,7 @@ public class WebApi {
      *
      * @param vendorID 厂商ID
      */
-    public void getDeviceListByVendorIDS(Context context, String vendorID) {
+    public void getDeviceListByVendorID(Context context, String vendorID) {
         String requestURL = ApplicationConfig.DomainName
                 + ApplicationConfig.GetDeviceListByVendorID
                 + vendorID;
@@ -235,6 +237,44 @@ public class WebApi {
                             public void onSuccess(int statusCode, Header[] headers, byte[] response) {
                                 if (onResultListener != null) {
                                     onResultListener.onResult(ApplicationConfig.ApplyFirmwareApplication,
+                                            getResponseString(response, STRING_TAG));
+                                }
+                            }
+                        });
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        } else {
+            alertUserNetworkNotAvailable(context);
+        }
+    }
+
+    /**
+     * 申请非标设备固件
+     *
+     * @param context          Context
+     * @param bluetoothAddress 蓝牙地址
+     * @param deviceID         设备ID
+     * @param remark           备注
+     */
+    public void applySpecialFirmware(Context context, String bluetoothAddress, String deviceID, String remark) {
+        if (isNetworkAvailable(context)) {
+            String postURL = ApplicationConfig.DomainName + ApplicationConfig.ApplySpecialFirmwareApplication;
+            String params = "blue={param0}&deviceID={param1}&remark={param2}";
+            params = params.replace("{param0}", bluetoothAddress);
+            params = params.replace("{param1}", deviceID);
+            try {
+                params = params.replace("{param2}", URLEncoder.encode(remark, "UTF-8"));
+                HttpEntity entity = new StringEntity(params);
+                client.post(context,
+                        postURL,
+                        entity,
+                        "application/x-www-form-urlencoded",
+                        new ResponseHandler() {
+                            @Override
+                            public void onSuccess(int statusCode, Header[] headers, byte[] response) {
+                                if (onResultListener != null) {
+                                    onResultListener.onResult(ApplicationConfig.ApplySpecialFirmwareApplication,
                                             getResponseString(response, STRING_TAG));
                                 }
                             }

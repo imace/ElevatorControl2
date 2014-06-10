@@ -20,10 +20,22 @@ public class ParameterGroupSettings {
     private int Id;
 
     private String groupText;//功能组
+
     private String groupId;//功能组Id
 
     private boolean Valid;
+
     private Date lasttime;
+
+    private int deviceID;
+
+    public int getDeviceID() {
+        return deviceID;
+    }
+
+    public void setDeviceID(int deviceID) {
+        this.deviceID = deviceID;
+    }
 
     private List<ParameterSettings> settingsList;
 
@@ -85,7 +97,6 @@ public class ParameterGroupSettings {
             OneToManyLazyLoader<ParameterGroupSettings, ParameterSettings> parametersettings) {
         this.parametersettings = parametersettings;
     }
-
 
     @InstantText(viewId = R.id.text_transaction)
     public String getGroupText() {

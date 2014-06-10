@@ -1,5 +1,6 @@
 package com.inovance.ElevatorControl.activities;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Typeface;
@@ -10,8 +11,7 @@ import android.os.Message;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.Button;
+import android.widget.*;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.bluetoothtool.BluetoothHandler;
@@ -32,8 +32,6 @@ import com.inovance.ElevatorControl.views.dialogs.CustomDialog;
 import com.manuelpeinado.refreshactionitem.ProgressIndicatorType;
 import com.manuelpeinado.refreshactionitem.RefreshActionItem;
 import com.mobsandgeeks.adapters.InstantAdapter;
-import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.widget.*;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -633,7 +631,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                                     && !settings.getName().contains("X27")) {
                                 ToggleButton toggleButton = (ToggleButton) detailDialog.findViewById(R.id.toggle_button);
                                 ListView listView = (ListView) detailDialog.findViewById(R.id.list_view);
-                                CheckedListViewAdapter adapter = (CheckedListViewAdapter) listView.getAdapterSource();
+                                CheckedListViewAdapter adapter = (CheckedListViewAdapter) listView.getAdapter();
                                 int value = getTerminalStatus(adapter.getItem(adapter.getCheckedIndex()),
                                         toggleButton.isChecked());
                                 if (value != -1) {
@@ -656,7 +654,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                         if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[2]) {
                             ListView listView = (ListView) detailDialog.findViewById(R.id.switch_list);
                             DialogSwitchListViewAdapter adapter = (DialogSwitchListViewAdapter) listView
-                                    .getAdapterSource();
+                                    .getAdapter();
                             List<ParameterStatusItem> list = adapter.getItemList();
                             String binaryString = "";
                             int size = list.size();

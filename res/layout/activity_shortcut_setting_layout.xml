@@ -5,13 +5,13 @@
               android:background="@color/main_background"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
-    <org.holoeverywhere.widget.ListView
+    <ListView
+            android:clipToPadding="false"
             android:id="@+id/list_view"
-            android:dividerHeight="8dp"
+            android:dividerHeight="0dp"
+            android:divider="#00000000"
+            android:background="@drawable/flat_background"
             android:scrollbarStyle="outsideOverlay"
-            android:divider="@android:color/transparent"
-            android:listSelector="@android:color/transparent"
-            android:padding="@dimen/card_view_margin"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="wrap_content"/>
 </LinearLayout>

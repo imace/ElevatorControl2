@@ -5,11 +5,12 @@
               android:orientation="vertical"
               android:background="@color/main_background">
     <LinearLayout
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
             android:padding="10dp"
             android:baselineAligned="false"
             android:gravity="center"
-            android:layout_margin="10dp"
-            android:background="@drawable/card_view_background"
+            android:background="@drawable/flat_background"
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -37,8 +38,8 @@
                     android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
-                <org.holoeverywhere.widget.TextView
-                        style="@style/Holo.TextAppearance.Medium.Light"
+                <TextView
+                        style="@android:style/TextAppearance.Medium"
                         android:textSize="18sp"
                         android:gravity="center"
                         android:layout_gravity="center"
@@ -46,9 +47,9 @@
                         android:text="@string/running_speed_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
-                <org.holoeverywhere.widget.TextView
+                <TextView
                         android:id="@+id/running_speed"
-                        style="@style/Holo.TextAppearance"
+                        style="@android:style/TextAppearance"
                         android:gravity="center"
                         android:layout_gravity="center"
                         android:textColor="#ff989898"
@@ -61,8 +62,8 @@
                     android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
-                <org.holoeverywhere.widget.TextView
-                        style="@style/Holo.TextAppearance.Medium.Light"
+                <TextView
+                        style="@android:style/TextAppearance.Medium"
                         android:textColor="#ff00639a"
                         android:textSize="18sp"
                         android:gravity="center"
@@ -70,11 +71,11 @@
                         android:text="@string/system_status_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
-                <org.holoeverywhere.widget.TextView
+                <TextView
                         android:id="@+id/system_status"
                         android:gravity="center"
                         android:layout_gravity="center"
-                        style="@style/Holo.TextAppearance"
+                        style="@android:style/TextAppearance"
                         android:textColor="#ff989898"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
@@ -85,8 +86,7 @@
                     android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
-                <org.holoeverywhere.widget.TextView
-                        style="@style/Holo.TextAppearance.Medium.Light"
+                <TextView
                         android:textColor="#ff00639a"
                         android:textSize="18sp"
                         android:gravity="center"
@@ -94,11 +94,11 @@
                         android:text="@string/lock_elevator_status_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
-                <org.holoeverywhere.widget.TextView
+                <TextView
                         android:id="@+id/lock_status"
                         android:gravity="center"
                         android:layout_gravity="center"
-                        style="@style/Holo.TextAppearance"
+                        style="@android:style/TextAppearance"
                         android:textColor="#ff989898"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
@@ -111,8 +111,8 @@
                     android:layout_marginBottom="5dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
-                <org.holoeverywhere.widget.TextView
-                        style="@style/Holo.TextAppearance.Medium.Light"
+                <TextView
+                        style="@android:style/TextAppearance.Medium"
                         android:textColor="#ff00639a"
                         android:textSize="18sp"
                         android:gravity="center"
@@ -121,27 +121,26 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
                 <!-- 故障代码红色 -->
-                <org.holoeverywhere.widget.TextView
+                <TextView
                         android:id="@+id/error_status"
                         android:gravity="center"
                         android:layout_gravity="center"
-                        style="@style/Holo.TextAppearance"
+                        style="@android:style/TextAppearance.Medium"
                         android:textColor="#ffff594b"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
-    <org.holoeverywhere.widget.ListView
+    <ListView
             android:id="@+id/list_view"
             android:layout_weight="1"
-            android:dividerHeight="8dp"
-            android:scrollbarStyle="outsideOverlay"
-            android:divider="@android:color/transparent"
-            android:listSelector="@android:color/transparent"
-            android:paddingLeft="@dimen/card_view_margin"
-            android:paddingRight="@dimen/card_view_margin"
-            android:layout_marginBottom="@dimen/card_view_margin"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/flat_background"
+            android:scrollbars="none"
+            android:divider="#00000000"
+            android:dividerHeight="0dp"
+            android:clipToPadding="false"
             android:layout_width="match_parent"
             android:layout_height="0dp"/>
 </LinearLayout>

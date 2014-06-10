@@ -12,13 +12,13 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import com.bluetoothtool.BluetoothTool;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.web.WebApi;
 import net.tsz.afinal.core.AsyncTask;
-import org.holoeverywhere.widget.LinearLayout;
-import org.holoeverywhere.widget.ProgressBar;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -111,7 +111,7 @@ public class UpdateApplication {
     public void checkUpdate() {
         if (activity != null) {
             if (isNetworkAvailable()) {
-                WebApi.getInstance().setOnResultListener(new WebApi.onGetResultListener() {
+                WebApi.getInstance().setOnResultListener(new WebApi.OnGetResultListener() {
                     @Override
                     public void onResult(String tag, String responseString) {
                         // TODO Check Update
@@ -140,7 +140,7 @@ public class UpdateApplication {
                         .setNeutralButton(R.string.setting_wireless_text, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                Intent intent = new Intent(Settings.ACTION_WIRELESS_SETTINGS);
+                                Intent intent = new Intent(Settings.ACTION_DATA_ROAMING_SETTINGS);
                                 activity.startActivity(intent);
                             }
                         })

@@ -10,11 +10,13 @@
     <uses-permission android:name="android.permission.BLUETOOTH"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.READ_CONTACTS"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.FLASHLIGHT"/>
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -32,7 +34,7 @@
         <!-- 登陆认证 -->
         <activity
                 android:screenOrientation="portrait"
-                android:theme="@style/Holo.Theme.Light.NoActionBar"
+                android:theme="@android:style/Theme.Holo.Light.NoActionBar"
                 android:name=".activities.CheckAuthorizationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -42,14 +44,14 @@
         <!-- 连接蓝牙设备 -->
         <activity
                 android:screenOrientation="portrait"
-                android:theme="@style/Holo.Theme.Light.NoActionBar"
+                android:theme="@android:style/Theme.Holo.Light.NoActionBar"
                 android:name=".activities.ChooseDeviceActivity"/>
         <!-- //////////////////////////////////////////////////////////////////////////// -->
         <!-- TabHost 导航activity -->
         <activity
-                android:icon="@drawable/ic_elevator_actionbar_white"
                 android:screenOrientation="portrait"
-                android:theme="@style/Holo.Theme.Light.NoActionBar"
+                android:icon="@drawable/ic_elevator_actionbar_white"
+                android:theme="@android:style/Theme.Holo.Light.NoActionBar"
                 android:windowSoftInputMode="adjustPan|adjustResize"
                 android:name=".activities.NavigationTabActivity">
         </activity>
@@ -102,11 +104,6 @@
                 android:screenOrientation="portrait"
                 android:windowSoftInputMode="adjustResize|stateHidden"
                 android:name=".activities.RemoteHelpActivity"/>
-        <!-- 条形码扫描 -->
-        <activity
-                android:icon="@drawable/ic_elevator_actionbar_white"
-                android:screenOrientation="portrait"
-                android:name=".activities.ScanBarcodeActivity"/>
         <!-- 蓝牙地址 -->
         <activity
                 android:icon="@drawable/ic_elevator_actionbar_white"
@@ -118,7 +115,7 @@
                   android:screenOrientation="portrait"
                   android:icon="@drawable/ic_elevator_actionbar_white"
                   android:windowSoftInputMode="stateAlwaysHidden"
-                  android:theme="@style/Holo.Theme.Light.NoActionBar.Fullscreen"/>
+                  android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"/>
         <!-- 内召 -->
         <activity
                 android:icon="@drawable/ic_elevator_actionbar_white"
@@ -165,11 +162,6 @@
                 android:icon="@drawable/ic_elevator_actionbar_white"
                 android:screenOrientation="portrait"
                 android:name=".activities.ViewErrorStatusActivity"/>
-        <!-- 即时聊天 -->
-        <activity
-                android:icon="@drawable/ic_elevator_actionbar_white"
-                android:screenOrientation="portrait"
-                android:name=".activities.InstantChatActivity"/>
         <!-- 保存的配置文件查看 -->
         <activity
                 android:icon="@drawable/ic_elevator_actionbar_white"
@@ -180,5 +172,9 @@
                 android:icon="@drawable/ic_elevator_actionbar_white"
                 android:screenOrientation="portrait"
                 android:name=".activities.SystemLogActivity"/>
+        <!-- 申请权限 -->
+        <activity android:icon="@drawable/ic_elevator_actionbar_white"
+                  android:screenOrientation="portrait"
+                  android:name=".activities.ApplyPermissionActivity"/>
     </application>
 </manifest>

@@ -6,9 +6,9 @@
               android:background="#FFFFFF"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
-    <org.holoeverywhere.widget.TextView
+    <TextView
             android:id="@+id/log_content"
-            style="@style/Holo.TextAppearance.Small.Light"
+            style="@android:style/TextAppearance.Small"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 </LinearLayout>

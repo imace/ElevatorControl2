@@ -1,5 +1,6 @@
 package com.inovance.ElevatorControl.adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
 import android.util.TypedValue;
@@ -12,7 +13,6 @@ import com.inovance.ElevatorControl.activities.MoveOutsideActivity;
 import com.inovance.ElevatorControl.views.TypefaceTextView;
 import com.inovance.ElevatorControl.views.component.ExpandGridView;
 import com.inovance.ElevatorControl.views.viewpager.PagerAdapter;
-import org.holoeverywhere.app.Activity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -175,7 +175,7 @@ public class MoveSidePagerAdapter extends PagerAdapter {
             screenHeight = display.getHeight();
         }
         int actionBarHeight = Math.round(baseActivity.getResources()
-                .getDimension(R.dimen.abc_action_bar_default_height));
+                .getDimension(R.dimen.rai__action_bar_default_height));
         int statusBarHeight = 0;
         int statusBarResource = baseActivity.getResources().getIdentifier("status_bar_height", "dimen", "android");
         if (statusBarResource > 0) {

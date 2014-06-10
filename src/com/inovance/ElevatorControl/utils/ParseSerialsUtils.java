@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
+import android.widget.Toast;
 import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
@@ -11,7 +12,6 @@ import com.inovance.ElevatorControl.daos.ErrorHelpDao;
 import com.inovance.ElevatorControl.models.ErrorHelp;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.models.RealTimeMonitor;
-import org.holoeverywhere.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -341,7 +341,7 @@ public class ParseSerialsUtils {
 
     public static boolean isValidEmail(CharSequence target) {
         if (TextUtils.isEmpty(target)) {
-            return true;
+            return false;
         } else {
             return android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();
         }

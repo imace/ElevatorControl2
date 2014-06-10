@@ -20,16 +20,16 @@
                 android:orientation="horizontal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
-            <org.holoeverywhere.widget.TextView
-                    style="@style/Holo.TextAppearance.Light"
+            <TextView
+                    style="@android:style/TextAppearance"
                     android:textColor="#515151"
                     android:text="@string/profile_file_name_text"
                     android:layout_marginRight="5dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
-            <org.holoeverywhere.widget.TextView
+            <TextView
                     android:id="@+id/profile_name"
-                    style="@style/Holo.TextAppearance.Light"
+                    style="@android:style/TextAppearance"
                     android:textColor="#878787"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
@@ -38,16 +38,16 @@
                 android:orientation="horizontal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
-            <org.holoeverywhere.widget.TextView
-                    style="@style/Holo.TextAppearance.Light"
+            <TextView
+                    style="@android:style/TextAppearance"
                     android:textColor="#515151"
                     android:text="@string/profile_create_date_text"
                     android:layout_marginRight="5dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
-            <org.holoeverywhere.widget.TextView
+            <TextView
                     android:id="@+id/create_date"
-                    style="@style/Holo.TextAppearance.Light"
+                    style="@android:style/TextAppearance"
                     android:textColor="#878787"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>

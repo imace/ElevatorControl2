@@ -5,7 +5,7 @@
                 android:minHeight="40dp"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
-    <org.holoeverywhere.widget.TextView
+    <TextView
             android:id="@+id/switch_name"
             android:layout_marginLeft="10dp"
             android:layout_centerVertical="true"
@@ -14,7 +14,7 @@
             android:textColor="#333333"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
-    <org.holoeverywhere.widget.Switch
+    <Switch
             android:id="@+id/status_switch"
             android:layout_marginRight="10dp"
             android:layout_centerVertical="true"

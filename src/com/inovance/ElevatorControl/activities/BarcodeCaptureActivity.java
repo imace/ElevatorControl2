@@ -8,6 +8,7 @@ package com.inovance.ElevatorControl.activities;
  * Time: 13:42.
  */
 
+import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
@@ -28,7 +29,6 @@ import android.widget.TextView;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.views.zbar.CameraPreview;
 import net.sourceforge.zbar.*;
-import org.holoeverywhere.app.Activity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

@@ -5,12 +5,12 @@ import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.os.Message;
+import android.widget.Toast;
 import com.bluetoothtool.BluetoothHandler;
 import com.bluetoothtool.BluetoothTool;
 import com.bluetoothtool.DevicesHolder;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.activities.NavigationTabActivity;
-import org.holoeverywhere.widget.Toast;
 
 import java.util.ArrayList;
 

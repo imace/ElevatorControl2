@@ -14,14 +14,14 @@
                 android:padding="5dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-            <org.holoeverywhere.widget.TextView
+            <TextView
                     android:id="@+id/default_value"
-                    style="@style/Holo.TextAppearance.Light"
+                    style="@android:style/TextAppearance"
                     android:layout_centerVertical="true"
                     android:layout_alignParentLeft="true"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
-            <org.holoeverywhere.widget.ToggleButton
+            <ToggleButton
                     android:id="@+id/toggle_button"
                     android:gravity="center"
                     android:layout_alignParentRight="true"
@@ -37,7 +37,7 @@
                 android:background="@android:drawable/divider_horizontal_bright"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"/>
-        <org.holoeverywhere.widget.ListView
+        <ListView
                 android:id="@+id/list_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

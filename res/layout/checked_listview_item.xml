@@ -7,16 +7,15 @@
               android:gravity="center_vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
-    <org.holoeverywhere.widget.TextView
+    <TextView
             android:id="@+id/checked_text_view"
             android:layout_marginLeft="10dp"
-            style="@style/Holo.TextAppearance.Light"
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
-    <ImageView
-            android:id="@+id/checked_mark"
+    <RadioButton
+            android:id="@+id/radio_button"
             android:contentDescription="@null"
             android:background="#00000000"
             android:scaleType="fitCenter"

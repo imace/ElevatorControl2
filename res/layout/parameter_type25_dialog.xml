@@ -13,7 +13,7 @@
             android:paddingRight="10dp"
             android:layout_width="match_parent"
             android:layout_height="120dp">
-        <org.holoeverywhere.widget.Spinner
+        <Spinner
                 android:id="@+id/mod_value"
                 android:layout_weight="1"
                 android:layout_width="0dp"
@@ -21,7 +21,7 @@
         <View
                 android:layout_width="20dp"
                 android:layout_height="wrap_content"/>
-        <org.holoeverywhere.widget.Spinner
+        <Spinner
                 android:id="@+id/rem_value"
                 android:layout_weight="1"
                 android:layout_width="0dp"

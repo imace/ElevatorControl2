@@ -1,5 +1,7 @@
 package com.inovance.ElevatorControl.models;
 
+import org.json.JSONObject;
+
 /**
  * Created by IntelliJ IDEA.
  * User: keith.
@@ -54,6 +56,15 @@ public class Vendor {
      * 备注
      */
     private String remark;
+
+    public Vendor() {
+
+    }
+
+    public Vendor(JSONObject object) {
+        this.name = object.optString("VendorName");
+        this.serialNumber = object.optString("VendorNum");
+    }
 
     public int getID() {
         return ID;

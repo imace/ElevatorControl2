@@ -5,7 +5,7 @@
                 android:layout_height="match_parent"
                 android:background="@color/main_background"
                 android:orientation="vertical">
-    <org.holoeverywhere.widget.ListView
+    <ListView
             android:id="@+id/parameter_detail_list_view"
             android:layout_centerInParent="true"
             android:layout_width="match_parent"
