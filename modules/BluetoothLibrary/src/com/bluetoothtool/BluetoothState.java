@@ -133,4 +133,9 @@ public class BluetoothState {
      */
     public static final int onWillConnect = 16;
 
+    /**
+     * 设备切换
+     */
+    public static final int onDeviceChanged = 17;
+
 }

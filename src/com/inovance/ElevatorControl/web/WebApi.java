@@ -6,7 +6,9 @@ import android.net.NetworkInfo;
 import android.util.Xml;
 import android.widget.Toast;
 import com.inovance.ElevatorControl.R;
+import com.inovance.ElevatorControl.cache.LruCacheTool;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
+import com.inovance.ElevatorControl.models.Device;
 import com.inovance.ElevatorControl.models.User;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -125,70 +127,105 @@ public class WebApi {
      */
     public void verifyUser(Context context, String bluetoothAddress) {
         String requestURL = ApplicationConfig.DomainName + ApplicationConfig.VerifyUser + bluetoothAddress;
-        startGetRequest(context, requestURL, ApplicationConfig.VerifyUser);
+        startGetRequest(context, requestURL, ApplicationConfig.VerifyUser, false);
     }
 
     /**
      * 取得功能参数
      *
-     * @param deviceType 设备型号
+     * @param deviceID   设备 API ID
+     * @param deviceType 设备类型
      */
-    public void getFunctionCode(Context context, String deviceType) {
-        String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetFunctionCode + deviceType;
-        startGetRequest(context, requestURL, ApplicationConfig.GetFunctionCode);
+    public void getFunctionCode(Context context, int deviceID, int deviceType) {
+        String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetFunctionCode;
+        requestURL = requestURL.replace("{param0}", String.valueOf(deviceID));
+        switch (deviceType) {
+            case Device.NormalDevice:
+                requestURL = requestURL.replace("{param1}", "1");
+                break;
+            case Device.SpecialDevice:
+                requestURL = requestURL.replace("{param1}", "0");
+                break;
+        }
+        startGetRequest(context, requestURL, ApplicationConfig.GetFunctionCode, false);
     }
 
     /**
      * 取得错误帮助信息
      *
-     * @param deviceType 设备型号
+     * @param deviceID   设备 API ID
+     * @param deviceType 设备类型
      */
-    public void getErrorHelpList(Context context, String deviceType) {
-        String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetErrorHelp + deviceType;
-        startGetRequest(context, requestURL, ApplicationConfig.GetErrorHelp);
+    public void getErrorHelpList(Context context, int deviceID, int deviceType) {
+        String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetErrorHelp;
+        requestURL = requestURL.replace("{param0}", String.valueOf(deviceID));
+        switch (deviceType) {
+            case Device.NormalDevice:
+                requestURL = requestURL.replace("{param1}", "1");
+                break;
+            case Device.SpecialDevice:
+                requestURL = requestURL.replace("{param1}", "0");
+                break;
+        }
+        startGetRequest(context, requestURL, ApplicationConfig.GetErrorHelp, false);
     }
 
     /**
      * 取得设备状态参数
      *
-     * @param deviceType 设备型号
+     * @param deviceID   设备 API ID
+     * @param deviceType 设备类型
      */
-    public void getStateCode(Context context, String deviceType) {
-        String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetStateCode + deviceType;
-        startGetRequest(context, requestURL, ApplicationConfig.GetStateCode);
+    public void getStateCode(Context context, int deviceID, int deviceType) {
+        String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetStateCode;
+        requestURL = requestURL.replace("{param0}", String.valueOf(deviceID));
+        switch (deviceType) {
+            case Device.NormalDevice:
+                requestURL = requestURL.replace("{param1}", "1");
+                break;
+            case Device.SpecialDevice:
+                requestURL = requestURL.replace("{param1}", "0");
+                break;
+        }
+        startGetRequest(context, requestURL, ApplicationConfig.GetStateCode, false);
     }
 
     /**
      * 获取最近一次更新的(故障码，功能码，状态码)的时间
      *
-     * @param deviceType 设备型号
+     * @param deviceID   设备 API ID
+     * @param deviceType 设备类型
      */
-    public void getDeviceCodeUpdateTime(Context context, String deviceType) {
-        if (isNetworkAvailable(context)) {
-            String requestURL = ApplicationConfig.DomainName
-                    + ApplicationConfig.GetParameterListUpdateTime
-                    + deviceType;
-            client.get(requestURL, new ResponseHandler() {
-                @Override
-                public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-                    String responseString = getResponseString(response, STRING_TAG);
-                    if (onResultListener != null) {
-                        onResultListener.onResult(ApplicationConfig.GetParameterListUpdateTime,
-                                responseString);
-                    }
-                }
-            });
-        } else {
-            alertUserNetworkNotAvailable(context);
+    public void getDeviceCodeUpdateTime(Context context, int deviceID, int deviceType) {
+        String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetParameterListUpdateTime;
+        requestURL = requestURL.replace("{param0}", String.valueOf(deviceID));
+        switch (deviceType) {
+            case Device.NormalDevice:
+                requestURL = requestURL.replace("{param1}", "1");
+                break;
+            case Device.SpecialDevice:
+                requestURL = requestURL.replace("{param1}", "0");
+                break;
         }
+        startGetRequest(context, requestURL, ApplicationConfig.GetParameterListUpdateTime, false);
+    }
+
+    /**
+     * 获取用户所有具备连接权限的非标设备的通信码
+     *
+     * @param bluetoothAddress 用户的蓝牙地址
+     */
+    public void getSpecialDeviceCodeList(Context context, String bluetoothAddress) {
+        String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetSpecialDeviceCodeList + bluetoothAddress;
+        startGetRequest(context, requestURL, ApplicationConfig.GetSpecialDeviceCodeList, true);
     }
 
     /**
      * 取得所有设备列表
      */
-    public void getDeviceList(Context context) {
-        String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetDeviceList;
-        startGetRequest(context, requestURL, ApplicationConfig.GetDeviceList);
+    public void getNormalDeviceList(Context context) {
+        String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetNormalDeviceList;
+        startGetRequest(context, requestURL, ApplicationConfig.GetNormalDeviceList, true);
     }
 
     /**
@@ -196,7 +233,7 @@ public class WebApi {
      */
     public void getVendorList(Context context) {
         String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetVendorList;
-        startGetRequest(context, requestURL, ApplicationConfig.GetVendorList);
+        startGetRequest(context, requestURL, ApplicationConfig.GetVendorList, true);
     }
 
     /**
@@ -208,7 +245,16 @@ public class WebApi {
         String requestURL = ApplicationConfig.DomainName
                 + ApplicationConfig.GetDeviceListByVendorID
                 + vendorID;
-        startGetRequest(context, requestURL, ApplicationConfig.GetDeviceListByVendorID);
+        startGetRequest(context, requestURL, ApplicationConfig.GetDeviceListByVendorID, true);
+    }
+
+    /**
+     * 返回所有非标设备
+     */
+    public void getSpecialDeviceList(Context context) {
+        String requestURL = ApplicationConfig.DomainName
+                + ApplicationConfig.GetSpecialDeviceList;
+        startGetRequest(context, requestURL, ApplicationConfig.GetSpecialDeviceList, true);
     }
 
     /**
@@ -219,12 +265,12 @@ public class WebApi {
      * @param deviceID         设备ID
      * @param remark           备注
      */
-    public void applyFirmware(Context context, String bluetoothAddress, String deviceID, String remark) {
+    public void applyFirmware(Context context, String bluetoothAddress, int deviceID, String remark) {
         if (isNetworkAvailable(context)) {
             String postURL = ApplicationConfig.DomainName + ApplicationConfig.ApplyFirmwareApplication;
             String params = "blue={param0}&deviceID={param1}&remark={param2}";
             params = params.replace("{param0}", bluetoothAddress);
-            params = params.replace("{param1}", deviceID);
+            params = params.replace("{param1}", String.valueOf(deviceID));
             try {
                 params = params.replace("{param2}", URLEncoder.encode(remark, "UTF-8"));
                 HttpEntity entity = new StringEntity(params);
@@ -250,6 +296,54 @@ public class WebApi {
     }
 
     /**
+     * 专用设备连接权限申请
+     *
+     * @param context  Context
+     * @param deviceID 设备ID
+     * @param name     真实姓名
+     * @param company  公司名称
+     * @param position 职位
+     * @param phone    电话
+     * @param email    邮箱
+     */
+    public void applySpecialDevicePermission(Context context, int deviceID, String bluetoothAddress,
+                                             String name, String company, String position, String phone,
+                                             String email) {
+        if (isNetworkAvailable(context)) {
+            String postURL = ApplicationConfig.DomainName + ApplicationConfig.ApplySpecialDevicePermission;
+            String params = "Deviceid={param0}&Blue={param1}&TrueName={param2}" +
+                    "&CompanyName={param3}&Position={param4}}&Tel={param5}}&Email={param6}";
+            params = params.replace("{param0}", String.valueOf(deviceID));
+            params = params.replace("{param1}", bluetoothAddress);
+            try {
+                params = params.replace("{param2}", URLEncoder.encode(name, "UTF-8"));
+                params = params.replace("{param3}", URLEncoder.encode(company, "UTF-8"));
+                params = params.replace("{param4}", URLEncoder.encode(position, "UTF-8"));
+                params = params.replace("{param5}", phone);
+                params = params.replace("{param6}", email);
+                HttpEntity entity = new StringEntity(params);
+                client.post(context,
+                        postURL,
+                        entity,
+                        "application/x-www-form-urlencoded",
+                        new ResponseHandler() {
+                            @Override
+                            public void onSuccess(int statusCode, Header[] headers, byte[] response) {
+                                if (onResultListener != null) {
+                                    onResultListener.onResult(ApplicationConfig.ApplySpecialDevicePermission,
+                                            getResponseString(response, STRING_TAG));
+                                }
+                            }
+                        });
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        } else {
+            alertUserNetworkNotAvailable(context);
+        }
+    }
+
+    /**
      * 申请非标设备固件
      *
      * @param context          Context
@@ -257,12 +351,12 @@ public class WebApi {
      * @param deviceID         设备ID
      * @param remark           备注
      */
-    public void applySpecialFirmware(Context context, String bluetoothAddress, String deviceID, String remark) {
+    public void applySpecialFirmware(Context context, String bluetoothAddress, int deviceID, String remark) {
         if (isNetworkAvailable(context)) {
             String postURL = ApplicationConfig.DomainName + ApplicationConfig.ApplySpecialFirmwareApplication;
             String params = "blue={param0}&deviceID={param1}&remark={param2}";
             params = params.replace("{param0}", bluetoothAddress);
-            params = params.replace("{param1}", deviceID);
+            params = params.replace("{param1}", String.valueOf(deviceID));
             try {
                 params = params.replace("{param2}", URLEncoder.encode(remark, "UTF-8"));
                 HttpEntity entity = new StringEntity(params);
@@ -296,7 +390,7 @@ public class WebApi {
         String requestURL = ApplicationConfig.DomainName
                 + ApplicationConfig.GetAllFirmwareNotDownload
                 + bluetoothAddress;
-        startGetRequest(context, requestURL, ApplicationConfig.GetAllFirmwareNotDownload);
+        startGetRequest(context, requestURL, ApplicationConfig.GetAllFirmwareNotDownload, false);
     }
 
     /**
@@ -308,7 +402,7 @@ public class WebApi {
         String requestURL = ApplicationConfig.DomainName
                 + ApplicationConfig.DeleteFile
                 + approveID;
-        startGetRequest(context, requestURL, ApplicationConfig.DeleteFile);
+        startGetRequest(context, requestURL, ApplicationConfig.DeleteFile, false);
     }
 
     /**
@@ -319,7 +413,7 @@ public class WebApi {
     public void getLastSoftwareVersion(Context context) {
         String requestURL = ApplicationConfig.DomainName
                 + ApplicationConfig.GetLastSoftwareVersion;
-        startGetRequest(context, requestURL, ApplicationConfig.GetLastSoftwareVersion);
+        startGetRequest(context, requestURL, ApplicationConfig.GetLastSoftwareVersion, false);
     }
 
     /**
@@ -347,43 +441,123 @@ public class WebApi {
     }
 
     /**
-     * Start Get Request
+     * 发送远程协助文件
+     * 返回值：成功返回True，失败返回False
      *
-     * @param url URL
-     * @param tag Tag
+     * @param context    Context
+     * @param from       发送者电话号码
+     * @param to         接受者电话号码
+     * @param fileStream 发送的文件流
+     * @param fileName   发送的完整文件名
+     * @param type       发送的文件类型(0文本,1参数,2照片,3视频,4音频)
+     * @param title      标题
      */
-    private void startGetRequest(Context context, final String url, final String tag) {
-        /*
-        String cacheString = LruCacheTool.getInstance().getCache(url);
-        if (cacheString != null) {
-            if (onResultListener != null) {
-                onResultListener.onResult(tag, cacheString);
+    public void sendChatMessage(Context context, String from, String to, String fileStream, String fileName, int type, String title) {
+        if (isNetworkAvailable(context)) {
+            String postURL = ApplicationConfig.DomainName + ApplicationConfig.SendChatMessage;
+            String params = "FromNum={param0}&ToNum={param1}&fs={param2}&FileName={param3}&Type={param4}&title={param5}";
+            params = params.replace("{param0}", from);
+            params = params.replace("{param1}", to);
+            params = params.replace("{param2}", fileStream);
+            try {
+                params = params.replace("{param3}", URLEncoder.encode(fileName, "UTF-8"));
+                params = params.replace("{param4}", String.valueOf(type));
+                params = params.replace("{param5}", URLEncoder.encode(title, "UTF-8"));
+                HttpEntity entity = new StringEntity(params);
+                client.post(context,
+                        postURL,
+                        entity,
+                        "application/x-www-form-urlencoded",
+                        new ResponseHandler() {
+                            @Override
+                            public void onSuccess(int statusCode, Header[] headers, byte[] response) {
+                                if (onResultListener != null) {
+                                    onResultListener.onResult(ApplicationConfig.SendChatMessage,
+                                            getResponseString(response, STRING_TAG));
+                                }
+                            }
+                        });
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
             }
         } else {
-            client.get(url, new ResponseHandler() {
-                @Override
-                public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-                    String responseString = getResponseString(response, STRING_TAG);
-                    LruCacheTool.getInstance().putCache(url, responseString);
-                    if (onResultListener != null) {
-                        onResultListener.onResult(tag, responseString);
-                    }
-                }
-            });
-        }
-        */
-        if (isNetworkAvailable(context)) {
-            client.get(url, new ResponseHandler() {
-                @Override
-                public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-                    String responseString = getResponseString(response, STRING_TAG);
-                    if (onResultListener != null) {
-                        onResultListener.onResult(tag, responseString);
-                    }
-                }
-            });
-        } else {
             alertUserNetworkNotAvailable(context);
+        }
+    }
+
+    /**
+     * 获得该号码所有发送的信息列表
+     * 返回值：返回文件列表
+     *
+     * @param context     Context
+     * @param phoneNumber 手机号码
+     */
+    public void getSendChatMessage(Context context, String phoneNumber) {
+        String requestURL = ApplicationConfig.DomainName
+                + ApplicationConfig.GetSendChatMessage
+                + phoneNumber;
+        startGetRequest(context, requestURL, ApplicationConfig.GetSendChatMessage, false);
+    }
+
+    /**
+     * 获得该号码所有收到的信息列表
+     * 返回值：返回文件列表
+     *
+     * @param context     Context
+     * @param phoneNumber 手机号码
+     */
+    public void getReceiveChatMessage(Context context, String phoneNumber) {
+        String requestURL = ApplicationConfig.DomainName
+                + ApplicationConfig.GetReceiveChatMessage
+                + phoneNumber;
+        startGetRequest(context, requestURL, ApplicationConfig.GetReceiveChatMessage, false);
+    }
+
+    public void getRegistUserList(Context context) {
+        String requestURL = ApplicationConfig.DomainName
+                + ApplicationConfig.GetRegistUserList;
+        startGetRequest(context, requestURL, ApplicationConfig.GetRegistUserList, true);
+    }
+
+    /**
+     * Start Get Request
+     *
+     * @param url    URL
+     * @param tag    Tag
+     * @param cached Cached
+     */
+    private void startGetRequest(Context context, final String url, final String tag, final boolean cached) {
+        boolean needFetchRemote;
+        if (cached) {
+            String cacheString = LruCacheTool.getInstance().getCache(url);
+            if (cacheString != null) {
+                needFetchRemote = false;
+                if (onResultListener != null) {
+                    onResultListener.onResult(tag, cacheString);
+                }
+            } else {
+                needFetchRemote = true;
+            }
+        } else {
+            needFetchRemote = true;
+        }
+        if (needFetchRemote) {
+            if (isNetworkAvailable(context)) {
+                client.get(url, new ResponseHandler() {
+                    @Override
+                    public void onSuccess(int statusCode, Header[] headers, byte[] response) {
+                        String responseString = getResponseString(response, STRING_TAG);
+                        if (cached) {
+                            LruCacheTool.getInstance().putCache(url, responseString);
+                        }
+                        if (onResultListener != null) {
+                            onResultListener.onResult(tag, responseString);
+                        }
+                    }
+                });
+            } else {
+                alertUserNetworkNotAvailable(context);
+            }
         }
     }
 

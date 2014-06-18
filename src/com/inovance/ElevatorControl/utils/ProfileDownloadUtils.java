@@ -94,8 +94,8 @@ public class ProfileDownloadUtils implements Runnable {
         builder.setNegativeButton(R.string.dialog_btn_cancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                BluetoothTool.getInstance(parentActivity).setCommunications(null);
-                BluetoothTool.getInstance(parentActivity).setHandler(null);
+                BluetoothTool.getInstance().setCommunications(null);
+                BluetoothTool.getInstance().setHandler(null);
             }
         });
         downloadDialog = builder.create();
@@ -131,7 +131,7 @@ public class ProfileDownloadUtils implements Runnable {
                 @Override
                 public void beforeSend() {
                     this.setSendBuffer(SerialUtility.crc16(SerialUtility
-                            .hexStr2Ints("0103"
+                            .hexStringToInt("0103"
                                     + ParseSerialsUtils.getCalculatedCode(firstItem)
                                     + String.format("%04x", length)
                                     + "0001")));
@@ -161,7 +161,7 @@ public class ProfileDownloadUtils implements Runnable {
                             List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
                             for (int j = 0; j < length; j++) {
                                 ParameterSettings item = list.get(position * 10 + j);
-                                byte[] tempData = SerialUtility.crc16(SerialUtility.hexStr2Ints("01030002"
+                                byte[] tempData = SerialUtility.crc16(SerialUtility.hexStringToInt("01030002"
                                         + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
                                 item.setReceived(tempData);
                                 tempList.add(item);
@@ -186,8 +186,8 @@ public class ProfileDownloadUtils implements Runnable {
     private void startCommunication(int position) {
         if (position >= 0 && position < communicationsList.size()) {
             downloadHandler.index = position;
-            if (BluetoothTool.getInstance(parentActivity).isPrepared()) {
-                BluetoothTool.getInstance(parentActivity)
+            if (BluetoothTool.getInstance().isPrepared()) {
+                BluetoothTool.getInstance()
                         .setHandler(downloadHandler)
                         .setCommunications(communicationsList.get(position))
                         .send();

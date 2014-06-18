@@ -16,15 +16,21 @@ import butterknife.OnClick;
 import butterknife.Views;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.daos.ParamterFactoryDao;
+import com.inovance.ElevatorControl.daos.ParameterFactoryDao;
+import com.inovance.ElevatorControl.models.ConfigFactory;
+import com.inovance.ElevatorControl.models.User;
 import com.inovance.ElevatorControl.utils.UpdateApplication;
 import com.inovance.ElevatorControl.utils.UpdateApplication.OnNoUpdateFoundListener;
 import com.inovance.ElevatorControl.web.WebApi;
+import com.inovance.ElevatorControl.web.WebApi.OnGetResultListener;
+import com.inovance.ElevatorControl.web.WebApi.OnRequestFailureListener;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 /**
  * 检查当前用户是否被授权
  */
-public class CheckAuthorizationActivity extends Activity {
+public class CheckAuthorizationActivity extends Activity implements OnGetResultListener, OnRequestFailureListener {
 
     private static final int WRITE_FINISH = 0;
 
@@ -52,6 +58,8 @@ public class CheckAuthorizationActivity extends Activity {
     @InjectView(R.id.wait_text)
     TextView waitTextView;
 
+    private boolean isWritingDefaultData = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,11 +72,15 @@ public class CheckAuthorizationActivity extends Activity {
         Views.inject(this);
         initializeData();
         UpdateApplication.getInstance().init(this);
+        //btnLogin.setEnabled(false);
+        //btnLogin.setEnabled(false);
         UpdateApplication.getInstance().setOnNoUpdateFoundListener(new OnNoUpdateFoundListener() {
             @Override
             public void onNoUpdate() {
-                btnLogin.setEnabled(true);
-                btnLogin.setEnabled(true);
+                if (!isWritingDefaultData) {
+                    //btnLogin.setEnabled(true);
+                    //btnLogin.setEnabled(true);
+                }
             }
         });
     }
@@ -99,60 +111,36 @@ public class CheckAuthorizationActivity extends Activity {
 
     @OnClick(R.id.btn_login)
     public void btnLoginClick(View v) {
-        //this.startActivity(new Intent(CheckAuthorizationActivity.this, ChooseDeviceActivity.class));
-        this.startActivity(new Intent(CheckAuthorizationActivity.this, NavigationTabActivity.class));
-        //this.startActivity(new Intent(CheckAuthorizationActivity.this, SelectDeviceTypeActivity.class));
-        //verifyCurrentUser();
+        //this.startActivity(new Intent(CheckAuthorizationActivity.this, NavigationTabActivity.class));
+        // 验证用户登录
+        verifyCurrentUser();
     }
 
     /**
      * 验证用户登录
      */
     private void verifyCurrentUser() {
-        WebApi.getInstance().setOnResultListener(new WebApi.OnGetResultListener() {
-            @Override
-            public void onResult(String tag, String responseString) {
-                if (tag.equalsIgnoreCase(ApplicationConfig.VerifyUser)) {
-                    if (responseString.equalsIgnoreCase("TRUE")) {
-                        CheckAuthorizationActivity.this
-                                .startActivity(new Intent(CheckAuthorizationActivity.this,
-                                        NavigationTabActivity.class));
-                    } else {
-                        CheckAuthorizationActivity.this.progressView.setVisibility(View.INVISIBLE);
-                        CheckAuthorizationActivity.this.btnSignUp.setEnabled(true);
-                        CheckAuthorizationActivity.this.btnLogin.setEnabled(true);
-                        Toast.makeText(CheckAuthorizationActivity.this,
-                                R.string.unauthorized_message,
-                                android.widget.Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-        });
-        WebApi.getInstance().setOnFailureListener(new WebApi.OnRequestFailureListener() {
-            @Override
-            public void onFailure(int statusCode, Throwable throwable) {
-                CheckAuthorizationActivity.this.progressView.setVisibility(View.INVISIBLE);
-                CheckAuthorizationActivity.this.btnSignUp.setEnabled(true);
-                CheckAuthorizationActivity.this.btnLogin.setEnabled(true);
-            }
-        });
-        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        WebApi.getInstance().verifyUser(CheckAuthorizationActivity.this, bluetoothAdapter.getAddress());
         CheckAuthorizationActivity.this.progressView.setVisibility(View.VISIBLE);
         CheckAuthorizationActivity.this.waitTextView.setText(R.string.verify_user_text);
         CheckAuthorizationActivity.this.btnLogin.setEnabled(false);
         CheckAuthorizationActivity.this.btnSignUp.setEnabled(false);
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        WebApi.getInstance().setOnResultListener(this);
+        WebApi.getInstance().setOnFailureListener(this);
+        WebApi.getInstance().verifyUser(CheckAuthorizationActivity.this, bluetoothAdapter.getAddress());
+
     }
 
     /**
      * 写入功能码、帮助、状态数据
      */
     private void initializeData() {
-        if (ParamterFactoryDao.dbEmpty(CheckAuthorizationActivity.this)) {
+        if (ParameterFactoryDao.checkEmpty(CheckAuthorizationActivity.this)) {
             progressView.setVisibility(View.VISIBLE);
             waitTextView.setText(R.string.init_data_wait_text);
             btnLogin.setEnabled(false);
             btnSignUp.setEnabled(false);
+            isWritingDefaultData = true;
             Thread thread = new Thread(runnable);
             thread.start();
         }
@@ -163,6 +151,7 @@ public class CheckAuthorizationActivity extends Activity {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case WRITE_FINISH: {
+                    isWritingDefaultData = false;
                     progressView.setVisibility(View.GONE);
                     btnLogin.setEnabled(true);
                     btnSignUp.setEnabled(true);
@@ -177,10 +166,44 @@ public class CheckAuthorizationActivity extends Activity {
 
         @Override
         public void run() {
-            ParamterFactoryDao.dbInit(CheckAuthorizationActivity.this);
+            ParameterFactoryDao.dbInit(CheckAuthorizationActivity.this);
             mHandler.obtainMessage(WRITE_FINISH).sendToTarget();
         }
 
     };
 
+    @Override
+    public void onResult(String tag, String responseString) {
+        if (tag.equalsIgnoreCase(ApplicationConfig.VerifyUser)) {
+            if (responseString.equalsIgnoreCase("false")) {
+                CheckAuthorizationActivity.this.progressView.setVisibility(View.INVISIBLE);
+                CheckAuthorizationActivity.this.btnSignUp.setEnabled(true);
+                CheckAuthorizationActivity.this.btnLogin.setEnabled(true);
+                Toast.makeText(CheckAuthorizationActivity.this,
+                        R.string.unauthorized_message,
+                        android.widget.Toast.LENGTH_SHORT).show();
+            } else {
+                try {
+                    JSONArray jsonArray = new JSONArray(responseString);
+                    int size = jsonArray.length();
+                    if (size > 0) {
+                        CheckAuthorizationActivity.this.progressView.setVisibility(View.INVISIBLE);
+                        User user = new User(jsonArray.getJSONObject(0));
+                        ConfigFactory.getInstance().setCurrentUser(user);
+                        startActivity(new Intent(CheckAuthorizationActivity.this, NavigationTabActivity.class));
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onFailure(int statusCode, Throwable throwable) {
+        Toast.makeText(this, throwable.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+        CheckAuthorizationActivity.this.progressView.setVisibility(View.INVISIBLE);
+        CheckAuthorizationActivity.this.btnSignUp.setEnabled(true);
+        CheckAuthorizationActivity.this.btnLogin.setEnabled(true);
+    }
 }

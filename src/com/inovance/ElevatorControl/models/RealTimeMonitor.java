@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
+import com.inovance.ElevatorControl.utils.TextLocalize;
 import com.mobsandgeeks.adapters.InstantText;
 import net.tsz.afinal.annotation.sqlite.Id;
 import net.tsz.afinal.annotation.sqlite.Transient;
@@ -26,20 +27,60 @@ public class RealTimeMonitor implements Cloneable {
     @Id
     private int Id;
 
-    private String code;// 功能码
-    private String name;// 名称
-    private String productId;// Id
-    private String description;// 参数选项说明
-    private String childId;// 子Id
-    private String scope;// 范围
-    private String scale;// 最小单位
-    private String unit;// 单位名称
-    private String type;// 种类
-    private boolean showBit = false;// 是否详细描述每一位上的值,默认是false
+    /**
+     * 功能码
+     */
+    private String code;
+
+    /**
+     * 名称
+     */
+    private String name;
+
+    /**
+     * productId
+     */
+    private String productId;
+
+    /**
+     * 参数选项说明
+     */
+    private String description;
+
+    /**
+     * 子Id
+     */
+    private String childId;
+
+    /**
+     * 范围
+     */
+    private String scope;
+
+    /**
+     * 最小单位
+     */
+    private String scale;
+
+    /**
+     * 单位名称
+     */
+    private String unit;
+
+    /**
+     * 实时监控唯一ID
+     */
+    private int stateID;
+
+    /**
+     * 实时监控顺序
+     */
+    private int sort;
 
     private byte[] HVInputTerminalBytes;
 
     private byte[] combineBytes;
+
     /**
      * 无描述返回     0
      * 数值计算匹配   1
@@ -119,9 +160,10 @@ public class RealTimeMonitor implements Cloneable {
      */
     @InstantText(viewId = R.id.value_monitor_item)
     public String getListViewItemText() {
-        if (descriptionType == ApplicationConfig.specialTypeInput ||
-                descriptionType == ApplicationConfig.specialTypeOutput) {
-            return received.length == 0 ? "" : "查看详细->";
+        if (stateID == ApplicationConfig.MonitorStateCode[5]
+                || stateID == ApplicationConfig.MonitorStateCode[6]
+                || stateID == ApplicationConfig.MonitorStateCode[14]) {
+            return received.length == 0 ? "" : TextLocalize.getInstance().getViewDetailText();
         }
         listViewItemText = ParseSerialsUtils.getValueTextFromRealTimeMonitor(this);
         if (listViewItemText.contains("E00")) {
@@ -211,14 +253,6 @@ public class RealTimeMonitor implements Cloneable {
         this.unit = unit.replace("(", "").replace(")", "");
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
     public Date getLastTime() {
         return lastTime;
     }
@@ -241,14 +275,6 @@ public class RealTimeMonitor implements Cloneable {
 
     public void setId(int id) {
         Id = id;
-    }
-
-    public boolean isShowBit() {
-        return showBit;
-    }
-
-    public void setShowBit(boolean showBit) {
-        this.showBit = showBit;
     }
 
     public int getDescriptionType() {
@@ -274,9 +300,18 @@ public class RealTimeMonitor implements Cloneable {
      * @return JSON String
      */
     @SuppressLint("DefaultLocale")
-    public static String GenerateJSONDescription(String description) {
+    public static String GenerateJSONDescription(int type, String description) {
         if (description != null) {
             if (description.length() > 0 && !description.contains("null")) {
+                if (type == ApplicationConfig.HomeStateCode[1]) {
+                    String part0 = "Bit4-7";
+                    String part1 = "Bit8-11";
+                    description.indexOf(part0);
+                    StringBuilder stringBuilder = new StringBuilder(description);
+                    stringBuilder.insert(description.indexOf(part0), "|");
+                    stringBuilder.insert(description.indexOf(part1) + 1, "|");
+                    description = stringBuilder.toString();
+                }
                 JSONStringer jsonStringer = new JSONStringer();
                 try {
                     if (description.contains("|")) {
@@ -361,6 +396,22 @@ public class RealTimeMonitor implements Cloneable {
 
     public void setCombineBytes(byte[] combineBytes) {
         this.combineBytes = combineBytes;
+    }
+
+    public int getStateID() {
+        return stateID;
+    }
+
+    public void setStateID(int stateID) {
+        this.stateID = stateID;
+    }
+
+    public int getSort() {
+        return sort;
+    }
+
+    public void setSort(int sort) {
+        this.sort = sort;
     }
 
     public byte[] getHVInputTerminalBytes() {

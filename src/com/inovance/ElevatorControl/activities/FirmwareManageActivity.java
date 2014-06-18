@@ -3,14 +3,17 @@ package com.inovance.ElevatorControl.activities;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothSocket;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.*;
+import android.widget.Button;
+import android.widget.PopupMenu;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.bluetoothtool.BluetoothTool;
@@ -75,9 +78,19 @@ public class FirmwareManageActivity extends FragmentActivity {
     private ProgressBar burningProgressBar;
 
     /**
+     * 烧录取消按钮
+     */
+    private Button cancelButton;
+
+    /**
      * 烧录确认按钮
      */
-    private Button dlgButton;
+    private Button confirmButton;
+
+    /**
+     * 烧录对话框
+     */
+    private AlertDialog burnDialog;
 
     /**
      * View Pager Adapter
@@ -85,6 +98,8 @@ public class FirmwareManageActivity extends FragmentActivity {
     private FirmwareManageAdapter mFirmwareManageAdapter;
 
     private Firmware tempFirmWare;
+
+    private BurnHandler burnHandler;
 
     /**
      * 当前的 View Pager Index
@@ -100,6 +115,7 @@ public class FirmwareManageActivity extends FragmentActivity {
         pager.setAdapter(mFirmwareManageAdapter);
         pager.setOffscreenPageLimit(3);
         indicator.setViewPager(pager);
+        burnHandler = new BurnHandler();
         indicator.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int i, float v, int i2) {
@@ -179,60 +195,52 @@ public class FirmwareManageActivity extends FragmentActivity {
                 burningProgressBar = (ProgressBar) dialogView.findViewById(R.id.progress_bar);
                 builder.setTitle(R.string.will_burn_firmware_text);
                 builder.setView(dialogView);
+                builder.setNegativeButton(R.string.dialog_btn_cancel, null);
                 builder.setPositiveButton(R.string.burn_firmware_text, null);
                 burningProgressBar.setMax(100);
+                burnDialog = builder.create();
+                burnDialog.setCancelable(false);
+                burnDialog.setCanceledOnTouchOutside(false);
+                burnDialog.show();
                 try {
-                    File file = new File(Environment.getExternalStorageDirectory().getPath()
-                            + "/" + ApplicationConfig.FIRMWARE_FOLDER + "/" + firmware.getFileName() + ".bin");
+                    File file = new File(getExternalCacheDir().getPath()
+                            + "/" + ApplicationConfig.FIRMWARE_FOLDER
+                            + "/" + firmware.getFileName() + ".bin");
                     FileInputStream fileInputStream = new FileInputStream(file);
-                    if (BluetoothTool.getInstance(FirmwareManageActivity.this).isPrepared()) {
-                        BurnHandler burnHandler = new BurnHandler();
-                        BluetoothSocket socket = BluetoothTool.getInstance(FirmwareManageActivity.this)
+                    if (BluetoothTool.getInstance().isPrepared()) {
+                        BluetoothSocket socket = BluetoothTool.getInstance()
                                 .bluetoothSocket;
                         IProgram.getInstance().SetProgramPara(socket, fileInputStream, burnHandler);
-                        IProgram.getInstance().GetBinFileInfo();
-                        firmwareMetaTextView.setText(IProgram.getInstance().GetBinFileInfo());
-                    } else {
-                        Toast.makeText(FirmwareManageActivity.this,
-                                R.string.not_connect_device_error,
-                                android.widget.Toast.LENGTH_SHORT)
-                                .show();
                     }
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
-                final AlertDialog dialog = builder.create();
-                dialog.setCancelable(false);
-                dialog.setCanceledOnTouchOutside(false);
-                dialog.show();
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                cancelButton = burnDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+                confirmButton = burnDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                cancelButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        dialog.setTitle(R.string.burning_firmware_text);
-                        dlgButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-                        dlgButton.setText(R.string.dialog_btn_cancel);
-                        dlgButton.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                dialog.dismiss();
-                            }
-                        });
-                        dlgButton.invalidate();
-                        //开始烧录
-                        if (BluetoothTool.getInstance(FirmwareManageActivity.this).isPrepared()) {
-                            IProgram.getInstance().StartProgram();
-                        } else {
-                            Toast.makeText(FirmwareManageActivity.this,
-                                    R.string.not_connect_device_error,
-                                    android.widget.Toast.LENGTH_SHORT)
-                                    .show();
+                        if (burnDialog != null && burnDialog.isShowing()) {
+                            burnDialog.dismiss();
                         }
-                        firmwareMetaView.setVisibility(View.GONE);
-                        burnView.setVisibility(View.VISIBLE);
-                        burningProgressBar.setVisibility(View.VISIBLE);
-                        dlgButton.setEnabled(false);
                     }
                 });
+                confirmButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if (BluetoothTool.getInstance().isPrepared()) {
+                            burnDialog.setTitle(R.string.burning_firmware_text);
+                            confirmButton.setEnabled(false);
+                            cancelButton.setEnabled(false);
+                            firmwareMetaView.setVisibility(View.GONE);
+                            burnView.setVisibility(View.VISIBLE);
+                            burningProgressBar.setVisibility(View.VISIBLE);
+                            IProgram.getInstance().StartProgram();
+                        }
+                    }
+                });
+                cancelButton.setEnabled(true);
+                confirmButton.setEnabled(false);
                 return false;
             }
         });
@@ -248,17 +256,30 @@ public class FirmwareManageActivity extends FragmentActivity {
 
         @Override
         public void ProgramInfo(android.os.Message msg) {
-
+            Log.v(TAG, String.valueOf(msg.arg1));
             switch (msg.arg1) {
+                case IProgram.PROGRAM_BINFILE_READINFO:
+                    if (1 == msg.arg2) {
+                        cancelButton.setEnabled(true);
+                        confirmButton.setEnabled(true);
+                        firmwareMetaTextView.setText(IProgram.getInstance().GetBinFileInfo());
+                    } else {
+                        cancelButton.setEnabled(true);
+                        confirmButton.setEnabled(false);
+                        firmwareMetaTextView.setText((String) msg.obj);
+                    }
+                    break;
                 case IProgram.ERROR_CODE:
                     // 故障码
-                    dlgButton.setEnabled(true);
+                    cancelButton.setEnabled(true);
+                    confirmButton.setEnabled(false);
                     // 写入出错日志
                     LogUtils.getInstance().write(ApplicationConfig.LogBurn, false, "");
                     break;
                 case IProgram.PROGRAM_PROGRESS:
                     // 烧录进度
-                    int percent = msg.arg2;// 百分比
+                    int percent = msg.arg2;
+                    // 百分比
                     burningProgressBar.setProgress(percent);
                     break;
                 case IProgram.PROGRAM_TEXT_INFO:
@@ -273,8 +294,10 @@ public class FirmwareManageActivity extends FragmentActivity {
                     int second = msg.arg2;
                     String strTime = String.format("烧录用时%d秒", second);
                     burningMessageTextView.setText(strTime);
-                    dlgButton.setEnabled(true);
-                    dlgButton.setText(R.string.dialog_btn_over);// 按钮文字显示为“完成”
+                    cancelButton.setEnabled(true);
+                    confirmButton.setEnabled(false);
+                    cancelButton.setText(R.string.dialog_btn_over);
+                    // 按钮文字显示为“完成”
                     burningProgressBar.setVisibility(View.GONE);
                     // 记录烧录次数
                     if (tempFirmWare != null) {

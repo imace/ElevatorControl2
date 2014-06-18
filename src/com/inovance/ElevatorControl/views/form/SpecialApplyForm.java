@@ -2,6 +2,8 @@ package com.inovance.ElevatorControl.views.form;
 
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,7 +27,7 @@ import java.util.List;
  */
 public class SpecialApplyForm extends LinearLayout implements OnGetResultListener, OnRequestFailureListener {
 
-    private Spinner vendorListSpinner;
+    private AutoCompleteTextView vendorTextView;
 
     private Spinner deviceListSpinner;
 
@@ -37,9 +39,11 @@ public class SpecialApplyForm extends LinearLayout implements OnGetResultListene
 
     private View submitTextView;
 
-    private List<Vendor> vendorList = new ArrayList<Vendor>();
+    private List<Vendor> mVendorList = new ArrayList<Vendor>();
 
-    private List<SpecialDevice> deviceList = new ArrayList<SpecialDevice>();
+    private List<SpecialDevice> mDeviceList = new ArrayList<SpecialDevice>();
+
+    private List<SpecialDevice> mCurrentDeviceList = new ArrayList<SpecialDevice>();
 
     /**
      * 关联的设备列表
@@ -63,7 +67,7 @@ public class SpecialApplyForm extends LinearLayout implements OnGetResultListene
 
     private void init() {
         LayoutInflater.from(getContext()).inflate(R.layout.apply_special_device, this, true);
-        vendorListSpinner = (Spinner) findViewById(R.id.vendor);
+        vendorTextView = (AutoCompleteTextView) findViewById(R.id.vendor);
         deviceListSpinner = (Spinner) findViewById(R.id.equipment_model);
         remark = (EditText) findViewById(R.id.remark);
         submitView = findViewById(R.id.submit_apply);
@@ -85,31 +89,60 @@ public class SpecialApplyForm extends LinearLayout implements OnGetResultListene
      * @param vendorList 厂商列表
      */
     public void setVendorList(List<Vendor> vendorList) {
-        this.vendorList = vendorList;
+        mVendorList = vendorList;
         int vendorListSize = vendorList.size();
         String[] vendorNames = new String[vendorListSize];
         for (int index = 0; index < vendorListSize; index++) {
             vendorNames[index] = vendorList.get(index).getName();
         }
         ArrayAdapter<String> vendorAdapter = new ArrayAdapter<String>(getContext(),
-                android.R.layout.simple_spinner_item,
+                android.R.layout.simple_dropdown_item_1line,
                 vendorNames);
         vendorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        vendorListSpinner.setAdapter(vendorAdapter);
-        if (deviceList.size() > 0 && vendorList.size() > 0) {
-            vendorListSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> adapterView, View view, int index, long l) {
-
+        vendorTextView.setAdapter(vendorAdapter);
+        vendorTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                for (Vendor item : mVendorList) {
+                    if (item.getName().equalsIgnoreCase(vendorTextView.getText().toString())) {
+                        List<String> nameList = new ArrayList<String>();
+                        for (SpecialDevice device : mDeviceList) {
+                            if (device.getVendorID() == item.getID()) {
+                                nameList.add(device.getName());
+                                mCurrentDeviceList.add(device);
+                            }
+                        }
+                        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(),
+                                android.R.layout.simple_spinner_item,
+                                nameList.toArray(new String[nameList.size()]));
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                        deviceListSpinner.setAdapter(adapter);
+                        submitView.setEnabled(true);
+                    }
                 }
+            }
+        });
+        vendorTextView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
 
-                @Override
-                public void onNothingSelected(AdapterView<?> adapterView) {
+            }
 
-                }
-            });
-            submitView.setEnabled(true);
-        }
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+                ArrayAdapter<String> deviceAdapter = new ArrayAdapter<String>(getContext(),
+                        android.R.layout.simple_spinner_item,
+                        new String[]{});
+                deviceAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                deviceListSpinner.setAdapter(deviceAdapter);
+                submitView.setEnabled(false);
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
     }
 
     /**
@@ -119,20 +152,7 @@ public class SpecialApplyForm extends LinearLayout implements OnGetResultListene
      */
 
     public void setDeviceList(List<SpecialDevice> deviceList) {
-        this.deviceList = deviceList;
-        int deviceListSize = deviceList.size();
-        String[] deviceNames = new String[deviceListSize];
-        for (int index = 0; index < deviceListSize; index++) {
-            deviceNames[index] = deviceList.get(index).getName();
-        }
-        ArrayAdapter<String> deviceAdapter = new ArrayAdapter<String>(getContext(),
-                android.R.layout.simple_spinner_item,
-                deviceNames);
-        deviceAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        deviceListSpinner.setAdapter(deviceAdapter);
-        if (deviceList.size() > 0 && vendorList.size() > 0) {
-            submitView.setEnabled(true);
-        }
+        mDeviceList = deviceList;
     }
 
     /**
@@ -140,10 +160,10 @@ public class SpecialApplyForm extends LinearLayout implements OnGetResultListene
      */
     private void submitApply() {
         String bluetoothAddress = BluetoothAdapter.getDefaultAdapter().getAddress();
-        String deviceID = deviceList.get(deviceListSpinner.getSelectedItemPosition()).getNumber();
+        int deviceID = mCurrentDeviceList.get(deviceListSpinner.getSelectedItemPosition()).getID();
         WebApi.getInstance().setOnResultListener(this);
         WebApi.getInstance().setOnFailureListener(this);
-        WebApi.getInstance().applyFirmware(getContext(), bluetoothAddress, deviceID, remark.getText().toString());
+        WebApi.getInstance().applySpecialFirmware(getContext(), bluetoothAddress, deviceID, remark.getText().toString());
     }
 
     @Override

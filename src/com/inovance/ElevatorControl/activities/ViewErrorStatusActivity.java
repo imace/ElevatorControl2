@@ -14,6 +14,7 @@ import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ParameterSettingsDao;
+import com.inovance.ElevatorControl.models.ConfigFactory;
 import com.inovance.ElevatorControl.models.ObjectListHolder;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
@@ -34,21 +35,7 @@ public class ViewErrorStatusActivity extends Activity {
     @InjectView(R.id.list_view)
     ListView listView;
 
-    private static final String[] filters = new String[]{
-            "最后一次故障",
-            "最后一次子码",
-            "最后一次月日",
-            "最后一次时间",
-            "最后一次逻辑信息",
-            "最后一次曲线信息",
-            "最后一次设定速度",
-            "最后一次反馈速度",
-            "最后一次母线电压",
-            "最后一次当前位置",
-            "最后一次输出电流",
-            "最后一次输出频率",
-            "最后一次转矩电流"
-    };
+    private String[] filters = new String[]{};
 
     private ErrorStatusHandler errorStatusHandler;
 
@@ -66,9 +53,34 @@ public class ViewErrorStatusActivity extends Activity {
         Views.inject(this);
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
+        generateErrorStatusFilters();
         errorStatusHandler = new ErrorStatusHandler(this);
         createCommunication();
         startCommunication();
+    }
+
+    private void generateErrorStatusFilters() {
+        String deviceType = ConfigFactory.getInstance().getDeviceName();
+        int[] index = new int[]{};
+        if (deviceType.equalsIgnoreCase(ApplicationConfig.NormalDeviceType[0])) {
+            index = new int[]{9, 13};
+        }
+        if (deviceType.equalsIgnoreCase(ApplicationConfig.NormalDeviceType[1])) {
+            index = new int[]{36, 47};
+        }
+        if (deviceType.equalsIgnoreCase(ApplicationConfig.NormalDeviceType[2])) {
+            index = new int[]{26, 32};
+        }
+        if (deviceType.equalsIgnoreCase(ApplicationConfig.NormalDeviceType[3])) {
+            index = new int[]{60, 73};
+        }
+        if (index.length == 2) {
+            List<String> codeList = new ArrayList<String>();
+            for (int i = index[0]; i < index[1]; i++) {
+                codeList.add(String.format("FC%02d", i));
+            }
+            filters = codeList.toArray(new String[codeList.size()]);
+        }
     }
 
     @Override
@@ -90,7 +102,7 @@ public class ViewErrorStatusActivity extends Activity {
 
     private void createCommunication() {
         if (communications == null) {
-            settingsList = ParameterSettingsDao.findByNames(this, filters);
+            settingsList = ParameterSettingsDao.findByCodes(this, filters);
             instantAdapter = new InstantAdapter<ParameterSettings>(this,
                     R.layout.list_parameter_group_item,
                     ParameterSettings.class,
@@ -107,7 +119,7 @@ public class ViewErrorStatusActivity extends Activity {
                     @Override
                     public void beforeSend() {
                         this.setSendBuffer(SerialUtility.crc16(SerialUtility
-                                .hexStr2Ints("0103"
+                                .hexStringToInt("0103"
                                         + ParseSerialsUtils.getCalculatedCode(firstItem)
                                         + String.format("%04x", length)
                                         + "0001")));
@@ -138,7 +150,7 @@ public class ViewErrorStatusActivity extends Activity {
                                 for (int j = 0; j < length; j++) {
                                     if (position * 10 + j < settingsList.size()) {
                                         ParameterSettings item = settingsList.get(position * 10 + j);
-                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStr2Ints("01030002"
+                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStringToInt("01030002"
                                                 + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
                                         item.setReceived(tempData);
                                         tempList.add(item);
@@ -158,9 +170,9 @@ public class ViewErrorStatusActivity extends Activity {
 
     public void startCommunication() {
         if (communications != null) {
-            if (BluetoothTool.getInstance(ViewErrorStatusActivity.this).isPrepared()) {
+            if (BluetoothTool.getInstance().isPrepared()) {
                 errorStatusHandler.sendCount = communications.length;
-                BluetoothTool.getInstance(ViewErrorStatusActivity.this)
+                BluetoothTool.getInstance()
                         .setHandler(errorStatusHandler)
                         .setCommunications(communications)
                         .send();

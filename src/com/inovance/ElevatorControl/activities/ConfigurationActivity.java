@@ -1,5 +1,6 @@
 package com.inovance.ElevatorControl.activities;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -11,7 +12,6 @@ import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.bluetoothtool.BluetoothHandler;
@@ -25,13 +25,13 @@ import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ParameterSettingsDao;
 import com.inovance.ElevatorControl.daos.RealTimeMonitorDao;
 import com.inovance.ElevatorControl.handlers.ConfigurationHandler;
-import com.inovance.ElevatorControl.handlers.GlobalHandler;
 import com.inovance.ElevatorControl.models.ObjectListHolder;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.models.ParameterStatusItem;
 import com.inovance.ElevatorControl.models.RealTimeMonitor;
 import com.inovance.ElevatorControl.utils.LogUtils;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
+import com.inovance.ElevatorControl.views.fragments.ConfigurationFragment;
 import com.viewpagerindicator.TabPageIndicator;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,6 +39,8 @@ import org.json.JSONObject;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -65,7 +67,12 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
     /**
      * 获取实时状态通信内容
      */
-    private BluetoothTalk[] communications;
+    private BluetoothTalk[] realTimeStateCommunications;
+
+    /**
+     * 获取 X 高压端子状态 Handler
+     */
+    private GetHVXTerminalStatusHandler getHVXTerminalStatusHandler;
 
     /**
      * 获取 X 端子状态 Handler
@@ -78,6 +85,11 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
     private GetYTerminalStatusHandler getYTerminalStatusHandler;
 
     /**
+     * 获取 X 高压端子状态通信内容
+     */
+    private BluetoothTalk[] getHVXTerminalCommunications;
+
+    /**
      * 获取 X 端子状态通信内容
      */
     private BluetoothTalk[] getXTerminalCommunications;
@@ -86,11 +98,6 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
      * 获取 Y 端子状态通信内容
      */
     private BluetoothTalk[] getYTerminalCommunications;
-
-    /**
-     * 端子状态信息 Dialog
-     */
-    private AlertDialog terminalDialog;
 
     /**
      * 读取等待信息
@@ -133,24 +140,24 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
     private static final int GET_SYSTEM_STATUS = 1;
 
     /**
+     * 读取高压输入端子状态
+     */
+    private static final int SEE_HV_X_TERMINAL_STATUS = 2;
+
+    /**
      * 读取 X 端子状态
      */
-    private static final int SEE_X_TERMINAL_STATUS = 2;
+    private static final int SEE_X_TERMINAL_STATUS = 3;
 
     /**
      * 读取 Y 端子状态
      */
-    private static final int SEE_Y_TERMINAL_STATUS = 3;
+    private static final int SEE_Y_TERMINAL_STATUS = 4;
 
     /**
      * 当前执行的 Task 种类
      */
     private int currentTask;
-
-    /**
-     * 是否正在读取端子状态
-     */
-    private boolean isReadingTerminalStatus = false;
 
     private ExecutorService pool = Executors.newSingleThreadExecutor();
 
@@ -171,12 +178,25 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
      */
     public ConfigurationAdapter mConfigurationAdapter;
 
+    /**
+     * 用于通信的实时监控列表
+     */
+    private List<RealTimeMonitor> talkStateList = new ArrayList<RealTimeMonitor>();
+
+    /**
+     * 用于显示的实时监控列表
+     */
+    public List<RealTimeMonitor> showStateList = new ArrayList<RealTimeMonitor>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_configuration);
         Views.inject(this);
-        mConfigurationAdapter = new ConfigurationAdapter(this);
+        // 从数据库加载数据
+        reloadDataFromDataBase();
+        mConfigurationAdapter = new ConfigurationAdapter(this, showStateList);
+        getHVXTerminalStatusHandler = new GetHVXTerminalStatusHandler(this);
         getXTerminalStatusHandler = new GetXTerminalStatusHandler(this);
         getYTerminalStatusHandler = new GetYTerminalStatusHandler(this);
         pager.setAdapter(mConfigurationAdapter);
@@ -199,29 +219,44 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                 pageIndex = index;
             }
         });
-        /**
-         * 同步实时状态 Task
-         */
+        // 同步实时状态
         syncStatusTask = new Runnable() {
             @Override
             public void run() {
                 if (isRunning) {
-                    if (BluetoothTool.getInstance(ConfigurationActivity.this).isPrepared()) {
-                        currentTask = GET_SYSTEM_STATUS;
-                        pool.execute(ConfigurationActivity.this);
+                    if (BluetoothTool.getInstance().isPrepared()) {
+                        if (!isSyncing) {
+                            pool.execute(ConfigurationActivity.this);
+                        }
+                        syncHandler.postDelayed(syncStatusTask, SYNC_TIME);
                     }
                 }
             }
         };
     }
 
+    private class SortComparator implements Comparator<RealTimeMonitor> {
+
+        @Override
+        public int compare(RealTimeMonitor object1, RealTimeMonitor object2) {
+            if (object1.getSort() < object2.getSort()) {
+                return -1;
+            } else if (object1.getSort() > object2.getSort()) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
-        if (BluetoothTool.getInstance(this).isPrepared()) {
+        if (BluetoothTool.getInstance().isPrepared()) {
             isRunning = true;
-            isReadingTerminalStatus = false;
             isSyncing = false;
+            currentTask = GET_SYSTEM_STATUS;
             syncHandler.postDelayed(syncStatusTask, SYNC_TIME);
         }
     }
@@ -244,10 +279,49 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
     }
 
     public void reSyncData() {
-        switch (pageIndex) {
-            case 0:
-                loadMonitorView();
-                break;
+        realTimeStateCommunications = null;
+        getHVXTerminalCommunications = null;
+        getXTerminalCommunications = null;
+        getYTerminalCommunications = null;
+        reloadDataFromDataBase();
+        ConfigurationFragment fragment = mConfigurationAdapter.getItem(pageIndex);
+        if (fragment != null) {
+            fragment.syncMonitorViewData(showStateList);
+            fragment.reloadSettingViewData();
+        }
+        isSyncing = false;
+        currentTask = GET_SYSTEM_STATUS;
+    }
+
+    /**
+     * 重新从数据库加载数据
+     */
+    private void reloadDataFromDataBase() {
+        talkStateList = RealTimeMonitorDao.findByStateIDs(this, ApplicationConfig.MonitorStateCode);
+        // 输入端子 ID
+        int inputStateID = ApplicationConfig.MonitorStateCode[5];
+        // 输出端子 ID
+        int outputStateID = ApplicationConfig.MonitorStateCode[6];
+        List<RealTimeMonitor> tempInputMonitor = new ArrayList<RealTimeMonitor>();
+        List<RealTimeMonitor> tempOutputMonitor = new ArrayList<RealTimeMonitor>();
+        for (RealTimeMonitor item : talkStateList) {
+            if (item.getStateID() == inputStateID) {
+                tempInputMonitor.add(item);
+            } else if (item.getStateID() == outputStateID) {
+                tempOutputMonitor.add(item);
+            } else {
+                showStateList.add(item);
+            }
+        }
+        // 根据 Sort 排序
+        Collections.sort(tempInputMonitor, new SortComparator());
+        Collections.sort(tempOutputMonitor, new SortComparator());
+        // 取得输入、输出端子位置索引
+        if (tempInputMonitor.size() > 0) {
+            showStateList.add(tempInputMonitor.get(0));
+        }
+        if (tempOutputMonitor.size() > 0) {
+            showStateList.add(tempOutputMonitor.get(0));
         }
     }
 
@@ -255,63 +329,70 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
      * 恢复出厂设置
      */
     public void restoreFactory() {
-        BluetoothTalk[] communications = new BluetoothTalk[1];
-        communications[0] = new BluetoothTalk() {
-            @Override
-            public void beforeSend() {
-                this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("010660030001")));
-            }
-
-            @Override
-            public void afterSend() {
-
-            }
-
-            @Override
-            public void beforeReceive() {
-
-            }
-
-            @Override
-            public void afterReceive() {
-
-            }
-
-            @Override
-            public Object onParse() {
-                if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
-                    byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
-                    // 写入恢复出厂设置日志
-                    LogUtils.getInstance().write(ApplicationConfig.LogRestoreFactory,
-                            SerialUtility.byte2HexStr(getSendBuffer()),
-                            SerialUtility.byte2HexStr(data));
+        final RealTimeMonitor monitor = RealTimeMonitorDao
+                .findByStateID(this, ApplicationConfig.RestoreFactoryStateCode);
+        if (monitor != null) {
+            BluetoothTalk[] communications = new BluetoothTalk[1];
+            communications[0] = new BluetoothTalk() {
+                @Override
+                public void beforeSend() {
+                    this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0103"
+                            + monitor.getCode()
+                            + "0001")));
                 }
-                return null;
+
+                @Override
+                public void afterSend() {
+
+                }
+
+                @Override
+                public void beforeReceive() {
+
+                }
+
+                @Override
+                public void afterReceive() {
+
+                }
+
+                @Override
+                public Object onParse() {
+                    if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                        byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
+                        // 写入恢复出厂设置日志
+                        LogUtils.getInstance().write(ApplicationConfig.LogRestoreFactory,
+                                SerialUtility.byte2HexStr(getSendBuffer()),
+                                SerialUtility.byte2HexStr(data));
+                    }
+                    return null;
+                }
+            };
+            if (BluetoothTool.getInstance().isPrepared()) {
+                BluetoothTool.getInstance()
+                        .setHandler(null)
+                        .setCommunications(communications)
+                        .send();
             }
-        };
-        if (BluetoothTool.getInstance(this).isPrepared()) {
-            BluetoothTool.getInstance(this)
-                    .setHandler(null)
-                    .setCommunications(communications)
-                    .send();
         }
     }
 
     /**
      * 读取实时状态
      */
-    public void loadMonitorView() {
-        if (communications == null) {
-            List<RealTimeMonitor> monitorList = RealTimeMonitorDao.findByNames(this, ApplicationConfig.stateFilters);
-            communications = new BluetoothTalk[monitorList.size()];
-            int commandSize = monitorList.size();
+    public void startGetSystemStatusCommunication() {
+        if (realTimeStateCommunications == null) {
+            realTimeStateCommunications = new BluetoothTalk[talkStateList.size()];
+            int commandSize = talkStateList.size();
             for (int index = 0; index < commandSize; index++) {
-                final String code = monitorList.get(index).getCode();
-                final RealTimeMonitor monitor = monitorList.get(index);
-                communications[index] = new BluetoothTalk() {
+                final String code = talkStateList.get(index).getCode();
+                final RealTimeMonitor monitor = talkStateList.get(index);
+                realTimeStateCommunications[index] = new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0103" + code + "0001")));
+                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0103"
+                                + code
+                                + "0001")));
                     }
 
                     @Override
@@ -341,159 +422,46 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                 };
             }
         }
-        if (BluetoothTool.getInstance(this).isPrepared()) {
-            configurationHandler.sendCount = communications.length;
-            ConfigurationActivity.this.isSyncing = true;
-            BluetoothTool.getInstance(this)
+        if (BluetoothTool.getInstance().isPrepared()) {
+            isSyncing = true;
+            configurationHandler.sendCount = realTimeStateCommunications.length;
+            BluetoothTool.getInstance()
                     .setHandler(configurationHandler)
-                    .setCommunications(communications)
+                    .setCommunications(realTimeStateCommunications)
                     .send();
         }
     }
 
     /**
-     * 查看输入端子状态
+     * 查看高压输入端子状态
      *
      * @param monitor RealTimeMonitor
      */
-    public void seeInputTerminalStatus(RealTimeMonitor monitor) {
-        if (getXTerminalCommunications == null) {
-            final List<ParameterSettings> terminalList = ParameterSettingsDao.findByType(this, 3);
-            getXTerminalCommunications = new BluetoothTalk[4];
-            for (int i = 0; i < 4; i++) {
-                int startIndex = 0;
-                int length = 0;
-                if (i == 0) {
-                    startIndex = 0;
-                    length = 10;
-                }
-                if (i == 1) {
-                    startIndex = 10;
-                    length = 10;
-                }
-                if (i == 2) {
-                    startIndex = 20;
-                    length = 4;
-                }
-                if (i == 3) {
-                    startIndex = 24;
-                    length = 3;
-                }
-                final int commandLength = length;
-                final int startPosition = startIndex;
-                final ParameterSettings firstItem = terminalList.get(startIndex);
-                final String lengthHex = String.format("%04x", length);
-                getXTerminalCommunications[i] = new BluetoothTalk() {
-                    @Override
-                    public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16(SerialUtility
-                                .hexStr2Ints("0103"
-                                        + ParseSerialsUtils.getCalculatedCode(firstItem)
-                                        + lengthHex
-                                        + "0001")));
-                    }
-
-                    @Override
-                    public void afterSend() {
-
-                    }
-
-                    @Override
-                    public void beforeReceive() {
-
-                    }
-
-                    @Override
-                    public void afterReceive() {
-
-                    }
-
-                    @Override
-                    public Object onParse() {
-                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
-                            byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
-                            short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
-                            if (commandLength * 2 == bytesLength) {
-                                List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
-                                for (int j = 0; j < commandLength; j++) {
-                                    int index = startPosition + j;
-                                    if (index < terminalList.size()) {
-                                        ParameterSettings item = terminalList.get(index);
-                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStr2Ints("01030002"
-                                                + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
-                                        item.setReceived(tempData);
-                                        tempList.add(item);
-                                    }
-                                }
-                                ObjectListHolder holder = new ObjectListHolder();
-                                holder.setParameterSettingsList(tempList);
-                                return holder;
-                            }
-                        }
-                        return null;
-                    }
-                };
-            }
-        }
-        View dialogView = getLayoutInflater().inflate(R.layout.terminal_status_dialog, null);
-        waitTextView = (TextView) dialogView.findViewById(R.id.wait_text);
-        terminalListView = (ListView) dialogView.findViewById(R.id.list_view);
-        AlertDialog.Builder builder = new AlertDialog.Builder(ConfigurationActivity.this,
-                R.style.CustomDialogStyle)
-                .setView(dialogView)
-                .setTitle(monitor.getName())
-                .setPositiveButton(R.string.dialog_btn_ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        BluetoothTool.getInstance(ConfigurationActivity.this)
-                                .setHandler(null);
-                    }
-                });
-        terminalDialog = builder.create();
-        terminalDialog.show();
-        terminalDialog.setCancelable(false);
-        terminalDialog.setCanceledOnTouchOutside(false);
-        getXTerminalStatusHandler.monitor = monitor;
-        startGetXTerminalCommunications();
+    public void setHVInputTerminalStatus(RealTimeMonitor monitor) {
+        showTerminalStatusDialog(monitor);
+        getHVXTerminalStatusHandler.monitor = monitor;
+        isSyncing = false;
+        currentTask = SEE_HV_X_TERMINAL_STATUS;
     }
 
     /**
-     * Start Get X Terminal Status Communications
+     * 开始读取高压输入端子状态通信
      */
-    private void startGetXTerminalCommunications() {
-        if (getXTerminalCommunications != null) {
-            if (BluetoothTool.getInstance(this).isPrepared()) {
-                currentTask = SEE_X_TERMINAL_STATUS;
-                pool.execute(ConfigurationActivity.this);
-            } else {
-                Toast.makeText(ConfigurationActivity.this,
-                        R.string.not_connect_device_error,
-                        android.widget.Toast.LENGTH_SHORT)
-                        .show();
-            }
-        }
-    }
-
-    /**
-     * 查看输出端子状态
-     *
-     * @param monitor RealTimeMonitor
-     */
-    public void seeOutputTerminalStatus(RealTimeMonitor monitor) {
-        if (getYTerminalCommunications == null) {
-            final List<ParameterSettings> terminalList = ParameterSettingsDao.findByType(this, 4);
+    private void startGetHVXTerminalCommunications() {
+        if (getHVXTerminalCommunications == null) {
+            final List<ParameterSettings> terminalList = ParameterSettingsDao.findByType(this, ApplicationConfig.HVInputTerminalType);
             final int size = terminalList.size();
             final int count = size <= 10 ? 1 : ((size - size % 10) / 10 + (size % 10 == 0 ? 0 : 1));
-            getYTerminalCommunications = new BluetoothTalk[count];
+            getHVXTerminalCommunications = new BluetoothTalk[count];
             for (int i = 0; i < count; i++) {
                 final int position = i;
                 final ParameterSettings firstItem = terminalList.get(position * 10);
                 final int length = size <= 10 ? size : (size % 10 == 0 ? 10 : ((position == count - 1) ? size % 10 : 10));
-                getYTerminalCommunications[i] = new BluetoothTalk() {
+                getHVXTerminalCommunications[i] = new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
                         this.setSendBuffer(SerialUtility.crc16(SerialUtility
-                                .hexStr2Ints("0103"
+                                .hexStringToInt("0103"
                                         + ParseSerialsUtils.getCalculatedCode(firstItem)
                                         + String.format("%04x", length)
                                         + "0001")));
@@ -524,7 +492,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                                 for (int j = 0; j < length; j++) {
                                     if (position * 10 + j < terminalList.size()) {
                                         ParameterSettings item = terminalList.get(position * 10 + j);
-                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStr2Ints("01030002"
+                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStringToInt("01030002"
                                                 + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
                                         item.setReceived(tempData);
                                         tempList.add(item);
@@ -540,6 +508,192 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                 };
             }
         }
+        if (BluetoothTool.getInstance().isPrepared()) {
+            isSyncing = true;
+            getHVXTerminalStatusHandler.sendCount = getHVXTerminalCommunications.length;
+            BluetoothTool.getInstance()
+                    .setHandler(getHVXTerminalStatusHandler)
+                    .setCommunications(getHVXTerminalCommunications)
+                    .send();
+        }
+    }
+
+    /**
+     * 查看输入端子状态
+     *
+     * @param monitor RealTimeMonitor
+     */
+    public void seeInputTerminalStatus(RealTimeMonitor monitor) {
+        showTerminalStatusDialog(monitor);
+        getXTerminalStatusHandler.monitor = monitor;
+        isSyncing = false;
+        currentTask = SEE_X_TERMINAL_STATUS;
+    }
+
+    /**
+     * 开始读取输入端子状态通信
+     */
+    private void startGetXTerminalCommunications() {
+        if (getXTerminalCommunications == null) {
+            final List<ParameterSettings> terminalList = ParameterSettingsDao.findByType(this, ApplicationConfig.InputTerminalType);
+            final int size = terminalList.size();
+            final int count = size <= 10 ? 1 : ((size - size % 10) / 10 + (size % 10 == 0 ? 0 : 1));
+            getXTerminalCommunications = new BluetoothTalk[count];
+            for (int i = 0; i < count; i++) {
+                final int position = i;
+                final ParameterSettings firstItem = terminalList.get(position * 10);
+                final int length = size <= 10 ? size : (size % 10 == 0 ? 10 : ((position == count - 1) ? size % 10 : 10));
+                getXTerminalCommunications[i] = new BluetoothTalk() {
+                    @Override
+                    public void beforeSend() {
+                        this.setSendBuffer(SerialUtility.crc16(SerialUtility
+                                .hexStringToInt("0103"
+                                        + ParseSerialsUtils.getCalculatedCode(firstItem)
+                                        + String.format("%04x", length)
+                                        + "0001")));
+                    }
+
+                    @Override
+                    public void afterSend() {
+
+                    }
+
+                    @Override
+                    public void beforeReceive() {
+
+                    }
+
+                    @Override
+                    public void afterReceive() {
+
+                    }
+
+                    @Override
+                    public Object onParse() {
+                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                            byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
+                            short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
+                            if (length * 2 == bytesLength) {
+                                List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
+                                for (int j = 0; j < length; j++) {
+                                    if (position * 10 + j < terminalList.size()) {
+                                        ParameterSettings item = terminalList.get(position * 10 + j);
+                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStringToInt("01030002"
+                                                + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
+                                        item.setReceived(tempData);
+                                        tempList.add(item);
+                                    }
+                                }
+                                ObjectListHolder holder = new ObjectListHolder();
+                                holder.setParameterSettingsList(tempList);
+                                return holder;
+                            }
+                        }
+                        return null;
+                    }
+                };
+            }
+        }
+        if (BluetoothTool.getInstance().isPrepared()) {
+            isSyncing = true;
+            getXTerminalStatusHandler.sendCount = getXTerminalCommunications.length;
+            BluetoothTool.getInstance()
+                    .setHandler(getXTerminalStatusHandler)
+                    .setCommunications(getXTerminalCommunications)
+                    .send();
+        }
+    }
+
+    /**
+     * 查看输出端子状态
+     *
+     * @param monitor RealTimeMonitor
+     */
+    public void seeOutputTerminalStatus(RealTimeMonitor monitor) {
+        showTerminalStatusDialog(monitor);
+        getYTerminalStatusHandler.monitor = monitor;
+        isSyncing = false;
+        currentTask = SEE_Y_TERMINAL_STATUS;
+    }
+
+    /**
+     * 开始读取输出端子状态通信
+     */
+    private void startGetYTerminalCommunications() {
+        if (getYTerminalCommunications == null) {
+            final List<ParameterSettings> terminalList = ParameterSettingsDao.findByType(this, ApplicationConfig.OutputTerminalType);
+            final int size = terminalList.size();
+            final int count = size <= 10 ? 1 : ((size - size % 10) / 10 + (size % 10 == 0 ? 0 : 1));
+            getYTerminalCommunications = new BluetoothTalk[count];
+            for (int i = 0; i < count; i++) {
+                final int position = i;
+                final ParameterSettings firstItem = terminalList.get(position * 10);
+                final int length = size <= 10 ? size : (size % 10 == 0 ? 10 : ((position == count - 1) ? size % 10 : 10));
+                getYTerminalCommunications[i] = new BluetoothTalk() {
+                    @Override
+                    public void beforeSend() {
+                        this.setSendBuffer(SerialUtility.crc16(SerialUtility
+                                .hexStringToInt("0103"
+                                        + ParseSerialsUtils.getCalculatedCode(firstItem)
+                                        + String.format("%04x", length)
+                                        + "0001")));
+                    }
+
+                    @Override
+                    public void afterSend() {
+
+                    }
+
+                    @Override
+                    public void beforeReceive() {
+
+                    }
+
+                    @Override
+                    public void afterReceive() {
+
+                    }
+
+                    @Override
+                    public Object onParse() {
+                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                            byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
+                            short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
+                            if (length * 2 == bytesLength) {
+                                List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
+                                for (int j = 0; j < length; j++) {
+                                    if (position * 10 + j < terminalList.size()) {
+                                        ParameterSettings item = terminalList.get(position * 10 + j);
+                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStringToInt("01030002"
+                                                + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
+                                        item.setReceived(tempData);
+                                        tempList.add(item);
+                                    }
+                                }
+                                ObjectListHolder holder = new ObjectListHolder();
+                                holder.setParameterSettingsList(tempList);
+                                return holder;
+                            }
+                        }
+                        return null;
+                    }
+                };
+            }
+        }
+        if (BluetoothTool.getInstance().isPrepared()) {
+            getYTerminalStatusHandler.sendCount = getYTerminalCommunications.length;
+            isSyncing = true;
+            BluetoothTool.getInstance()
+                    .setHandler(getYTerminalStatusHandler)
+                    .setCommunications(getYTerminalCommunications)
+                    .send();
+        }
+    }
+
+    /**
+     * 显示端子状态对话框
+     */
+    private void showTerminalStatusDialog(RealTimeMonitor monitor) {
         View dialogView = getLayoutInflater().inflate(R.layout.terminal_status_dialog, null);
         waitTextView = (TextView) dialogView.findViewById(R.id.wait_text);
         terminalListView = (ListView) dialogView.findViewById(R.id.list_view);
@@ -547,75 +701,139 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                 R.style.CustomDialogStyle)
                 .setView(dialogView)
                 .setTitle(monitor.getName())
-                .setPositiveButton(R.string.dialog_btn_ok, null);
-        terminalDialog = builder.create();
+                .setPositiveButton(R.string.dialog_btn_ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        isSyncing = false;
+                        currentTask = GET_SYSTEM_STATUS;
+                    }
+                });
+        // 端子状态信息 Dialog
+        AlertDialog terminalDialog = builder.create();
         terminalDialog.show();
         terminalDialog.setCancelable(false);
         terminalDialog.setCanceledOnTouchOutside(false);
-        getYTerminalStatusHandler.monitor = monitor;
-        startGetYTerminalCommunications();
-    }
-
-    /**
-     * Start Get Y Terminal Communications
-     */
-    private void startGetYTerminalCommunications() {
-        if (getYTerminalCommunications != null) {
-            if (BluetoothTool.getInstance(ConfigurationActivity.this).isPrepared()) {
-                currentTask = SEE_Y_TERMINAL_STATUS;
-                pool.execute(ConfigurationActivity.this);
-            } else {
-                GlobalHandler.getInstance(ConfigurationActivity.this)
-                        .sendMessage(GlobalHandler.NOT_CONNECTED);
-            }
-        }
     }
 
     @Override
     public void run() {
         switch (currentTask) {
-            /**
-             * 读取实时状态
-             */
-            case GET_SYSTEM_STATUS: {
-                if (!isSyncing && !isReadingTerminalStatus) {
-                    ConfigurationActivity.this.reSyncData();
-                }
-            }
-            break;
-            /**
-             * 读取 X 端子状态
-             */
-            case SEE_X_TERMINAL_STATUS: {
-                if (BluetoothTool.getInstance(this).isPrepared() && isRunning) {
-                    ConfigurationActivity.this.isReadingTerminalStatus = true;
-                    getXTerminalStatusHandler.sendCount = getXTerminalCommunications.length;
-                    BluetoothTool.getInstance(this)
-                            .setHandler(getXTerminalStatusHandler)
-                            .setCommunications(getXTerminalCommunications)
-                            .send();
-                }
-            }
-            break;
-            /**
-             * 读取 Y 端子状态
-             */
-            case SEE_Y_TERMINAL_STATUS: {
-                if (BluetoothTool.getInstance(this).isPrepared() && isRunning) {
-                    getYTerminalStatusHandler.sendCount = getYTerminalCommunications.length;
-                    ConfigurationActivity.this.isReadingTerminalStatus = true;
-                    BluetoothTool.getInstance(ConfigurationActivity.this)
-                            .setHandler(getYTerminalStatusHandler)
-                            .setCommunications(getYTerminalCommunications)
-                            .send();
-                }
-            }
-            break;
+            // 读取实时状态
+            case GET_SYSTEM_STATUS:
+                startGetSystemStatusCommunication();
+                break;
+            // 读取高压输入端子状态
+            case SEE_HV_X_TERMINAL_STATUS:
+                startGetHVXTerminalCommunications();
+                break;
+            // 读取输入端子状态
+            case SEE_X_TERMINAL_STATUS:
+                startGetXTerminalCommunications();
+                break;
+            // 读取输出端子状态
+            case SEE_Y_TERMINAL_STATUS:
+                startGetYTerminalCommunications();
+                break;
+        }
+    }
+
+    // ================================ 高压输入端子状态 Handler  ===================================== //
+
+    private class GetHVXTerminalStatusHandler extends BluetoothHandler {
+
+        /**
+         * 发送的指令数
+         */
+        public int sendCount;
+
+        /**
+         * 接收到得指令数
+         */
+        private int receiveCount;
+
+        public RealTimeMonitor monitor;
+
+        private List<ObjectListHolder> holderList;
+
+        public GetHVXTerminalStatusHandler(Activity activity) {
+            super(activity);
         }
 
+
+        @Override
+        public void onMultiTalkBegin(Message msg) {
+            super.onMultiTalkBegin(msg);
+            receiveCount = 0;
+            holderList = new ArrayList<ObjectListHolder>();
+        }
+
+        @Override
+        public void onMultiTalkEnd(Message msg) {
+            super.onMultiTalkEnd(msg);
+            if (sendCount == receiveCount) {
+                if (ConfigurationActivity.this.waitTextView != null
+                        && ConfigurationActivity.this.terminalListView != null) {
+                    List<ParameterSettings> settingsList = new ArrayList<ParameterSettings>();
+                    for (ObjectListHolder holder : holderList) {
+                        settingsList.addAll(holder.getParameterSettingsList());
+                    }
+                    boolean[] bitValues = ParseSerialsUtils.getBooleanValueArray(monitor.getReceived());
+                    int length = bitValues.length;
+                    List<ParameterStatusItem> statusList = new ArrayList<ParameterStatusItem>();
+                    for (ParameterSettings settings : settingsList) {
+                        int indexValue = ParseSerialsUtils.getIntFromBytes(settings.getReceived());
+                        if (indexValue < length && indexValue >= 0) {
+                            try {
+                                JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
+                                int size = jsonArray.length();
+                                String[] valueStringArray = new String[size];
+                                for (int i = 0; i < size; i++) {
+                                    JSONObject value = jsonArray.getJSONObject(i);
+                                    valueStringArray[i] = indexValue + ":" + value.optString("value");
+                                }
+                                if (indexValue < valueStringArray.length) {
+                                    ParameterStatusItem item = new ParameterStatusItem();
+                                    item.setName(settings.getName().replace("功能选择", "端子   ") + valueStringArray[indexValue]);
+                                    item.setStatus(bitValues[indexValue]);
+                                    if (indexValue < bitValues.length) {
+                                        item.setStatus(bitValues[indexValue]);
+                                    }
+                                    statusList.add(item);
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                    /**
+                     * 更新 AlertDialog ListView
+                     */
+                    ParameterStatusAdapter adapter = new ParameterStatusAdapter(ConfigurationActivity.this, statusList);
+                    ConfigurationActivity.this.terminalListView.setAdapter(adapter);
+                    ConfigurationActivity.this.waitTextView.setVisibility(View.GONE);
+                    ConfigurationActivity.this.terminalListView.setVisibility(View.VISIBLE);
+                    ConfigurationActivity.this.isSyncing = false;
+                }
+            }
+        }
+
+        @Override
+        public void onTalkReceive(Message msg) {
+            super.onTalkReceive(msg);
+            if (msg.obj != null && msg.obj instanceof ObjectListHolder) {
+                holderList.add((ObjectListHolder) msg.obj);
+                receiveCount++;
+            }
+        }
+
+        @Override
+        public void onTalkError(Message msg) {
+            super.onTalkError(msg);
+        }
     }
 
     // =============================== Get X Terminal Status Handler ====================================== //
+
     private class GetXTerminalStatusHandler extends BluetoothHandler {
 
         /**
@@ -655,7 +873,6 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                         settingsList.addAll(holder.getParameterSettingsList());
                     }
                     boolean[] bitValues = ParseSerialsUtils.getBooleanValueArray(monitor.getCombineBytes());
-                    boolean[] HVBoolValueArray = ParseSerialsUtils.getBooleanValueArray(monitor.getHVInputTerminalBytes());
                     int length = bitValues.length;
                     List<ParameterStatusItem> statusList = new ArrayList<ParameterStatusItem>();
                     for (ParameterSettings settings : settingsList) {
@@ -686,13 +903,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                                     item.setName(settings.getName().replace("功能选择", "端子   ")
                                             + valueStringArray[indexValue] + openStatus);
                                     item.setStatus(bitValues[indexValue]);
-                                    if (indexValue < HVBoolValueArray.length) {
-                                        if (item.getName().contains("X25")
-                                                || item.getName().contains("X26")
-                                                || item.getName().contains("X27")) {
-                                            item.setStatus(HVBoolValueArray[indexValue]);
-                                        }
-                                    }
+                                    item.setName(item.getName().replace("常开/常闭", ""));
                                     statusList.add(item);
                                 }
                             } catch (JSONException e) {
@@ -707,7 +918,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                     ConfigurationActivity.this.terminalListView.setAdapter(adapter);
                     ConfigurationActivity.this.waitTextView.setVisibility(View.GONE);
                     ConfigurationActivity.this.terminalListView.setVisibility(View.VISIBLE);
-                    ConfigurationActivity.this.isReadingTerminalStatus = false;
+                    ConfigurationActivity.this.isSyncing = false;
                 }
             } else {
                 ConfigurationActivity.this.startGetXTerminalCommunications();
@@ -781,6 +992,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                                     item.setName(settings.getName().replace("功能选择", "端子   ")
                                             + valueStringArray[indexValue]);
                                     item.setStatus(bitValues[indexValue]);
+                                    item.setName(item.getName().replace("常开/常闭", ""));
                                     statusList.add(item);
                                 }
                             } catch (Exception e) {
@@ -795,7 +1007,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                     ConfigurationActivity.this.terminalListView.setAdapter(adapter);
                     ConfigurationActivity.this.waitTextView.setVisibility(View.GONE);
                     ConfigurationActivity.this.terminalListView.setVisibility(View.VISIBLE);
-                    ConfigurationActivity.this.isReadingTerminalStatus = false;
+                    ConfigurationActivity.this.isSyncing = false;
                 }
             } else {
                 ConfigurationActivity.this.startGetYTerminalCommunications();

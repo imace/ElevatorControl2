@@ -3148,7 +3148,7 @@
         "name": "X25功能选择",
         "code": "F537",
         "defaultValue": 0,
-        "type": 3,
+        "type": 11,
         "productId": 345,
         "mode": 2
       },
@@ -3161,7 +3161,7 @@
         "name": "X26功能选择",
         "code": "F538",
         "defaultValue": 0,
-        "type": 3,
+        "type": 11,
         "productId": 346,
         "mode": 2
       },
@@ -3174,7 +3174,7 @@
         "name": "X27功能选择",
         "code": "F539",
         "defaultValue": 0,
-        "type": 3,
+        "type": 11,
         "productId": 347,
         "mode": 2
       },

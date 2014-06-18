@@ -17,7 +17,8 @@ import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.adapters.TroubleAnalyzeAdapter;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ErrorHelpDao;
-import com.inovance.ElevatorControl.daos.ParameterGroupSettingsDao;
+import com.inovance.ElevatorControl.daos.ParameterSettingsDao;
+import com.inovance.ElevatorControl.daos.RealTimeMonitorDao;
 import com.inovance.ElevatorControl.handlers.CurrentErrorHandler;
 import com.inovance.ElevatorControl.handlers.HistoryErrorHandler;
 import com.inovance.ElevatorControl.models.*;
@@ -73,6 +74,8 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
 
     private boolean isRestoreSuccessful = false;
 
+    private RealTimeMonitor restoreTroubleMonitor;
+
     private static final int RestoreErrorSuccessful = 10;
 
     private ExecutorService pool = Executors.newSingleThreadExecutor();
@@ -85,8 +88,6 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
         pager.setAdapter(new TroubleAnalyzeAdapter(this));
         pager.setOffscreenPageLimit(3);
         indicator.setViewPager(pager);
-        currentGetCurrentTroubleCommunications();
-        createGetFCGroupValueCommunications();
         currentErrorHandler = new CurrentErrorHandler(this);
         historyErrorHandler = new HistoryErrorHandler(this);
         restoreErrorHandler = new RestoreErrorHandler(this);
@@ -182,6 +183,8 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
     }
 
     public void reSyncData() {
+        currentCommunications = null;
+        historyCommunications = null;
         switch (pageIndex) {
             case 0:
                 loadCurrentTroubleView();
@@ -203,12 +206,106 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
      * 恢复故障状态
      */
     public void restoreErrorStatus() {
-        final BluetoothTalk[] talks = new BluetoothTalk[]{
-                new BluetoothTalk() {
+        restoreTroubleMonitor = RealTimeMonitorDao.findByStateID(this, ApplicationConfig.RestoreTroubleStateCode);
+        if (restoreTroubleMonitor != null) {
+            final BluetoothTalk[] talks = new BluetoothTalk[1];
+            talks[0] = new BluetoothTalk() {
+                @Override
+                public void beforeSend() {
+                    this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0106"
+                            + restoreTroubleMonitor.getCode()
+                            + "0001")));
+                }
+
+                @Override
+                public void afterSend() {
+
+                }
+
+                @Override
+                public void beforeReceive() {
+
+                }
+
+                @Override
+                public void afterReceive() {
+
+                }
+
+                @Override
+                public Object onParse() {
+                    byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
+                    return SerialUtility.byte2HexStr(received);
+                }
+            };
+            isRestoreSuccessful = false;
+            new CountDownTimer(1500, 500) {
+                public void onTick(long millisUntilFinished) {
+                    if (!isRestoreSuccessful) {
+                        if (isRunning) {
+                            if (BluetoothTool.getInstance().isPrepared()) {
+                                restoreErrorHandler.sendCode = restoreTroubleMonitor.getCode();
+                                BluetoothTool.getInstance()
+                                        .setHandler(restoreErrorHandler)
+                                        .setCommunications(talks)
+                                        .send();
+                            }
+                        } else {
+                            this.cancel();
+                        }
+
+                    } else {
+                        handler.sendEmptyMessage(RestoreErrorSuccessful);
+                        this.cancel();
+                        this.onFinish();
+                    }
+                }
+
+                public void onFinish() {
+
+                }
+            }.start();
+        }
+    }
+
+    /**
+     * 当前故障
+     */
+    public void loadCurrentTroubleView() {
+        if (BluetoothTool.getInstance().isPrepared()) {
+            handler.sendEmptyMessage(3);
+            getCurrentTroubleHandler.sendEmptyMessage(1);
+        } else {
+            handler.sendEmptyMessage(1);
+        }
+    }
+
+    /**
+     * 历史故障
+     */
+    public void loadHistoryTroubleView() {
+        if (BluetoothTool.getInstance().isPrepared()) {
+            handler.sendEmptyMessage(4);
+            pool.execute(TroubleAnalyzeActivity.this);
+        } else {
+            handler.sendEmptyMessage(2);
+        }
+    }
+
+    /**
+     * 开始取得当前故障通信
+     */
+    private void startGetCurrentTroubleCommunication() {
+        if (currentCommunications == null) {
+            final RealTimeMonitor monitor = RealTimeMonitorDao
+                    .findByStateID(this, ApplicationConfig.CurrentTroubleStateCode);
+            if (monitor != null) {
+                currentCommunications = new BluetoothTalk[1];
+                currentCommunications[0] = new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0106"
-                                + UserFactory.getInstance().getRestoreErrorCode()
+                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0103"
+                                + monitor.getCode()
                                 + "0001")));
                     }
 
@@ -229,171 +326,124 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
 
                     @Override
                     public Object onParse() {
-                        byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
-                        return SerialUtility.byte2HexStr(received);
-                    }
-                }
-        };
-        isRestoreSuccessful = false;
-        new CountDownTimer(1500, 500) {
-            public void onTick(long millisUntilFinished) {
-                if (!isRestoreSuccessful) {
-                    if (isRunning) {
-                        if (BluetoothTool.getInstance(TroubleAnalyzeActivity.this).isPrepared()) {
-                            restoreErrorHandler.sendCode = UserFactory.getInstance().getRestoreErrorCode();
-                            BluetoothTool.getInstance(TroubleAnalyzeActivity.this)
-                                    .setHandler(restoreErrorHandler)
-                                    .setCommunications(talks)
-                                    .send();
+                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                            byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
+                            String errorCode = ParseSerialsUtils.getErrorCode(received);
+                            return ErrorHelpDao.findByDisplay(TroubleAnalyzeActivity.this, errorCode);
                         }
-                    } else {
-                        this.cancel();
+                        return null;
                     }
-
-                } else {
-                    handler.sendEmptyMessage(RestoreErrorSuccessful);
-                    this.cancel();
-                    this.onFinish();
-                }
+                };
             }
-
-            public void onFinish() {
-
-            }
-        }.start();
-    }
-
-    private void currentGetCurrentTroubleCommunications() {
-        if (currentCommunications == null) {
-            currentCommunications = new BluetoothTalk[]{
-                    new BluetoothTalk() {
-
-                        @Override
-                        public void beforeSend() {
-                            this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("010380000001")));
-                        }
-
-                        @Override
-                        public void afterSend() {
-
-                        }
-
-                        @Override
-                        public void beforeReceive() {
-
-                        }
-
-                        @Override
-                        public void afterReceive() {
-                        }
-
-                        @Override
-                        public Object onParse() {
-                            if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
-                                byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
-                                String errorCode = ParseSerialsUtils.getErrorCode(received);
-                                return ErrorHelpDao.findByDisplay(TroubleAnalyzeActivity.this, errorCode);
-                            }
-                            return null;
-                        }
-                    }
-            };
+        }
+        if (BluetoothTool.getInstance().isPrepared()) {
+            currentErrorHandler.sendCount = currentCommunications.length;
+            BluetoothTool.getInstance()
+                    .setHandler(currentErrorHandler)
+                    .setCommunications(currentCommunications)
+                    .send();
         }
     }
 
-    public void createGetFCGroupValueCommunications() {
+    private String[] generateHistoryErrorStatusFilters() {
+        String[] filters = new String[]{};
+        String deviceType = ConfigFactory.getInstance().getDeviceName();
+        int[] index = new int[]{};
+        if (deviceType.equalsIgnoreCase(ApplicationConfig.NormalDeviceType[0])) {
+            index = new int[]{4, 13};
+        }
+        if (deviceType.equalsIgnoreCase(ApplicationConfig.NormalDeviceType[1])) {
+            index = new int[]{16, 47};
+        }
+        if (deviceType.equalsIgnoreCase(ApplicationConfig.NormalDeviceType[2])) {
+            index = new int[]{6, 32};
+        }
+        if (deviceType.equalsIgnoreCase(ApplicationConfig.NormalDeviceType[3])) {
+            index = new int[]{20, 73};
+        }
+        if (index.length == 2) {
+            List<String> codeList = new ArrayList<String>();
+            for (int i = index[0]; i < index[1]; i++) {
+                codeList.add(String.format("FC%02d", i));
+            }
+            filters = codeList.toArray(new String[codeList.size()]);
+        }
+        return filters;
+    }
+
+    /**
+     * 开始取得历史故障通信
+     */
+    private void startGetCurrentHistoryCommunication() {
         if (historyCommunications == null) {
-            ParameterGroupSettings parameterGroupSettings = ParameterGroupSettingsDao.findById(
-                    this, 13);
-            final List<ParameterSettings> settingsList = parameterGroupSettings.getParametersettings().getList();
-            if (settingsList != null) {
-                final int size = settingsList.size();
-                final int count = size <= 10 ? 1 : ((size - size % 10) / 10 + (size % 10 == 0 ? 0 : 1));
-                historyCommunications = new BluetoothTalk[count];
-                for (int i = 0; i < count; i++) {
-                    final int position = i;
-                    final ParameterSettings firstItem = settingsList.get(position * 10);
-                    final int length = size <= 10 ? size : (size % 10 == 0 ? 10 : ((position == count - 1) ? size % 10 : 10));
-                    historyCommunications[i] = new BluetoothTalk() {
-                        @Override
-                        public void beforeSend() {
-                            this.setSendBuffer(SerialUtility.crc16(SerialUtility
-                                    .hexStr2Ints("0103"
-                                            + ParseSerialsUtils.getCalculatedCode(firstItem)
-                                            + String.format("%04x", length)
-                                            + "0001")));
-                        }
+            String[] filters = generateHistoryErrorStatusFilters();
+            final List<ParameterSettings> settingsList = ParameterSettingsDao.findByCodes(this, filters);
+            final int size = settingsList.size();
+            final int count = size <= 10 ? 1 : ((size - size % 10) / 10 + (size % 10 == 0 ? 0 : 1));
+            historyCommunications = new BluetoothTalk[count];
+            for (int i = 0; i < count; i++) {
+                final int position = i;
+                final ParameterSettings firstItem = settingsList.get(position * 10);
+                final int length = size <= 10 ? size : (size % 10 == 0 ? 10 : ((position == count - 1) ? size % 10 : 10));
+                historyCommunications[i] = new BluetoothTalk() {
+                    @Override
+                    public void beforeSend() {
+                        this.setSendBuffer(SerialUtility.crc16(SerialUtility
+                                .hexStringToInt("0103"
+                                        + ParseSerialsUtils.getCalculatedCode(firstItem)
+                                        + String.format("%04x", length)
+                                        + "0001")));
+                    }
 
-                        @Override
-                        public void afterSend() {
+                    @Override
+                    public void afterSend() {
 
-                        }
+                    }
 
-                        @Override
-                        public void beforeReceive() {
+                    @Override
+                    public void beforeReceive() {
 
-                        }
+                    }
 
-                        @Override
-                        public void afterReceive() {
+                    @Override
+                    public void afterReceive() {
 
-                        }
+                    }
 
-                        @Override
-                        public Object onParse() {
-                            if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
-                                byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
-                                short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
-                                if (length * 2 == bytesLength) {
-                                    List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
-                                    for (int j = 0; j < length; j++) {
-                                        if (position * 10 + j < settingsList.size()) {
-                                            ParameterSettings item = settingsList.get(position * 10 + j);
-                                            byte[] tempData = SerialUtility.crc16(SerialUtility.hexStr2Ints("01030002"
-                                                    + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
-                                            item.setReceived(tempData);
-                                            tempList.add(item);
-                                        }
+                    @Override
+                    public Object onParse() {
+                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                            byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
+                            short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
+                            if (length * 2 == bytesLength) {
+                                List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
+                                for (int j = 0; j < length; j++) {
+                                    if (position * 10 + j < settingsList.size()) {
+                                        ParameterSettings item = settingsList.get(position * 10 + j);
+                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStringToInt("01030002"
+                                                + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
+                                        item.setReceived(tempData);
+                                        tempList.add(item);
                                     }
-                                    ObjectListHolder holder = new ObjectListHolder();
-                                    holder.setParameterSettingsList(tempList);
-                                    return holder;
                                 }
+                                ObjectListHolder holder = new ObjectListHolder();
+                                holder.setParameterSettingsList(tempList);
+                                return holder;
                             }
-                            return null;
                         }
-                    };
-                }
+                        return null;
+                    }
+                };
             }
         }
-    }
-
-    /**
-     * 当前故障
-     */
-    public void loadCurrentTroubleView() {
-        if (BluetoothTool.getInstance(this).isPrepared()) {
-            handler.sendEmptyMessage(3);
-            getCurrentTroubleHandler.sendEmptyMessage(1);
-        } else {
-            handler.sendEmptyMessage(1);
-        }
-    }
-
-    /**
-     * 历史故障
-     */
-    public void loadHistoryTroubleView() {
-        if (BluetoothTool.getInstance(this).isPrepared()) {
-            handler.sendEmptyMessage(4);
-            new Timer().schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    pool.execute(TroubleAnalyzeActivity.this);
-                }
-            }, 500);
-        } else {
-            handler.sendEmptyMessage(2);
+        if (BluetoothTool.getInstance().isPrepared()) {
+            if (historyCommunications != null && historyCommunications.length > 0) {
+                fcGroupHandler.sendCount = historyCommunications.length;
+                BluetoothTool.getInstance()
+                        .setHandler(fcGroupHandler)
+                        .setCommunications(historyCommunications)
+                        .send();
+            }
         }
     }
 
@@ -463,34 +513,17 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
                 break;
             }
         }
-
     };
 
     @Override
     public void run() {
         switch (pageIndex) {
-            case 0: {
-                if (BluetoothTool.getInstance(this).isPrepared()) {
-                    currentErrorHandler.sendCount = currentCommunications.length;
-                    BluetoothTool.getInstance(TroubleAnalyzeActivity.this)
-                            .setHandler(currentErrorHandler)
-                            .setCommunications(currentCommunications)
-                            .send();
-                }
-            }
-            break;
-            case 1: {
-                if (BluetoothTool.getInstance(this).isPrepared()) {
-                    if (historyCommunications != null && historyCommunications.length > 0) {
-                        fcGroupHandler.sendCount = historyCommunications.length;
-                        BluetoothTool.getInstance(TroubleAnalyzeActivity.this)
-                                .setHandler(fcGroupHandler)
-                                .setCommunications(historyCommunications)
-                                .send();
-                    }
-                }
-            }
-            break;
+            case 0:
+                startGetCurrentTroubleCommunication();
+                break;
+            case 1:
+                startGetCurrentHistoryCommunication();
+                break;
         }
     }
 
@@ -624,7 +657,7 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
                 if (receive.contains(sendCode)) {
                     isRestoreSuccessful = true;
                     LogUtils.getInstance().write(ApplicationConfig.LogRestoreErrorStatus,
-                            "0106" + UserFactory.getInstance().getRestoreErrorCode() + "0001",
+                            "0106" + restoreTroubleMonitor.getCode() + "0001",
                             receive);
                 }
             }

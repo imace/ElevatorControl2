@@ -79,6 +79,9 @@ public class BluetoothHandler extends Handler {
             case BluetoothState.onWillConnect:
                 onWillConnect(msg);
                 break;
+            case BluetoothState.onDeviceChanged:
+                onDeviceChanged(msg);
+                break;
         }
     }
 
@@ -271,6 +274,17 @@ public class BluetoothHandler extends Handler {
      * @param message message
      */
     public void onWillConnect(Message message){
+        if (DEBUG) {
+            Log.v(TAG, "onWillConnect");
+        }
+    }
+
+    /**
+     * 设备切换
+     *
+     * @param message message
+     */
+    public void onDeviceChanged(Message message){
         if (DEBUG) {
             Log.v(TAG, "onWillConnect");
         }

@@ -26,6 +26,11 @@ public class ParameterStatusItem {
     private String statusString;
 
     /**
+     * 是否为 F5-25 组
+     */
+    private boolean isSpecial = false;
+
+    /**
      * 是否可以写入
      */
     private boolean canEdit;
@@ -69,4 +74,13 @@ public class ParameterStatusItem {
     public void setCanEdit(boolean canEdit) {
         this.canEdit = canEdit;
     }
+
+    public boolean isSpecial() {
+        return isSpecial;
+    }
+
+    public void setSpecial(boolean isSpecial) {
+        this.isSpecial = isSpecial;
+    }
+
 }

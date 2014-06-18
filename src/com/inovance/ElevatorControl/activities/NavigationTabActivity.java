@@ -7,10 +7,10 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,9 +25,19 @@ import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.handlers.GlobalHandler;
 import com.inovance.ElevatorControl.handlers.SearchBluetoothHandler;
+import com.inovance.ElevatorControl.models.ConfigFactory;
+import com.inovance.ElevatorControl.models.Device;
+import com.inovance.ElevatorControl.models.NormalDevice;
+import com.inovance.ElevatorControl.models.SpecialDevice;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
 import com.inovance.ElevatorControl.views.customspinner.NoDefaultSpinner;
 import com.inovance.ElevatorControl.views.dialogs.CustomDialog;
+import com.inovance.ElevatorControl.web.WebApi;
+import com.inovance.ElevatorControl.web.WebApi.OnGetResultListener;
+import com.inovance.ElevatorControl.web.WebApi.OnRequestFailureListener;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,7 +50,7 @@ import java.util.concurrent.Executors;
  * TabActivity 导航
  */
 
-public class NavigationTabActivity extends TabActivity implements Runnable {
+public class NavigationTabActivity extends TabActivity implements Runnable, OnGetResultListener, OnRequestFailureListener {
 
     private static final String TAG = NavigationTabActivity.class.getSimpleName();
 
@@ -57,27 +67,32 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
     /**
      * 是否已读取到设备型号和名称
      */
-    private boolean hasGetDeviceTypeAndNumber = false;
+    private boolean hasGetDeviceType = false;
 
     /**
-     * 用于读取设备型号的 Handler
+     * 用于读取标准设备型号的 Handler
      */
-    private GetDeviceTypeAndNumberHandler getDeviceTypeAndNumberHandler;
+    private GetNormalDeviceTypeHandler getNormalDeviceTypeHandler;
+
+    /**
+     * 用于读取专用设备型号的 Handler
+     */
+    private GetSpecialDeviceTypeHandler getSpecialDeviceTypeHandler;
 
     /**
      * 用于取得设备型号的通信内容
      */
-    private BluetoothTalk[] getDeviceTypeAndNumberCommunications;
+    private BluetoothTalk[] getNormalDeviceTypeTalk;
 
     /**
-     * 用于读取设备型号的 Task
+     * 用于读取设备型号的 Task (标准设备或者专用设备)
      */
-    private Runnable getDeviceTypeNumberTask;
+    private Runnable getDeviceTypeTask;
 
     /**
      * 读取间隔
      */
-    private static final int LOOP_TIME = 2000;
+    private static final int LOOP_TIME = 1000;
 
     /**
      * 是否暂停读取
@@ -140,9 +155,14 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
     private static final int CONNECT_DEVICE = 2;
 
     /**
-     * 取得设备型号状态
+     * 读取标准设备信号状态
      */
-    private static final int GET_DEVICE_TYPE = 3;
+    private static final int GET_NORMAL_DEVICE_TYPE = 3;
+
+    /**
+     * 读取非标准设备信号状态
+     */
+    private static final int GET_SPECIAL_DEVICE_TYPE = 4;
 
     /**
      * 当前的 Task 状态
@@ -156,6 +176,35 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
 
     private static final int REQUEST_BLUETOOTH_ENABLE = 1;
 
+    /**
+     * 通信次数
+     */
+    private int talkTime = 0;
+
+    /**
+     * 最大重试次数
+     */
+    private static final int MaxRetryTime = 5;
+
+    private int specialDeviceCodeIndex = -1;
+
+    private Handler delayHandler = new Handler();
+
+    /**
+     * 专用设备通信码
+     */
+    private String[] specialDeviceCode = new String[0];
+
+    /**
+     * 可供选择的标准设备列表
+     */
+    private List<NormalDevice> normalDeviceList = new ArrayList<NormalDevice>();
+
+    /**
+     * 可供选择的专有设备列表
+     */
+    private List<SpecialDevice> specialDeviceList = new ArrayList<SpecialDevice>();
+
     private ExecutorService pool = Executors.newSingleThreadExecutor();
 
     @Override
@@ -167,17 +216,30 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
         deviceListSpinner.setBackgroundResource(R.drawable.custom_spinner_background);
         deviceListSpinner.setSpinnerItemLayout(R.layout.custom_white_spinner_item);
         searchBluetoothHandler = new SearchBluetoothHandler(this);
-        getDeviceTypeAndNumberHandler = new GetDeviceTypeAndNumberHandler(this);
-        getDeviceTypeNumberTask = new Runnable() {
+        getNormalDeviceTypeHandler = new GetNormalDeviceTypeHandler(this);
+        getSpecialDeviceTypeHandler = new GetSpecialDeviceTypeHandler(this);
+        getDeviceTypeTask = new Runnable() {
             @Override
             public void run() {
                 if (isRunning) {
-                    if (!hasGetDeviceTypeAndNumber) {
-                        if (BluetoothTool.getInstance(NavigationTabActivity.this).isConnected()) {
-                            currentTask = GET_DEVICE_TYPE;
-                            pool.execute(NavigationTabActivity.this);
-                            getDeviceTypeAndNumberHandler.postDelayed(getDeviceTypeNumberTask, LOOP_TIME);
+                    if (!hasGetDeviceType) {
+                        if (currentTask == GET_NORMAL_DEVICE_TYPE) {
+                            if (talkTime >= MaxRetryTime) {
+                                talkTime = 0;
+                                currentTask = GET_SPECIAL_DEVICE_TYPE;
+                                specialDeviceCodeIndex = 0;
+                            }
                         }
+                        if (currentTask == GET_SPECIAL_DEVICE_TYPE) {
+                            if (talkTime >= MaxRetryTime) {
+                                talkTime = 0;
+                                currentTask = GET_SPECIAL_DEVICE_TYPE;
+                                specialDeviceCodeIndex++;
+                            }
+                        }
+                        talkTime++;
+                        pool.execute(NavigationTabActivity.this);
+                        delayHandler.postDelayed(getDeviceTypeTask, LOOP_TIME);
                     }
                 }
             }
@@ -203,6 +265,10 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
     @Override
     protected void onResume() {
         super.onResume();
+        WebApi.getInstance().setOnResultListener(this);
+        WebApi.getInstance().setOnFailureListener(this);
+        WebApi.getInstance().getNormalDeviceList(this);
+        WebApi.getInstance().getSpecialDeviceList(this);
         if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(intent, REQUEST_BLUETOOTH_ENABLE);
@@ -213,8 +279,12 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_BLUETOOTH_ENABLE) {
+            if (resultCode == RESULT_OK) {
+                WebApi.getInstance().getSpecialDeviceCodeList(this,
+                        BluetoothAdapter.getDefaultAdapter().getAddress());
+            }
             if (resultCode == RESULT_CANCELED) {
-                BluetoothTool.getInstance(this).kill();
+                BluetoothTool.getInstance().kill();
                 Intent intent = new Intent(this, CheckAuthorizationActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 intent.putExtra("Exit", true);
@@ -225,12 +295,14 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
     }
 
     /**
-     * 取得当前连接的蓝牙设备型号
+     * 取得当前连接的标准设备型号
      */
-    public void startGetDeviceTypeAndNumberTask() {
-        if (!hasGetDeviceTypeAndNumber) {
+    public void startGetNormalDeviceTypeTask() {
+        if (!hasGetDeviceType) {
             isRunning = true;
-            getDeviceTypeAndNumberHandler.postDelayed(getDeviceTypeNumberTask, LOOP_TIME);
+            talkTime = 0;
+            currentTask = GET_NORMAL_DEVICE_TYPE;
+            delayHandler.postDelayed(getDeviceTypeTask, LOOP_TIME);
         }
     }
 
@@ -252,6 +324,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
     @Override
     protected void onPause() {
         super.onPause();
+        WebApi.getInstance().removeListener();
     }
 
     /**
@@ -295,7 +368,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
         tabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
             @Override
             public void onTabChanged(String s) {
-                BluetoothTool.getInstance(NavigationTabActivity.this)
+                BluetoothTool.getInstance()
                         .setHandler(null);
             }
         });
@@ -323,6 +396,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
                         };
                         Handler handler = new Handler();
                         handler.postDelayed(runnable, 300);
+                        getTabHost().setOnTabChangedListener(null);
                     }
                 }
                 if (tabIndex == 1) {
@@ -336,6 +410,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
                         };
                         Handler handler = new Handler();
                         handler.postDelayed(runnable, 300);
+                        getTabHost().setOnTabChangedListener(null);
                     }
                 }
                 if (tabIndex == 3) {
@@ -349,6 +424,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
                         };
                         Handler handler = new Handler();
                         handler.postDelayed(runnable, 300);
+                        getTabHost().setOnTabChangedListener(null);
                     }
                 }
             }
@@ -364,7 +440,11 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
      */
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_DOWN && event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
-            CustomDialog.exitDialog(this).show();
+            if (getTabHost().getCurrentTab() != 2) {
+                getTabHost().setCurrentTab(2);
+            } else {
+                CustomDialog.exitDialog(this).show();
+            }
             return false;
         }
         return super.dispatchKeyEvent(event);
@@ -447,196 +527,280 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
     /**
      * 取得设备型号、厂家编号
      */
-    private void getDeviceTypeAndNumber() {
-        if (getDeviceTypeAndNumberCommunications == null) {
-            getDeviceTypeAndNumberCommunications = new BluetoothTalk[2];
-            for (int i = 0; i < 2; i++) {
-                final int index = i;
-                getDeviceTypeAndNumberCommunications[i] = new BluetoothTalk() {
-                    @Override
-                    public void beforeSend() {
-                        if (index == 0) {
-                            this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0103FA080001")));
+    private void getNormalDeviceType() {
+        if (getNormalDeviceTypeTalk == null) {
+            getNormalDeviceTypeTalk = new BluetoothTalk[]{
+                    new BluetoothTalk() {
+                        @Override
+                        public void beforeSend() {
+                            this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0103"
+                                    + ApplicationConfig.GetDeviceTypeCode
+                                    + "0001")));
                         }
-                        if (index == 1) {
-                            this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0103D2090001")));
+
+                        @Override
+                        public void afterSend() {
+
                         }
-                    }
 
-                    @Override
-                    public void afterSend() {
+                        @Override
+                        public void beforeReceive() {
 
-                    }
+                        }
 
-                    @Override
-                    public void beforeReceive() {
+                        @Override
+                        public void afterReceive() {
 
-                    }
+                        }
 
-                    @Override
-                    public void afterReceive() {
-
-                    }
-
-                    @Override
-                    public Object onParse() {
-                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
-                            byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
-                            if (received.length == 8) {
-                                if (index == 0) {
-                                    for (String error : ApplicationConfig.ERROR_CODE_ARRAY) {
-                                        if (SerialUtility.byte2HexStr(received).contains(error)) {
-                                            return "type:error";
-                                        }
-                                    }
-                                    return "type:" + ParseSerialsUtils.getIntFromBytes(received);
-                                }
-                                if (index == 1) {
-                                    for (String error : ApplicationConfig.ERROR_CODE_ARRAY) {
-                                        if (SerialUtility.byte2HexStr(received).contains(error)) {
-                                            return "number:1000";
-                                        }
-                                    }
-                                    return "number:" + ParseSerialsUtils.getIntFromBytes(received);
+                        @Override
+                        public Object onParse() {
+                            if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                                String result = SerialUtility.byte2HexStr(getReceivedBuffer());
+                                if (!result.contains(ApplicationConfig.ErrorCode)) {
+                                    return ParseSerialsUtils.getIntFromBytes(getReceivedBuffer());
                                 }
                             }
+                            return null;
                         }
-                        return null;
                     }
-                };
-            }
+            };
         }
-        if (BluetoothTool.getInstance(this).isConnected()) {
-            getDeviceTypeAndNumberHandler.sendCount = getDeviceTypeAndNumberCommunications.length;
-            BluetoothTool.getInstance(NavigationTabActivity.this)
-                    .setHandler(getDeviceTypeAndNumberHandler)
-                    .setCommunications(getDeviceTypeAndNumberCommunications)
+        if (BluetoothTool.getInstance().isConnected()) {
+            BluetoothTool.getInstance()
+                    .setHandler(getNormalDeviceTypeHandler)
+                    .setCommunications(getNormalDeviceTypeTalk)
                     .send();
         }
     }
 
-    @Override
-    public void run() {
-        switch (currentTask) {
-            case SEARCH_DEVICE: {
-                BluetoothTool.getInstance(NavigationTabActivity.this)
-                        .setSearchHandler(searchBluetoothHandler)
-                        .search();
-            }
-            break;
-            case CONNECT_DEVICE: {
-                if (tempDevice != null) {
-                    BluetoothTool.getInstance(NavigationTabActivity.this).connectDevice(tempDevice);
+    /**
+     * 取得专用设备型号
+     */
+    private void getSpecialDeviceType() {
+        if (specialDeviceCodeIndex < specialDeviceCode.length) {
+            BluetoothTalk[] talks = new BluetoothTalk[1];
+            talks[0] = new BluetoothTalk() {
+                @Override
+                public void beforeSend() {
+                    this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0103"
+                            + specialDeviceCode[specialDeviceCodeIndex].split(":")[0].replace("0x", "")
+                            + "0001")));
                 }
+
+                @Override
+                public void afterSend() {
+
+                }
+
+                @Override
+                public void beforeReceive() {
+
+                }
+
+                @Override
+                public void afterReceive() {
+
+                }
+
+                @Override
+                public Object onParse() {
+                    if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                        String result = SerialUtility.byte2HexStr(getReceivedBuffer());
+                        if (!result.contains(ApplicationConfig.ErrorCode)) {
+                            return result;
+                        }
+                    }
+                    return null;
+                }
+            };
+            if (BluetoothTool.getInstance().isConnected()) {
+                BluetoothTool.getInstance().crcValue = Integer.parseInt(specialDeviceCode[specialDeviceCodeIndex]
+                        .split(":")[0].replace("0x", ""), 16);
+                BluetoothTool.getInstance()
+                        .setHandler(getSpecialDeviceTypeHandler)
+                        .setCommunications(talks)
+                        .send();
             }
-            break;
-            case GET_DEVICE_TYPE: {
-                NavigationTabActivity.this.getDeviceTypeAndNumber();
-            }
-            break;
         }
     }
 
-    // ============================== Get DeviceType And Number Handler ====================== //
-    private class GetDeviceTypeAndNumberHandler extends BluetoothHandler {
+    /**
+     * 显示标准设备选择框
+     *
+     * @param type 1000/3000
+     */
+    private void showNormalDeviceSelect(int type) {
+        String typeString = String.valueOf(type);
+        final List<NormalDevice> tempNormalDevice = new ArrayList<NormalDevice>();
+        List<String> names = new ArrayList<String>();
+        for (NormalDevice device : normalDeviceList) {
+            if (device.getName().contains(typeString)) {
+                tempNormalDevice.add(device);
+                names.add(device.getName());
+            }
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(NavigationTabActivity.this);
+        AlertDialog dialog = builder.setTitle(R.string.choice_device_type_title)
+                .setItems(names.toArray(new String[names.size()]),
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int position) {
+                                NormalDevice device = tempNormalDevice.get(position);
+                                BluetoothTool.getInstance()
+                                        .setHasSelectDeviceType(true);
+                                ConfigFactory.getInstance().selectDevice(NavigationTabActivity.this,
+                                        device.getID(),
+                                        device.getName(),
+                                        Device.NormalDevice,
+                                        new ConfigFactory.OnDeployFinishListener() {
+                                            @Override
+                                            public void onComplete() {
+                                                NavigationTabActivity.this.startHomeActivityStatusSyncTask();
+                                            }
+                                        });
+                            }
+                        }).create();
+        dialog.show();
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);
+    }
 
-        public int sendCount;
+    @Override
+    public void run() {
+        Log.v(TAG, String.valueOf(currentTask));
+        switch (currentTask) {
+            case SEARCH_DEVICE:
+                BluetoothTool.getInstance()
+                        .setSearchHandler(searchBluetoothHandler)
+                        .search();
+                break;
+            case CONNECT_DEVICE:
+                if (tempDevice != null) {
+                    BluetoothTool.getInstance().connectDevice(tempDevice);
+                }
+                break;
+            case GET_NORMAL_DEVICE_TYPE:
+                getNormalDeviceType();
+                break;
+            case GET_SPECIAL_DEVICE_TYPE:
+                getSpecialDeviceType();
+                break;
+        }
+    }
 
-        private int receiveCount;
+    @Override
+    public void onResult(String tag, String responseString) {
+        if (tag.equalsIgnoreCase(ApplicationConfig.GetNormalDeviceList)) {
+            try {
+                JSONArray jsonArray = new JSONArray(responseString);
+                normalDeviceList.clear();
+                int size = jsonArray.length();
+                for (int i = 0; i < size; i++) {
+                    JSONObject object = jsonArray.getJSONObject(i);
+                    NormalDevice device = new NormalDevice(object);
+                    normalDeviceList.add(device);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        if (tag.equalsIgnoreCase(ApplicationConfig.GetSpecialDeviceList)) {
+            try {
+                JSONArray jsonArray = new JSONArray(responseString);
+                specialDeviceList.clear();
+                int size = jsonArray.length();
+                for (int i = 0; i < size; i++) {
+                    JSONObject object = jsonArray.getJSONObject(i);
+                    SpecialDevice device = new SpecialDevice(object);
+                    specialDeviceList.add(device);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        if (tag.equalsIgnoreCase(ApplicationConfig.GetSpecialDeviceCodeList)) {
+            try {
+                JSONArray jsonArray = new JSONArray(responseString);
+                int size = jsonArray.length();
+                specialDeviceCode = new String[size];
+                for (int i = 0; i < size; i++) {
+                    JSONObject object = jsonArray.getJSONObject(i);
+                    specialDeviceCode[i] = object.optString("") + ":" + object.optString("");
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
-        private List<String> responseStringList;
+    @Override
+    public void onFailure(int statusCode, Throwable throwable) {
+        Toast.makeText(this, throwable.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+    }
 
-        public GetDeviceTypeAndNumberHandler(Activity activity) {
+    // ============================== Get Normal DeviceType Handler ====================== //
+
+    private class GetNormalDeviceTypeHandler extends BluetoothHandler {
+
+        public GetNormalDeviceTypeHandler(Activity activity) {
             super(activity);
-            TAG = GetDeviceTypeAndNumberHandler.class.getSimpleName();
+            TAG = GetNormalDeviceTypeHandler.class.getSimpleName();
         }
 
         @Override
         public void onMultiTalkBegin(Message msg) {
             super.onMultiTalkBegin(msg);
-            receiveCount = 0;
-            responseStringList = new ArrayList<String>();
         }
 
         @Override
         public void onMultiTalkEnd(Message msg) {
             super.onMultiTalkEnd(msg);
-            if (sendCount == receiveCount) {
-                hasGetDeviceTypeAndNumber = true;
+        }
+
+        @Override
+        public void onTalkReceive(Message msg) {
+            super.onTalkReceive(msg);
+            if (msg.obj != null && msg.obj instanceof Integer) {
                 isRunning = false;
-                for (String item : responseStringList) {
-                    if (item.contains("type")) {
-                        if (item.contains("1000")) {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(NavigationTabActivity.this);
-                            AlertDialog dialog = builder.setTitle(R.string.choice_device_type_title)
-                                    .setItems(new String[]{ApplicationConfig.deviceType[0],
-                                            ApplicationConfig.deviceType[1]},
-                                            new DialogInterface.OnClickListener() {
-                                                @Override
-                                                public void onClick(DialogInterface dialogInterface, int i) {
-                                                    // 选定设备型号后开始同步参数
-                                                    BluetoothTool.getInstance(NavigationTabActivity.this)
-                                                            .setHasSelectDeviceType(true);
-                                                    NavigationTabActivity.this.startHomeActivityStatusSyncTask();
-                                                }
-                                            }).create();
-                            dialog.show();
-                            dialog.setCancelable(false);
-                            dialog.setCanceledOnTouchOutside(false);
-                        } else if (item.contains("3000")) {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(NavigationTabActivity.this);
-                            AlertDialog dialog = builder.setTitle(R.string.choice_device_type_title)
-                                    .setItems(new String[]{ApplicationConfig.deviceType[2],
-                                            ApplicationConfig.deviceType[3]},
-                                            new DialogInterface.OnClickListener() {
-                                                @Override
-                                                public void onClick(DialogInterface dialogInterface, int i) {
-                                                    // 选定设备型号后开始同步参数
-                                                    BluetoothTool.getInstance(NavigationTabActivity.this)
-                                                            .setHasSelectDeviceType(true);
-                                                    NavigationTabActivity.this.startHomeActivityStatusSyncTask();
-                                                }
-                                            })
-                                    .create();
-                            dialog.show();
-                            dialog.setCancelable(false);
-                            dialog.setCanceledOnTouchOutside(false);
-                        } else {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(NavigationTabActivity.this);
-                            AlertDialog dialog = builder.setTitle(R.string.choice_device_type_title)
-                                    .setItems(ApplicationConfig.deviceType,
-                                            new DialogInterface.OnClickListener() {
-                                                @Override
-                                                public void onClick(DialogInterface dialogInterface, int i) {
-                                                    // 选定设备型号后开始同步参数
-                                                    BluetoothTool.getInstance(NavigationTabActivity.this)
-                                                            .setHasSelectDeviceType(true);
-                                                    NavigationTabActivity.this.startHomeActivityStatusSyncTask();
-                                                }
-                                            })
-                                    .create();
-                            dialog.show();
-                            dialog.setCancelable(false);
-                            dialog.setCanceledOnTouchOutside(false);
-                        }
-                    }
-                    if (item.contains("number")) {
-                        SharedPreferences settings = getSharedPreferences(ApplicationConfig.PREFS_NAME, 0);
-                        SharedPreferences.Editor editor = settings.edit();
-                        editor.putInt(ApplicationConfig.DeviceNumberValue, Integer.parseInt(item.split(":")[1]));
-                        editor.commit();
-                    }
-                }
+                hasGetDeviceType = true;
+                showNormalDeviceSelect((Integer) msg.obj);
             }
+        }
+
+        @Override
+        public void onTalkError(Message msg) {
+            super.onTalkError(msg);
+        }
+    }
+
+    // ============================== Get Special DeviceType Handler ====================== //
+
+    private class GetSpecialDeviceTypeHandler extends BluetoothHandler {
+
+        public GetSpecialDeviceTypeHandler(Activity activity) {
+            super(activity);
+            TAG = GetSpecialDeviceTypeHandler.class.getSimpleName();
+        }
+
+        @Override
+        public void onMultiTalkBegin(Message msg) {
+            super.onMultiTalkBegin(msg);
+        }
+
+        @Override
+        public void onMultiTalkEnd(Message msg) {
+            super.onMultiTalkEnd(msg);
         }
 
         @Override
         public void onTalkReceive(Message msg) {
             super.onTalkReceive(msg);
             if (msg.obj != null && msg.obj instanceof String) {
-                responseStringList.add((String) msg.obj);
-                receiveCount++;
+                isRunning = false;
+                hasGetDeviceType = true;
             }
+
         }
 
         @Override
@@ -649,7 +813,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable {
      * 开启HomeActivity Sync Task
      */
     public void startHomeActivityStatusSyncTask() {
-        if (hasGetDeviceTypeAndNumber) {
+        if (hasGetDeviceType) {
             switch (getTabHost().getCurrentTab()) {
                 case 0: {
                     if (getCurrentActivity() instanceof TroubleAnalyzeActivity) {

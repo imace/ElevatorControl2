@@ -23,10 +23,8 @@ import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ParameterGroupSettingsDao;
-import com.inovance.ElevatorControl.models.ObjectListHolder;
-import com.inovance.ElevatorControl.models.ParameterGroupSettings;
-import com.inovance.ElevatorControl.models.ParameterSettings;
-import com.inovance.ElevatorControl.models.UserFactory;
+import com.inovance.ElevatorControl.daos.ProfileDao;
+import com.inovance.ElevatorControl.models.*;
 import com.inovance.ElevatorControl.utils.GenerateJSON;
 import com.inovance.ElevatorControl.utils.LogUtils;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
@@ -56,11 +54,6 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
 
     @InjectView(R.id.supplier_code)
     TextView supplierCodeTextView;
-
-    /**
-     * 默认的读取并保存参数目录名称
-     */
-    private final static String DIRECTORY_NAME = "Profile";
 
     /**
      * 读取参数 Handler
@@ -122,8 +115,8 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
         setContentView(R.layout.activity_parameter_download);
         Views.inject(this);
         downloadParameterHandler = new DownloadParameterHandler(this);
-        deviceTypeTextView.setText(UserFactory.getInstance().getDeviceName());
-        supplierCodeTextView.setText(UserFactory.getInstance().getSupplierCode());
+        deviceTypeTextView.setText(ConfigFactory.getInstance().getDeviceName());
+        supplierCodeTextView.setText(ConfigFactory.getInstance().getSupplierCode());
     }
 
     @Override
@@ -154,7 +147,7 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
     @OnClick(R.id.download_button)
     void onDownloadButtonClick() {
         //弹出下载框
-        if (BluetoothTool.getInstance(this).isPrepared()) {
+        if (BluetoothTool.getInstance().isPrepared()) {
             AlertDialog.Builder builder = new AlertDialog.Builder(ParameterDownloadActivity.this);
             LayoutInflater inflater = ParameterDownloadActivity.this.getLayoutInflater();
             View dialogView = inflater.inflate(R.layout.parameters_duplicate_dialog, null);
@@ -206,8 +199,8 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
             downloadDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    BluetoothTool.getInstance(ParameterDownloadActivity.this).setCommunications(null);
-                    BluetoothTool.getInstance(ParameterDownloadActivity.this).setHandler(null);
+                    BluetoothTool.getInstance().setCommunications(null);
+                    BluetoothTool.getInstance().setHandler(null);
                     downloadDialog.dismiss();
                 }
             });
@@ -223,7 +216,7 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
             inputMethodManager.hideSoftInputFromWindow(fileNameEditText.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
             File directory = new File(getApplicationContext().getExternalCacheDir().getPath()
                     + "/"
-                    + DIRECTORY_NAME);
+                    + ApplicationConfig.ProfileFolder);
             if (!directory.exists()) {
                 directory.mkdir();
             }
@@ -270,7 +263,7 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
                 @Override
                 public void beforeSend() {
                     this.setSendBuffer(SerialUtility.crc16(SerialUtility
-                            .hexStr2Ints("0103"
+                            .hexStringToInt("0103"
                                     + ParseSerialsUtils.getCalculatedCode(firstItem)
                                     + String.format("%04x", length)
                                     + "0001")));
@@ -300,7 +293,7 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
                             List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
                             for (int j = 0; j < length; j++) {
                                 ParameterSettings item = list.get(position * 10 + j);
-                                byte[] tempData = SerialUtility.crc16(SerialUtility.hexStr2Ints("01030002"
+                                byte[] tempData = SerialUtility.crc16(SerialUtility.hexStringToInt("01030002"
                                         + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
                                 item.setReceived(tempData);
                                 tempList.add(item);
@@ -325,8 +318,8 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
     private void startCommunication(int position) {
         if (position >= 0 && position < communicationsList.size()) {
             downloadParameterHandler.index = position;
-            if (BluetoothTool.getInstance(this).isPrepared()) {
-                BluetoothTool.getInstance(this)
+            if (BluetoothTool.getInstance().isPrepared()) {
+                BluetoothTool.getInstance()
                         .setHandler(downloadParameterHandler)
                         .setCommunications(communicationsList.get(position))
                         .send();
@@ -390,14 +383,15 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
                     if (ParameterDownloadActivity.this.downloadDialog != null) {
                         ParameterDownloadActivity.this.downloadDialog.dismiss();
                     }
-                    File fileName = new File(getApplicationContext().getExternalCacheDir().getPath()
+                    String fileName = fileNameEditText.getText().toString();
+                    File filePath = new File(getApplicationContext().getExternalCacheDir().getPath()
                             + "/"
-                            + DIRECTORY_NAME
+                            + ApplicationConfig.ProfileFolder
                             + "/"
-                            + fileNameEditText.getText().toString());
-                    if (!fileName.exists()) {
+                            + fileName);
+                    if (!filePath.exists()) {
                         try {
-                            fileName.createNewFile();
+                            filePath.createNewFile();
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -406,9 +400,17 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
                             .getInstance()
                             .generateProfileJSON(ParameterDownloadActivity.this.parameterGroupLists);
                     try {
-                        FileOutputStream outputStream = new FileOutputStream(fileName);
+                        FileOutputStream outputStream = new FileOutputStream(filePath);
                         outputStream.write(JSONString.getBytes());
                         outputStream.close();
+                        // 存入数据库
+                        Profile profile = new Profile();
+                        profile.setFileName(fileName);
+                        profile.setDeviceType(ConfigFactory.getInstance().getDeviceName());
+                        profile.setVendorName(ConfigFactory.getInstance().getSupplierCode());
+                        profile.setCreateTime(String.valueOf(System.currentTimeMillis()));
+                        ProfileDao.save(ParameterDownloadActivity.this, profile);
+                        // 写入日志
                         LogUtils.getInstance().write(ApplicationConfig.LogDownloadProfile);
                         Toast.makeText(ParameterDownloadActivity.this,
                                 R.string.download_parameter_save_successful,
@@ -435,14 +437,6 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
                 }
                 receiveCount++;
             }
-        }
-
-        @Override
-        public void onTalkError(Message msg) {
-            super.onTalkError(msg);
-            receiveCount = 0;
-            currentPosition = index;
-            pool.execute(ParameterDownloadActivity.this);
         }
     }
 

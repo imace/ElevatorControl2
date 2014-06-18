@@ -125,8 +125,9 @@ public class RegisterUserActivity extends Activity {
                     if (tag.equalsIgnoreCase(ApplicationConfig.RegisterUser)) {
                         try {
                             JSONArray jsonArray = new JSONArray(responseString);
-                            setResult(RESULT_OK);
-                            finish();
+                            Toast.makeText(RegisterUserActivity.this,
+                                    R.string.regist_successful_wait_text,
+                                    Toast.LENGTH_SHORT).show();
                         } catch (JSONException e) {
                             submitProgress.setVisibility(View.GONE);
                             submitTextView.setVisibility(View.VISIBLE);

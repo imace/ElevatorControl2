@@ -62,6 +62,7 @@ public class Vendor {
     }
 
     public Vendor(JSONObject object) {
+        this.ID = object.optInt("ID");
         this.name = object.optString("VendorName");
         this.serialNumber = object.optString("VendorNum");
     }

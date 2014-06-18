@@ -29,9 +29,9 @@
                 android:layout_marginRight="5dp"
                 android:layout_width="1dp"
                 android:layout_height="match_parent"/>
-        <Spinner
+        <AutoCompleteTextView
                 android:id="@+id/vendor"
-                style="@android:style/Widget.Holo.Light.Spinner"
+                android:singleLine="true"
                 android:layout_marginTop="5dp"
                 android:layout_marginBottom="5dp"
                 android:layout_weight="1"

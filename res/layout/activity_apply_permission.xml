@@ -5,13 +5,80 @@
               android:background="@color/main_background"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
-    <!-- 真实姓名 -->
+    <!-- 厂家 -->
     <LinearLayout
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_margin="10dp"
+            android:background="@drawable/card_view_background">
+        <TextView
+                android:layout_marginLeft="10dp"
+                style="@android:style/TextAppearance"
+                android:textColor="#515151"
+                android:text="@string/vendor_name_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        <View
+                android:background="#ffdfdfdf"
+                android:layout_marginRight="10dp"
+                android:layout_marginLeft="10dp"
+                android:layout_width="1dp"
+                android:layout_height="match_parent"/>
+        <AutoCompleteTextView
+                android:id="@+id/vendor_name"
+                android:singleLine="true"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:layout_marginRight="10dp"
+                android:layout_weight="1"
+                android:hint="@string/field_require_hint"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+    </LinearLayout>
+    <!-- 设备 -->
+    <LinearLayout
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/card_view_background">
+        <TextView
+                android:layout_marginLeft="10dp"
+                style="@android:style/TextAppearance"
+                android:textColor="#515151"
+                android:text="@string/apply_device_label_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        <View
+                android:background="#ffdfdfdf"
+                android:layout_marginRight="10dp"
+                android:layout_marginLeft="10dp"
+                android:layout_width="1dp"
+                android:layout_height="match_parent"/>
+        <Spinner
+                android:id="@+id/equipment_model"
+                style="@android:style/Widget.Holo.Light.Spinner"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:layout_marginRight="10dp"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"/>
+    </LinearLayout>
+    <!-- 真实姓名 -->
+    <LinearLayout
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
             android:background="@drawable/card_view_background">
         <TextView
                 android:layout_marginLeft="10dp"
@@ -95,11 +162,11 @@
                 android:layout_width="1dp"
                 android:layout_height="match_parent"/>
         <EditText
-                android:id="@+id/cell_phone"
+                android:id="@+id/position"
                 android:layout_weight="1"
                 android:maxLines="1"
                 android:hint="@string/field_require_hint"
-                android:inputType="numberDecimal"
+                android:inputType="text"
                 android:layout_marginTop="5dp"
                 android:layout_marginBottom="5dp"
                 android:layout_marginRight="10dp"
@@ -133,7 +200,8 @@
                 android:id="@+id/tel_phone"
                 android:layout_weight="1"
                 android:maxLines="1"
-                android:inputType="numberDecimal"
+                android:hint="@string/field_require_hint"
+                android:inputType="phone"
                 android:layout_marginTop="5dp"
                 android:layout_marginBottom="5dp"
                 android:layout_marginRight="10dp"
@@ -200,19 +268,6 @@
                 android:id="@+id/submit_text"
                 android:background="@android:color/transparent"
                 android:text="@string/submit_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-    </LinearLayout>
-    <LinearLayout
-            android:orientation="vertical"
-            android:gravity="center"
-            android:layout_gravity="center"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-        <TextView
-                android:id="@+id/error_text"
-                style="@android:style/TextAppearance"
-                android:textColor="#ffaf2422"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
     </LinearLayout>

@@ -82,7 +82,7 @@ public class FirmwareBurnAdapter extends BaseAdapter {
         holder.moreOption.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (BluetoothTool.getInstance(baseActivity).isPrepared()) {
+                if (BluetoothTool.getInstance().isPrepared()) {
                     baseActivity.onClickFirmwareBurnItemMoreOption(view, index, firmware);
                 }
             }

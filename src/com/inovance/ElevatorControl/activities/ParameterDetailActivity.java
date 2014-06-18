@@ -250,7 +250,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 if (!syncingParameter) {
-                    if (BluetoothTool.getInstance(ParameterDetailActivity.this).isPrepared()) {
+                    if (BluetoothTool.getInstance().isPrepared()) {
                         final ParameterSettings settings = listViewDataSource.get(position);
                         int mode = Integer.parseInt(settings.getMode());
                         /**
@@ -258,7 +258,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                          */
                         if (mode == ApplicationConfig.modifyType[0]) {
                             settings.setElevatorRunning(false);
-                            if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[0]) {
+                            if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[0]) {
                                 createPickerDialog(position, settings);
                             } else {
                                 onClickListViewWithIndex(position);
@@ -299,8 +299,8 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                          * 不可修改
                          */
                         if (mode == ApplicationConfig.modifyType[2]) {
-                            if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[0] ||
-                                    settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[1]) {
+                            if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[0] ||
+                                    settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[1]) {
                                 new AlertDialog.Builder(ParameterDetailActivity.this,
                                         R.style.CustomDialogStyle)
                                         .setTitle(settings.getCodeText() + " " + settings.getName())
@@ -334,7 +334,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                         new BluetoothTalk() {
                             @Override
                             public void beforeSend() {
-                                this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0103"
+                                this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0103"
                                         + monitor.getCode()
                                         + "0001")));
                             }
@@ -369,11 +369,11 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 };
             }
         }
-        if (BluetoothTool.getInstance(this).isPrepared()) {
+        if (BluetoothTool.getInstance().isPrepared()) {
             if (!ParameterDetailActivity.this.hasGetElevatorStatus) {
                 getElevatorStatusHandler.index = index;
                 getElevatorStatusHandler.settings = settings;
-                BluetoothTool.getInstance(this)
+                BluetoothTool.getInstance()
                         .setCommunications(getElevatorStatusCommunication)
                         .setHandler(getElevatorStatusHandler)
                         .send();
@@ -456,7 +456,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
             confirmButton.setEnabled(false);
             final String[] codeArray = ParameterDetailActivity.this.getCodeStringArray(settings);
             ParameterDetailActivity.this.hasGetValueScope = false;
-            BluetoothTool.getInstance(ParameterDetailActivity.this).setHandler(null);
+            BluetoothTool.getInstance().setHandler(null);
             new CountDownTimer(2400, 800) {
 
                 @Override
@@ -624,7 +624,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 detailDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[1]) {
+                        if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[1]) {
                             if (Integer.parseInt(settings.getType()) == 3
                                     && !settings.getName().contains("X25")
                                     && !settings.getName().contains("X26")
@@ -651,7 +651,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                             }
                             detailDialog.dismiss();
                         }
-                        if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[2]) {
+                        if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[2]) {
                             ListView listView = (ListView) detailDialog.findViewById(R.id.switch_list);
                             DialogSwitchListViewAdapter adapter = (DialogSwitchListViewAdapter) listView
                                     .getAdapter();
@@ -723,7 +723,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
             communications[i] = new BluetoothTalk() {
                 @Override
                 public void beforeSend() {
-                    this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0103"
+                    this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0103"
                             + codeArray[position]
                             + "0001")));
                 }
@@ -762,11 +762,11 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
             };
         }
         if (communications.length > 0) {
-            if (BluetoothTool.getInstance(ParameterDetailActivity.this).isPrepared()) {
+            if (BluetoothTool.getInstance().isPrepared()) {
                 if (!ParameterDetailActivity.this.hasGetValueScope) {
                     getValueScopeHandler.count = communications.length;
                     getValueScopeHandler.index = index;
-                    BluetoothTool.getInstance(ParameterDetailActivity.this)
+                    BluetoothTool.getInstance()
                             .setCommunications(communications)
                             .setHandler(getValueScopeHandler)
                             .send();
@@ -778,7 +778,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
     @Override
     protected void onResume() {
         super.onResume();
-        if (BluetoothTool.getInstance(ParameterDetailActivity.this).isPrepared()) {
+        if (BluetoothTool.getInstance().isPrepared()) {
             ParameterDetailActivity.this.syncingParameter = true;
             currentTask = GetParameterDetail;
             pool.execute(this);
@@ -797,7 +797,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0106"
+                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0106"
                                 + ParseSerialsUtils.getCalculatedCode(settings)
                                 + userValue
                                 + "0001")));
@@ -828,7 +828,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                     }
                 }
         };
-        if (BluetoothTool.getInstance(ParameterDetailActivity.this).isPrepared()) {
+        if (BluetoothTool.getInstance().isPrepared()) {
             ParameterDetailActivity.this.isWriteSuccessful = false;
             updateHandler.index = position;
             updateHandler.writeCode = userValue;
@@ -839,7 +839,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                         updateHandler.index = position;
                         updateHandler.writeCode = userValue;
                         updateHandler.startValue = settings.getUserValue();
-                        BluetoothTool.getInstance(ParameterDetailActivity.this)
+                        BluetoothTool.getInstance()
                                 .setHandler(updateHandler)
                                 .setCommunications(communications)
                                 .send();
@@ -887,7 +887,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                     @Override
                     public void beforeSend() {
                         this.setSendBuffer(SerialUtility.crc16(SerialUtility
-                                .hexStr2Ints("0103"
+                                .hexStringToInt("0103"
                                         + ParseSerialsUtils.getCalculatedCode(firstItem)
                                         + String.format("%04x", length)
                                         + "0001")));
@@ -918,7 +918,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                                 for (int j = 0; j < length; j++) {
                                     if (position * 10 + j < settingsList.size()) {
                                         ParameterSettings item = settingsList.get(position * 10 + j);
-                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStr2Ints("01030002"
+                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStringToInt("01030002"
                                                 + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
                                         item.setReceived(tempData);
                                         tempList.add(item);
@@ -934,9 +934,9 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 };
             }
         }
-        if (BluetoothTool.getInstance(ParameterDetailActivity.this).isPrepared()) {
+        if (BluetoothTool.getInstance().isPrepared()) {
             parameterDetailHandler.sendCount = communications.length;
-            BluetoothTool.getInstance(ParameterDetailActivity.this)
+            BluetoothTool.getInstance()
                     .setHandler(parameterDetailHandler)
                     .setCommunications(communications)
                     .send();
@@ -970,7 +970,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
     private void onGetElevatorStatus(final int index, int status, final ParameterSettings settings) {
         settings.setElevatorRunning(status != 3);
         if (settings.isElevatorRunning()) {
-            if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[2]) {
+            if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[2]) {
                 onClickListViewWithIndex(index);
             }
             Toast.makeText(ParameterDetailActivity.this,
@@ -1048,7 +1048,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         mRefreshActionItem = (RefreshActionItem) item.getActionView();
         assert mRefreshActionItem != null;
         mRefreshActionItem.setMenuItem(item);
-        if (BluetoothTool.getInstance(ParameterDetailActivity.this).isPrepared()) {
+        if (BluetoothTool.getInstance().isPrepared()) {
             mRefreshActionItem.showProgress(true);
         }
         mRefreshActionItem.setProgressIndicatorType(ProgressIndicatorType.INDETERMINATE);
@@ -1060,7 +1060,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                BluetoothTool.getInstance(ParameterDetailActivity.this)
+                BluetoothTool.getInstance()
                         .setHandler(null);
                 setResult(RESULT_OK);
                 finish();
@@ -1095,7 +1095,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                     if (msg.obj != null && msg.obj instanceof ParameterSettings) {
                         ParameterSettings settings = (ParameterSettings) msg.obj;
                         int index = listViewDataSource.indexOf(settings);
-                        if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[0]) {
+                        if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[0]) {
                             createPickerDialog(index, settings);
                         } else {
                             onClickListViewWithIndex(index);

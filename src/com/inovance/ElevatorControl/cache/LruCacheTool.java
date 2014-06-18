@@ -2,6 +2,7 @@ package com.inovance.ElevatorControl.cache;
 
 import android.content.Context;
 import android.os.Environment;
+import com.inovance.ElevatorControl.config.ApplicationConfig;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,11 +17,11 @@ import java.io.IOException;
 
 public class LruCacheTool {
 
+    private static final String TAG = LruCacheTool.class.getSimpleName();
+
     private SimpleDiskCache diskCache;
 
     private static final int cacheMaxSize = 10485760;
-
-    private static final String cacheDir = "localCache";
 
     private static final int versionCode = 1;
 
@@ -42,9 +43,20 @@ public class LruCacheTool {
     public void initCache(Context context) {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             if (context.getExternalCacheDir() != null) {
-                File cacheDirectory = new File(context.getExternalCacheDir().getPath() + "/" + cacheDir);
+                File path = new File(context.getExternalCacheDir().getPath() + "/" + ApplicationConfig.CacheFolder);
+                if (path.exists()) {
+                    if (path.isDirectory()) {
+                        String[] children = path.list();
+                        for (String aChildren : children) {
+                            new File(path, aChildren).delete();
+                        }
+                    }
+                }
+                if (!path.exists()) {
+                    path.mkdir();
+                }
                 try {
-                    diskCache = SimpleDiskCache.open(cacheDirectory, versionCode, cacheMaxSize);
+                    diskCache = SimpleDiskCache.open(path, versionCode, cacheMaxSize);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

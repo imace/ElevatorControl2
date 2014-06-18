@@ -77,8 +77,8 @@ public class BluetoothAddressActivity extends Activity {
      * 更新连接蓝牙设备信息
      */
     private void updateConnectedDeviceInformation() {
-        if (BluetoothTool.getInstance(BluetoothAddressActivity.this).isConnected()) {
-            BluetoothDevice connectedDevice = BluetoothTool.getInstance(BluetoothAddressActivity.this).connectedDevice;
+        if (BluetoothTool.getInstance().isConnected()) {
+            BluetoothDevice connectedDevice = BluetoothTool.getInstance().connectedDevice;
             deviceName.setText(connectedDevice.getName());
             deviceAddress.setText(connectedDevice.getAddress());
         } else {

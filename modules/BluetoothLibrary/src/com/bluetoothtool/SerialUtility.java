@@ -68,8 +68,8 @@ public class SerialUtility {
     public static String int2HexStr(int[] i) {
         String stmp = "";
         StringBuilder sb = new StringBuilder("");
-        for (int n = 0; n < i.length; n++) {
-            stmp = Integer.toHexString(i[n] & 0xFF);
+        for (int anI : i) {
+            stmp = Integer.toHexString(anI & 0xFF);
             sb.append((stmp.length() == 1) ? "0" + stmp : stmp);
             sb.append(" ");
         }
@@ -96,7 +96,7 @@ public class SerialUtility {
         return ret;
     }
 
-    public static int[] hexStr2Ints(String src) {
+    public static int[] hexStringToInt(String src) {
         src = src.replaceAll("\\s*", "");
         int m = 0, n = 0;
         int l = src.length() / 2;
@@ -166,36 +166,93 @@ public class SerialUtility {
      * @return 加入校验码之后的完整命令
      */
     public static byte[] crc16(int[] data) {
-        int[] temdata = new int[data.length + 2];
-        int xda, xdapoly;
-        int i, j, xdabit;
-        xda = 0xFFFF;
-        xdapoly = 0xA001; // (X**16 + X**15 + X**2 + 1)
-        for (i = 0; i < data.length; i++) {
-            xda ^= data[i];
-            for (j = 0; j < 8; j++) {
-                xdabit = (int) (xda & 0x01);
-                xda >>= 1;
-                if (xdabit == 1)
-                    xda ^= xdapoly;
+        if (BluetoothTool.getInstance().crcValue == -1) {
+            int[] temdata = new int[data.length + 2];
+            int xda, xdapoly;
+            int i, j, xdabit;
+            xda = 0xFFFF;
+            xdapoly = 0xA001; // (X**16 + X**15 + X**2 + 1)
+            for (i = 0; i < data.length; i++) {
+                xda ^= data[i];
+                for (j = 0; j < 8; j++) {
+                    xdabit = (int) (xda & 0x01);
+                    xda >>= 1;
+                    if (xdabit == 1)
+                        xda ^= xdapoly;
+                }
+            }
+            System.arraycopy(data, 0, temdata, 0, data.length);
+            temdata[temdata.length - 2] = (int) (xda & 0xFF);
+            temdata[temdata.length - 1] = (int) (xda >> 8);
+            byte[] result = new byte[temdata.length];
+            for (int x = 0; x < temdata.length; x++) {
+                result[x] = (byte) (temdata[x]);
+            }
+            return result;
+        } else {
+            return specialCRC16(data);
+        }
+    }
+
+    /**
+     * 专用设备校验
+     *
+     * @param data int[]
+     * @return byte[]
+     */
+    public static byte[] specialCRC16(int[] data) {
+        byte[] rawData = int2byte(data);
+        int crcValue = getSpecialDeviceCRCCheck(BluetoothTool.getInstance().crcValue, rawData, rawData.length);
+        byte[] crcBytes = new byte[2];
+        crcBytes[0] = (byte) (crcValue & 0xFF);
+        crcBytes[1] = (byte) ((crcValue >> 8) & 0xFF);
+        byte[] result = new byte[rawData.length + crcBytes.length];
+        System.arraycopy(rawData, 0, result, 0, rawData.length);
+        System.arraycopy(crcBytes, 0, result, rawData.length, crcBytes.length);
+        return result;
+    }
+
+    /**
+     * 标准设备 CRC 校验
+     *
+     * @param data   Data
+     * @param length Length
+     * @return int
+     */
+    private static int getNormalDeviceCRCCheck(byte[] data, int length) {
+        int crc_value = 0xFFFF;
+        for (int i = 0; i < length; i++) {
+            crc_value ^= (data[i] & 0xFF);
+            for (int j = 0; j < 8; j++) {
+                if ((crc_value & 0x0001) > 0) {
+                    crc_value = (crc_value >> 1) ^ 0xa001;
+                } else crc_value = crc_value >> 1;
             }
         }
-        System.arraycopy(data, 0, temdata, 0, data.length);
-        temdata[temdata.length - 2] = (int) (xda & 0xFF);
-        temdata[temdata.length - 1] = (int) (xda >> 8);
+        return crc_value;
+    }
 
-        byte[] result = new byte[temdata.length];
-        for (int x = 0; x < temdata.length; x++) {
-            result[x] = (byte) (temdata[x]);
+    /**
+     * 专有设备 CRC 校验
+     *
+     * @param data   Data
+     * @param length Length
+     * @return int
+     */
+    private static int getSpecialDeviceCRCCheck(int crcValue, byte[] data, int length) {
+        if (length < 0)
+            return crcValue;
+        for (byte a : data) {
+            crcValue ^= a;
         }
-        return result;
+        return crcValue;
     }
 
     /**
      * 获取二位crc16校验码
      *
      * @param data 指令或接收的响应
-     * @return
+     * @return int[]
      */
     public static int[] getEndFrom(byte[] data) {
         int firstnotzero = 0;
@@ -215,58 +272,23 @@ public class SerialUtility {
     /**
      * 判断接受到的数据是否符合crc16
      *
-     * @param data
-     * @return
+     * @param data byte[]
+     * @return boolean
      */
     public static boolean isCRC16Valid(byte[] data) {
         if (data.length <= 2)
             return false;
-        byte[] trimed = trimEnd(data);
-        if (trimed.length <= 2)
+        byte[] trim = trimEnd(data);
+        if (trim.length <= 2)
             return false;
-        /*
-        // 纯指令
-        byte[] bcmd = new byte[trimed.length - 2];
-        int[] icmd = new int[trimed.length - 2];
-        System.arraycopy(trimed, 0, bcmd, 0, trimed.length - 2);
-        for (int i = 0; i < trimed.length - 2; i++) {
-            icmd[i] = bcmd[i];
+        int crcValue = BluetoothTool.getInstance().crcValue;
+        if (crcValue == -1) {
+            int value = getNormalDeviceCRCCheck(trim, trim.length);
+            return value == 0;
+        } else {
+            int value = getSpecialDeviceCRCCheck(crcValue, trim, trim.length);
+            return value == 0;
         }
-        // crc最后两位
-        byte[] crced = crc16(icmd);
-
-        int[] last1 = new int[]{crced[crced.length - 2] & 0xff,
-                crced[crced.length - 1] & 0xff};
-        int[] last1 = getCRCCheckValue(trimEnd(data), trimEnd(data).length);
-        for (int i = 0; i < last1.length; i ++){
-            Log.v("CRCAAA", Integer.toHexString(last1[i]));
-        }
-        // 最后两位
-        int[] last2 = getEndFrom(data);
-        return (last1[0] == last2[0] && last1[1] == last2[1]);
-        */
-        int value = getCRCCheckValue(trimed, trimed.length);
-        return value == 0;
-    }
-
-    /**
-     * CRC CHECK
-     *
-     * @param data_value
-     * @param length
-     * @return
-     */
-    private static int getCRCCheckValue(byte[] data_value, int length) {
-        int crc_value = 0xFFFF;
-        for (int i = 0; i < length; i++) {
-            crc_value ^= (data_value[i] & 0xFF);// 默认转为16进制进行异或
-            for (int j = 0; j < 8; j++) {
-                if ((crc_value & 0x0001) > 0) {
-                    crc_value = (crc_value >> 1) ^ 0xa001;
-                } else crc_value = crc_value >> 1;
-            }
-        }
-        return crc_value;
     }
 
     /**
@@ -325,4 +347,18 @@ public class SerialUtility {
         return bits;
     }
 
+    public static byte[] int2byte(int[] src) {
+        int srcLength = src.length;
+        byte[] dst = new byte[srcLength << 2];
+
+        for (int i = 0; i < srcLength; i++) {
+            int x = src[i];
+            int j = i << 2;
+            dst[j++] = (byte) ((x >>> 0) & 0xff);
+            dst[j++] = (byte) ((x >>> 8) & 0xff);
+            dst[j++] = (byte) ((x >>> 16) & 0xff);
+            dst[j++] = (byte) ((x >>> 24) & 0xff);
+        }
+        return dst;
+    }
 }

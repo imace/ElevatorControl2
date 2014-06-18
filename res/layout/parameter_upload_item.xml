@@ -16,6 +16,7 @@
             android:layout_marginRight="50dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+        <!-- 文件名称 -->
         <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="wrap_content"
@@ -34,6 +35,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
         </LinearLayout>
+        <!-- 创建日期 -->
         <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="wrap_content"
@@ -47,6 +49,45 @@
                     android:layout_height="wrap_content"/>
             <TextView
                     android:id="@+id/create_date"
+                    style="@android:style/TextAppearance"
+                    android:textColor="#878787"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+        </LinearLayout>
+        <!-- 厂家编号 -->
+        <LinearLayout
+                android:id="@+id/vendor_name_view"
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+            <TextView
+                    style="@android:style/TextAppearance"
+                    android:textColor="#515151"
+                    android:text="@string/profile_vendor_name_text"
+                    android:layout_marginRight="5dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            <TextView
+                    android:id="@+id/vendor_name"
+                    style="@android:style/TextAppearance"
+                    android:textColor="#878787"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+        </LinearLayout>
+        <!-- 设备型号 -->
+        <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+            <TextView
+                    style="@android:style/TextAppearance"
+                    android:textColor="#515151"
+                    android:text="@string/profile_device_type_text"
+                    android:layout_marginRight="5dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            <TextView
+                    android:id="@+id/device_type"
                     style="@android:style/TextAppearance"
                     android:textColor="#878787"
                     android:layout_width="wrap_content"

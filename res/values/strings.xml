@@ -36,6 +36,10 @@
     <string name="sign_up_text">注册</string>
     <string name="retry_connect_device">重试</string>
     <string name="connect_server_timeout">服务器连接超时</string>
+    <string name="normal_device_text">标准设备</string>
+    <string name="update_parameter_data_wait_message">更新数据中</string>
+
+    <string name="view_detail_text">查看详细-></string>
 
     <string name="read_data_error">读取列表信息错误</string>
     <string name="get_bluetooth_address_error">请打开蓝牙，以便获取蓝牙硬件地址。</string>
@@ -77,8 +81,7 @@
     <string name="no_network_title">无网络</string>
     <string name="setting_network_message">请先设置网络连接并确保网络连接可用</string>
     <string name="exit_application_text">退出</string>
-    <string name="setting_wireless_text">设置3G</string>
-    <string name="setting_wifi_text">设置Wifi</string>
+    <string name="setting_network_text">设置网络</string>
     <string name="update_application_text">更新</string>
 
     <!-- 程序首页 Home -->
@@ -107,6 +110,7 @@
     <string name="cellphone_error">移动电话必填</string>
     <string name="email_address_error">邮箱填写错误</string>
     <string name="register_failed_text">提交失败，请重试。</string>
+    <string name="regist_successful_wait_text">注册提交成功，请等待审核。</string>
 
     <!-- 选择设备型号 -->
     <string name="select_device_type_text">选择设备型号</string>
@@ -144,10 +148,12 @@
         <item>日志</item>
         <item>关于</item>
     </string-array>
+    <string name="check_application_update_text">正在检查更新</string>
     <string name="bluetooth_address_text">蓝牙地址</string>
     <string name="current_connected_device_name_text">当前连接设备名称</string>
     <string name="current_connected_device_address_text">当前连接设备蓝牙地址</string>
     <string name="no_connected_device">当前未连接设备</string>
+    <string name="installed_last_application_text">当前软件为最新版本，无需更新。</string>
 
     <!-- 应用程序设置 -->
     <string name="remote_help_text">远程协助</string>
@@ -183,7 +189,6 @@
     <string name="elevator_running_cannot_upload_message">电梯正在运行，无法上传参数。</string>
     <string name="cannot_download_profile_title">无法读取</string>
     <string name="elevator_running_cannot_download_message">电梯正在运行，无法读取参数。</string>
-
     <string name="parameter_file_package_text">参数文件包</string>
     <string name="view_button_text">查看</string>
     <string name="upload_button_text">写入</string>
@@ -191,11 +196,14 @@
     <string name="profile_version_text">版本</string>
     <string name="profile_file_name_text">文件名</string>
     <string name="profile_create_date_text">日期</string>
+    <string name="profile_vendor_name_text">电梯厂家</string>
+    <string name="profile_device_type_text">当前设备型号</string>
     <string name="uploading_profile_text">正在写入参数</string>
     <string name="uploading_profile_end">写入结束</string>
     <string name="uploading_profile_complete">全部正确写入！</string>
     <string name="upload_dialog_title">写入参数</string>
     <string name="upload_dialog_message">确定要写入参数吗</string>
+    <string name="write_failed_text">写入失败</string>
 
     <!-- 参数读取 -->
     <string name="parameter_upload_text">参数写入 (手机 -> 一体机)</string>
@@ -217,8 +225,8 @@
 
     <!-- 程序申请 -->
     <string name="vendor_name_text">设备厂家</string>
-    <string name="equipment_model_text">设备型号</string>
-    <string name="manufacturers_serial_number_text">厂家编号</string>
+    <string name="equipment_model_text">当前设备型号</string>
+    <string name="manufacturers_serial_number_text">电梯厂家</string>
     <string name="firmware_version_text">程序版本</string>
     <string name="remark_text">备注</string>
     <string name="submit_application_text">提交申请</string>
@@ -304,26 +312,44 @@
 
     <!-- 更新应用程序 -->
     <string name="confirm_update_title">更新软件</string>
-    <string name="confirm_update_message">需要更新软件吗</string>
+    <string name="last_version_text">检测到最新版本号: </string>
     <string name="download_application_title">下载更新包中</string>
 
     <!-- 申请权限 -->
     <string name="apply_permission_text">专有权限申请</string>
+    <string name="apply_device_label_text">设备型号</string>
     <string name="apply_true_name_text">真实姓名</string>
     <string name="apply_company_name_text">公司名称</string>
     <string name="apply_position_text">职务</string>
     <string name="apply_tel_phone_text">联系电话</string>
     <string name="apply_email_text">联系邮箱</string>
+    <string name="vendor_name_error">设备厂家必填</string>
+    <string name="device_type_error">设备型号必选</string>
+    <string name="true_name_error">真实姓名必填</string>
+    <string name="position_name_error">职位必填</string>
+    <string name="submit_successful_text">提交成功，请等待审核。</string>
 
     <!-- 远程协助 -->
     <string name="input_tel_phone_hint">请输入电话号码</string>
     <string name="choice_send_type_title">选择操作类型</string>
     <string-array name="send_type_array">
+        <item>发送描述文字</item>
         <item>发送现场参数</item>
         <item>发送现场照片</item>
         <item>发送现场视频</item>
         <item>发送现场音频</item>
     </string-array>
+    <string name="chat_content_operation_title">选择操作类型</string>
+    <string name="input_text_content_title">发送文本信息</string>
+    <string-array name="chat_content_operation_array">
+        <item>查看内容</item>
+        <item>回复内容</item>
+    </string-array>
+    <string name="input_message_title_text_title_text">填写标题发送</string>
+    <string name="input_title_hint">输入标题</string>
+    <string name="input_content_hint">输入文本内容</string>
+    <string name="contact_item_template">{param0} - {param1}</string>
+    <string name="select_receiver_title">选择接收方</string>
 
     <!-- 固件烧录错误信息 -->
     <string-array name="burn_error_code_array">

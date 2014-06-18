@@ -1,12 +1,9 @@
 package com.inovance.ElevatorControl.utils;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
-import android.widget.Toast;
 import com.bluetoothtool.SerialUtility;
-import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ErrorHelpDao;
 import com.inovance.ElevatorControl.models.ErrorHelp;
@@ -30,8 +27,8 @@ public class ParseSerialsUtils {
     public static String getValueTextFromRealTimeMonitor(RealTimeMonitor monitor) {
         byte[] data = monitor.getReceived();
         if (data.length == 8) {
-            if (monitor.isShowBit()) {
-                return "查看详细->";
+            if (monitor.getDescription() == null && monitor.getDescription().length() <= 0) {
+                return TextLocalize.getInstance().getViewDetailText();
             }
             int value = getIntFromBytes(data);
             if (monitor.getUnit() == null || monitor.getUnit().length() <= 0) {
@@ -43,7 +40,7 @@ public class ParseSerialsUtils {
             Float floatValue = value * Float.parseFloat(monitor.getScale());
             return String.format("%.2f", floatValue);
         }
-        return "Error";
+        return "";
     }
 
     /**
@@ -57,7 +54,7 @@ public class ParseSerialsUtils {
         byte[] data = settings.getReceived();
         if (data.length == 8) {
             int value = getIntFromBytes(data);
-            if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[0]) {
+            if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[0]) {
                 try {
                     return "" + value * Integer.parseInt(settings.getScale());
                 } catch (Exception e) {
@@ -65,7 +62,7 @@ public class ParseSerialsUtils {
                     return String.format("%." + (settings.getScale().length() - 2) + "f", doubleValue);
                 }
             }
-            if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[1]) {
+            if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[1]) {
                 try {
                     JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
                     int size = jsonArray.length();
@@ -99,36 +96,11 @@ public class ParseSerialsUtils {
                     e.printStackTrace();
                 }
             }
-            if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[2]) {
-                return "查看详细->";
+            if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[2]) {
+                return TextLocalize.getInstance().getViewDetailText();
             }
         }
         return "";
-    }
-
-    /**
-     * 验证用户输入值是否在范围以内
-     *
-     * @param activity  Toast 显示 Activity
-     * @param settings  ParameterSettings
-     * @param userValue User Input String
-     * @return 验证是否通过
-     */
-    @SuppressLint("ValidateUserInputValue")
-    public static boolean validateUserInputValue(Activity activity, ParameterSettings settings, String userValue) {
-        String[] scopeArray = settings.getScope().split("-");
-        double[] array = new double[2];
-        array[0] = Double.parseDouble(scopeArray[0]) / Double.parseDouble(settings.getScale());
-        array[1] = Double.parseDouble(scopeArray[1]) / Double.parseDouble(settings.getScale());
-        Double newValue = Double.parseDouble(userValue);
-        if (Math.max(newValue, array[0]) == newValue && Math.min(newValue, array[1]) == newValue) {
-            return true;
-        } else {
-            Toast.makeText(activity,
-                    activity.getResources().getString(R.string.not_validated_input_value_text),
-                    Toast.LENGTH_SHORT).show();
-            return false;
-        }
     }
 
     /**
@@ -204,24 +176,6 @@ public class ParseSerialsUtils {
     }
 
     /**
-     * 取得电梯状态Code Bit 4-7
-     *
-     * @param monitor RealTimeMonitor
-     * @return System Status Code
-     */
-    @SuppressLint("GetElevatorStatusCode")
-    public static int getElevatorStatusCode(RealTimeMonitor monitor) {
-        byte[] data = monitor.getReceived();
-        if (data.length == 8) {
-            String bitString = ""
-                    + (byte) ((data[4] >> 3) & 0x1) + (byte) ((data[4] >> 2) & 0x1)
-                    + (byte) ((data[4] >> 1) & 0x1) + (byte) ((data[4]) & 0x1);
-            return Integer.parseInt(bitString, 2);
-        }
-        return -1;
-    }
-
-    /**
      * 取得轿厢状态Code Bit 8-11
      *
      * @param monitor RealTimeMonitor
@@ -260,22 +214,6 @@ public class ParseSerialsUtils {
             return ErrorHelpDao.findByDisplay(ctx, display);
         }
         return null;
-    }
-
-    /**
-     * 将后两位字符int值转换为16进制字符串
-     *
-     * @param code Code String
-     * @return String
-     */
-    @SuppressLint("SplitAndConvertToHex")
-    public static String splitAndConvertToHex(String code) {
-        if (code.length() == 4) {
-            String prefix = code.substring(0, 2);
-            String suffix = code.substring(2, 4);
-            return prefix + Integer.toHexString(Integer.parseInt(suffix));
-        }
-        return code;
     }
 
     /**
@@ -340,10 +278,19 @@ public class ParseSerialsUtils {
     }
 
     public static boolean isValidEmail(CharSequence target) {
-        if (TextUtils.isEmpty(target)) {
-            return false;
-        } else {
-            return android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();
-        }
+        return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();
+    }
+
+    /**
+     * 转换字节大小
+     *
+     * @param bytes bytes
+     * @return String
+     */
+    public static String humanReadableByteCount(long bytes) {
+        if (bytes < 1024) return bytes + " B";
+        int exp = (int) (Math.log(bytes) / Math.log(1024));
+        String pre = "KMGTPE".charAt(exp - 1) + "i";
+        return String.format("%.2f %sB", bytes / Math.pow(1024, exp), pre);
     }
 }

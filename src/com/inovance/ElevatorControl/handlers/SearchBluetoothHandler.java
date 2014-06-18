@@ -26,6 +26,8 @@ public class SearchBluetoothHandler extends BluetoothHandler {
 
     private NavigationTabActivity mNavigationTabActivity;
 
+    private boolean isChangingDevice = false;
+
     public SearchBluetoothHandler(Activity activity) {
         super(activity);
         mNavigationTabActivity = (NavigationTabActivity) activity;
@@ -83,8 +85,9 @@ public class SearchBluetoothHandler extends BluetoothHandler {
     @Override
     public void onConnected(Message msg) {
         super.onConnected(msg);
+        isChangingDevice = false;
         mNavigationTabActivity.showRefreshButtonProgress(false);
-        mNavigationTabActivity.startGetDeviceTypeAndNumberTask();
+        mNavigationTabActivity.startGetNormalDeviceTypeTask();
         Toast.makeText(activity, activity.getResources().getString(R.string.success_connect),
                 Toast.LENGTH_SHORT).show();
     }
@@ -133,25 +136,43 @@ public class SearchBluetoothHandler extends BluetoothHandler {
     @Override
     public void onDisconnected(Message message) {
         super.onDisconnected(message);
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
-                .setTitle(R.string.connect_lost_title)
-                .setMessage(R.string.connect_lost_message)
-                .setNegativeButton(R.string.dialog_btn_cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        mNavigationTabActivity.setSpinnerDataSource();
-                    }
-                })
-                .setPositiveButton(R.string.retry_connect_device, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        BluetoothDevice currentDevice = BluetoothTool.getInstance(activity).connectedDevice;
-                        if (currentDevice != null) {
-                            BluetoothTool.getInstance(activity).connectDevice(currentDevice);
+        if (!isChangingDevice) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
+                    .setTitle(R.string.connect_lost_title)
+                    .setMessage(R.string.connect_lost_message)
+                    .setNegativeButton(R.string.dialog_btn_cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            mNavigationTabActivity.setSpinnerDataSource();
                         }
-                    }
-                });
-        AlertDialog dialog = builder.create();
-        dialog.show();
+                    })
+                    .setPositiveButton(R.string.retry_connect_device, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            final BluetoothDevice currentDevice = BluetoothTool.getInstance().connectedDevice;
+                            if (currentDevice != null) {
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        BluetoothTool.getInstance().connectDevice(currentDevice);
+                                    }
+                                }).start();
+                            }
+                        }
+                    });
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
+    }
+
+    /**
+     * 设备切换
+     *
+     * @param message message
+     */
+    @Override
+    public void onDeviceChanged(Message message) {
+        super.onDeviceChanged(message);
+        isChangingDevice = true;
     }
 }

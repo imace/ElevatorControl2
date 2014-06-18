@@ -53,7 +53,7 @@ public class ChooseDeviceActivity extends Activity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 final String devName = adapter.getItem(position);
-                BluetoothTool bluetoothSocket = BluetoothTool.getInstance(ChooseDeviceActivity.this);
+                BluetoothTool bluetoothSocket = BluetoothTool.getInstance();
             }
         });
         searchHandler = new SearchHandler(ChooseDeviceActivity.this);
@@ -70,8 +70,8 @@ public class ChooseDeviceActivity extends Activity {
      * 搜索蓝牙设备
      */
     private void researchDevices() {
-        if (!BluetoothTool.getInstance(ChooseDeviceActivity.this).isConnected()) {
-            BluetoothTool.getInstance(ChooseDeviceActivity.this)
+        if (!BluetoothTool.getInstance().isConnected()) {
+            BluetoothTool.getInstance()
                     .setSearchHandler(searchHandler)
                     .search();
         }

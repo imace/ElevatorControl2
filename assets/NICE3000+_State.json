@@ -8,8 +8,8 @@
         "scope": "0-4.5",
         "scale": 0.001,
         "unit": "m/s",
-        "type": 57,
-        "showBit": "FALSE"
+        "stateID": 100,
+        "sort": 0
     },
     {
         "code": "1011",
@@ -20,8 +20,8 @@
         "scope": "0-4.5",
         "scale": 0.001,
         "unit": "m/s",
-        "type": 57,
-        "showBit": "FALSE"
+        "stateID": 101,
+        "sort": 0
     },
     {
         "code": "1012",
@@ -32,8 +32,8 @@
         "scope": "0-1000.0",
         "scale": 0.1,
         "unit": "V",
-        "type": 57,
-        "showBit": "FALSE"
+        "stateID": 102,
+        "sort": 0
     },
     {
         "code": "1013",
@@ -44,8 +44,8 @@
         "scope": "0-6553.5",
         "scale": 0.1,
         "unit": "A",
-        "type": 57,
-        "showBit": "FALSE"
+        "stateID": 103,
+        "sort": "0"
     },
     {
         "code": "1014",
@@ -56,8 +56,8 @@
         "scope": "0-100.00",
         "scale": 0.01,
         "unit": "Hz",
-        "type": 57,
-        "showBit": "FALSE"
+        "stateID": 104,
+        "sort": 0
     },
     {
         "code": "1015",
@@ -68,8 +68,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 70,
-        "showBit": "FALSE"
+        "stateID": 105,
+        "sort": 0
     },
     {
         "code": "1016",
@@ -80,8 +80,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 71,
-        "showBit": "FALSE"
+        "stateID": 105,
+        "sort": 1
     },
     {
         "code": "1017",
@@ -92,8 +92,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 72,
-        "showBit": "FALSE"
+        "stateID": 106,
+        "sort": 0
     },
     {
         "code": "1018",
@@ -104,8 +104,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 55,
-        "showBit": "FALSE"
+        "stateID": 107,
+        "sort": 0
     },
     {
         "code": "1019",
@@ -116,8 +116,8 @@
         "scope": "",
         "scale": 0.1,
         "unit": "m",
-        "type": 55,
-        "showBit": "FALSE"
+        "stateID": 108,
+        "sort": 0
     },
     {
         "code": "101A",
@@ -128,8 +128,8 @@
         "scope": "",
         "scale": 0.1,
         "unit": "%",
-        "type": 55,
-        "showBit": "FALSE"
+        "stateID": 109,
+        "sort": 0
     },
     {
         "code": "101B",
@@ -140,8 +140,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 73,
-        "showBit": "TRUE"
+        "stateID": 110,
+        "sort": 0
     },
     {
         "code": "101C",
@@ -152,20 +152,20 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 74,
-        "showBit": "TRUE"
+        "stateID": 111,
+        "sort": 0
     },
     {
         "code": "101D",
         "name": "系统状态",
         "productId": 0,
-        "description": "Bit0:系统光幕状态1#Bit1:系统光幕状态2#Bit2:厅外锁梯#Bit3:厅外消防#|Bit4-7:系统状态#0:检修#1:井道自学习#2:微动平层#3:消防到基站#4:消防员#5:故障状态#6:司机#7:自动#8:锁梯状态#9:泊梯状态#10:返平层状态#11:检修速度平层状态#12:电机调谐#13:键盘控制#14:基站校验#15:VIP状态#|Bit8-11:轿厢状态#0:无#1:开门#2:开门维持#3:关门#4:关门维持#5:运行#6:停车#7:保留#8:保留#9:保留#10:保留#11:保留#12:保留#13:保留#14:保留#15:保留#|Bit12:系统满载#Bit13:系统超载#Bit14:保留#Bit15:保留#",
-        "childId": "Bit0:5429#Bit1:5430#Bit2:5431#Bit3:5432#|Bit4-7:2199#0:5433#1:1907#2:5448#3:1178#4:5438#5:1528#6:5439#7:5440#8:5434#9:5435#10:5436#11:5437#12:5701#13:5702#14:5703#15:5704#|Bit8-11:5441#0:1#1:5442#2:5443#3:5444#4:5445#5:5446#6:5447#7:1#8:1#9:1#10:1#11:1#12:1#13:1#14:1#15:1|#Bit12:1567#Bit13:1568#Bit14:1#Bit15:1#",
+        "description": "Bit0:系统光幕状态1#Bit1:系统光幕状态2#Bit2:厅外锁梯#Bit3:厅外消防#Bit4-7:系统状态#0:检修#1:井道自学习#2:微动平层#3:消防到基站#4:消防员#5:故障状态#6:司机#7:自动#8:锁梯状态#9:泊梯状态#10:返平层状态#11:检修速度平层状态#12:电机调谐#13:键盘控制#14:基站校验#15:VIP状态#Bit8-11:轿厢状态#0:无#1:开门#2:开门维持#3:关门#4:关门维持#5:运行#6:停车#7:保留#8:保留#9:保留#10:保留#11:保留#12:保留#13:保留#14:保留#15:保留#Bit12:系统满载#Bit13:系统超载#Bit14:保留#Bit15:保留#",
+        "childId": "Bit0:5429#Bit1:5430#Bit2:5431#Bit3:5432#Bit4-7:2199#0:5433#1:1907#2:5448#3:1178#4:5438#5:1528#6:5439#7:5440#8:5434#9:5435#10:5436#11:5437#12:5701#13:5702#14:5703#15:5704#Bit8-11:5441#0:1#1:5442#2:5443#3:5444#4:5445#5:5446#6:5447#7:1#8:1#9:1#10:1#11:1#12:1#13:1#14:1#15:1#Bit12:1567#Bit13:1568#Bit14:1#Bit15:1#",
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 75,
-        "showBit": "TRUE"
+        "stateID": 112,
+        "sort": 0
     },
     {
         "code": "101E",
@@ -176,8 +176,8 @@
         "scope": "",
         "scale": 0.1,
         "unit": "%",
-        "type": 55,
-        "showBit": "FALSE"
+        "stateID": 113,
+        "sort": 0
     },
     {
         "code": "101F",
@@ -188,8 +188,8 @@
         "scope": "",
         "scale": 0.1,
         "unit": "m",
-        "type": 55,
-        "showBit": "FALSE"
+        "stateID": 114,
+        "sort": 0
     },
     {
         "code": "1020",
@@ -200,8 +200,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 60,
-        "showBit": "FALSE"
+        "stateID": 105,
+        "sort": 2
     },
     {
         "code": "1021",
@@ -212,8 +212,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 60,
-        "showBit": "FALSE"
+        "stateID": 105,
+        "sort": 3
     },
     {
         "code": "1022",
@@ -224,8 +224,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 60,
-        "showBit": "FALSE"
+        "stateID": 115,
+        "sort": 0
     },
     {
         "code": "1023",
@@ -236,8 +236,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 61,
-        "showBit": "FALSE"
+        "stateID": 106,
+        "sort": 1
     },
     {
         "code": "2000",
@@ -248,8 +248,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 62,
-        "showBit": "FALSE"
+        "stateID": 116,
+        "sort": 0
     },
     {
         "code": "2001",
@@ -260,8 +260,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 62,
-        "showBit": "FALSE"
+        "stateID": 116,
+        "sort": 1
     },
     {
         "code": "2002",
@@ -272,8 +272,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 62,
-        "showBit": "FALSE"
+        "stateID": 116,
+        "sort": 2
     },
     {
         "code": "2003",
@@ -284,8 +284,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 62,
-        "showBit": "FALSE"
+        "stateID": 116,
+        "sort": 3
     },
     {
         "code": "2004",
@@ -296,8 +296,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 62,
-        "showBit": "FALSE"
+        "stateID": 116,
+        "sort": 4
     },
     {
         "code": "2005",
@@ -308,8 +308,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 62,
-        "showBit": "FALSE"
+        "stateID": 116,
+        "sort": 5
     },
     {
         "code": "2010",
@@ -320,8 +320,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 64,
-        "showBit": "FALSE"
+        "stateID": 117,
+        "sort": 0
     },
     {
         "code": "2011",
@@ -332,8 +332,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 64,
-        "showBit": "FALSE"
+        "stateID": 117,
+        "sort": 1
     },
     {
         "code": "2012",
@@ -344,8 +344,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 64,
-        "showBit": "FALSE"
+        "stateID": 117,
+        "sort": 2
     },
     {
         "code": "2013",
@@ -356,8 +356,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 64,
-        "showBit": "FALSE"
+        "stateID": 117,
+        "sort": 3
     },
     {
         "code": "2014",
@@ -368,8 +368,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 64,
-        "showBit": "FALSE"
+        "stateID": 117,
+        "sort": 4
     },
     {
         "code": "2015",
@@ -380,8 +380,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 64,
-        "showBit": "FALSE"
+        "stateID": 117,
+        "sort": 5
     },
     {
         "code": "2016",
@@ -392,8 +392,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 64,
-        "showBit": "FALSE"
+        "stateID": 117,
+        "sort": 6
     },
     {
         "code": "2017",
@@ -404,8 +404,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 64,
-        "showBit": "FALSE"
+        "stateID": 117,
+        "sort": 7
     },
     {
         "code": "2018",
@@ -416,8 +416,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 64,
-        "showBit": "FALSE"
+        "stateID": 117,
+        "sort": "8"
     },
     {
         "code": "2019",
@@ -428,8 +428,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 64,
-        "showBit": "FALSE"
+        "stateID": 117,
+        "sort": 9
     },
     {
         "code": "201A",
@@ -440,8 +440,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 64,
-        "showBit": "FALSE"
+        "stateID": 117,
+        "sort": 10
     },
     {
         "code": "201B",
@@ -452,8 +452,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 64,
-        "showBit": "FALSE"
+        "stateID": 117,
+        "sort": 11
     },
     {
         "code": "3000",
@@ -464,8 +464,20 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 0,
-        "showBit": "FALSE"
+        "stateID": 118,
+        "sort": 0
+    },
+	    {
+        "code": "600",
+        "name": "故障复位",
+        "productId": 0,
+        "description": null,
+        "childId": null,
+        "scope": "",
+        "scale": 1,
+        "unit": "",
+        "stateID": 119,
+        "sort": 0
     },
     {
         "code": "6001",
@@ -476,8 +488,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 0,
-        "showBit": "FALSE"
+        "stateID": 120,
+        "sort": 0
     },
     {
         "code": "6002",
@@ -488,8 +500,8 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 0,
-        "showBit": "FALSE"
+        "stateID": 121,
+        "sort": 0
     },
     {
         "code": "6003",
@@ -500,20 +512,20 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 0,
-        "showBit": "FALSE"
+        "stateID": 122,
+        "sort": 0
     },
     {
         "code": "6004",
         "name": "运行停止命令",
         "productId": 0,
-        "description": null,
+        "description": "1:运行#2:停止#",
         "childId": null,
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 0,
-        "showBit": "FALSE"
+        "stateID": 123,
+        "sort": 0
     },
     {
         "code": "8000",
@@ -524,7 +536,19 @@
         "scope": "",
         "scale": 1,
         "unit": "",
-        "type": 0,
-        "showBit": "FALSE"
+        "stateID": 124,
+        "sort": 0
+    },
+    {
+        "code": "4000",
+        "name": "参数解密",
+        "productId": 0,
+        "description": null,
+        "childId": null,
+        "scope": "",
+        "scale": 1,
+        "unit": "",
+        "stateID": 125,
+        "sort": 0
     }
 ]

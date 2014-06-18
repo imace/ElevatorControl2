@@ -1,15 +1,19 @@
 package com.inovance.ElevatorControl.adapters;
 
-import android.app.Activity;
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.models.ChatMessage;
+import com.inovance.ElevatorControl.views.SquareLayout;
 
-import java.util.List;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Created by keith on 14-4-7.
@@ -19,18 +23,65 @@ import java.util.List;
  */
 public class ChatMessageAdapter extends BaseAdapter {
 
-    private Activity baseActivity;
+    private static final String TAG = ChatMessageAdapter.class.getSimpleName();
 
-    private List<ChatMessage> chatMessageList;
+    private static final int SEND_TYPE = 0;
 
-    public ChatMessageAdapter(Activity activity, List<ChatMessage> chatList) {
-        this.baseActivity = activity;
+    private static final int RECEIVE_TYPE = 1;
+
+    static int TEXT_TYPE_COLOR = 0xFFA9CC27;
+
+    static int PROFILE_TYPE_COLOR = 0xFF6F4761;
+
+    static int PICTURE_TYPE_COLOR = 0xFF8FF6D9;
+
+    static int VIDEO_TYPE_COLOR = 0xFFEDE244;
+
+    static int AUDIO_TYPE_COLOR = 0xFFE6083B;
+
+    private OnMessageItemClickListener mListener;
+
+    public interface OnMessageItemClickListener {
+        void onClick(View view, int position, ChatMessage message);
+    }
+
+    public void setOnMessageItemClickListener(OnMessageItemClickListener listener) {
+        mListener = listener;
+    }
+
+    private List<ChatMessage> chatMessageList = new ArrayList<ChatMessage>();
+
+    private LayoutInflater mInflater;
+
+    public ChatMessageAdapter(Context context) {
+        mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    }
+
+    public void updateChatMessageList(List<ChatMessage> chatList) {
+        Collections.sort(chatList, new SortComparator());
         this.chatMessageList = chatList;
+        notifyDataSetChanged();
     }
 
     @Override
     public int getCount() {
         return chatMessageList.size();
+    }
+
+    @Override
+    public int getViewTypeCount() {
+        return 2;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (getItem(position).getChatType() == ChatMessage.SEND) {
+            return SEND_TYPE;
+        }
+        if (getItem(position).getChatType() == ChatMessage.RECEIVE) {
+            return RECEIVE_TYPE;
+        }
+        return SEND_TYPE;
     }
 
     @Override
@@ -40,57 +91,115 @@ public class ChatMessageAdapter extends BaseAdapter {
 
     @Override
     public long getItemId(int position) {
-        return 0;
+        return position;
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        LayoutInflater mInflater = LayoutInflater.from(baseActivity);
-        ChatMessage item = getItem(position);
-        if (item.isSend()) {
-            SendViewHolder sendViewHolder;
-            View view;
-            if (convertView == null) {
-                ViewGroup viewGroup = (ViewGroup) mInflater.inflate(R.layout.chat_send_message_item, null);
-                sendViewHolder = new SendViewHolder();
-                sendViewHolder.messageContent = (TextView) viewGroup.findViewById(R.id.message_content);
-                viewGroup.setTag(sendViewHolder);
-                view = viewGroup;
-            } else {
-                sendViewHolder = (SendViewHolder) convertView.getTag();
-                view = convertView;
+        ViewHolder holder;
+        int rowType = getItemViewType(position);
+        if (convertView == null) {
+            holder = new ViewHolder();
+            switch (rowType) {
+                case SEND_TYPE:
+                    convertView = mInflater.inflate(R.layout.chat_send_message_item, null);
+                    holder.contentView = convertView.findViewById(R.id.send_content_view);
+                    holder.iconBackgroundView = (SquareLayout) convertView.findViewById(R.id.send_icon_view);
+                    holder.iconView = (ImageView) convertView.findViewById(R.id.send_type_icon);
+                    holder.titleView = (TextView) convertView.findViewById(R.id.send_chat_title);
+                    holder.phoneNumberView = (TextView) convertView.findViewById(R.id.send_phone_number);
+                    holder.timeView = (TextView) convertView.findViewById(R.id.send_time);
+                    break;
+                case RECEIVE_TYPE:
+                    convertView = mInflater.inflate(R.layout.chat_receive_message_item, null);
+                    holder.contentView = convertView.findViewById(R.id.receive_content_view);
+                    holder.iconBackgroundView = (SquareLayout) convertView.findViewById(R.id.receive_icon_view);
+                    holder.iconView = (ImageView) convertView.findViewById(R.id.receive_type_icon);
+                    holder.titleView = (TextView) convertView.findViewById(R.id.receive_chat_title);
+                    holder.phoneNumberView = (TextView) convertView.findViewById(R.id.receive_phone_number);
+                    holder.timeView = (TextView) convertView.findViewById(R.id.receive_time);
+                    break;
             }
-            sendViewHolder.messageContent.setText(item.getMessage());
-            return view;
+            convertView.setTag(holder);
         } else {
-            ReceiveViewHolder receiveViewHolder;
-            View view;
-            if (convertView == null) {
-                ViewGroup viewGroup = (ViewGroup) mInflater.inflate(R.layout.chat_receive_message_item, null);
-                receiveViewHolder = new ReceiveViewHolder();
-                receiveViewHolder.messageContent = (TextView) viewGroup.findViewById(R.id.message_content);
-                viewGroup.setTag(receiveViewHolder);
-                view = viewGroup;
-            } else {
-                receiveViewHolder = (ReceiveViewHolder) convertView.getTag();
-                view = convertView;
-            }
-            receiveViewHolder.messageContent.setText(item.getMessage());
-            return view;
+            holder = (ViewHolder) convertView.getTag();
         }
+        final ChatMessage item = getItem(position);
+        final int index = position;
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String timeString;
+        try {
+            Date date = new Date(Long.parseLong(item.getTimeString()) * 1000);
+            timeString = dateFormat.format(date);
+        } catch (Exception e) {
+            timeString = dateFormat.format(new Date());
+        }
+        holder.contentView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mListener != null) {
+                    mListener.onClick(view, index, item);
+                }
+            }
+        });
+        holder.titleView.setText(item.getTitle());
+        switch (item.getChatType()) {
+            case ChatMessage.SEND:
+                holder.phoneNumberView.setText("To:" + item.getToNumber());
+                break;
+            case ChatMessage.RECEIVE:
+                holder.phoneNumberView.setText("From:" + item.getToNumber());
+                break;
+        }
+        holder.timeView.setText(timeString);
+        switch (item.getContentType()) {
+            case ChatMessage.TYPE_TEXT:
+                holder.iconBackgroundView.setBackgroundColor(TEXT_TYPE_COLOR);
+                holder.iconView.setImageResource(R.drawable.chat_type_text);
+                break;
+            case ChatMessage.TYPE_PROFILE:
+                holder.iconBackgroundView.setBackgroundColor(PROFILE_TYPE_COLOR);
+                holder.iconView.setImageResource(R.drawable.chat_type_profile);
+                break;
+            case ChatMessage.TYPE_PICTURE:
+                holder.iconBackgroundView.setBackgroundColor(PICTURE_TYPE_COLOR);
+                holder.iconView.setImageResource(R.drawable.chat_type_picture);
+                break;
+            case ChatMessage.TYPE_VIDEO:
+                holder.iconBackgroundView.setBackgroundColor(VIDEO_TYPE_COLOR);
+                holder.iconView.setImageResource(R.drawable.chat_type_video);
+                break;
+            case ChatMessage.TYPE_AUDIO:
+                holder.iconBackgroundView.setBackgroundColor(AUDIO_TYPE_COLOR);
+                holder.iconView.setImageResource(R.drawable.chat_type_audio);
+                break;
+        }
+        return convertView;
     }
 
-    /**
-     * Message Send View Holder
-     */
-    private class SendViewHolder {
-        TextView messageContent;
+    private static class ViewHolder {
+        View contentView;
+        SquareLayout iconBackgroundView;
+        ImageView iconView;
+        TextView titleView;
+        TextView phoneNumberView;
+        TextView timeView;
     }
 
-    /**
-     * Message Receive View Holder
-     */
-    private class ReceiveViewHolder {
-        TextView messageContent;
+    private class SortComparator implements Comparator<ChatMessage> {
+
+        @Override
+        public int compare(ChatMessage object1, ChatMessage object2) {
+            long time1 = Long.parseLong(object1.getTimeString());
+            long time2 = Long.parseLong(object2.getTimeString());
+            if (time1 > time2) {
+                return -1;
+            } else if (time1 < time2) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+
     }
 }

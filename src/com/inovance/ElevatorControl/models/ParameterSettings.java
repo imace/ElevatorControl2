@@ -23,15 +23,25 @@ public class ParameterSettings implements Cloneable {
 
     @Id
     private int Id;
+
     private String code;// 功能码
+
     private String name;// 名称
+
     private String productId;// Id
+
     private String description;// 参数选项说明
+
     private String childId;// 子Id
+
     private String scope;// 取值范围
+
     private String defaultValue;// 出厂设定
+
     private String scale;// 最小单位
+
     private String unit;// 单位名称
+
     private String type;// 种类
 
     private String tempScope; // 取得的取值范围
@@ -57,7 +67,7 @@ public class ParameterSettings implements Cloneable {
      * Bit位值匹配    2
      * Bit多位值匹配  3
      */
-    private int descriptiontype;
+    private int descriptionType;
 
     /**
      * 修改方式 '★' : 1 任意修改 '☆' : 2 停机修改 '*' : 3 不可修改
@@ -66,7 +76,7 @@ public class ParameterSettings implements Cloneable {
 
     private boolean Valid;
 
-    private Date lasttime;
+    private Date lastTime;
 
     private byte[] received;
 
@@ -127,7 +137,7 @@ public class ParameterSettings implements Cloneable {
         this.name = object.optString("name");
         this.productId = object.optString("productId");
         this.description = object.optString("description");
-        this.descriptiontype = ParameterSettings.ParseDescriptionToType(this.getDescription());
+        this.descriptionType = ParameterSettings.ParseDescriptionToType(this.getDescription());
         this.childId = object.optString("childId");
         this.scope = object.optString("scope");
         this.userValue = object.optString("userValue");
@@ -283,12 +293,12 @@ public class ParameterSettings implements Cloneable {
         Valid = valid;
     }
 
-    public Date getLasttime() {
-        return lasttime;
+    public Date getLastTime() {
+        return lastTime;
     }
 
-    public void setLasttime(Date lasttime) {
-        this.lasttime = lasttime;
+    public void setLastTime(Date lastTime) {
+        this.lastTime = lastTime;
     }
 
     public ParameterGroupSettings getParametergroupsettings() {
@@ -299,12 +309,12 @@ public class ParameterSettings implements Cloneable {
         this.parametergroupsettings = parametergroupsettings;
     }
 
-    public int getDescriptiontype() {
-        return descriptiontype;
+    public int getDescriptionType() {
+        return descriptionType;
     }
 
-    public void setDescriptiontype(int descriptiontype) {
-        this.descriptiontype = descriptiontype;
+    public void setDescriptionType(int descriptionType) {
+        this.descriptionType = descriptionType;
     }
 
     public Object clone() {

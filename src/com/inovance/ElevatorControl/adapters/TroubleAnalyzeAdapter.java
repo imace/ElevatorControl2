@@ -18,8 +18,8 @@ public class TroubleAnalyzeAdapter extends FragmentPagerAdapter {
 
     private String[] titleArray;
 
-    public TroubleAnalyzeAdapter(FragmentManager fm) {
-        super(fm);
+    public TroubleAnalyzeAdapter(FragmentManager fragmentManager) {
+        super(fragmentManager);
         mFragments = new ArrayList<TroubleAnalyzeFragment>();
     }
 

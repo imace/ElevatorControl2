@@ -85,11 +85,6 @@ public class HomeActivity extends Activity implements Runnable {
     private SyncStatusHandler mSyncStatusHandler;
 
     /**
-     * 要获取的状态信息列表
-     */
-    private List<RealTimeMonitor> monitorLists;
-
-    /**
      * 电梯所有状态数组
      */
     private String[] elevatorBoxStatus;
@@ -151,18 +146,22 @@ public class HomeActivity extends Activity implements Runnable {
      */
     private static final int SYNC_TIME = 1500;
 
+    /**
+     * 闪烁间隔时间
+     */
+    private static final int BLINK_TIME = 600;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         Views.inject(this);
         mSyncStatusHandler = new SyncStatusHandler(HomeActivity.this);
-        //readMonitorStateCode();
         syncTask = new Runnable() {
             @Override
             public void run() {
                 if (isRunning) {
-                    if (BluetoothTool.getInstance(HomeActivity.this).isPrepared()) {
+                    if (BluetoothTool.getInstance().isPrepared()) {
                         if (!isReading) {
                             pool.execute(HomeActivity.this);
                         }
@@ -185,7 +184,7 @@ public class HomeActivity extends Activity implements Runnable {
                     } else {
                         HomeActivity.this.errorStatusTextView.setAlpha(1.0f);
                     }
-                    blinkHandler.postDelayed(textBlinkTask, 500);
+                    blinkHandler.postDelayed(textBlinkTask, BLINK_TIME);
                 }
             }
         };
@@ -207,67 +206,11 @@ public class HomeActivity extends Activity implements Runnable {
         });
     }
 
-    /**
-     * 读取状态参数Code
-     */
-    private void readMonitorStateCode() {
-        monitorLists = RealTimeMonitorDao.findByNames(this, new String[]{
-                ApplicationConfig.RUNNING_SPEED_NAME,
-                ApplicationConfig.ERROR_CODE_NAME,
-                ApplicationConfig.STATUS_WORD_NAME,
-                ApplicationConfig.CURRENT_FLOOR_NAME,
-                ApplicationConfig.SYSTEM_STATUS_NAME
-        });
-        int size = monitorLists.size();
-        communications = new BluetoothTalk[size];
-        for (int index = 0; index < size; index++) {
-            final int i = index;
-            communications[i] = new BluetoothTalk() {
-                @Override
-                public void beforeSend() {
-                    this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0103"
-                            + monitorLists.get(i).getCode()
-                            + "0001")));
-                }
-
-                @Override
-                public void afterSend() {
-
-                }
-
-                @Override
-                public void beforeReceive() {
-
-                }
-
-                @Override
-                public void afterReceive() {
-
-                }
-
-                @Override
-                public Object onParse() {
-                    if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
-                        byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
-                        try {
-                            RealTimeMonitor monitor = (RealTimeMonitor) monitorLists.get(i).clone();
-                            monitor.setReceived(received);
-                            return monitor;
-                        } catch (CloneNotSupportedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    return null;
-                }
-            };
-        }
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
         setListViewDataSource();
-        if (BluetoothTool.getInstance(HomeActivity.this).isPrepared()) {
+        if (BluetoothTool.getInstance().isPrepared()) {
             reSyncData();
         }
     }
@@ -279,20 +222,67 @@ public class HomeActivity extends Activity implements Runnable {
     }
 
     public void reSyncData() {
+        communications = null;
         isRunning = true;
         isReading = false;
         handler.postDelayed(syncTask, SYNC_TIME);
-        blinkHandler.postDelayed(textBlinkTask, 500);
+        blinkHandler.postDelayed(textBlinkTask, BLINK_TIME);
     }
 
     /**
      * 同步电梯状态信息
      */
     private void syncElevatorStatus() {
-        if (BluetoothTool.getInstance(HomeActivity.this).isPrepared() && communications != null) {
+        if (communications == null) {
+            final List<RealTimeMonitor> monitorLists = RealTimeMonitorDao.findByStateIDs(this, ApplicationConfig.HomeStateCode);
+            int size = monitorLists.size();
+            communications = new BluetoothTalk[size];
+            for (int index = 0; index < size; index++) {
+                final int i = index;
+                communications[i] = new BluetoothTalk() {
+                    @Override
+                    public void beforeSend() {
+                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0103"
+                                + monitorLists.get(i).getCode()
+                                + "0001")));
+                    }
+
+                    @Override
+                    public void afterSend() {
+
+                    }
+
+                    @Override
+                    public void beforeReceive() {
+
+                    }
+
+                    @Override
+                    public void afterReceive() {
+
+                    }
+
+                    @Override
+                    public Object onParse() {
+                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                            byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
+                            try {
+                                RealTimeMonitor monitor = (RealTimeMonitor) monitorLists.get(i).clone();
+                                monitor.setReceived(received);
+                                return monitor;
+                            } catch (CloneNotSupportedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        return null;
+                    }
+                };
+            }
+        }
+        if (BluetoothTool.getInstance().isPrepared()) {
             isReading = true;
             mSyncStatusHandler.sendCount = communications.length;
-            BluetoothTool.getInstance(HomeActivity.this)
+            BluetoothTool.getInstance()
                     .setHandler(mSyncStatusHandler)
                     .setCommunications(communications)
                     .send();
@@ -347,53 +337,14 @@ public class HomeActivity extends Activity implements Runnable {
             super.onMultiTalkEnd(msg);
             if (sendCount == receiveCount) {
                 for (RealTimeMonitor monitor : receivedMonitorList) {
-                    /**
-                     * 电梯运行速度
-                     */
-                    if (monitor.getName().equalsIgnoreCase(ApplicationConfig.RUNNING_SPEED_NAME)) {
+                    // 电梯运行速度
+                    if (monitor.getStateID() == ApplicationConfig.HomeStateCode[0]) {
                         HomeActivity.this.runningSpeedTextView
                                 .setText(ParseSerialsUtils.getValueTextFromRealTimeMonitor(monitor)
                                         + monitor.getUnit());
                     }
-                    /**
-                     * 故障码
-                     */
-                    if (monitor.getName().equalsIgnoreCase(ApplicationConfig.ERROR_CODE_NAME)) {
-                        String errorCode = ParseSerialsUtils.getErrorCode(monitor.getReceived());
-                        NavigationTabActivity tabActivity = (NavigationTabActivity) HomeActivity.this.getParent();
-                        if (errorCode.equalsIgnoreCase("E00")) {
-                            isErrorStatus = false;
-                            HomeActivity.this.errorStatusTextView.setTextColor(0xff989898);
-                            HomeActivity.this.errorStatusTextView.setText(R.string.home_no_error_text);
-                            if (tabActivity != null && tabActivity.troubleAnalyzeIcon != null) {
-                                tabActivity.troubleAnalyzeIcon.setImageResource(R.drawable.tab_trouble_analyze);
-                            }
-                        } else {
-                            isErrorStatus = true;
-                            HomeActivity.this.errorStatusTextView.setTextColor(0xffff594b);
-                            HomeActivity.this.errorStatusTextView.setText(errorCode);
-                            if (tabActivity != null && tabActivity.troubleAnalyzeIcon != null) {
-                                tabActivity.troubleAnalyzeIcon.setImageResource(R.drawable.tab_trouble_analyze_error);
-                            }
-                        }
-                    }
-                    /**
-                     * 状态字功能(电梯开关门)
-                     */
-                    if (monitor.getName().equalsIgnoreCase(ApplicationConfig.STATUS_WORD_NAME)) {
-                        int controllerStatus = ParseSerialsUtils.getIntFromBytes(monitor.getReceived());
-                        doorAnimationView.setCurrentDirection(controllerStatus);
-                    }
-                    /**
-                     * 当前楼层
-                     */
-                    if (monitor.getName().equalsIgnoreCase(ApplicationConfig.CURRENT_FLOOR_NAME)) {
-                        doorAnimationView.setCurrentFloor(ParseSerialsUtils.getIntFromBytes(monitor.getReceived()));
-                    }
-                    /**
-                     * 系统状态
-                     */
-                    if (monitor.getName().equalsIgnoreCase(ApplicationConfig.SYSTEM_STATUS_NAME)) {
+                    // 系统状态
+                    if (monitor.getStateID() == ApplicationConfig.HomeStateCode[1]) {
                         int elevatorBoxStatusCode = ParseSerialsUtils.getElevatorBoxStatusCode(monitor);
                         int systemStatusCode = ParseSerialsUtils.getSystemStatusCode(monitor);
                         if (HomeActivity.this.elevatorBoxStatus == null || HomeActivity.this.systemStatus == null) {
@@ -448,6 +399,35 @@ public class HomeActivity extends Activity implements Runnable {
                             HomeActivity.this.systemStatusTextView
                                     .setText(HomeActivity.this.systemStatus[systemStatusCode]);
                         }
+                    }
+                    // 故障信息
+                    if (monitor.getStateID() == ApplicationConfig.HomeStateCode[2]) {
+                        String errorCode = ParseSerialsUtils.getErrorCode(monitor.getReceived());
+                        NavigationTabActivity tabActivity = (NavigationTabActivity) HomeActivity.this.getParent();
+                        if (errorCode.equalsIgnoreCase("E00")) {
+                            isErrorStatus = false;
+                            HomeActivity.this.errorStatusTextView.setTextColor(0xff989898);
+                            HomeActivity.this.errorStatusTextView.setText(R.string.home_no_error_text);
+                            if (tabActivity != null && tabActivity.troubleAnalyzeIcon != null) {
+                                tabActivity.troubleAnalyzeIcon.setImageResource(R.drawable.tab_trouble_analyze);
+                            }
+                        } else {
+                            isErrorStatus = true;
+                            HomeActivity.this.errorStatusTextView.setTextColor(0xffff594b);
+                            HomeActivity.this.errorStatusTextView.setText(errorCode);
+                            if (tabActivity != null && tabActivity.troubleAnalyzeIcon != null) {
+                                tabActivity.troubleAnalyzeIcon.setImageResource(R.drawable.tab_trouble_analyze_error);
+                            }
+                        }
+                    }
+                    // 当前楼层
+                    if (monitor.getStateID() == ApplicationConfig.HomeStateCode[3]) {
+                        doorAnimationView.setCurrentFloor(ParseSerialsUtils.getIntFromBytes(monitor.getReceived()));
+                    }
+                    // 状态字功能(电梯开关门)
+                    if (monitor.getStateID() == ApplicationConfig.HomeStateCode[4]) {
+                        int controllerStatus = ParseSerialsUtils.getIntFromBytes(monitor.getReceived());
+                        doorAnimationView.setCurrentDirection(controllerStatus);
                     }
                 }
             }

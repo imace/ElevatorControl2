@@ -196,7 +196,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
             @Override
             public void run() {
                 if (running) {
-                    if (BluetoothTool.getInstance(MoveInsideActivity.this).isPrepared()) {
+                    if (BluetoothTool.getInstance().isPrepared()) {
                         pool.execute(MoveInsideActivity.this);
                         syncHandler.postDelayed(this, SYNC_TIME);
                     }
@@ -241,7 +241,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
                     getMoveInsideInfoCommunications[i] = new BluetoothTalk() {
                         @Override
                         public void beforeSend() {
-                            this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints(sendCode)));
+                            this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt(sendCode)));
                         }
 
                         @Override
@@ -267,7 +267,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
                                 if (index == 0) {
                                     if (length01 * 2 == bytesLength) {
                                         List<RealTimeMonitor> tempList = new ArrayList<RealTimeMonitor>();
-                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStr2Ints("01030002"
+                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStringToInt("01030002"
                                                 + SerialUtility.byte2HexStr(new byte[]{data[4], data[5]})));
                                         try {
                                             RealTimeMonitor monitor = (RealTimeMonitor) monitor01.clone();
@@ -285,7 +285,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
                                     if (length02 * 2 == bytesLength) {
                                         List<RealTimeMonitor> tempList = new ArrayList<RealTimeMonitor>();
                                         for (int j = 0; j < length02; j++) {
-                                            byte[] tempData = SerialUtility.crc16(SerialUtility.hexStr2Ints("01030002"
+                                            byte[] tempData = SerialUtility.crc16(SerialUtility.hexStringToInt("01030002"
                                                     + SerialUtility.byte2HexStr(new byte[]{data[4
                                                     + j * 2], data[5 + j * 2]})));
                                             try {
@@ -316,11 +316,11 @@ public class MoveInsideActivity extends Activity implements Runnable {
      */
     private void syncMoveInsideInfoStatus() {
         if (!isSyncing) {
-            if (BluetoothTool.getInstance(MoveInsideActivity.this).isPrepared()) {
+            if (BluetoothTool.getInstance().isPrepared()) {
                 if (mSyncMoveInsideInfoHandler != null && getMoveInsideInfoCommunications != null) {
                     MoveInsideActivity.this.isSyncing = true;
                     mSyncMoveInsideInfoHandler.sendCount = getMoveInsideInfoCommunications.length;
-                    BluetoothTool.getInstance(MoveInsideActivity.this)
+                    BluetoothTool.getInstance()
                             .setHandler(mSyncMoveInsideInfoHandler)
                             .setCommunications(getMoveInsideInfoCommunications)
                             .send();
@@ -335,7 +335,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
     @Override
     protected void onResume() {
         super.onResume();
-        if (BluetoothTool.getInstance(this).isPrepared()) {
+        if (BluetoothTool.getInstance().isPrepared()) {
             running = true;
             syncHandler.postDelayed(syncTask, SYNC_TIME);
         }
@@ -362,7 +362,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                BluetoothTool.getInstance(MoveInsideActivity.this)
+                BluetoothTool.getInstance()
                         .setHandler(null);
                 setResult(RESULT_OK);
                 finish();
@@ -384,7 +384,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
                 new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0103"
+                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0103"
                                 + code
                                 + "0001")));
                     }
@@ -474,7 +474,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
                 new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0103F6010001")));
+                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0103F6010001")));
                     }
 
                     @Override
@@ -498,8 +498,8 @@ public class MoveInsideActivity extends Activity implements Runnable {
                     }
                 }
         };
-        if (BluetoothTool.getInstance(MoveInsideActivity.this).isPrepared()) {
-            BluetoothTool.getInstance(MoveInsideActivity.this)
+        if (BluetoothTool.getInstance().isPrepared()) {
+            BluetoothTool.getInstance()
                     .setCommunications(communications)
                     .send();
         } else {
@@ -517,7 +517,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
                 new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0103F6010001")));
+                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0103F6010001")));
                     }
 
                     @Override
@@ -541,8 +541,8 @@ public class MoveInsideActivity extends Activity implements Runnable {
                     }
                 }
         };
-        if (BluetoothTool.getInstance(MoveInsideActivity.this).isPrepared()) {
-            BluetoothTool.getInstance(MoveInsideActivity.this)
+        if (BluetoothTool.getInstance().isPrepared()) {
+            BluetoothTool.getInstance()
                     .setCommunications(communications)
                     .send();
         }
@@ -559,7 +559,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
                 new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0106"
+                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0106"
                                 + codeArray[0]
                                 + "0001")));
                     }
@@ -588,10 +588,10 @@ public class MoveInsideActivity extends Activity implements Runnable {
                     }
                 }
         };
-        if (BluetoothTool.getInstance(MoveInsideActivity.this).isPrepared()) {
+        if (BluetoothTool.getInstance().isPrepared()) {
             floorHandler.writeCode = codeArray[0];
             floorHandler.floor = floor;
-            BluetoothTool.getInstance(MoveInsideActivity.this)
+            BluetoothTool.getInstance()
                     .setHandler(floorHandler)
                     .setCommunications(communications)
                     .send();
@@ -638,8 +638,8 @@ public class MoveInsideActivity extends Activity implements Runnable {
      */
     private void loadDataAndRenderView() {
         if (communications != null) {
-            if (BluetoothTool.getInstance(MoveInsideActivity.this).isPrepared()) {
-                BluetoothTool.getInstance(MoveInsideActivity.this)
+            if (BluetoothTool.getInstance().isPrepared()) {
+                BluetoothTool.getInstance()
                         .setHandler(mMoveInsideHandler)
                         .setCommunications(communications)
                         .send();

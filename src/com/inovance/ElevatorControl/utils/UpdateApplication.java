@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -17,6 +18,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import com.bluetoothtool.BluetoothTool;
 import com.inovance.ElevatorControl.R;
+import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.web.WebApi;
 import net.tsz.afinal.core.AsyncTask;
 
@@ -68,6 +70,16 @@ public class UpdateApplication {
      */
     private ProgressBar downloadProgressBar;
 
+    /**
+     * 当前版本号
+     */
+    private String currentVersionName;
+
+    /**
+     * 最新版本号
+     */
+    private String lastVersionName;
+
     private LinearLayout progressView;
 
     public static UpdateApplication getInstance() {
@@ -80,6 +92,11 @@ public class UpdateApplication {
 
     public void init(Activity activity) {
         this.activity = activity;
+        try {
+            currentVersionName = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0).versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -114,9 +131,9 @@ public class UpdateApplication {
                 WebApi.getInstance().setOnResultListener(new WebApi.OnGetResultListener() {
                     @Override
                     public void onResult(String tag, String responseString) {
-                        // TODO Check Update
-                        if (true) {
-                            confirmUpdateApplication("");
+                        if (!currentVersionName.equalsIgnoreCase(responseString)) {
+                            lastVersionName = responseString;
+                            confirmUpdateApplication();
                         } else {
                             if (mListener != null) {
                                 mListener.onNoUpdate();
@@ -126,33 +143,28 @@ public class UpdateApplication {
                 });
                 WebApi.getInstance().getLastSoftwareVersion(activity);
             } else {
-                new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
+                AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
                         .setTitle(R.string.no_network_title)
                         .setMessage(R.string.setting_network_message)
                         .setNegativeButton(R.string.exit_application_text, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 WebApi.getInstance().removeListener();
-                                BluetoothTool.getInstance(activity).kill();
+                                BluetoothTool.getInstance().kill();
                                 activity.finish();
                             }
                         })
-                        .setNeutralButton(R.string.setting_wireless_text, new DialogInterface.OnClickListener() {
+                        .setPositiveButton(R.string.setting_network_text, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                Intent intent = new Intent(Settings.ACTION_DATA_ROAMING_SETTINGS);
+                                Intent intent = new Intent(Settings.ACTION_SETTINGS);
                                 activity.startActivity(intent);
                             }
-                        })
-                        .setPositiveButton(R.string.setting_wifi_text, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                Intent intent = new Intent(Settings.ACTION_WIFI_SETTINGS);
-                                activity.startActivity(intent);
-                            }
-                        })
-                        .create()
-                        .show();
+                        });
+                AlertDialog dialog = builder.create();
+                dialog.setCancelable(false);
+                dialog.setCanceledOnTouchOutside(false);
+                dialog.show();
             }
         }
     }
@@ -160,10 +172,11 @@ public class UpdateApplication {
     /**
      * 弹出确认框确认更新
      */
-    public void confirmUpdateApplication(final String url) {
+    public void confirmUpdateApplication() {
         if (activity != null) {
             View dialogView = activity.getLayoutInflater().inflate(R.layout.update_application_dialog, null);
             confirmTextView = (TextView) dialogView.findViewById(R.id.confirm_text);
+            confirmTextView.setText(activity.getResources().getString(R.string.last_version_text) + lastVersionName);
             progressView = (LinearLayout) dialogView.findViewById(R.id.progress_view);
             downloadProgressBar = (ProgressBar) dialogView.findViewById(R.id.download_progress);
             currentLengthTextView = (TextView) dialogView.findViewById(R.id.current_length);
@@ -175,11 +188,13 @@ public class UpdateApplication {
                     .setPositiveButton(R.string.update_application_text, null);
             AlertDialog dialog = builder.create();
             dialog.show();
+            dialog.setCancelable(false);
+            dialog.setCanceledOnTouchOutside(false);
             dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     WebApi.getInstance().removeListener();
-                    BluetoothTool.getInstance(activity).kill();
+                    BluetoothTool.getInstance().kill();
                     activity.finish();
                 }
             });
@@ -188,7 +203,7 @@ public class UpdateApplication {
                 public void onClick(View view) {
                     confirmTextView.setVisibility(View.GONE);
                     progressView.setVisibility(View.VISIBLE);
-                    new DownloadTask().execute(url);
+                    new DownloadTask().execute(ApplicationConfig.DomainName + ApplicationConfig.DownloadApplicationFile);
                 }
             });
         }
@@ -205,7 +220,7 @@ public class UpdateApplication {
                     if (msg.obj instanceof Integer) {
                         int length = (Integer) msg.obj;
                         downloadProgressBar.setMax(length);
-                        totalLengthTextView.setText(String.valueOf(length));
+                        totalLengthTextView.setText(ParseSerialsUtils.humanReadableByteCount(length));
                     }
                 }
                 break;
@@ -263,7 +278,7 @@ public class UpdateApplication {
         @Override
         protected void onProgressUpdate(Long... values) {
             downloadProgressBar.setProgress(values[0].intValue());
-            currentLengthTextView.setText(String.valueOf(values[0]));
+            currentLengthTextView.setText(ParseSerialsUtils.humanReadableByteCount(values[0]));
         }
 
         @Override

@@ -94,7 +94,7 @@ public class NormalApplyForm extends LinearLayout implements OnGetResultListener
      */
     private void submitApply() {
         String bluetoothAddress = BluetoothAdapter.getDefaultAdapter().getAddress();
-        String deviceID = deviceList.get(deviceListSpinner.getSelectedItemPosition()).getNumber();
+        int deviceID = deviceList.get(deviceListSpinner.getSelectedItemPosition()).getID();
         WebApi.getInstance().setOnResultListener(this);
         WebApi.getInstance().setOnFailureListener(this);
         WebApi.getInstance().applyFirmware(getContext(), bluetoothAddress, deviceID, remark.getText().toString());

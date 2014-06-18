@@ -112,7 +112,7 @@ public class CustomDialog {
     public static AlertDialog.Builder parameterDetailDialog(final Activity activity,
                                                             final ParameterSettings settings) {
         // 单选弹出框
-        if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[1]) {
+        if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[1]) {
             try {
                 JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
                 int size = jsonArray.length();
@@ -196,7 +196,7 @@ public class CustomDialog {
             }
         }
         // 开关弹出框
-        if (settings.getDescriptiontype() == ApplicationConfig.DESCRIPTION_TYPE[2]) {
+        if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[2]) {
             View dialogView = activity.getLayoutInflater().inflate(R.layout.parameter_switch_dialog, null);
             ListView listView = (ListView) dialogView.findViewById(R.id.switch_list);
             List<ParameterStatusItem> itemList = new ArrayList<ParameterStatusItem>();
@@ -208,6 +208,7 @@ public class CustomDialog {
                 newBooleanArray[booleanArrayLength - i - 1] = booleanArray[i];
             }
             booleanArray = newBooleanArray;
+            boolean isSpecial = settings.getCode().contains("F525");
             try {
                 JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
                 int size = jsonArray.length();
@@ -224,6 +225,7 @@ public class CustomDialog {
                         } else {
                             item.setCanEdit(!settings.isElevatorRunning());
                         }
+                        item.setSpecial(isSpecial);
                         itemList.add(item);
                     }
                 }
@@ -257,8 +259,8 @@ public class CustomDialog {
                         , new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         WebApi.getInstance().removeListener();
-                        BluetoothTool.getInstance(activity).setHandler(null);
-                        BluetoothTool.getInstance(activity).kill();
+                        BluetoothTool.getInstance().setHandler(null);
+                        BluetoothTool.getInstance().kill();
                         Intent intent = new Intent(activity, CheckAuthorizationActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         intent.putExtra("Exit", true);

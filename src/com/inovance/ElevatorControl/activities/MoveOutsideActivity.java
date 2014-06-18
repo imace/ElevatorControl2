@@ -209,7 +209,7 @@ public class MoveOutsideActivity extends Activity implements Runnable {
             @Override
             public void run() {
                 if (running) {
-                    if (BluetoothTool.getInstance(MoveOutsideActivity.this).isPrepared()) {
+                    if (BluetoothTool.getInstance().isPrepared()) {
                         pool.execute(MoveOutsideActivity.this);
                         syncHandler.postDelayed(this, SYNC_TIME);
                     }
@@ -221,7 +221,7 @@ public class MoveOutsideActivity extends Activity implements Runnable {
     @Override
     protected void onResume() {
         super.onResume();
-        if (BluetoothTool.getInstance(this).isPrepared()) {
+        if (BluetoothTool.getInstance().isPrepared()) {
             running = true;
             syncHandler.postDelayed(syncTask, SYNC_TIME);
         }
@@ -270,7 +270,7 @@ public class MoveOutsideActivity extends Activity implements Runnable {
                     getMoveOutsideInfoCommunications[i] = new BluetoothTalk() {
                         @Override
                         public void beforeSend() {
-                            this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints(sendCode)));
+                            this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt(sendCode)));
                         }
 
                         @Override
@@ -296,7 +296,7 @@ public class MoveOutsideActivity extends Activity implements Runnable {
                                 if (index == 0) {
                                     if (length01 * 2 == bytesLength) {
                                         List<RealTimeMonitor> tempList = new ArrayList<RealTimeMonitor>();
-                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStr2Ints("01030002"
+                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStringToInt("01030002"
                                                 + SerialUtility.byte2HexStr(new byte[]{data[4], data[5]})));
                                         try {
                                             RealTimeMonitor monitor = (RealTimeMonitor) monitor01.clone();
@@ -314,7 +314,7 @@ public class MoveOutsideActivity extends Activity implements Runnable {
                                     if (length02 * 2 == bytesLength) {
                                         List<RealTimeMonitor> tempList = new ArrayList<RealTimeMonitor>();
                                         for (int m = 0; m < length02; m++) {
-                                            byte[] tempData = SerialUtility.crc16(SerialUtility.hexStr2Ints("01030002"
+                                            byte[] tempData = SerialUtility.crc16(SerialUtility.hexStringToInt("01030002"
                                                     + SerialUtility.byte2HexStr(new byte[]{data[4
                                                     + m * 2], data[5 + m * 2]})));
                                             try {
@@ -335,7 +335,7 @@ public class MoveOutsideActivity extends Activity implements Runnable {
                                     if (length03 * 2 == bytesLength) {
                                         List<RealTimeMonitor> tempList = new ArrayList<RealTimeMonitor>();
                                         for (int n = 0; n < length03; n++) {
-                                            byte[] tempData = SerialUtility.crc16(SerialUtility.hexStr2Ints("01030002"
+                                            byte[] tempData = SerialUtility.crc16(SerialUtility.hexStringToInt("01030002"
                                                     + SerialUtility.byte2HexStr(new byte[]{data[4
                                                     + n * 2], data[5 + n * 2]})));
                                             try {
@@ -366,11 +366,11 @@ public class MoveOutsideActivity extends Activity implements Runnable {
      */
     private void syncMoveOutsideInfoStatus() {
         if (!isSyncing) {
-            if (BluetoothTool.getInstance(MoveOutsideActivity.this).isPrepared()) {
+            if (BluetoothTool.getInstance().isPrepared()) {
                 if (mSyncMoveOutsideInfoHandler != null && getMoveOutsideInfoCommunications != null) {
                     MoveOutsideActivity.this.isSyncing = true;
                     mSyncMoveOutsideInfoHandler.sendCount = getMoveOutsideInfoCommunications.length;
-                    BluetoothTool.getInstance(MoveOutsideActivity.this)
+                    BluetoothTool.getInstance()
                             .setHandler(mSyncMoveOutsideInfoHandler)
                             .setCommunications(getMoveOutsideInfoCommunications)
                             .send();
@@ -402,7 +402,7 @@ public class MoveOutsideActivity extends Activity implements Runnable {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                BluetoothTool.getInstance(MoveOutsideActivity.this)
+                BluetoothTool.getInstance()
                         .setHandler(null);
                 setResult(RESULT_OK);
                 finish();
@@ -486,7 +486,7 @@ public class MoveOutsideActivity extends Activity implements Runnable {
                 new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0103"
+                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0103"
                                 + code
                                 + "0001")));
                     }
@@ -560,8 +560,8 @@ public class MoveOutsideActivity extends Activity implements Runnable {
      */
     private void loadDataAndRenderView() {
         if (getFloorsCommunications != null) {
-            if (BluetoothTool.getInstance(MoveOutsideActivity.this).isPrepared()) {
-                BluetoothTool.getInstance(MoveOutsideActivity.this)
+            if (BluetoothTool.getInstance().isPrepared()) {
+                BluetoothTool.getInstance()
                         .setHandler(mMoveOutsideHandler)
                         .setCommunications(getFloorsCommunications)
                         .send();
@@ -583,7 +583,7 @@ public class MoveOutsideActivity extends Activity implements Runnable {
                 new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStr2Ints("0106"
+                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0106"
                                 + codeArray[0]
                                 + "0001")));
                     }
@@ -613,11 +613,11 @@ public class MoveOutsideActivity extends Activity implements Runnable {
                     }
                 }
         };
-        if (BluetoothTool.getInstance(MoveOutsideActivity.this).isPrepared()) {
+        if (BluetoothTool.getInstance().isPrepared()) {
             floorHandler.writeCode = codeArray[0];
             floorHandler.floor = floor;
             floorHandler.isUp = isUp;
-            BluetoothTool.getInstance(MoveOutsideActivity.this)
+            BluetoothTool.getInstance()
                     .setHandler(floorHandler)
                     .setCommunications(communications)
                     .send();

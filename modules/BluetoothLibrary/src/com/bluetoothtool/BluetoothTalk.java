@@ -10,18 +10,6 @@ public abstract class BluetoothTalk {
 
     private Object item;
 
-    public static int NORMAL_TALK = -1;
-
-    /**
-     * 首页电梯状态通信
-     */
-    public static int HOME_STATUS_TALK = 1;
-
-    /**
-     * 当前故障状态通信
-     */
-    public static int CURRENT_TROUBLE_TALK = 2;
-
     private byte[] sendBuffer = null;
 
     private byte[] receivedBuffer = null;

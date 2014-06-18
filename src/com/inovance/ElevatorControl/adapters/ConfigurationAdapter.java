@@ -1,9 +1,9 @@
 package com.inovance.ElevatorControl.adapters;
 
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import com.inovance.ElevatorControl.R;
+import com.inovance.ElevatorControl.models.RealTimeMonitor;
 import com.inovance.ElevatorControl.views.fragments.ConfigurationFragment;
 
 import java.util.ArrayList;
@@ -17,30 +17,20 @@ public class ConfigurationAdapter extends FragmentPagerAdapter {
 
     private String[] titleArray;
 
-    public FragmentActivity getFragmentActivity() {
-        return fragmentActivity;
-    }
+    private List<RealTimeMonitor> monitorListToShow;
 
-    public void setFragmentActivity(FragmentActivity fragmentActivity) {
-        this.fragmentActivity = fragmentActivity;
-    }
-
-    public ConfigurationAdapter(FragmentActivity activity) {
+    public ConfigurationAdapter(FragmentActivity activity, List<RealTimeMonitor> monitorListToShow) {
         super(activity.getSupportFragmentManager());
         mFragments = new ArrayList<ConfigurationFragment>();
         fragmentActivity = activity;
-    }
-
-    public ConfigurationAdapter(FragmentManager fragmentManager) {
-        super(fragmentManager);
-        mFragments = new ArrayList<ConfigurationFragment>();
+        this.monitorListToShow = monitorListToShow;
     }
 
     @Override
     public ConfigurationFragment getItem(int position) {
         if (position > mFragments.size() - 1) {
             ConfigurationFragment configurationFragment = ConfigurationFragment
-                    .newInstance(position, fragmentActivity);
+                    .newInstance(position, fragmentActivity, monitorListToShow);
             mFragments.add(configurationFragment);
             return configurationFragment;
         } else {

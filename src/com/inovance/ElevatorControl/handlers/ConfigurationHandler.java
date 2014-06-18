@@ -9,6 +9,8 @@ import com.inovance.ElevatorControl.models.RealTimeMonitor;
 import com.inovance.ElevatorControl.views.fragments.ConfigurationFragment;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -40,90 +42,47 @@ public class ConfigurationHandler extends BluetoothHandler {
     public void onMultiTalkEnd(Message msg) {
         super.onMultiTalkEnd(msg);
         if (receiveCount == sendCount) {
-            final List<RealTimeMonitor> finalList = new ArrayList<RealTimeMonitor>();
-            List<RealTimeMonitor> inputMonitor = new ArrayList<RealTimeMonitor>();
-            List<RealTimeMonitor> outputMonitor = new ArrayList<RealTimeMonitor>();
-            RealTimeMonitor hvMonitor = null;
-            for (String normal : ApplicationConfig.normalFilters) {
-                for (RealTimeMonitor monitor : monitorList) {
-                    if (monitor.getName().equalsIgnoreCase(normal)) {
-                        finalList.add(monitor);
-                    }
-                    if (monitor.getName().equalsIgnoreCase(ApplicationConfig.HVInputTerminalStatusName)) {
-                        hvMonitor = monitor;
-                    }
-                }
-            }
-            for (String input : ApplicationConfig.inputFilters) {
-                for (RealTimeMonitor monitor : monitorList) {
-                    if (monitor.getName().equalsIgnoreCase(input)) {
-                        inputMonitor.add(monitor);
-                        break;
-                    }
-                }
-            }
-            for (String output : ApplicationConfig.outputFilters) {
-                for (RealTimeMonitor monitor : monitorList) {
-                    if (monitor.getName().equalsIgnoreCase(output)) {
-                        outputMonitor.add(monitor);
-                        break;
-                    }
-                }
-            }
-            if (inputMonitor.size() == 4) {
-                try {
-                    RealTimeMonitor monitor = (RealTimeMonitor) inputMonitor.get(0).clone();
-                    monitor.setName("主控板输入端子");
-                    byte[] combineBytes = new byte[]{
-                            inputMonitor.get(3).getReceived()[4],
-                            inputMonitor.get(3).getReceived()[5],
-
-                            inputMonitor.get(2).getReceived()[4],
-                            inputMonitor.get(2).getReceived()[5],
-
-                            inputMonitor.get(1).getReceived()[4],
-                            inputMonitor.get(1).getReceived()[5],
-
-                            inputMonitor.get(0).getReceived()[4],
-                            inputMonitor.get(0).getReceived()[5],
-                    };
-                    monitor.setCombineBytes(combineBytes);
-                    if (hvMonitor != null) {
-                        monitor.setHVInputTerminalBytes(new byte[]{hvMonitor.getReceived()[4],
-                                hvMonitor.getReceived()[5]});
-                    }
-                    monitor.setCode(inputMonitor.get(0).getCode()
-                            + "+" + inputMonitor.get(1).getCode()
-                            + "+" + inputMonitor.get(2).getCode()
-                            + "+" + inputMonitor.get(3).getCode());
-                    monitor.setDescriptionType(ApplicationConfig.specialTypeInput);
-                    finalList.add(monitor);
-                } catch (CloneNotSupportedException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (outputMonitor.size() == 1) {
-                try {
-                    RealTimeMonitor monitor = (RealTimeMonitor) inputMonitor.get(0).clone();
-                    monitor.setName("主控板输出端子");
-                    byte[] combineBytes = outputMonitor.get(0).getReceived();
-                    monitor.setCombineBytes(combineBytes);
-                    monitor.setCode(outputMonitor.get(0).getCode() + "+" + outputMonitor.get(0).getCode());
-                    monitor.setDescriptionType(ApplicationConfig.specialTypeOutput);
-                    finalList.add(monitor);
-                } catch (CloneNotSupportedException e) {
-                    e.printStackTrace();
-                }
-            }
             ConfigurationActivity parentActivity = ((ConfigurationActivity) activity);
+            List<RealTimeMonitor> showMonitorList = new ArrayList<RealTimeMonitor>();
+            // 输入端子 ID
+            int inputStateID = ApplicationConfig.MonitorStateCode[5];
+            // 输出端子 ID
+            int outputStateID = ApplicationConfig.MonitorStateCode[6];
+            List<RealTimeMonitor> tempInputMonitor = new ArrayList<RealTimeMonitor>();
+            List<RealTimeMonitor> tempOutputMonitor = new ArrayList<RealTimeMonitor>();
+            for (RealTimeMonitor item1 : monitorList) {
+                if (item1.getStateID() == inputStateID) {
+                    tempInputMonitor.add(item1);
+                } else if (item1.getStateID() == outputStateID) {
+                    tempOutputMonitor.add(item1);
+                } else {
+                    showMonitorList.add(item1);
+                }
+            }
+            // 根据 Sort 排序
+            Collections.sort(tempInputMonitor, new SortComparator());
+            Collections.sort(tempOutputMonitor, new SortComparator());
+            // 取得输入、输出端子位置索引
+            RealTimeMonitor monitor;
+            if (tempInputMonitor.size() > 0) {
+                monitor = tempInputMonitor.get(0);
+                monitor.setCombineBytes(ConfigurationHandler.getCombineBytes(tempInputMonitor));
+                showMonitorList.add(monitor);
+            }
+            if (tempOutputMonitor.size() > 0) {
+                monitor = tempOutputMonitor.get(0);
+                monitor.setCombineBytes(ConfigurationHandler.getCombineBytes(tempOutputMonitor));
+                showMonitorList.add(monitor);
+            }
             ConfigurationFragment fragment = parentActivity.mConfigurationAdapter.getItem(parentActivity.pageIndex);
-            fragment.syncMonitorViewData(finalList);
+            fragment.syncMonitorViewData(showMonitorList);
             parentActivity.isSyncing = false;
         }
     }
 
     @Override
     public void onTalkReceive(Message msg) {
+        super.onTalkReceive(msg);
         if (msg.obj != null && msg.obj instanceof RealTimeMonitor) {
             monitorList.add((RealTimeMonitor) msg.obj);
             receiveCount++;
@@ -134,4 +93,33 @@ public class ConfigurationHandler extends BluetoothHandler {
     public void onTalkError(Message msg) {
         super.onTalkError(msg);
     }
+
+    private class SortComparator implements Comparator<RealTimeMonitor> {
+
+        @Override
+        public int compare(RealTimeMonitor object1, RealTimeMonitor object2) {
+            if (object1.getSort() < object2.getSort()) {
+                return -1;
+            } else if (object1.getSort() > object2.getSort()) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+
+    }
+
+    private static byte[] getCombineBytes(List<RealTimeMonitor> monitorList) {
+        List<Byte> byteList = new ArrayList<Byte>();
+        for (RealTimeMonitor monitor : monitorList) {
+            byteList.add(monitor.getReceived()[4]);
+            byteList.add(monitor.getReceived()[5]);
+        }
+        byte[] combineBytes = new byte[byteList.size()];
+        for (int i = 0; i < byteList.size(); i++) {
+            combineBytes[i] = byteList.get(i);
+        }
+        return combineBytes;
+    }
+
 }

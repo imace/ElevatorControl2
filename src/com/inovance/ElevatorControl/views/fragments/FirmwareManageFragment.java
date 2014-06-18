@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.util.Base64;
 import android.view.*;
@@ -117,16 +116,16 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
      */
     private void switchApplyView(LinearLayout container, int type) {
         container.removeAllViews();
-        if (type == UserFactory.Normal) {
+        if (type == ConfigFactory.Normal) {
             if (normalApplyView == null) {
                 normalApplyView = new NormalApplyForm(getActivity());
             }
             container.addView(normalApplyView);
             WebApi.getInstance().setOnFailureListener(this);
             WebApi.getInstance().setOnResultListener(this);
-            WebApi.getInstance().getDeviceList(getActivity());
+            WebApi.getInstance().getNormalDeviceList(getActivity());
         }
-        if (type == UserFactory.Special) {
+        if (type == ConfigFactory.Special) {
             if (specialApplyView == null) {
                 specialApplyView = new SpecialApplyForm(getActivity());
             }
@@ -134,6 +133,7 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
             WebApi.getInstance().setOnFailureListener(this);
             WebApi.getInstance().setOnResultListener(this);
             WebApi.getInstance().getVendorList(getActivity());
+            WebApi.getInstance().getSpecialDeviceList(getActivity());
         }
     }
 
@@ -144,27 +144,27 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
         if (segmentControl == null) {
             final LinearLayout container = (LinearLayout) getActivity().findViewById(R.id.apply_view_container);
             segmentControl = (SegmentControl) getActivity().findViewById(R.id.segment_control);
-            if (UserFactory.getInstance().getPermission() == UserFactory.Normal) {
+            if (ConfigFactory.getInstance().getPermission() == ConfigFactory.Normal) {
                 segmentControl.setItems(getResources().getStringArray(R.array.permission_array_normal));
                 normalApplyView = new NormalApplyForm(getActivity());
                 segmentControl.setCurrentItem(0);
-                switchApplyView(container, UserFactory.Normal);
+                switchApplyView(container, ConfigFactory.Normal);
             }
-            if (UserFactory.getInstance().getPermission() == UserFactory.Special) {
+            if (ConfigFactory.getInstance().getPermission() == ConfigFactory.Special) {
                 segmentControl.setItems(getResources().getStringArray(R.array.permission_array_special));
                 normalApplyView = new NormalApplyForm(getActivity());
                 specialApplyView = new SpecialApplyForm(getActivity());
-                switchApplyView(container, UserFactory.Normal);
+                switchApplyView(container, ConfigFactory.Normal);
                 segmentControl.setCurrentItem(0);
                 segmentControl.setOnItemClickListener(new SegmentControl.OnItemClickListener() {
                     @Override
                     public void onItemClick(View view, int position) {
                         switch (position) {
                             case 0:
-                                switchApplyView(container, UserFactory.Normal);
+                                switchApplyView(container, ConfigFactory.Normal);
                                 break;
                             case 1:
-                                switchApplyView(container, UserFactory.Special);
+                                switchApplyView(container, ConfigFactory.Special);
                                 break;
                         }
                     }
@@ -175,9 +175,13 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
                 case 0:
                     WebApi.getInstance().setOnFailureListener(this);
                     WebApi.getInstance().setOnResultListener(this);
-                    WebApi.getInstance().getDeviceList(getActivity());
+                    WebApi.getInstance().getNormalDeviceList(getActivity());
                     break;
                 case 1:
+                    WebApi.getInstance().setOnFailureListener(this);
+                    WebApi.getInstance().setOnResultListener(this);
+                    WebApi.getInstance().getVendorList(getActivity());
+                    WebApi.getInstance().getSpecialDeviceList(getActivity());
                     break;
             }
         }
@@ -208,9 +212,9 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
      */
     public void loadFirmwareBurnView() {
         TextView deviceType = (TextView) getActivity().findViewById(R.id.device_type);
-        deviceType.setText(UserFactory.getInstance().getDeviceName());
+        deviceType.setText(ConfigFactory.getInstance().getDeviceName());
         TextView supplierCode = (TextView) getActivity().findViewById(R.id.supplier_code);
-        supplierCode.setText(UserFactory.getInstance().getSupplierCode());
+        supplierCode.setText(ConfigFactory.getInstance().getSupplierCode());
         GridView gridView = (GridView) getActivity().findViewById(R.id.firmware_list);
         List<Firmware> firmwareLists = FirmwareDao.findAll(context);
         FirmwareBurnAdapter adapter = new FirmwareBurnAdapter((FirmwareManageActivity) getActivity(),
@@ -254,7 +258,7 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
     public void onResult(String tag, String responseString) {
         int currentPager = ((FirmwareManageActivity) getActivity()).pager.getCurrentItem();
         if (currentPager == 0) {
-            if (tag.equalsIgnoreCase(ApplicationConfig.GetDeviceList)) {
+            if (tag.equalsIgnoreCase(ApplicationConfig.GetNormalDeviceList)) {
                 try {
                     List<NormalDevice> deviceList = new ArrayList<NormalDevice>();
                     JSONArray jsonArray = new JSONArray(responseString);
@@ -280,6 +284,21 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
                         vendorList.add(vendor);
                     }
                     specialApplyView.setVendorList(vendorList);
+                } catch (JSONException e) {
+                    Toast.makeText(getActivity(), R.string.read_data_error, Toast.LENGTH_SHORT).show();
+                }
+            }
+            if (tag.equalsIgnoreCase(ApplicationConfig.GetSpecialDeviceList)) {
+                try {
+                    List<SpecialDevice> deviceList = new ArrayList<SpecialDevice>();
+                    JSONArray jsonArray = new JSONArray(responseString);
+                    int size = jsonArray.length();
+                    for (int i = 0; i < size; i++) {
+                        JSONObject object = jsonArray.getJSONObject(i);
+                        SpecialDevice device = new SpecialDevice(object);
+                        deviceList.add(device);
+                    }
+                    specialApplyView.setDeviceList(deviceList);
                 } catch (JSONException e) {
                     Toast.makeText(getActivity(), R.string.read_data_error, Toast.LENGTH_SHORT).show();
                 }
@@ -335,27 +354,34 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
             }
             if (tag.equalsIgnoreCase(ApplicationConfig.DownloadFirmware)) {
                 byte[] binData = Base64.decode(responseString, Base64.DEFAULT);
-                boolean exist = createDirIfNotExists("/" + ApplicationConfig.FIRMWARE_FOLDER);
-                if (exist) {
-                    String fileName = UUID.randomUUID().toString();
-                    File file = new File(Environment.getExternalStorageDirectory().getPath()
-                            + "/" + ApplicationConfig.FIRMWARE_FOLDER + "/" + fileName + ".bin");
-                    try {
-                        FileOutputStream outputStream = new FileOutputStream(file);
-                        outputStream.write(binData);
-                        outputStream.close();
-                        if (firmware != null) {
-                            // 存储到数据库中
-                            firmware.setFileName(fileName);
-                            FirmwareDao.saveItem(getActivity(), firmware);
-                            // 从服务器删除已提取的程序
-                            WebApi.getInstance().deleteFileFromServer(getActivity(), firmware.getID());
-                        }
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                File directory = new File(getActivity().getExternalCacheDir().getPath()
+                        + "/"
+                        + ApplicationConfig.FIRMWARE_FOLDER);
+                if (!directory.exists()) {
+                    directory.mkdir();
+                }
+                String fileName = UUID.randomUUID().toString();
+                File file = new File(getActivity().getExternalCacheDir().getPath()
+                        + "/"
+                        + ApplicationConfig.FIRMWARE_FOLDER
+                        + "/"
+                        + fileName + ".bin");
+                try {
+                    FileOutputStream outputStream = new FileOutputStream(file);
+                    outputStream.write(binData);
+                    outputStream.close();
+                    if (firmware != null) {
+                        // 存储到数据库中
+                        firmware.setCreateDate(System.currentTimeMillis() + "");
+                        firmware.setFileName(fileName);
+                        FirmwareDao.saveItem(getActivity(), firmware);
+                        // 从服务器删除已提取的程序
+                        WebApi.getInstance().deleteFileFromServer(getActivity(), firmware.getID());
                     }
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
             if (tag.equalsIgnoreCase(ApplicationConfig.DeleteFile)) {
@@ -378,20 +404,4 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
         Toast.makeText(getActivity(), throwable.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
     }
 
-    /**
-     * 检测并创建目录
-     *
-     * @param path Path
-     * @return Created
-     */
-    public static boolean createDirIfNotExists(String path) {
-        boolean created = true;
-        File file = new File(Environment.getExternalStorageDirectory(), path);
-        if (!file.exists()) {
-            if (!file.mkdirs()) {
-                created = false;
-            }
-        }
-        return created;
-    }
 }

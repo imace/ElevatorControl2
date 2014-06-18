@@ -67,6 +67,8 @@ public class CheckedListViewAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
         holder.checkedTextView.setText(getItem(position));
+        holder.radioButton.setFocusable(false);
+        holder.radioButton.setClickable(false);
         if (checkedIndex == position) {
             holder.radioButton.setChecked(true);
         } else {

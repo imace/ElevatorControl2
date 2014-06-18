@@ -11,32 +11,43 @@ import net.tsz.afinal.annotation.sqlite.Id;
 public class Profile {
 
     @Id
-    private int Id;
+    private int ID;
 
     /**
-     * 设备型号
+     * 配置文件保存日期
      */
-    private String equipmentModel;
-
-    /**
-     * 厂家编号
-     */
-    private String manufacturersSerialNumber;
-
-    /**
-     * 配置文件版本
-     */
-    private String version;
-
-    /**
-     * 配置文件更新日期
-     */
-    private String updateDate;
+    private String createTime;
 
     /**
      * 配置文件保存名称
      */
     private String fileName;
+
+    /**
+     * 设备型号
+     */
+    private String deviceType;
+
+    /**
+     * 厂家名称
+     */
+    private String vendorName;
+
+    public int getID() {
+        return ID;
+    }
+
+    public void setID(int ID) {
+        this.ID = ID;
+    }
+
+    public String getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(String createTime) {
+        this.createTime = createTime;
+    }
 
     public String getFileName() {
         return fileName;
@@ -46,43 +57,20 @@ public class Profile {
         this.fileName = fileName;
     }
 
-    public String getEquipmentModel() {
-        return equipmentModel;
+    public String getDeviceType() {
+        return deviceType;
     }
 
-    public void setEquipmentModel(String equipmentModel) {
-        this.equipmentModel = equipmentModel;
+    public void setDeviceType(String deviceType) {
+        this.deviceType = deviceType;
     }
 
-    public String getManufacturersSerialNumber() {
-        return manufacturersSerialNumber;
+    public String getVendorName() {
+        return vendorName;
     }
 
-    public void setManufacturersSerialNumber(String manufacturersSerialNumber) {
-        this.manufacturersSerialNumber = manufacturersSerialNumber;
+    public void setVendorName(String vendorName) {
+        this.vendorName = vendorName;
     }
 
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public String getUpdateDate() {
-        return updateDate;
-    }
-
-    public void setUpdateDate(String updateDate) {
-        this.updateDate = updateDate;
-    }
-
-    public int getId() {
-        return Id;
-    }
-
-    public void setId(int id) {
-        Id = id;
-    }
 }

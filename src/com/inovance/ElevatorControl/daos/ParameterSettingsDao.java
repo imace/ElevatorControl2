@@ -2,8 +2,8 @@ package com.inovance.ElevatorControl.daos;
 
 import android.content.Context;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
+import com.inovance.ElevatorControl.models.ConfigFactory;
 import com.inovance.ElevatorControl.models.ParameterSettings;
-import com.inovance.ElevatorControl.models.UserFactory;
 import net.tsz.afinal.FinalDb;
 
 import java.util.ArrayList;
@@ -39,7 +39,32 @@ public class ParameterSettingsDao {
                 }
             }
             condition = "(" + condition + ")" + " and "
-                    + " deviceID = '" + UserFactory.getInstance().getDeviceType() + "'";
+                    + " deviceID = '" + ConfigFactory.getInstance().getDeviceSQLID() + "'";
+            return db.findAllByWhere(ParameterSettings.class, condition);
+        }
+        return new ArrayList<ParameterSettings>();
+    }
+
+    public static List<ParameterSettings> findByCodes(Context context, String[] codes) {
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
+        int size = codes.length;
+        if (size > 0) {
+            String condition = "";
+            if (size == 1) {
+                condition = " code = '" + codes[0] + "'";
+            } else {
+                for (int i = 0; i < size; i++) {
+                    if (i == 0) {
+                        condition += " code = '" + codes[i];
+                    } else if (i == size - 1) {
+                        condition += "' or code = '" + codes[i] + "'";
+                    } else {
+                        condition += "' or code = '" + codes[i];
+                    }
+                }
+            }
+            condition = "(" + condition + ")" + " and "
+                    + " deviceID = '" + ConfigFactory.getInstance().getDeviceSQLID() + "'";
             return db.findAllByWhere(ParameterSettings.class, condition);
         }
         return new ArrayList<ParameterSettings>();
@@ -55,7 +80,7 @@ public class ParameterSettingsDao {
     public static List<ParameterSettings> findByType(Context context, int type) {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         String condition = " type = '" + type + "'" + " and "
-                + " deviceID = '" + UserFactory.getInstance().getDeviceType() + "'";
+                + " deviceID = '" + ConfigFactory.getInstance().getDeviceSQLID() + "'";
         return db.findAllByWhere(ParameterSettings.class, condition);
     }
 

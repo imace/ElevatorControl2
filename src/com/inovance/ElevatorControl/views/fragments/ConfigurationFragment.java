@@ -17,7 +17,6 @@ import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.activities.*;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ParameterGroupSettingsDao;
-import com.inovance.ElevatorControl.daos.RealTimeMonitorDao;
 import com.inovance.ElevatorControl.models.MoveInsideOutside;
 import com.inovance.ElevatorControl.models.ParameterDuplicate;
 import com.inovance.ElevatorControl.models.ParameterGroupSettings;
@@ -25,7 +24,6 @@ import com.inovance.ElevatorControl.models.RealTimeMonitor;
 import com.inovance.ElevatorControl.views.dialogs.CustomDialog;
 import com.mobsandgeeks.adapters.InstantAdapter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -47,15 +45,17 @@ public class ConfigurationFragment extends Fragment {
 
     public InstantAdapter<RealTimeMonitor> monitorInstantAdapter;
 
-    private ListView monitorListView;
+    public InstantAdapter<ParameterGroupSettings> parameterGroupInstantAdapter;
 
-    private List<RealTimeMonitor> monitorList;
+    private ListView monitorListView;
 
     private List<ParameterGroupSettings> settingsGroup;
 
     private ListView settingGroupListView;
 
     private boolean hasBindListListener = false;
+
+    private List<RealTimeMonitor> monitorList;
 
     /**
      * 记录下当前选中的tabIndex
@@ -64,13 +64,14 @@ public class ConfigurationFragment extends Fragment {
      * @param ctx      context
      * @return fragment
      */
-    public static ConfigurationFragment newInstance(int tabIndex, Context context) {
+    public static ConfigurationFragment newInstance(int tabIndex, Context context, List<RealTimeMonitor> monitorList) {
         ConfigurationFragment configurationFragment = new ConfigurationFragment();
         configurationFragment.tabIndex = tabIndex;
         configurationFragment.context = context;
         int layout = R.layout.fragment_not_found;
         switch (tabIndex) {
             case 0:
+                configurationFragment.monitorList = monitorList;
                 layout = R.layout.configuration_tab_monitor;
                 break;
             case 1:
@@ -126,43 +127,10 @@ public class ConfigurationFragment extends Fragment {
      * 实时监控,加载内容
      */
     public void loadMonitorView() {
-        if (monitorList == null && monitorListView == null) {
+        if (monitorListView == null) {
             monitorListView = (ListView) getActivity().findViewById(R.id.monitor_list);
-            List<RealTimeMonitor> tempMonitorList = RealTimeMonitorDao.findByNames(getActivity(), ApplicationConfig.stateFilters);
-            monitorList = new ArrayList<RealTimeMonitor>();
-            List<RealTimeMonitor> inputMonitor = new ArrayList<RealTimeMonitor>();
-            List<RealTimeMonitor> outputMonitor = new ArrayList<RealTimeMonitor>();
-            for (String normal : ApplicationConfig.normalFilters) {
-                for (RealTimeMonitor monitor : tempMonitorList) {
-                    if (monitor.getName().equalsIgnoreCase(normal)) {
-                        monitorList.add(monitor);
-                    }
-                }
-            }
-            for (String input : ApplicationConfig.inputFilters) {
-                for (RealTimeMonitor monitor : tempMonitorList) {
-                    if (monitor.getName().equalsIgnoreCase(input)) {
-                        inputMonitor.add(monitor);
-                    }
-                }
-            }
-            for (String output : ApplicationConfig.outputFilters) {
-                for (RealTimeMonitor monitor : tempMonitorList) {
-                    if (monitor.getName().equalsIgnoreCase(output)) {
-                        outputMonitor.add(monitor);
-                    }
-                }
-            }
-            if (inputMonitor.size() == 4) {
-                RealTimeMonitor monitor = inputMonitor.get(0);
-                monitor.setName("主控板输入端子");
-                monitorList.add(monitor);
-            }
-            if (outputMonitor.size() == 1) {
-                RealTimeMonitor monitor = outputMonitor.get(0);
-                monitor.setName("主控板输出端子");
-                monitorList.add(monitor);
-            }
+        }
+        if (monitorList != null && monitorListView.getAdapter() == null) {
             monitorInstantAdapter = new InstantAdapter<RealTimeMonitor>(
                     getActivity().getBaseContext(),
                     R.layout.list_configuration_monitor_item,
@@ -194,10 +162,13 @@ public class ConfigurationFragment extends Fragment {
                         dialog.setInverseBackgroundForced(true);
                         dialog.show();
                     }
-                    if (monitor.getDescriptionType() == ApplicationConfig.specialTypeInput) {
+                    if (monitor.getStateID() == ApplicationConfig.MonitorStateCode[14]) {
+                        ((ConfigurationActivity) getActivity()).setHVInputTerminalStatus(monitor);
+                    }
+                    if (monitor.getStateID() == ApplicationConfig.MonitorStateCode[5]) {
                         ((ConfigurationActivity) getActivity()).seeInputTerminalStatus(monitor);
                     }
-                    if (monitor.getDescriptionType() == ApplicationConfig.specialTypeOutput) {
+                    if (monitor.getStateID() == ApplicationConfig.MonitorStateCode[6]) {
                         ((ConfigurationActivity) getActivity()).seeOutputTerminalStatus(monitor);
                     }
                 }
@@ -207,22 +178,31 @@ public class ConfigurationFragment extends Fragment {
     }
 
     /**
+     * 重新加载详细设置数据
+     */
+    public void reloadSettingViewData() {
+        this.settingsGroup.clear();
+        this.settingsGroup.addAll(ParameterGroupSettingsDao.findAll(context));
+        parameterGroupInstantAdapter.notifyDataSetChanged();
+    }
+
+    /**
      * 参数设置,加载内容
      */
     public void loadSettingView() {
         if (settingsGroup == null && settingGroupListView == null) {
             settingsGroup = ParameterGroupSettingsDao.findAll(context);
             settingGroupListView = (ListView) getActivity().findViewById(R.id.settings_list);
-            InstantAdapter<ParameterGroupSettings> instantAdapter = new InstantAdapter<ParameterGroupSettings>(
+            parameterGroupInstantAdapter = new InstantAdapter<ParameterGroupSettings>(
                     getActivity().getApplicationContext(),
                     R.layout.list_configuration_setting_item,
                     ParameterGroupSettings.class, settingsGroup);
-            settingGroupListView.setAdapter(instantAdapter);
+            settingGroupListView.setAdapter(parameterGroupInstantAdapter);
             settingGroupListView.setOnItemClickListener(new OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view,
                                         int position, long id) {
-                    if (BluetoothTool.getInstance(getActivity()).isPrepared()) {
+                    if (BluetoothTool.getInstance().isPrepared()) {
                         Intent intent = new Intent(
                                 ConfigurationFragment.this.getActivity(),
                                 ParameterDetailActivity.class);
@@ -249,7 +229,7 @@ public class ConfigurationFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                if (BluetoothTool.getInstance(getActivity()).isPrepared()) {
+                if (BluetoothTool.getInstance().isPrepared()) {
                     switch (position) {
                         case 0: {
                             ConfigurationFragment.this.getActivity().startActivity(
@@ -285,7 +265,7 @@ public class ConfigurationFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                if (BluetoothTool.getInstance(getActivity()).isPrepared()) {
+                if (BluetoothTool.getInstance().isPrepared()) {
                     switch (position) {
                         case 0: {
                             Intent intent = new Intent(ConfigurationFragment.this.getActivity(),

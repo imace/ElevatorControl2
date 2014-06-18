@@ -2,12 +2,14 @@ package com.inovance.ElevatorControl;
 
 import android.app.Application;
 import android.content.SharedPreferences;
+import com.bluetoothtool.BluetoothTool;
 import com.inovance.ElevatorControl.cache.LruCacheTool;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ShortcutDao;
+import com.inovance.ElevatorControl.models.ConfigFactory;
 import com.inovance.ElevatorControl.models.Shortcut;
-import com.inovance.ElevatorControl.models.UserFactory;
 import com.inovance.ElevatorControl.utils.LogUtils;
+import com.inovance.ElevatorControl.utils.TextLocalize;
 
 /**
  * Created by keith on 14-3-8.
@@ -27,43 +29,14 @@ public class ElevatorControlApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        BluetoothTool.getInstance().init(getApplicationContext());
         // 初始化缓存组件
         LruCacheTool.getInstance().initCache(getApplicationContext());
         LogUtils.getInstance().init(getApplicationContext());
         writeDefaultShortcutData();
-        UserFactory.getInstance().init(getApplicationContext());
+        ConfigFactory.getInstance().init(getApplicationContext());
+        TextLocalize.getInstance().init(getApplicationContext());
         //ACRA.init(this);
-        /*
-        String JSON = AssetUtils.readDefaultFunCode(getApplicationContext(), "NICE3000+_FunCode.json");
-        try {
-            JSONArray groups = new JSONArray(JSON);
-            // 遍历group
-            int size = groups.length();
-            int position = 0;
-            for (int i = 0; i < size; i++) {
-                JSONObject groupsJSONObject = groups.getJSONObject(i);
-                JSONArray settingJson = groupsJSONObject.getJSONArray("parameterSettings");
-                int length = settingJson.length();
-                for (int j = 0; j < length; j++) {
-                    Log.v("AAABBB", String.valueOf(position));
-                    JSONObject jsonObject = settingJson.getJSONObject(j);
-                    jsonObject.put("mode", ApplicationConfig.tempA[position]);
-                    position++;
-                }
-            }
-            Log.v("AAABBB", groups.toString());
-            File fileName = new File(getApplicationContext().getExternalCacheDir().getPath()
-                    + "/test");
-            if (!fileName.exists()) {
-                fileName.createNewFile();
-            }
-            FileOutputStream outputStream = new FileOutputStream(fileName);
-            outputStream.write(groups.toString().getBytes());
-            outputStream.close();
-        } catch (Exception e) {
-            //
-        }
-        */
     }
 
     private void writeDefaultShortcutData() {

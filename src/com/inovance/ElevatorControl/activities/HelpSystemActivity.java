@@ -6,10 +6,12 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.adapters.PreferenceAdapter;
+import com.inovance.ElevatorControl.utils.UpdateApplication;
 
 /**
  * 帮助标签
@@ -37,6 +39,7 @@ public class HelpSystemActivity extends Activity {
                         startActivity(new Intent(HelpSystemActivity.this, ShortcutSettingActivity.class));
                         break;
                     case 2:
+                        checkApplicationUpdate();
                         break;
                     case 4:
                         startActivity(new Intent(HelpSystemActivity.this, ApplyPermissionActivity.class));
@@ -59,6 +62,22 @@ public class HelpSystemActivity extends Activity {
                 }
             }
         });
+    }
 
+    /**
+     * 检查软件更新
+     */
+    private void checkApplicationUpdate() {
+        Toast.makeText(this, R.string.check_application_update_text, Toast.LENGTH_SHORT).show();
+        UpdateApplication.getInstance().init(this);
+        UpdateApplication.getInstance().setOnNoUpdateFoundListener(new UpdateApplication.OnNoUpdateFoundListener() {
+            @Override
+            public void onNoUpdate() {
+                Toast.makeText(getApplicationContext(),
+                        R.string.installed_last_application_text,
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+        UpdateApplication.getInstance().checkUpdate();
     }
 }

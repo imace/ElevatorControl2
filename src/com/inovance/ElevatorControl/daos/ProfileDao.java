@@ -5,6 +5,7 @@ import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.models.Profile;
 import net.tsz.afinal.FinalDb;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,7 +20,18 @@ public class ProfileDao {
 
     public static List<Profile> findAll(Context context) {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
-        return db.findAll(Profile.class);
+        List<Profile> profileList = db.findAll(Profile.class);
+        return profileList != null ? profileList : new ArrayList<Profile>();
+    }
+
+    public static void save(Context context, Profile profile) {
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
+        db.saveBindId(profile);
+    }
+
+    public static void deleteItem(Context context, Profile profile) {
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
+        db.delete(profile);
     }
 
 }

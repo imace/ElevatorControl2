@@ -1,8 +1,11 @@
 package com.inovance.ElevatorControl.activities;
 
 import android.app.Activity;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.TextView;
+import butterknife.InjectView;
 import butterknife.Views;
 import com.inovance.ElevatorControl.R;
 
@@ -15,6 +18,9 @@ import com.inovance.ElevatorControl.R;
  */
 public class AboutActivity extends Activity {
 
+    @InjectView(R.id.version)
+    TextView versionTextView;
+
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
@@ -23,6 +29,12 @@ public class AboutActivity extends Activity {
         Views.inject(this);
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
+        try {
+            String versionName = getPackageManager().getPackageInfo(this.getPackageName(), 0).versionName;
+            versionTextView.setText("Ver " + versionName);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

@@ -22,13 +22,24 @@ public class DeviceDao {
         db.saveBindId(device);
     }
 
-    public static Device findByName(Context context, String name) {
+    public static void update(Context context, Device device) {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
-        List<Device> deviceList = db.findAllByWhere(Device.class, " deviceType = '"
-                + name.toUpperCase()
-                + "' or deviceType='"
-                + name.toLowerCase()
-                + "'");
+        db.update(device);
+    }
+
+    /**
+     * 更加设备名称和类型查找
+     *
+     * @param context Context
+     * @param name    Name
+     * @param type    Type
+     * @return Device
+     */
+    public static Device findByName(Context context, String name, int type) {
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
+        String condition = "(" + " deviceName = '" + name.toUpperCase() + "' or deviceName='" + name.toLowerCase() + "'" + ")";
+        condition = condition + " and deviceType ='" + type + "'";
+        List<Device> deviceList = db.findAllByWhere(Device.class, condition);
         if (deviceList != null && deviceList.size() > 0) {
             return deviceList.get(0);
         }

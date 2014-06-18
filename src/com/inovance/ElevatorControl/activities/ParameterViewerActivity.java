@@ -16,6 +16,7 @@ import android.widget.TextView;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.inovance.ElevatorControl.R;
+import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.models.ParameterGroupSettings;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import org.json.JSONArray;
@@ -35,8 +36,6 @@ import java.util.List;
  * Time: 14:25.
  */
 public class ParameterViewerActivity extends Activity {
-
-    private final static String DIRECTORY_NAME = "Profile";
 
     /**
      * Expandable ListView
@@ -85,7 +84,7 @@ public class ParameterViewerActivity extends Activity {
                 public void run() {
                     File directory = new File(getApplicationContext().getExternalCacheDir().getPath()
                             + "/"
-                            + DIRECTORY_NAME);
+                            + ApplicationConfig.ProfileFolder);
                     File file = new File(directory, fileName);
                     try {
                         InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(file));
