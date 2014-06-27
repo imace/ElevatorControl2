@@ -2,7 +2,7 @@ package com.inovance.ElevatorControl.daos;
 
 import android.content.Context;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.models.ConfigFactory;
+import com.inovance.ElevatorControl.config.ConfigFactory;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import net.tsz.afinal.FinalDb;
 
@@ -13,39 +13,7 @@ public class ParameterSettingsDao {
 
     private static final boolean DEBUG = false;
 
-    /**
-     * Find By Names Array
-     *
-     * @param context context
-     * @param names   Names Array
-     * @return List<ParameterSettings>
-     */
-    public static List<ParameterSettings> findByNames(Context context, String[] names) {
-        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
-        int size = names.length;
-        if (size > 0) {
-            String condition = "";
-            if (size == 1) {
-                condition = " name = '" + names[0] + "'";
-            } else {
-                for (int i = 0; i < size; i++) {
-                    if (i == 0) {
-                        condition += " name = '" + names[i];
-                    } else if (i == size - 1) {
-                        condition += "' or name = '" + names[i] + "'";
-                    } else {
-                        condition += "' or name = '" + names[i];
-                    }
-                }
-            }
-            condition = "(" + condition + ")" + " and "
-                    + " deviceID = '" + ConfigFactory.getInstance().getDeviceSQLID() + "'";
-            return db.findAllByWhere(ParameterSettings.class, condition);
-        }
-        return new ArrayList<ParameterSettings>();
-    }
-
-    public static List<ParameterSettings> findByCodes(Context context, String[] codes) {
+    public static List<ParameterSettings> findAllByCodes(Context context, String[] codes) {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         int size = codes.length;
         if (size > 0) {

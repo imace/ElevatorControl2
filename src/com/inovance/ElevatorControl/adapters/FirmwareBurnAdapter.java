@@ -67,14 +67,9 @@ public class FirmwareBurnAdapter extends BaseAdapter {
         }
         final int index = position;
         final Firmware firmware = getItem(position);
-        holder.firmwareName.setText(firmware.getFileName());
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        try {
-            Date date = dateFormat.parse(firmware.getCreateDate());
-            holder.createDate.setText(dateFormat.format(date));
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+        holder.firmwareName.setText(firmware.getFileURL());
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        holder.createDate.setText(firmware.getDownloadDate());
         String timeString = dateFormat.format(new Date(Long.parseLong(firmware.getExpireDate()) * 1000));
         holder.expireDate.setText(timeString);
         int residueBurnTime = firmware.getTotalBurnTimes() - firmware.getBurnTimes();

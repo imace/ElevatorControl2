@@ -34,7 +34,6 @@ public class CurrentErrorHandler extends BluetoothHandler {
     public void onMultiTalkEnd(Message msg) {
         super.onMultiTalkEnd(msg);
         if (receiveCount == sendCount) {
-            ((TroubleAnalyzeActivity) activity).isGetCurrentTrouble = true;
             ViewPager pager = ((TroubleAnalyzeActivity) activity).pager;
             View loadView = pager.findViewById(R.id.load_view);
             View errorView = pager.findViewById(R.id.error_view);
@@ -78,6 +77,7 @@ public class CurrentErrorHandler extends BluetoothHandler {
                 }
             }
         }
+        ((TroubleAnalyzeActivity) activity).isSyncing = false;
     }
 
     @Override

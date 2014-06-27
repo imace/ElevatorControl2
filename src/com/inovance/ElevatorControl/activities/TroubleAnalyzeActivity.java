@@ -8,20 +8,28 @@ import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 import butterknife.InjectView;
 import butterknife.Views;
-import com.bluetoothtool.*;
+import com.bluetoothtool.BluetoothHandler;
+import com.bluetoothtool.BluetoothTalk;
+import com.bluetoothtool.BluetoothTool;
+import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.adapters.TroubleAnalyzeAdapter;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
+import com.inovance.ElevatorControl.config.ConfigFactory;
 import com.inovance.ElevatorControl.daos.ErrorHelpDao;
 import com.inovance.ElevatorControl.daos.ParameterSettingsDao;
 import com.inovance.ElevatorControl.daos.RealTimeMonitorDao;
 import com.inovance.ElevatorControl.handlers.CurrentErrorHandler;
+import com.inovance.ElevatorControl.handlers.GlobalHandler;
 import com.inovance.ElevatorControl.handlers.HistoryErrorHandler;
-import com.inovance.ElevatorControl.models.*;
+import com.inovance.ElevatorControl.models.ObjectListHolder;
+import com.inovance.ElevatorControl.models.ParameterSettings;
+import com.inovance.ElevatorControl.models.RealTimeMonitor;
 import com.inovance.ElevatorControl.utils.LogUtils;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
 import com.viewpagerindicator.TabPageIndicator;
@@ -29,8 +37,6 @@ import com.viewpagerindicator.TabPageIndicator;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -54,13 +60,11 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
 
     private CurrentErrorHandler currentErrorHandler;
 
-    private HistoryErrorHandler historyErrorHandler;
+    private HistoryErrorHandler historyTroubleHandler;
 
     private BluetoothTalk[] currentCommunications;
 
     public BluetoothTalk[] historyCommunications;
-
-    private FCGroupHandler fcGroupHandler;
 
     private RestoreErrorHandler restoreErrorHandler;
 
@@ -68,9 +72,19 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
 
     private boolean isRunning = false;
 
-    public boolean isGetCurrentTrouble = false;
+    /**
+     * 同步时间间隔
+     */
+    private static final int SYNC_TIME = 2000;
 
-    private Handler getCurrentTroubleHandler;
+    public boolean isSyncing = false;
+
+    /**
+     * 读取当前故障历史故障
+     */
+    private Runnable syncTask;
+
+    private Handler syncHandler = new Handler();
 
     private boolean isRestoreSuccessful = false;
 
@@ -89,9 +103,8 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
         pager.setOffscreenPageLimit(3);
         indicator.setViewPager(pager);
         currentErrorHandler = new CurrentErrorHandler(this);
-        historyErrorHandler = new HistoryErrorHandler(this);
+        historyTroubleHandler = new HistoryErrorHandler(this);
         restoreErrorHandler = new RestoreErrorHandler(this);
-        fcGroupHandler = new FCGroupHandler(this);
         indicator.setOnPageChangeListener(new OnPageChangeListener() {
 
             @Override
@@ -117,39 +130,16 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
                 }
             }
         });
-        getCurrentTroubleHandler = new Handler() {
+        syncTask = new Runnable() {
             @Override
-            public void handleMessage(Message msg) {
-                switch (msg.what) {
-                    case 1: {
-                        isGetCurrentTrouble = false;
-                        new CountDownTimer(2000, 500) {
-
-                            @Override
-                            public void onTick(long l) {
-                                if (isRunning) {
-                                    if (!isGetCurrentTrouble) {
-                                        new Timer().schedule(new TimerTask() {
-                                            @Override
-                                            public void run() {
-                                                pool.execute(TroubleAnalyzeActivity.this);
-                                            }
-                                        }, 500);
-                                    } else {
-                                        this.cancel();
-                                    }
-                                } else {
-                                    this.cancel();
-                                }
-                            }
-
-                            @Override
-                            public void onFinish() {
-
-                            }
-                        }.start();
+            public void run() {
+                if (isRunning) {
+                    if (BluetoothTool.getInstance().isPrepared()) {
+                        if (!isSyncing) {
+                            pool.execute(TroubleAnalyzeActivity.this);
+                        }
+                        syncHandler.postDelayed(syncTask, SYNC_TIME);
                     }
-                    break;
                 }
             }
         };
@@ -158,9 +148,15 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
     @Override
     protected void onResume() {
         super.onResume();
-        isRunning = true;
+        currentCommunications = null;
+        historyCommunications = null;
         if (pageIndex != pager.getCurrentItem()) {
             pager.setCurrentItem(pageIndex);
+        }
+        if (BluetoothTool.getInstance().isPrepared()) {
+            isRunning = true;
+            isSyncing = false;
+            syncHandler.postDelayed(syncTask, SYNC_TIME);
         }
         reSyncData();
     }
@@ -212,9 +208,9 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
             talks[0] = new BluetoothTalk() {
                 @Override
                 public void beforeSend() {
-                    this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0106"
+                    this.setSendBuffer(SerialUtility.crc16("0106"
                             + restoreTroubleMonitor.getCode()
-                            + "0001")));
+                            + "0001"));
                 }
 
                 @Override
@@ -274,7 +270,6 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
     public void loadCurrentTroubleView() {
         if (BluetoothTool.getInstance().isPrepared()) {
             handler.sendEmptyMessage(3);
-            getCurrentTroubleHandler.sendEmptyMessage(1);
         } else {
             handler.sendEmptyMessage(1);
         }
@@ -286,7 +281,6 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
     public void loadHistoryTroubleView() {
         if (BluetoothTool.getInstance().isPrepared()) {
             handler.sendEmptyMessage(4);
-            pool.execute(TroubleAnalyzeActivity.this);
         } else {
             handler.sendEmptyMessage(2);
         }
@@ -304,9 +298,9 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
                 currentCommunications[0] = new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0103"
+                        this.setSendBuffer(SerialUtility.crc16("0103"
                                 + monitor.getCode()
-                                + "0001")));
+                                + "0001"));
                     }
 
                     @Override
@@ -336,12 +330,17 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
                 };
             }
         }
-        if (BluetoothTool.getInstance().isPrepared()) {
-            currentErrorHandler.sendCount = currentCommunications.length;
-            BluetoothTool.getInstance()
-                    .setHandler(currentErrorHandler)
-                    .setCommunications(currentCommunications)
-                    .send();
+        if (currentCommunications == null) {
+            GlobalHandler.getInstance(this).sendMessage(GlobalHandler.CODE_DATA_ERROR);
+        } else {
+            if (BluetoothTool.getInstance().isPrepared()) {
+                isSyncing = true;
+                currentErrorHandler.sendCount = currentCommunications.length;
+                BluetoothTool.getInstance()
+                        .setHandler(currentErrorHandler)
+                        .setCommunications(currentCommunications)
+                        .send();
+            }
         }
     }
 
@@ -377,7 +376,7 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
     private void startGetCurrentHistoryCommunication() {
         if (historyCommunications == null) {
             String[] filters = generateHistoryErrorStatusFilters();
-            final List<ParameterSettings> settingsList = ParameterSettingsDao.findByCodes(this, filters);
+            final List<ParameterSettings> settingsList = ParameterSettingsDao.findAllByCodes(this, filters);
             final int size = settingsList.size();
             final int count = size <= 10 ? 1 : ((size - size % 10) / 10 + (size % 10 == 0 ? 0 : 1));
             historyCommunications = new BluetoothTalk[count];
@@ -388,11 +387,11 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
                 historyCommunications[i] = new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16(SerialUtility
-                                .hexStringToInt("0103"
-                                        + ParseSerialsUtils.getCalculatedCode(firstItem)
-                                        + String.format("%04x", length)
-                                        + "0001")));
+
+                        this.setSendBuffer(SerialUtility.crc16("0103"
+                                + ParseSerialsUtils.getCalculatedCode(firstItem)
+                                + (length > 1 ? String.format("%04x", length) : "")
+                                + "0001"));
                     }
 
                     @Override
@@ -412,20 +411,33 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
 
                     @Override
                     public Object onParse() {
+                        Log.v(TAG + "Send", SerialUtility.byte2HexStr(getSendBuffer()));
+                        Log.v(TAG + "Receive", SerialUtility.byte2HexStr(getReceivedBuffer()));
                         if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                            Log.v(TAG + "Checked", SerialUtility.byte2HexStr(getReceivedBuffer()));
                             byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
-                            short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
-                            if (length * 2 == bytesLength) {
-                                List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
-                                for (int j = 0; j < length; j++) {
-                                    if (position * 10 + j < settingsList.size()) {
-                                        ParameterSettings item = settingsList.get(position * 10 + j);
-                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStringToInt("01030002"
-                                                + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
-                                        item.setReceived(tempData);
-                                        tempList.add(item);
+                            if (data.length > 8) {
+                                short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
+                                if (length * 2 == bytesLength) {
+                                    List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
+                                    for (int j = 0; j < length; j++) {
+                                        if (position * 10 + j < settingsList.size()) {
+                                            ParameterSettings item = settingsList.get(position * 10 + j);
+                                            byte[] tempData = SerialUtility.crc16("01030002"
+                                                    + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]}));
+                                            item.setReceived(tempData);
+                                            tempList.add(item);
+                                        }
                                     }
+                                    ObjectListHolder holder = new ObjectListHolder();
+                                    holder.setParameterSettingsList(tempList);
+                                    return holder;
                                 }
+                            } else {
+                                List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
+                                ParameterSettings item = settingsList.get(position * 10);
+                                item.setReceived(data);
+                                tempList.add(item);
                                 ObjectListHolder holder = new ObjectListHolder();
                                 holder.setParameterSettingsList(tempList);
                                 return holder;
@@ -436,11 +448,14 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
                 };
             }
         }
-        if (BluetoothTool.getInstance().isPrepared()) {
-            if (historyCommunications != null && historyCommunications.length > 0) {
-                fcGroupHandler.sendCount = historyCommunications.length;
+        if (historyCommunications == null) {
+            GlobalHandler.getInstance(this).sendMessage(GlobalHandler.CODE_DATA_ERROR);
+        } else {
+            if (BluetoothTool.getInstance().isPrepared()) {
+                isSyncing = true;
+                historyTroubleHandler.sendCount = historyCommunications.length;
                 BluetoothTool.getInstance()
-                        .setHandler(fcGroupHandler)
+                        .setHandler(historyTroubleHandler)
                         .setCommunications(historyCommunications)
                         .send();
             }
@@ -527,107 +542,6 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
         }
     }
 
-    // ================================== FC Group Handler ========================= //
-    private class FCGroupHandler extends BluetoothHandler {
-
-        public int sendCount = 0;
-
-        private int receiveCount = 0;
-
-        public List<ParameterSettings> tempList;
-
-        public FCGroupHandler(android.app.Activity activity) {
-            super(activity);
-            TAG = FCGroupHandler.class.getSimpleName();
-        }
-
-        @Override
-        public void onMultiTalkBegin(Message msg) {
-            super.onMultiTalkBegin(msg);
-            receiveCount = 0;
-            tempList = new ArrayList<ParameterSettings>();
-        }
-
-        @Override
-        public void onMultiTalkEnd(Message msg) {
-            super.onMultiTalkEnd(msg);
-            if (receiveCount == sendCount) {
-                int startIndex = 0;
-                int index = 0;
-                for (ParameterSettings item : tempList) {
-                    if (item.getCode().equalsIgnoreCase("FC20")) {
-                        startIndex = index;
-                        break;
-                    }
-                    index++;
-                }
-                int size = tempList.size();
-                List<ParameterSettings> errorList = new ArrayList<ParameterSettings>();
-                for (int m = 0; m < 44; m++) {
-                    int position = startIndex + m;
-                    if (position < size) {
-                        errorList.add(tempList.get(position));
-                    }
-                }
-                int errorSize = errorList.size();
-                historyErrorHandler.sendEmptyMessage(BluetoothState.onMultiTalkBegin);
-                for (int n = 0; n < 11; n++) {
-                    int index01 = n * 4;
-                    int index02 = n * 4 + 1;
-                    int index03 = n * 4 + 2;
-                    int index04 = n * 4 + 3;
-                    if (index01 < errorSize && index02 < errorSize && index03 < errorSize && index04 < errorSize) {
-                        byte[] data01 = errorList.get(index01).getReceived();
-                        byte[] data02 = errorList.get(index02).getReceived();
-                        byte[] data03 = errorList.get(index03).getReceived();
-                        byte[] data04 = errorList.get(index04).getReceived();
-                        if (data01 != null && data01.length > 6
-                                && data02 != null && data02.length > 6
-                                && data03 != null && data03.length > 6
-                                && data04 != null && data04.length > 6) {
-                            byte[] errorData = new byte[]{
-                                    data01[4], data01[5],
-                                    data02[4], data02[5],
-                                    data03[4], data03[5],
-                                    data04[4], data04[5]
-                            };
-                            HistoryError historyError = new HistoryError();
-                            historyError.setData(errorData);
-
-                            Message message = new Message();
-                            message.what = BluetoothState.onTalkReceive;
-                            historyErrorHandler.sendMessage(message);
-                        }
-                    }
-                }
-                historyErrorHandler.sendEmptyMessage(BluetoothState.onMultiTalkEnd);
-            }
-        }
-
-        @Override
-        public void onTalkReceive(Message msg) {
-            super.onTalkReceive(msg);
-            if (msg.obj instanceof ObjectListHolder) {
-                ObjectListHolder holder = (ObjectListHolder) msg.obj;
-                for (ParameterSettings item : holder.getParameterSettingsList()) {
-                    if (!item.getName().contains(ApplicationConfig.RETAIN_NAME)) {
-                        if (tempList == null) {
-                            tempList = new ArrayList<ParameterSettings>();
-                        }
-                        tempList.add(item);
-                    }
-                }
-                receiveCount++;
-            }
-        }
-
-        @Override
-        public void onTalkError(Message msg) {
-            super.onTalkError(msg);
-        }
-
-    }
-
     // ================================== 故障复位 ========================= //
 
     private class RestoreErrorHandler extends BluetoothHandler {
@@ -661,11 +575,6 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
                             receive);
                 }
             }
-        }
-
-        @Override
-        public void onTalkError(Message msg) {
-            super.onTalkError(msg);
         }
 
     }

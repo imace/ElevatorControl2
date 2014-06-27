@@ -133,9 +133,20 @@ public class RealTimeMonitor implements Cloneable {
      * @return Type
      */
     @SuppressLint("DefaultLocale")
-    public static int ParseDescriptionToType(String description) {
+    public static int ParseDescriptionToType(int type, String description) {
         if (description != null) {
             if (description.length() > 0 && !description.contains("null")) {
+                if (type == ApplicationConfig.HomeStateCode[1]) {
+                    String part0 = "Bit4-7";
+                    String part1 = "Bit8-11";
+                    String part2 = "Bit12";
+                    description.indexOf(part0);
+                    StringBuilder stringBuilder = new StringBuilder(description);
+                    stringBuilder.insert(description.indexOf(part0), "|");
+                    stringBuilder.insert(description.indexOf(part1) + 1, "|");
+                    stringBuilder.insert(description.indexOf(part2) + 2, "|");
+                    description = stringBuilder.toString();
+                }
                 if (description.contains("Bit") || description.contains("bit")) {
                     if (description.contains("|")) {
                         return ApplicationConfig.DESCRIPTION_TYPE[3];
@@ -299,17 +310,18 @@ public class RealTimeMonitor implements Cloneable {
      * @param description Description String
      * @return JSON String
      */
-    @SuppressLint("DefaultLocale")
     public static String GenerateJSONDescription(int type, String description) {
         if (description != null) {
             if (description.length() > 0 && !description.contains("null")) {
                 if (type == ApplicationConfig.HomeStateCode[1]) {
                     String part0 = "Bit4-7";
                     String part1 = "Bit8-11";
+                    String part2 = "Bit12";
                     description.indexOf(part0);
                     StringBuilder stringBuilder = new StringBuilder(description);
                     stringBuilder.insert(description.indexOf(part0), "|");
                     stringBuilder.insert(description.indexOf(part1) + 1, "|");
+                    stringBuilder.insert(description.indexOf(part2) + 2, "|");
                     description = stringBuilder.toString();
                 }
                 JSONStringer jsonStringer = new JSONStringer();

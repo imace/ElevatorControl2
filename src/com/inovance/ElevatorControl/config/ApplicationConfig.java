@@ -9,7 +9,12 @@ package com.inovance.ElevatorControl.config;
  */
 public class ApplicationConfig {
 
-    public static final String PREFS_NAME = "ApplicationPreference";
+    /**
+     * 是否是内部用户版本
+     */
+    public static final boolean isInternalVersion = false;
+
+    public static final String PREFERENCE_FILE_NAME = "ApplicationPreference";
 
     public static final String DefaultDeviceName = "NICE 3000+";
 
@@ -70,11 +75,46 @@ public class ApplicationConfig {
      */
     public static final int[] MonitorStateCode = new int[]{100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 115};
 
+    /**
+     * 输入端子
+     */
     public static final int InputTerminalType = 3;
 
+    /**
+     * 输出端子
+     */
     public static final int OutputTerminalType = 4;
 
+    /**
+     * 高压输入端子
+     */
     public static final int HVInputTerminalType = 11;
+
+    /**
+     * F5-25
+     * 轿内输入类型选择
+     */
+    public static final int InputSelectType = 5;
+
+    /**
+     * 楼层显示
+     */
+    public static final int FloorShowType = 25;
+
+    /**
+     * 当前楼层
+     */
+    public static final int CurrentFloorType = 107;
+
+    /**
+     * 内召信息
+     */
+    public static final int MoveInsideInformationType = 116;
+
+    /**
+     * 外召信息
+     */
+    public static final int MoveOutsideInformationType = 117;
 
     /**
      * 标准设备型号名称
@@ -107,8 +147,6 @@ public class ApplicationConfig {
 
     public static final String STATUS_WORD_NAME = "状态字功能";
 
-    public static final String GET_FLOOR_NAME = "最高层";
-
     public static final String RETAIN_NAME = "保留";
 
     /**
@@ -119,69 +157,11 @@ public class ApplicationConfig {
     public static final int[] modifyType = new int[]{1, 2, 3};
 
     /**
-     * 内召信息
-     */
-    public static final String[] moveInsideInfoName = new String[]{
-            "当前楼层",
-            "1-8层信息",
-            "9-16层信息",
-            "17-24层信息",
-            "25-32层信息",
-            "33-40层信息",
-            "41-48层信息"
-    };
-
-    /**
-     * 外召信息
-     */
-    public static final String[] moveOutsideInfoName = new String[]{
-            "当前楼层",
-
-            "1~4层召唤信息",
-            "5~8层召唤信息",
-            "9~12层召唤信息",
-            "13~16层召唤信息",
-            "17~20层召唤信息",
-            "21~24层召唤信息",
-            "25~28层召唤信息",
-            "29~32层召唤信息",
-            "33~36层召唤信息",
-            "37~40层召唤信息",
-
-            "41~44层召唤信息",
-            "45~48层召唤信息"
-    };
-
-    /**
      * 电梯默认最底层和最高层
      */
-    public static final int[] DEFAULT_FLOORS = new int[]{1, 1};
+    public static final int[] DefaultFloors = new int[]{1, 1};
 
-    public static final String[] moveInsideName = new String[]{
-            "1-8层信息",
-            "9-16层信息",
-            "17-24层信息",
-            "25-32层信息",
-            "33-40层信息",
-            "41-48层信息"
-    };
-
-    public static final String[] moveOutsideName = new String[]{
-            "1~4层召唤信息",
-            "5~8层召唤信息",
-            "9~12层召唤信息",
-            "13~16层召唤信息",
-            "17~20层召唤信息",
-            "21~24层召唤信息",
-            "25~28层召唤信息",
-            "29~32层召唤信息",
-            "33~36层召唤信息",
-            "37~40层召唤信息",
-            "41~44层召唤信息",
-            "45~48层召唤信息"
-    };
-
-    public static final String[] MOVE_SIDE_CODE = new String[]{
+    public static final String[] MoveSideCallCode = new String[]{
             "0001", // 召唤一楼 & 一楼上
             "0002", // 召唤二楼 & 一楼下
             "0004", // 召唤三楼 & 二楼上
@@ -269,6 +249,8 @@ public class ApplicationConfig {
      * 恢复出厂设置
      */
     public static final int LogRestoreFactory = 8;
+
+    // ================================= 存储文件夹 ===========================================
 
     /**
      * 下载的固件存储文件夹
@@ -438,8 +420,20 @@ public class ApplicationConfig {
     // 返回值：返回文件流
     public static final String GetChatMessageFile = "ReceiveAssistanceFile?id=";
 
-    /// 返回所有已经在系统中注册的内部用户列表（姓名、部门、手机号码）
+    // 返回所有已经在系统中注册的内部用户列表（姓名、部门、手机号码）
     // 参数：无
     // 返回值：所有已注册的用户列表信息
     public static final String GetRegistUserList = "GetInternalUserList";
+
+    // 发送内部用户注册信息
+    // 参数:UserName:用户姓名
+    // WorkNo:工号
+    // MobilePhone:手机号
+    // Are:片区 默认为空
+    // Department:部门
+    // Email:Email
+    // Remark:备注
+    // Blue:蓝牙地址
+    // 返回值：成功返回数据库记录,失败返回错误信息
+    public static final String RegisterInternalUser = "SendRegisterInternal";
 }

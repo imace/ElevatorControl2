@@ -33,6 +33,11 @@ public class SpecialDevice {
     private int vendorID;
 
     /**
+     * 设备通信码
+     */
+    private String code;
+
+    /**
      * 设备描述
      */
     private String description;
@@ -44,6 +49,7 @@ public class SpecialDevice {
         this.number = object.optString("DeviceNum");
         this.vendorID = object.optInt("FK_Vendor");
         this.description = object.optString("DeviceDescription");
+        this.code = object.optString("Code");
     }
 
     public int getID() {
@@ -84,6 +90,14 @@ public class SpecialDevice {
 
     public void setVendorID(int vendorID) {
         this.vendorID = vendorID;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public String getDescription() {

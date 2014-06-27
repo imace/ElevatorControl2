@@ -2,7 +2,7 @@ package com.inovance.ElevatorControl.daos;
 
 import android.content.Context;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.models.ConfigFactory;
+import com.inovance.ElevatorControl.config.ConfigFactory;
 import com.inovance.ElevatorControl.models.ParameterGroupSettings;
 import net.tsz.afinal.FinalDb;
 

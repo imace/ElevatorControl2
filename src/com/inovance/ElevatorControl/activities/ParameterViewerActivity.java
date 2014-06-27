@@ -49,14 +49,14 @@ public class ParameterViewerActivity extends Activity {
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        String profileName = getIntent().getStringExtra("profileName");
-        setTitle(profileName);
         overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
         setContentView(R.layout.activity_parameter_viewer_layout);
         Views.inject(this);
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
-        readFileAndParseJSONString(profileName);
+        String profileName = getIntent().getStringExtra("profileName");
+        String profileContent = getIntent().getStringExtra("profileContent");
+        setTitle(profileName);
         handler = new Handler() {
 
             @Override
@@ -70,6 +70,50 @@ public class ParameterViewerActivity extends Activity {
             }
 
         };
+        if (profileContent == null) {
+            readFileAndParseJSONString(profileName);
+        } else {
+            parseJSONString(profileContent);
+        }
+    }
+
+    /**
+     * Parse JSON content
+     *
+     * @param content Content
+     */
+    private void parseJSONString(final String content) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JSONArray groups = new JSONArray(content);
+                    int size = groups.length();
+                    List<ParameterGroupSettings> groupList = new ArrayList<ParameterGroupSettings>();
+                    for (int m = 0; m < size; m++) {
+                        JSONObject groupObject = groups.getJSONObject(m);
+                        ParameterGroupSettings groupItem = new ParameterGroupSettings(groupObject);
+                        JSONArray settingArray = groupObject.getJSONArray("parameterSettings");
+                        int length = settingArray.length();
+                        List<ParameterSettings> settingsList = new ArrayList<ParameterSettings>();
+                        for (int n = 0; n < length; n++) {
+                            JSONObject settingObject = settingArray.getJSONObject(n);
+                            ParameterSettings settings = new ParameterSettings(settingObject);
+                            settingsList.add(settings);
+                        }
+                        groupItem.setSettingsList(settingsList);
+                        groupList.add(groupItem);
+                    }
+                    Message message = new Message();
+                    ListHolder holder = new ListHolder();
+                    holder.setSettingsList(groupList);
+                    message.obj = holder;
+                    handler.sendMessage(message);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
     /**
@@ -79,54 +123,26 @@ public class ParameterViewerActivity extends Activity {
      */
     private void readFileAndParseJSONString(final String fileName) {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    File directory = new File(getApplicationContext().getExternalCacheDir().getPath()
-                            + "/"
-                            + ApplicationConfig.ProfileFolder);
-                    File file = new File(directory, fileName);
-                    try {
-                        InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(file));
-                        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                        String receiveString = "";
-                        StringBuilder stringBuilder = new StringBuilder();
-                        while ((receiveString = bufferedReader.readLine()) != null) {
-                            stringBuilder.append(receiveString);
-                        }
-                        bufferedReader.close();
-                        inputStreamReader.close();
-                        JSONArray groups = new JSONArray(stringBuilder.toString());
-                        int size = groups.length();
-                        List<ParameterGroupSettings> groupList = new ArrayList<ParameterGroupSettings>();
-                        for (int m = 0; m < size; m++) {
-                            JSONObject groupObject = groups.getJSONObject(m);
-                            ParameterGroupSettings groupItem = new ParameterGroupSettings(groupObject);
-                            JSONArray settingArray = groupObject.getJSONArray("parameterSettings");
-                            int length = settingArray.length();
-                            List<ParameterSettings> settingsList = new ArrayList<ParameterSettings>();
-                            for (int n = 0; n < length; n++) {
-                                JSONObject settingObject = settingArray.getJSONObject(n);
-                                ParameterSettings settings = new ParameterSettings(settingObject);
-                                settingsList.add(settings);
-                            }
-                            groupItem.setSettingsList(settingsList);
-                            groupList.add(groupItem);
-                        }
-                        Message message = new Message();
-                        ListHolder holder = new ListHolder();
-                        holder.setSettingsList(groupList);
-                        message.obj = holder;
-                        handler.sendMessage(message);
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
+            try {
+                File directory = new File(getApplicationContext().getExternalCacheDir().getPath()
+                        + "/"
+                        + ApplicationConfig.ProfileFolder);
+                File file = new File(directory, fileName);
+                InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(file));
+                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                String receiveString = "";
+                StringBuilder stringBuilder = new StringBuilder();
+                while ((receiveString = bufferedReader.readLine()) != null) {
+                    stringBuilder.append(receiveString);
                 }
-            }).start();
+                bufferedReader.close();
+                inputStreamReader.close();
+                parseJSONString(stringBuilder.toString());
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

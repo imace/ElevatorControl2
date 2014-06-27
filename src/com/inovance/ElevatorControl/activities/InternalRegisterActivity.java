@@ -13,36 +13,38 @@ import butterknife.InjectView;
 import butterknife.Views;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.models.User;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
 import com.inovance.ElevatorControl.web.WebApi;
+import com.inovance.ElevatorControl.web.WebApi.OnGetResultListener;
+import com.inovance.ElevatorControl.web.WebApi.OnRequestFailureListener;
 import org.json.JSONArray;
 import org.json.JSONException;
 
 /**
  * Created by IntelliJ IDEA.
  * User: keith.
- * Date: 14-4-10.
- * Time: 11:23.
+ * Date: 14-6-26.
+ * Time: 17:17.
  */
-public class RegisterUserActivity extends Activity {
+public class InternalRegisterActivity extends Activity implements OnGetResultListener, OnRequestFailureListener {
 
-    private static final String TAG = RegisterUserActivity.class.getSimpleName();
+    @InjectView(R.id.internal_username)
+    EditText internalUsername;
 
-    @InjectView(R.id.user_name)
-    EditText userName;
+    @InjectView(R.id.internal_number)
+    EditText internalNumber;
 
-    @InjectView(R.id.company)
-    EditText company;
+    @InjectView(R.id.internal_cellphone)
+    EditText internalCellphone;
 
-    @InjectView(R.id.cell_phone)
-    EditText cellPhone;
+    @InjectView(R.id.internal_department)
+    EditText internalDepartment;
 
-    @InjectView(R.id.tel_phone)
-    EditText telPhone;
+    @InjectView(R.id.internal_email)
+    EditText internalEmail;
 
-    @InjectView(R.id.email)
-    EditText email;
+    @InjectView(R.id.internal_remark)
+    EditText internalRemark;
 
     @InjectView(R.id.submit)
     LinearLayout submitButton;
@@ -61,8 +63,8 @@ public class RegisterUserActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
-        setContentView(R.layout.activity_register_user_layout);
-        setTitle(R.string.register_user_text);
+        setContentView(R.layout.activity_internal_register_layout);
+        setTitle(R.string.internal_register_user_text);
         Views.inject(this);
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
@@ -72,7 +74,7 @@ public class RegisterUserActivity extends Activity {
             phoneNumber.replace("-", "");
             phoneNumber.replace("(", "");
             phoneNumber.replace(")", "");
-            cellPhone.setText(phoneNumber);
+            internalCellphone.setText(phoneNumber);
         }
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -85,6 +87,8 @@ public class RegisterUserActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        WebApi.getInstance().setOnResultListener(this);
+        WebApi.getInstance().setOnFailureListener(this);
         if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(intent, REQUEST_BLUETOOTH_ENABLE);
@@ -111,44 +115,14 @@ public class RegisterUserActivity extends Activity {
         if (validateUserInputInformation()) {
             submitProgress.setVisibility(View.VISIBLE);
             submitTextView.setVisibility(View.GONE);
-            User user = new User();
-            user.setName(userName.getText().toString());
-            user.setCompany(company.getText().toString());
-            user.setCellPhone(cellPhone.getText().toString());
-            user.setTelephone(telPhone.getText().toString());
-            user.setEmail(email.getText().toString());
             BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-            user.setBluetoothAddress(bluetoothAdapter.getAddress());
-            WebApi.getInstance().setOnResultListener(new WebApi.OnGetResultListener() {
-                @Override
-                public void onResult(String tag, String responseString) {
-                    if (tag.equalsIgnoreCase(ApplicationConfig.RegisterUser)) {
-                        try {
-                            JSONArray jsonArray = new JSONArray(responseString);
-                            submitProgress.setVisibility(View.GONE);
-                            submitTextView.setVisibility(View.VISIBLE);
-                            submitButton.setEnabled(false);
-                            Toast.makeText(RegisterUserActivity.this,
-                                    R.string.regist_successful_wait_text,
-                                    Toast.LENGTH_SHORT).show();
-                        } catch (JSONException e) {
-                            submitProgress.setVisibility(View.GONE);
-                            submitTextView.setVisibility(View.VISIBLE);
-                            errorTextView.setText(responseString);
-                        }
-                    }
-                }
-            });
-            WebApi.getInstance().setOnFailureListener(new WebApi.OnRequestFailureListener() {
-                @Override
-                public void onFailure(int statusCode, Throwable throwable) {
-                    Toast.makeText(RegisterUserActivity.this, R.string.register_failed_text, Toast.LENGTH_SHORT)
-                            .show();
-                    submitProgress.setVisibility(View.GONE);
-                    submitTextView.setVisibility(View.VISIBLE);
-                }
-            });
-            WebApi.getInstance().registerUser(this, user);
+            WebApi.getInstance().registerInternalUser(this, internalUsername.getText().toString(),
+                    internalNumber.getText().toString(),
+                    internalCellphone.getText().toString(),
+                    internalDepartment.getText().toString(),
+                    internalEmail.getText().toString(),
+                    internalRemark.getText().toString(),
+                    bluetoothAdapter.getAddress());
         }
     }
 
@@ -158,27 +132,33 @@ public class RegisterUserActivity extends Activity {
      * @return 验证结果
      */
     private boolean validateUserInputInformation() {
-        boolean userNameCheck = userName.getText().toString().length() > 0 && userName.getText().toString().length() <= 6;
-        boolean companyCheck = company.getText().toString().length() > 0;
-        boolean cellPhoneCheck = cellPhone.getText().toString().length() > 0;
-        boolean emailCheck = ParseSerialsUtils.isValidEmail(email.getText().toString());
+        boolean userNameCheck = internalUsername.getText().toString().length() > 0
+                && internalUsername.getText().toString().length() <= 20;
+        boolean numberCheck = internalNumber.getText().toString().length() > 0;
+        boolean cellPhoneCheck = internalCellphone.getText().toString().length() > 0;
+        boolean departmentCheck = internalDepartment.getText().toString().length() > 0;
+        boolean emailCheck = ParseSerialsUtils.isValidEmail(internalEmail.getText().toString());
         boolean isValidated = true;
         String validateResult = "";
         if (!userNameCheck) {
             isValidated = false;
-            validateResult += getResources().getString(R.string.user_name_error) + "\n";
+            validateResult += getResources().getString(R.string.internal_validate_username_error) + "\n";
         }
-        if (!companyCheck) {
+        if (!numberCheck) {
             isValidated = false;
-            validateResult += getResources().getString(R.string.company_name_error) + "\n";
+            validateResult += getResources().getString(R.string.internal_validate_number_error) + "\n";
         }
         if (!cellPhoneCheck) {
             isValidated = false;
-            validateResult += getResources().getString(R.string.cellphone_error) + "\n";
+            validateResult += getResources().getString(R.string.internal_validate_cellphone_error) + "\n";
+        }
+        if (!departmentCheck) {
+            isValidated = false;
+            validateResult += getResources().getString(R.string.internal_validate_department_error) + "\n";
         }
         if (!emailCheck) {
             isValidated = false;
-            validateResult += getResources().getString(R.string.email_address_error) + "\n";
+            validateResult += getResources().getString(R.string.internal_validate_email_error) + "\n";
         }
         if (!isValidated) {
             Toast.makeText(this, validateResult.trim(), Toast.LENGTH_SHORT)
@@ -210,4 +190,30 @@ public class RegisterUserActivity extends Activity {
         }
     }
 
+    @Override
+    public void onResult(String tag, String responseString) {
+        if (tag.equalsIgnoreCase(ApplicationConfig.RegisterInternalUser)) {
+            try {
+                JSONArray jsonArray = new JSONArray(responseString);
+                submitProgress.setVisibility(View.GONE);
+                submitTextView.setVisibility(View.VISIBLE);
+                submitButton.setEnabled(false);
+                Toast.makeText(InternalRegisterActivity.this,
+                        R.string.regist_successful_wait_text,
+                        Toast.LENGTH_SHORT).show();
+            } catch (JSONException e) {
+                Toast.makeText(this, responseString, Toast.LENGTH_SHORT).show();
+                submitProgress.setVisibility(View.GONE);
+                submitTextView.setVisibility(View.VISIBLE);
+                errorTextView.setText(responseString);
+            }
+        }
+    }
+
+    @Override
+    public void onFailure(int statusCode, Throwable throwable) {
+        Toast.makeText(InternalRegisterActivity.this, R.string.register_failed_text, Toast.LENGTH_SHORT).show();
+        submitProgress.setVisibility(View.GONE);
+        submitTextView.setVisibility(View.VISIBLE);
+    }
 }

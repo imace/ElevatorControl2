@@ -3,6 +3,7 @@ package com.inovance.ElevatorControl.daos;
 import android.content.Context;
 import android.util.Log;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
+import com.inovance.ElevatorControl.config.ConfigFactory;
 import com.inovance.ElevatorControl.models.*;
 import com.inovance.ElevatorControl.utils.AssetUtils;
 import net.tsz.afinal.FinalDb;
@@ -148,7 +149,7 @@ public class ParameterFactoryDao {
                     settings.setDescriptionType(ParameterSettings.ParseDescriptionToType(settings.getDescription()));
                     settings.setJSONDescription(ParameterSettings.GenerateJSONDescription(settings.getDescription()));
                     settings.setChildId(jsonObject.optString("childId"));
-                    settings.setScope(jsonObject.optString("scope"));
+                    settings.setScope(jsonObject.optString("scope").replaceAll("-", "").replace("～", "~"));
                     settings.setDefaultValue(jsonObject.optString("defaultValue"));
                     settings.setScale(jsonObject.optString("scale"));
                     settings.setUnit(jsonObject.optString("unit"));
@@ -182,7 +183,7 @@ public class ParameterFactoryDao {
                 state.setScope(jsonObject.optString("scope"));
                 state.setStateID(jsonObject.optInt("stateID"));
                 state.setSort(jsonObject.optInt("sort"));
-                state.setDescriptionType(RealTimeMonitor.ParseDescriptionToType(state.getDescription()));
+                state.setDescriptionType(RealTimeMonitor.ParseDescriptionToType(state.getStateID(), state.getDescription()));
                 state.setJSONDescription(RealTimeMonitor.GenerateJSONDescription(state.getStateID(), state.getDescription()));
                 state.setValid(true);
                 state.setLastTime(new Date());

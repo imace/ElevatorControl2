@@ -68,9 +68,14 @@ public class SystemLog {
     private long timestamp;
 
     /**
-     * 烧录结果
+     * 1 for successful
+     * 2 for failed
      */
-    private boolean burnSuccessful;
+    private int burnStatus;
+
+    public void setBurnStatus(int burnStatus) {
+        this.burnStatus = burnStatus;
+    }
 
     /**
      * 烧录出错信息
@@ -88,6 +93,10 @@ public class SystemLog {
      * 2. 下召
      */
     private int direction;
+
+    public static final int BurnSuccessful = 1;
+
+    public static final int BurnFailed = 2;
 
     public int getID() {
         return ID;
@@ -153,14 +162,6 @@ public class SystemLog {
         this.timestamp = timestamp;
     }
 
-    public boolean isBurnSuccessful() {
-        return burnSuccessful;
-    }
-
-    public void setBurnResult(boolean burnSuccessful) {
-        this.burnSuccessful = burnSuccessful;
-    }
-
     public String getBurnErrorMessage() {
         return burnErrorMessage;
     }
@@ -216,7 +217,8 @@ public class SystemLog {
                 break;
             // 烧录
             case ApplicationConfig.LogBurn:
-                if (isBurnSuccessful()) {
+                boolean burnSuccessful = burnStatus == BurnSuccessful;
+                if (burnSuccessful) {
                     content = LogUtils.getInstance().LogDeviceLabel + deviceType + "\n"
                             + LogUtils.getInstance().LogNameLabel + logName + "\n"
                             + LogUtils.getInstance().LogResultLabel

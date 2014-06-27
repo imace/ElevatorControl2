@@ -3,6 +3,7 @@ package com.inovance.ElevatorControl.web;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.util.Log;
 import android.util.Xml;
 import android.widget.Toast;
 import com.inovance.ElevatorControl.R;
@@ -120,6 +121,53 @@ public class WebApi {
         }
     }
 
+    // 参数:UserName:用户姓名
+    // WorkNo:工号
+    // MobilePhone:手机号
+    // Are:片区 默认为空
+    // Department:部门
+    // Email:Email
+    // Remark:备注
+    // Blue:蓝牙地址
+    // 返回值：成功返回数据库记录,失败返回错误信息
+    public void registerInternalUser(Context context, String name, String number,
+                                     String cellphone, String department, String email,
+                                     String remark, String bluetoothAddress) {
+        if (isNetworkAvailable(context)) {
+            String postURL = ApplicationConfig.DomainName + ApplicationConfig.RegisterInternalUser;
+            String params = "UserName={param0}&WorkNo={param1}&MobilePhone" +
+                    "={param2}&Area=&Department={param3}&Email={param4}&Remark={param5}&Blue={param6}";
+            try {
+                params = params.replace("{param0}", URLEncoder.encode(name, "UTF-8"));
+                params = params.replace("{param1}", number);
+                params = params.replace("{param2}", cellphone);
+                params = params.replace("{param3}", URLEncoder.encode(department, "UTF-8"));
+                params = params.replace("{param4}", email);
+                params = params.replace("{param5}", URLEncoder.encode(remark, "UTF-8"));
+                params = params.replace("{param6}", bluetoothAddress);
+                Log.v("registerInternalUser", params);
+                HttpEntity entity = new StringEntity(params);
+                client.post(context,
+                        postURL,
+                        entity,
+                        "application/x-www-form-urlencoded",
+                        new ResponseHandler() {
+                            @Override
+                            public void onSuccess(int statusCode, Header[] headers, byte[] response) {
+                                if (onResultListener != null) {
+                                    onResultListener.onResult(ApplicationConfig.RegisterInternalUser,
+                                            getResponseString(response, STRING_TAG));
+                                }
+                            }
+                        });
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        } else {
+            alertUserNetworkNotAvailable(context);
+        }
+    }
+
     /**
      * 验证用户
      *
@@ -217,6 +265,7 @@ public class WebApi {
      */
     public void getSpecialDeviceCodeList(Context context, String bluetoothAddress) {
         String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetSpecialDeviceCodeList + bluetoothAddress;
+        Log.v(TAG, requestURL);
         startGetRequest(context, requestURL, ApplicationConfig.GetSpecialDeviceCodeList, true);
     }
 
@@ -312,7 +361,7 @@ public class WebApi {
         if (isNetworkAvailable(context)) {
             String postURL = ApplicationConfig.DomainName + ApplicationConfig.ApplySpecialDevicePermission;
             String params = "Deviceid={param0}&Blue={param1}&TrueName={param2}" +
-                    "&CompanyName={param3}&Position={param4}}&Tel={param5}}&Email={param6}";
+                    "&CompanyName={param3}&Position={param4}&Tel={param5}&Email={param6}";
             params = params.replace("{param0}", String.valueOf(deviceID));
             params = params.replace("{param1}", bluetoothAddress);
             try {

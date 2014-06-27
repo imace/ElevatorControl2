@@ -22,6 +22,7 @@ import com.bluetoothtool.BluetoothTool;
 import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
+import com.inovance.ElevatorControl.config.ConfigFactory;
 import com.inovance.ElevatorControl.daos.ParameterGroupSettingsDao;
 import com.inovance.ElevatorControl.daos.ProfileDao;
 import com.inovance.ElevatorControl.models.*;
@@ -262,11 +263,10 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
             communications[i] = new BluetoothTalk() {
                 @Override
                 public void beforeSend() {
-                    this.setSendBuffer(SerialUtility.crc16(SerialUtility
-                            .hexStringToInt("0103"
+                    this.setSendBuffer(SerialUtility.crc16("0103"
                                     + ParseSerialsUtils.getCalculatedCode(firstItem)
                                     + String.format("%04x", length)
-                                    + "0001")));
+                                    + "0001"));
                 }
 
                 @Override
@@ -293,8 +293,8 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
                             List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
                             for (int j = 0; j < length; j++) {
                                 ParameterSettings item = list.get(position * 10 + j);
-                                byte[] tempData = SerialUtility.crc16(SerialUtility.hexStringToInt("01030002"
-                                        + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
+                                byte[] tempData = SerialUtility.crc16("01030002"
+                                        + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]}));
                                 item.setReceived(tempData);
                                 tempList.add(item);
                             }

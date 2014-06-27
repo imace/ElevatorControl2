@@ -3,7 +3,7 @@ package com.inovance.ElevatorControl.utils;
 import android.content.Context;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.models.ConfigFactory;
+import com.inovance.ElevatorControl.config.ConfigFactory;
 import com.inovance.ElevatorControl.models.SystemLog;
 import net.tsz.afinal.FinalDb;
 
@@ -102,6 +102,12 @@ public class LogUtils {
         return "";
     }
 
+    /**
+     * 取得外召方向文字标签
+     *
+     * @param direction direction
+     * @return String
+     */
     public String getDirectionString(int direction) {
         switch (direction) {
             case 1:
@@ -176,7 +182,7 @@ public class LogUtils {
         SystemLog systemLog = new SystemLog();
         systemLog.setType(type);
         systemLog.setDeviceType(ConfigFactory.getInstance().getDeviceName());
-        systemLog.setBurnResult(result);
+        systemLog.setBurnStatus(result ? SystemLog.BurnSuccessful : SystemLog.BurnFailed);
         systemLog.setBurnErrorMessage(errorMessage);
         systemLog.setTimestamp(System.currentTimeMillis());
         save(systemLog);

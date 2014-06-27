@@ -1,12 +1,13 @@
-package com.inovance.ElevatorControl.models;
+package com.inovance.ElevatorControl.config;
 
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.widget.Toast;
 import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.DeviceDao;
 import com.inovance.ElevatorControl.daos.ParameterFactoryDao;
+import com.inovance.ElevatorControl.models.Device;
+import com.inovance.ElevatorControl.models.User;
 import com.inovance.ElevatorControl.web.WebApi;
 import com.inovance.ElevatorControl.web.WebApi.OnGetResultListener;
 import com.inovance.ElevatorControl.web.WebApi.OnRequestFailureListener;
@@ -147,13 +148,7 @@ public class ConfigFactory implements OnGetResultListener, OnRequestFailureListe
             device.setRemoteID(remoteID);
             this.currentDevice = device;
         }
-        updateDialog = new ProgressDialog(context);
-        updateDialog.setMessage(context.getString(R.string.update_parameter_data_wait_message));
-        updateDialog.setIndeterminate(false);
-        updateDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        updateDialog.show();
-        updateDialog.setCancelable(false);
-        updateDialog.setCanceledOnTouchOutside(false);
+        Toast.makeText(context, R.string.check_parameter_data_update_text, Toast.LENGTH_SHORT).show();
         // 检查并更新参数功能码
         updateFunctionCodeComplete = false;
         updateStateCodeComplete = false;
@@ -161,6 +156,18 @@ public class ConfigFactory implements OnGetResultListener, OnRequestFailureListe
         WebApi.getInstance().setOnFailureListener(this);
         WebApi.getInstance().setOnResultListener(this);
         WebApi.getInstance().getDeviceCodeUpdateTime(context, remoteID, deviceType);
+    }
+
+    private void showUpdateDialog() {
+        if (updateDialog == null || !updateDialog.isShowing()) {
+            updateDialog = new ProgressDialog(context);
+            updateDialog.setMessage(context.getString(R.string.update_parameter_data_wait_message));
+            updateDialog.setIndeterminate(false);
+            updateDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            updateDialog.show();
+            updateDialog.setCancelable(false);
+            updateDialog.setCanceledOnTouchOutside(false);
+        }
     }
 
     public int getPermission() {
@@ -202,6 +209,7 @@ public class ConfigFactory implements OnGetResultListener, OnRequestFailureListe
                             ParameterFactoryDao.emptyRecordByDeviceID(context, getDeviceSQLID(), ApplicationConfig.FunctionCodeType);
                             updateFunctionCodeComplete = false;
                             currentDevice.setFunctionCodeUpdateTime(updateTime);
+                            showUpdateDialog();
                             WebApi.getInstance().getFunctionCode(context, currentDevice.getRemoteID(), currentDevice.getDeviceType());
                         } else {
                             updateFunctionCodeComplete = true;
@@ -213,6 +221,7 @@ public class ConfigFactory implements OnGetResultListener, OnRequestFailureListe
                             ParameterFactoryDao.emptyRecordByDeviceID(context, getDeviceSQLID(), ApplicationConfig.StateCodeType);
                             currentDevice.setStateCodeUpdateTime(updateTime);
                             updateStateCodeComplete = false;
+                            showUpdateDialog();
                             WebApi.getInstance().getStateCode(context, currentDevice.getRemoteID(), currentDevice.getDeviceType());
                         } else {
                             updateStateCodeComplete = true;
@@ -223,6 +232,7 @@ public class ConfigFactory implements OnGetResultListener, OnRequestFailureListe
                                 || !currentDevice.getErrorHelpUpdateTime().equalsIgnoreCase(updateTime)) {
                             currentDevice.setErrorHelpUpdateTime(updateTime);
                             updateErrorHelpComplete = false;
+                            showUpdateDialog();
                             WebApi.getInstance().getErrorHelpList(context, currentDevice.getRemoteID(), currentDevice.getDeviceType());
                         } else {
                             updateErrorHelpComplete = true;

@@ -287,11 +287,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
 
                                 @Override
                                 public void onFinish() {
-                                    if (!ParameterDetailActivity.this.hasGetElevatorStatus) {
-                                        Toast.makeText(ParameterDetailActivity.this,
-                                                R.string.get_elevator_status_failed,
-                                                Toast.LENGTH_SHORT).show();
-                                    }
+
                                 }
                             }.start();
                         }
@@ -334,9 +330,9 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                         new BluetoothTalk() {
                             @Override
                             public void beforeSend() {
-                                this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0103"
+                                this.setSendBuffer(SerialUtility.crc16("0103"
                                         + monitor.getCode()
-                                        + "0001")));
+                                        + "0001"));
                             }
 
                             @Override
@@ -625,19 +621,19 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                     @Override
                     public void onClick(View view) {
                         if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[1]) {
-                            if (Integer.parseInt(settings.getType()) == 3
-                                    && !settings.getName().contains("X25")
-                                    && !settings.getName().contains("X26")
-                                    && !settings.getName().contains("X27")) {
+                            if (Integer.parseInt(settings.getType()) == ApplicationConfig.InputTerminalType) {
                                 ToggleButton toggleButton = (ToggleButton) detailDialog.findViewById(R.id.toggle_button);
                                 ListView listView = (ListView) detailDialog.findViewById(R.id.list_view);
                                 CheckedListViewAdapter adapter = (CheckedListViewAdapter) listView.getAdapter();
                                 int value = getTerminalStatus(adapter.getItem(adapter.getCheckedIndex()),
                                         toggleButton.isChecked());
                                 if (value != -1) {
+                                    if (adapter.getCheckedIndex() == 0) {
+                                        value = 0;
+                                    }
                                     startSetNewValueCommunications(index, String.format("%04x", value));
                                 }
-                            } else if (Integer.parseInt(settings.getType()) == 25) {
+                            } else if (Integer.parseInt(settings.getType()) == ApplicationConfig.FloorShowType) {
                                 Spinner modSpinner = (Spinner) detailDialog.findViewById(R.id.mod_value);
                                 Spinner remSpinner = (Spinner) detailDialog.findViewById(R.id.rem_value);
                                 int userValue = modSpinner.getSelectedItemPosition() * 100
@@ -723,9 +719,9 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
             communications[i] = new BluetoothTalk() {
                 @Override
                 public void beforeSend() {
-                    this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0103"
+                    this.setSendBuffer(SerialUtility.crc16("0103"
                             + codeArray[position]
-                            + "0001")));
+                            + "0001"));
                 }
 
                 @Override
@@ -797,10 +793,10 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0106"
+                        this.setSendBuffer(SerialUtility.crc16("0106"
                                 + ParseSerialsUtils.getCalculatedCode(settings)
                                 + userValue
-                                + "0001")));
+                                + "0001"));
                     }
 
                     @Override
@@ -886,11 +882,10 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 communications[i] = new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16(SerialUtility
-                                .hexStringToInt("0103"
+                        this.setSendBuffer(SerialUtility.crc16("0103"
                                         + ParseSerialsUtils.getCalculatedCode(firstItem)
                                         + String.format("%04x", length)
-                                        + "0001")));
+                                        + "0001"));
                     }
 
                     @Override
@@ -918,8 +913,8 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                                 for (int j = 0; j < length; j++) {
                                     if (position * 10 + j < settingsList.size()) {
                                         ParameterSettings item = settingsList.get(position * 10 + j);
-                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStringToInt("01030002"
-                                                + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
+                                        byte[] tempData = SerialUtility.crc16("01030002"
+                                                + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]}));
                                         item.setReceived(tempData);
                                         tempList.add(item);
                                     }

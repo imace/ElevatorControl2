@@ -1,8 +1,9 @@
 package com.inovance.ElevatorControl.daos;
 
 import android.content.Context;
+import android.util.Log;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.models.ConfigFactory;
+import com.inovance.ElevatorControl.config.ConfigFactory;
 import com.inovance.ElevatorControl.models.RealTimeMonitor;
 import net.tsz.afinal.FinalDb;
 
@@ -21,20 +22,6 @@ public class RealTimeMonitorDao {
         return db.findAllByWhere(RealTimeMonitor.class, condition);
     }
 
-    /**
-     * Find by type
-     *
-     * @param context context
-     * @param type    type
-     * @return List
-     */
-    public static List<RealTimeMonitor> findByType(Context context, String type) {
-        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
-        String condition = " type = '" + type + "'" + " and "
-                + " deviceID = '" + ConfigFactory.getInstance().getDeviceSQLID() + "'";
-        return db.findAllByWhere(RealTimeMonitor.class, condition);
-    }
-
     public static RealTimeMonitor findByStateID(Context context, int stateID) {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         String condition = " stateID = '" + stateID + "'";
@@ -47,6 +34,15 @@ public class RealTimeMonitorDao {
         return null;
     }
 
+    public static List<RealTimeMonitor> findAllByStateID(Context context, int stateID) {
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
+        String condition = " stateID = '" + stateID + "'";
+        condition = "(" + condition + ")" + " and "
+                + " deviceID = '" + ConfigFactory.getInstance().getDeviceSQLID() + "'";
+        List<RealTimeMonitor> monitorList = db.findAllByWhere(RealTimeMonitor.class, condition);
+        return monitorList != null ? monitorList : new ArrayList<RealTimeMonitor>();
+    }
+
     /**
      * Find by state ID .
      *
@@ -54,7 +50,7 @@ public class RealTimeMonitorDao {
      * @param stateIDs State ID array
      * @return List
      */
-    public static List<RealTimeMonitor> findByStateIDs(Context context, int[] stateIDs) {
+    public static List<RealTimeMonitor> findAllByStateIDs(Context context, int[] stateIDs) {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         int size = stateIDs.length;
         if (size > 0) {

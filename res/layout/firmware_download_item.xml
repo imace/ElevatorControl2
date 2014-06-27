@@ -8,7 +8,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
     <TextView
-            android:id="@+id/approve_date"
+            android:id="@+id/firmware_name"
             style="@android:style/TextAppearance"
             android:textColor="#515151"
             android:gravity="center"

@@ -13,8 +13,12 @@ import com.inovance.ElevatorControl.activities.FirmwareManageActivity;
 import com.inovance.ElevatorControl.adapters.FirmwareBurnAdapter;
 import com.inovance.ElevatorControl.adapters.FirmwareDownloadAdapter;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
+import com.inovance.ElevatorControl.config.ConfigFactory;
 import com.inovance.ElevatorControl.daos.FirmwareDao;
-import com.inovance.ElevatorControl.models.*;
+import com.inovance.ElevatorControl.models.Firmware;
+import com.inovance.ElevatorControl.models.NormalDevice;
+import com.inovance.ElevatorControl.models.SpecialDevice;
+import com.inovance.ElevatorControl.models.Vendor;
 import com.inovance.ElevatorControl.views.component.SegmentControl;
 import com.inovance.ElevatorControl.views.form.NormalApplyForm;
 import com.inovance.ElevatorControl.views.form.SpecialApplyForm;
@@ -27,7 +31,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -72,6 +79,10 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
     private AlertDialog downloadDialog;
 
     private Firmware firmware;
+
+    private List<Firmware> burnFirmwareList;
+
+    private FirmwareBurnAdapter firmwareBurnAdapter;
 
     public static FirmwareManageFragment newInstance(int tabIndex, Context context) {
         FirmwareManageFragment firmwareManageFragment = new FirmwareManageFragment();
@@ -208,6 +219,17 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
     }
 
     /**
+     * 刷新烧录视图
+     */
+    public void refreshFirmwareBurnView() {
+        if (firmwareBurnAdapter != null) {
+            burnFirmwareList.clear();
+            burnFirmwareList.addAll(FirmwareDao.findAll(context));
+            firmwareBurnAdapter.notifyDataSetChanged();
+        }
+    }
+
+    /**
      * 固件烧录
      */
     public void loadFirmwareBurnView() {
@@ -216,10 +238,14 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
         TextView supplierCode = (TextView) getActivity().findViewById(R.id.supplier_code);
         supplierCode.setText(ConfigFactory.getInstance().getSupplierCode());
         GridView gridView = (GridView) getActivity().findViewById(R.id.firmware_list);
-        List<Firmware> firmwareLists = FirmwareDao.findAll(context);
-        FirmwareBurnAdapter adapter = new FirmwareBurnAdapter((FirmwareManageActivity) getActivity(),
-                firmwareLists);
-        gridView.setAdapter(adapter);
+        burnFirmwareList = FirmwareDao.findAll(context);
+        if (firmwareBurnAdapter == null) {
+            firmwareBurnAdapter = new FirmwareBurnAdapter((FirmwareManageActivity) getActivity(),
+                    burnFirmwareList);
+            gridView.setAdapter(firmwareBurnAdapter);
+        } else {
+            refreshFirmwareBurnView();
+        }
     }
 
     /**
@@ -372,7 +398,8 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
                     outputStream.close();
                     if (firmware != null) {
                         // 存储到数据库中
-                        firmware.setCreateDate(System.currentTimeMillis() + "");
+                        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                        firmware.setDownloadDate(dateFormat.format(new Date()));
                         firmware.setFileName(fileName);
                         FirmwareDao.saveItem(getActivity(), firmware);
                         // 从服务器删除已提取的程序

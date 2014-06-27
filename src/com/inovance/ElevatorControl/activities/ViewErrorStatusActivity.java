@@ -14,7 +14,7 @@ import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ParameterSettingsDao;
-import com.inovance.ElevatorControl.models.ConfigFactory;
+import com.inovance.ElevatorControl.config.ConfigFactory;
 import com.inovance.ElevatorControl.models.ObjectListHolder;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
@@ -102,7 +102,7 @@ public class ViewErrorStatusActivity extends Activity {
 
     private void createCommunication() {
         if (communications == null) {
-            settingsList = ParameterSettingsDao.findByCodes(this, filters);
+            settingsList = ParameterSettingsDao.findAllByCodes(this, filters);
             instantAdapter = new InstantAdapter<ParameterSettings>(this,
                     R.layout.list_parameter_group_item,
                     ParameterSettings.class,
@@ -118,11 +118,10 @@ public class ViewErrorStatusActivity extends Activity {
                 communications[i] = new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16(SerialUtility
-                                .hexStringToInt("0103"
+                        this.setSendBuffer(SerialUtility.crc16("0103"
                                         + ParseSerialsUtils.getCalculatedCode(firstItem)
                                         + String.format("%04x", length)
-                                        + "0001")));
+                                        + "0001"));
                     }
 
                     @Override
@@ -150,8 +149,8 @@ public class ViewErrorStatusActivity extends Activity {
                                 for (int j = 0; j < length; j++) {
                                     if (position * 10 + j < settingsList.size()) {
                                         ParameterSettings item = settingsList.get(position * 10 + j);
-                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStringToInt("01030002"
-                                                + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
+                                        byte[] tempData = SerialUtility.crc16("01030002"
+                                                + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]}));
                                         item.setReceived(tempData);
                                         tempList.add(item);
                                     }

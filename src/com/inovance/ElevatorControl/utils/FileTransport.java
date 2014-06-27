@@ -5,6 +5,8 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.webkit.MimeTypeMap;
+import android.widget.Toast;
+import com.inovance.ElevatorControl.R;
 import net.tsz.afinal.core.AsyncTask;
 
 import java.io.*;
@@ -28,7 +30,7 @@ public class FileTransport implements Runnable {
 
     private ProgressDialog transportDialog;
 
-    public static final String sendChatMessageURL = "http://192.168.1.41:8085/Assistance.aspx";
+    public static final String sendChatMessageURL = "http://222.92.112.36:6954/Assistance.aspx";
 
     private Context context;
 
@@ -44,7 +46,11 @@ public class FileTransport implements Runnable {
 
     private static final int TransportComplete = 2;
 
-    private Handler updateProgressHandler = new Handler() {
+    private static final int TransportFailed = 3;
+
+    private static final int ConnectTimeOut = 4;
+
+    private Handler transportHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
@@ -56,6 +62,18 @@ public class FileTransport implements Runnable {
                     if (transportDialog.isShowing()) {
                         transportDialog.dismiss();
                     }
+                    break;
+                case ConnectTimeOut:
+                    if (transportDialog.isShowing()) {
+                        transportDialog.dismiss();
+                    }
+                    Toast.makeText(context, R.string.connect_server_timeout_text, Toast.LENGTH_SHORT).show();
+                    break;
+                case TransportFailed:
+                    if (transportDialog.isShowing()) {
+                        transportDialog.dismiss();
+                    }
+                    Toast.makeText(context, R.string.chat_message_send_failed_text, Toast.LENGTH_SHORT).show();
                     break;
             }
         }
@@ -148,14 +166,15 @@ public class FileTransport implements Runnable {
             String boundary = "*****++++++************++++++++++++";
             URL url = new URL(sendChatMessageURL);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setConnectTimeout(2000);
             connection.setDoInput(true);
             connection.setDoOutput(true);
             connection.setUseCaches(false);
             connection.setRequestMethod("POST");
-                /* setRequestProperty */
             connection.setRequestProperty("Connection", "Keep-Alive");
             connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
             DataOutputStream dataOutputStream = new DataOutputStream(connection.getOutputStream());
+
             dataOutputStream.writeBytes(twoHyphens + boundary + end);
             dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"txtFrom\"" + end + end + chatContent.get(0) + end);
             dataOutputStream.writeBytes(twoHyphens + boundary + end);
@@ -182,7 +201,7 @@ public class FileTransport implements Runnable {
                 Message message = new Message();
                 message.what = UpdateProgressMessage;
                 message.obj = (uploaded * 100) / totalLength;
-                updateProgressHandler.sendMessage(message);
+                transportHandler.sendMessage(message);
             }
             dataOutputStream.writeBytes(end);
             dataOutputStream.writeBytes(twoHyphens + boundary + twoHyphens + end);
@@ -190,14 +209,22 @@ public class FileTransport implements Runnable {
             dataOutputStream.flush();
             dataOutputStream.close();
             if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                updateProgressHandler.sendEmptyMessage(TransportComplete);
+                transportHandler.sendEmptyMessage(TransportComplete);
                 if (mUploadListener != null) {
                     mUploadListener.onUploadComplete();
                 }
+            } else {
+                transportHandler.sendEmptyMessage(TransportFailed);
             }
         } catch (MalformedURLException e) {
             e.printStackTrace();
-        } catch (Exception e) {
+        } catch (SocketTimeoutException e) {
+            transportHandler.sendEmptyMessage(ConnectTimeOut);
+        } catch (ProtocolException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -248,7 +275,7 @@ public class FileTransport implements Runnable {
                 output.flush();
                 output.close();
                 inputStream.close();
-                updateProgressHandler.sendEmptyMessage(TransportComplete);
+                transportHandler.sendEmptyMessage(TransportComplete);
                 return new String[]{filePath.getAbsolutePath(), contentType};
             } catch (MalformedURLException e) {
                 e.printStackTrace();

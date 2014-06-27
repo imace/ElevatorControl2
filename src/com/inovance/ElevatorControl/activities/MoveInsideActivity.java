@@ -2,15 +2,14 @@ package com.inovance.ElevatorControl.activities;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import butterknife.InjectView;
-import butterknife.OnClick;
 import butterknife.Views;
 import com.bluetoothtool.BluetoothHandler;
 import com.bluetoothtool.BluetoothTalk;
@@ -21,7 +20,6 @@ import com.inovance.ElevatorControl.adapters.MoveSidePagerAdapter;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ParameterSettingsDao;
 import com.inovance.ElevatorControl.daos.RealTimeMonitorDao;
-import com.inovance.ElevatorControl.handlers.GlobalHandler;
 import com.inovance.ElevatorControl.models.ObjectListHolder;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.models.RealTimeMonitor;
@@ -32,6 +30,8 @@ import com.inovance.ElevatorControl.views.viewpager.VerticalViewPager;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -48,14 +48,14 @@ public class MoveInsideActivity extends Activity implements Runnable {
     private static final String TAG = MoveInsideActivity.class.getSimpleName();
 
     /**
-     * 内召指令
-     */
-    private static final String codeType = "62";
-
-    /**
      * 用于召唤楼层的指令列表
      */
-    private List<RealTimeMonitor> realTimeMonitors;
+    private List<RealTimeMonitor> moveInsideMonitorList;
+
+    /**
+     * 当前楼层
+     */
+    private RealTimeMonitor currentFloorMonitor;
 
     /**
      * View Pager
@@ -105,7 +105,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
     /**
      * 取得电梯最高层、最底层通信内容
      */
-    private BluetoothTalk[] communications;
+    private BluetoothTalk[] getFloorsCommunications;
 
     /**
      * 同步电梯召唤状态 Task
@@ -122,20 +122,23 @@ public class MoveInsideActivity extends Activity implements Runnable {
      */
     private Handler syncHandler = new Handler();
 
-    /**
-     * 是否正在召唤楼层
-     */
-    private boolean isWritingData = false;
+    private static final int GET_FLOOR = 1;
 
-    /**
-     * 是否召唤成功
-     */
-    private boolean isWriteSuccessful = false;
+    private static final int GET_CALL_STATUS = 2;
+
+    private static final int CALL_FLOOR = 3;
+
+    private int currentTask;
 
     /**
      * 是否正在同步电梯召唤信息
      */
     private boolean isSyncing = false;
+
+    /**
+     * 当前召唤楼层
+     */
+    private int currentCallFloor;
 
     /**
      * Vertical View Pager Adapter
@@ -154,11 +157,6 @@ public class MoveInsideActivity extends Activity implements Runnable {
      */
     private BluetoothTalk[] getMoveInsideInfoCommunications;
 
-    /**
-     * 是否已经获取到电梯最高层、最底层
-     */
-    private boolean hasGetFloors = false;
-
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
@@ -167,7 +165,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
         getActionBar().setHomeButtonEnabled(true);
         setContentView(R.layout.activity_move_inside);
         Views.inject(this);
-        moveSidePagerAdapter = new MoveSidePagerAdapter(this, ApplicationConfig.DEFAULT_FLOORS);
+        moveSidePagerAdapter = new MoveSidePagerAdapter(this, ApplicationConfig.DefaultFloors);
         viewPager.setAdapter(moveSidePagerAdapter);
         viewPager.setOnPageChangeListener(new VerticalViewPager.OnPageChangeListener() {
             @Override
@@ -190,14 +188,18 @@ public class MoveInsideActivity extends Activity implements Runnable {
         mSyncMoveInsideInfoHandler = new SyncMoveInsideInfoHandler(this);
         mMoveInsideHandler = new MoveInsideHandler(this);
         floorHandler = new FloorHandler(this);
-        realTimeMonitors = RealTimeMonitorDao.findByType(this, codeType);
+        currentFloorMonitor = RealTimeMonitorDao.findByStateID(this, ApplicationConfig.CurrentFloorType);
+        moveInsideMonitorList = RealTimeMonitorDao.findAllByStateID(this, ApplicationConfig.MoveInsideInformationType);
+        Collections.sort(moveInsideMonitorList, new SortComparator());
         createGetFloorsCommunication();
         syncTask = new Runnable() {
             @Override
             public void run() {
                 if (running) {
                     if (BluetoothTool.getInstance().isPrepared()) {
-                        pool.execute(MoveInsideActivity.this);
+                        if (!isSyncing) {
+                            pool.execute(MoveInsideActivity.this);
+                        }
                         syncHandler.postDelayed(this, SYNC_TIME);
                     }
                 }
@@ -212,102 +214,98 @@ public class MoveInsideActivity extends Activity implements Runnable {
      */
     private void createGetMoveInsideInfoCommunications() {
         if (getMoveInsideInfoCommunications == null) {
-            final List<RealTimeMonitor> monitorLists = RealTimeMonitorDao
-                    .findByNames(this, ApplicationConfig.moveInsideInfoName);
-            if (monitorLists.size() == ApplicationConfig.moveInsideInfoName.length) {
-                getMoveInsideInfoCommunications = new BluetoothTalk[2];
-                final int index01 = 0;
-                final int index02 = 1;
-                final int length01 = 1;
-                final int length02 = 6;
-                final RealTimeMonitor monitor01 = monitorLists.get(index01);
-                final RealTimeMonitor monitor02 = monitorLists.get(index02);
-                for (int i = 0; i < 2; i++) {
-                    String hexString = "";
-                    if (i == 0) {
-                        hexString = "0103"
-                                + monitor01.getCode()
-                                + String.format("%04x", length01)
-                                + "0001";
+            int size = moveInsideMonitorList.size();
+            final int count = size <= 10 ? 1 : ((size - size % 10) / 10 + (size % 10 == 0 ? 0 : 1));
+            getMoveInsideInfoCommunications = new BluetoothTalk[count + 1];
+            for (int i = 0; i < count; i++) {
+                final int position = i;
+                final RealTimeMonitor firstItem = moveInsideMonitorList.get(position * 10);
+                final int length = size <= 10 ? size : (size % 10 == 0 ? 10 : ((position == count - 1) ? size % 10 : 10));
+                getMoveInsideInfoCommunications[i] = new BluetoothTalk() {
+                    @Override
+                    public void beforeSend() {
+                        this.setSendBuffer(SerialUtility.crc16("0103"
+                                        + firstItem.getCode()
+                                        + String.format("%04x", length)
+                                        + "0001"));
                     }
-                    if (i == 1) {
-                        hexString = "0103"
-                                + monitor02.getCode()
-                                + String.format("%04x", length02)
-                                + "0001";
+
+                    @Override
+                    public void afterSend() {
+
                     }
-                    final String sendCode = hexString;
-                    final int index = i;
-                    getMoveInsideInfoCommunications[i] = new BluetoothTalk() {
-                        @Override
-                        public void beforeSend() {
-                            this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt(sendCode)));
-                        }
 
-                        @Override
-                        public void afterSend() {
+                    @Override
+                    public void beforeReceive() {
 
-                        }
+                    }
 
-                        @Override
-                        public void beforeReceive() {
+                    @Override
+                    public void afterReceive() {
 
-                        }
+                    }
 
-                        @Override
-                        public void afterReceive() {
-
-                        }
-
-                        @Override
-                        public Object onParse() {
-                            if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
-                                byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
-                                short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
-                                if (index == 0) {
-                                    if (length01 * 2 == bytesLength) {
-                                        List<RealTimeMonitor> tempList = new ArrayList<RealTimeMonitor>();
-                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStringToInt("01030002"
-                                                + SerialUtility.byte2HexStr(new byte[]{data[4], data[5]})));
-                                        try {
-                                            RealTimeMonitor monitor = (RealTimeMonitor) monitor01.clone();
-                                            monitor.setReceived(tempData);
-                                            tempList.add(monitor);
-                                            ObjectListHolder holder = new ObjectListHolder();
-                                            holder.setRealTimeMonitorList(tempList);
-                                            return holder;
-                                        } catch (CloneNotSupportedException e) {
-                                            e.printStackTrace();
-                                        }
+                    @Override
+                    public Object onParse() {
+                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                            byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
+                            short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
+                            if (length * 2 == bytesLength) {
+                                List<RealTimeMonitor> tempList = new ArrayList<RealTimeMonitor>();
+                                for (int j = 0; j < length; j++) {
+                                    if (position * 10 + j < moveInsideMonitorList.size()) {
+                                        RealTimeMonitor item = moveInsideMonitorList.get(position * 10 + j);
+                                        byte[] tempData = SerialUtility.crc16("01030002"
+                                                + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]}));
+                                        item.setReceived(tempData);
+                                        tempList.add(item);
                                     }
                                 }
-                                if (index == 1) {
-                                    if (length02 * 2 == bytesLength) {
-                                        List<RealTimeMonitor> tempList = new ArrayList<RealTimeMonitor>();
-                                        for (int j = 0; j < length02; j++) {
-                                            byte[] tempData = SerialUtility.crc16(SerialUtility.hexStringToInt("01030002"
-                                                    + SerialUtility.byte2HexStr(new byte[]{data[4
-                                                    + j * 2], data[5 + j * 2]})));
-                                            try {
-                                                RealTimeMonitor monitor = (RealTimeMonitor)
-                                                        monitorLists.get(j + index02).clone();
-                                                monitor.setReceived(tempData);
-                                                tempList.add(monitor);
-                                            } catch (CloneNotSupportedException e) {
-                                                e.printStackTrace();
-                                            }
-                                        }
-                                        ObjectListHolder holder = new ObjectListHolder();
-                                        holder.setRealTimeMonitorList(tempList);
-                                        return holder;
-                                    }
-                                }
+                                ObjectListHolder holder = new ObjectListHolder();
+                                holder.setRealTimeMonitorList(tempList);
+                                return holder;
                             }
-                            return null;
                         }
-                    };
-                }
+                        return null;
+                    }
+                };
             }
+            getMoveInsideInfoCommunications[count] = new BluetoothTalk() {
+                @Override
+                public void beforeSend() {
+                    this.setSendBuffer(SerialUtility.crc16("0103"
+                            + currentFloorMonitor.getCode()
+                            + "0001"));
+                }
+
+                @Override
+                public void afterSend() {
+
+                }
+
+                @Override
+                public void beforeReceive() {
+
+                }
+
+                @Override
+                public void afterReceive() {
+
+                }
+
+                @Override
+                public Object onParse() {
+                    if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                        ObjectListHolder holder = new ObjectListHolder();
+                        currentFloorMonitor.setReceived(getReceivedBuffer());
+                        List<RealTimeMonitor> tempList = new ArrayList<RealTimeMonitor>();
+                        tempList.add(currentFloorMonitor);
+                        holder.setRealTimeMonitorList(tempList);
+                        return holder;
+                    }
+                    return null;
+                }
+            };
         }
     }
 
@@ -315,20 +313,13 @@ public class MoveInsideActivity extends Activity implements Runnable {
      * 同步当前电梯召唤信息
      */
     private void syncMoveInsideInfoStatus() {
-        if (!isSyncing) {
-            if (BluetoothTool.getInstance().isPrepared()) {
-                if (mSyncMoveInsideInfoHandler != null && getMoveInsideInfoCommunications != null) {
-                    MoveInsideActivity.this.isSyncing = true;
-                    mSyncMoveInsideInfoHandler.sendCount = getMoveInsideInfoCommunications.length;
-                    BluetoothTool.getInstance()
-                            .setHandler(mSyncMoveInsideInfoHandler)
-                            .setCommunications(getMoveInsideInfoCommunications)
-                            .send();
-                } else {
-                    GlobalHandler.getInstance(MoveInsideActivity.this)
-                            .sendMessage(GlobalHandler.NOT_CONNECTED);
-                }
-            }
+        if (BluetoothTool.getInstance().isPrepared()) {
+            isSyncing = true;
+            mSyncMoveInsideInfoHandler.sendCount = getMoveInsideInfoCommunications.length;
+            BluetoothTool.getInstance()
+                    .setHandler(mSyncMoveInsideInfoHandler)
+                    .setCommunications(getMoveInsideInfoCommunications)
+                    .send();
         }
     }
 
@@ -337,6 +328,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
         super.onResume();
         if (BluetoothTool.getInstance().isPrepared()) {
             running = true;
+            currentTask = GET_FLOOR;
             syncHandler.postDelayed(syncTask, SYNC_TIME);
         }
     }
@@ -346,16 +338,6 @@ public class MoveInsideActivity extends Activity implements Runnable {
         super.onPause();
         running = false;
         overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
     }
 
     @Override
@@ -375,291 +357,140 @@ public class MoveInsideActivity extends Activity implements Runnable {
      * 生成用于取得电梯最高层和最底层的通信内容
      */
     private void createGetFloorsCommunication() {
-        ArrayList<String> names = new ArrayList<String>();
-        names.add(ApplicationConfig.GET_FLOOR_NAME);
-        List<ParameterSettings> settingsList = ParameterSettingsDao.findByNames(MoveInsideActivity.this,
-                names.toArray(new String[names.size()]));
-        final String code = settingsList.get(0).getCode() + "0002";
-        communications = new BluetoothTalk[]{
-                new BluetoothTalk() {
-                    @Override
-                    public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0103"
-                                + code
-                                + "0001")));
-                    }
-
-                    @Override
-                    public void afterSend() {
-
-                    }
-
-                    @Override
-                    public void beforeReceive() {
-
-                    }
-
-                    @Override
-                    public void afterReceive() {
-
-                    }
-
-                    @Override
-                    public Object onParse() {
-                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
-                            return getReceivedBuffer();
-                        }
-                        return null;
-                    }
+        List<ParameterSettings> settingsList = ParameterSettingsDao.findAllByCodes(this, new String[]{"F600", "F601"});
+        getFloorsCommunications = new BluetoothTalk[settingsList.size()];
+        int index = 0;
+        for (final ParameterSettings settings : settingsList) {
+            getFloorsCommunications[index] = new BluetoothTalk() {
+                @Override
+                public void beforeSend() {
+                    this.setSendBuffer(SerialUtility.crc16("0103"
+                            + settings.getCode()
+                            + "0001"));
                 }
-        };
-    }
 
-    /**
-     * 读取到电梯最高层和最底层数据
-     *
-     * @param data byte[]
-     */
-    private void onGetFloors(byte[] data) {
-        if (data.length == 10) {
-            int length = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
-            if (length == 4) {
-                int top = ByteBuffer.wrap(new byte[]{data[4], data[5]}).getShort();
-                int bottom = ByteBuffer.wrap(new byte[]{data[6], data[7]}).getShort();
-                moveSidePagerAdapter = new MoveSidePagerAdapter(MoveInsideActivity.this,
-                        new int[]{bottom, top});
-                moveSidePagerAdapter.setOnSelectFloorListener(new MoveSidePagerAdapter.OnSelectFloorListener() {
-                    @Override
-                    public void onSelect(int floor) {
-                        final int calledFloor = floor;
-                        MoveInsideActivity.this.isSyncing = false;
-                        MoveInsideActivity.this.isWritingData = true;
-                        MoveInsideActivity.this.isWriteSuccessful = false;
-                        new CountDownTimer(1500, 500) {
-                            public void onTick(long millisUntilFinished) {
-                                if (!MoveInsideActivity.this.isWriteSuccessful) {
-                                    MoveInsideActivity.this.moveInsideCallFloor(calledFloor);
-                                } else {
-                                    MoveInsideActivity.this.isWritingData = false;
-                                    this.cancel();
-                                    this.onFinish();
-                                }
-                            }
+                @Override
+                public void afterSend() {
 
-                            public void onFinish() {
-                                if (!MoveInsideActivity.this.isWriteSuccessful) {
-                                    GlobalHandler.getInstance(MoveInsideActivity.this)
-                                            .sendMessage(GlobalHandler.WRITE_DATA_FAILED);
-                                }
-                                MoveInsideActivity.this.isWritingData = false;
-                            }
-                        }.start();
-                    }
-                });
-                MoveInsideActivity.this.viewPager.setAdapter(moveSidePagerAdapter);
-                MoveInsideActivity.this.createGetMoveInsideInfoCommunications();
-                MoveInsideActivity.this.hasGetFloors = true;
-                MoveInsideActivity.this.loadView.setVisibility(View.GONE);
-                MoveInsideActivity.this.viewPager.setVisibility(View.VISIBLE);
-            }
-        }
-    }
-
-    /**
-     * 开门
-     */
-    @OnClick(R.id.open_door_button)
-    void openDoorButtonClick() {
-        BluetoothTalk[] communications = new BluetoothTalk[]{
-                new BluetoothTalk() {
-                    @Override
-                    public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0103F6010001")));
-                    }
-
-                    @Override
-                    public void afterSend() {
-
-                    }
-
-                    @Override
-                    public void beforeReceive() {
-
-                    }
-
-                    @Override
-                    public void afterReceive() {
-
-                    }
-
-                    @Override
-                    public Object onParse() {
-                        return null;
-                    }
                 }
-        };
-        if (BluetoothTool.getInstance().isPrepared()) {
-            BluetoothTool.getInstance()
-                    .setCommunications(communications)
-                    .send();
-        } else {
-            GlobalHandler.getInstance(MoveInsideActivity.this)
-                    .sendMessage(GlobalHandler.NOT_CONNECTED);
-        }
-    }
 
-    /**
-     * 关门
-     */
-    @OnClick(R.id.close_door_button)
-    void closeDoorButtonClick() {
-        BluetoothTalk[] communications = new BluetoothTalk[]{
-                new BluetoothTalk() {
-                    @Override
-                    public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0103F6010001")));
-                    }
+                @Override
+                public void beforeReceive() {
 
-                    @Override
-                    public void afterSend() {
-
-                    }
-
-                    @Override
-                    public void beforeReceive() {
-
-                    }
-
-                    @Override
-                    public void afterReceive() {
-
-                    }
-
-                    @Override
-                    public Object onParse() {
-                        return null;
-                    }
                 }
-        };
-        if (BluetoothTool.getInstance().isPrepared()) {
-            BluetoothTool.getInstance()
-                    .setCommunications(communications)
-                    .send();
+
+                @Override
+                public void afterReceive() {
+
+                }
+
+                @Override
+                public Object onParse() {
+                    if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                        settings.setReceived(getReceivedBuffer());
+                        return settings;
+                    }
+                    return null;
+                }
+            };
+            index++;
         }
     }
 
     /**
      * 召唤楼层
-     *
-     * @param floor Floor
      */
-    private void moveInsideCallFloor(int floor) {
-        final String[] codeArray = getCallCode(floor);
-        BluetoothTalk[] communications = new BluetoothTalk[]{
-                new BluetoothTalk() {
-                    @Override
-                    public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0106"
-                                + codeArray[0]
-                                + "0001")));
-                    }
+    private void moveInsideCallFloor() {
+        int index = 0;
+        for (RealTimeMonitor monitor : moveInsideMonitorList) {
+            if (currentCallFloor >= (index * 8 + 1) && currentCallFloor <= (index + 1) * 8) {
+                int callIndex = currentCallFloor - (index * 8 + 1);
+                final String callCode = monitor.getCode() + ApplicationConfig.MoveSideCallCode[callIndex];
+                BluetoothTalk[] communications = new BluetoothTalk[]{
+                        new BluetoothTalk() {
+                            @Override
+                            public void beforeSend() {
+                                this.setSendBuffer(SerialUtility.crc16("0106"
+                                        + callCode
+                                        + "0001"));
+                            }
 
-                    @Override
-                    public void afterSend() {
+                            @Override
+                            public void afterSend() {
 
-                    }
+                            }
 
-                    @Override
-                    public void beforeReceive() {
+                            @Override
+                            public void beforeReceive() {
 
-                    }
+                            }
 
-                    @Override
-                    public void afterReceive() {
+                            @Override
+                            public void afterReceive() {
 
-                    }
+                            }
 
-                    @Override
-                    public Object onParse() {
-                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
-                            return getReceivedBuffer();
+                            @Override
+                            public Object onParse() {
+                                if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                                    return SerialUtility.byte2HexStr(getReceivedBuffer());
+                                }
+                                return null;
+                            }
                         }
-                        return null;
-                    }
+                };
+                if (BluetoothTool.getInstance().isPrepared()) {
+                    isSyncing = true;
+                    floorHandler.writeCode = callCode;
+                    floorHandler.floor = currentCallFloor;
+                    BluetoothTool.getInstance()
+                            .setHandler(floorHandler)
+                            .setCommunications(communications)
+                            .send();
                 }
-        };
-        if (BluetoothTool.getInstance().isPrepared()) {
-            floorHandler.writeCode = codeArray[0];
-            floorHandler.floor = floor;
-            BluetoothTool.getInstance()
-                    .setHandler(floorHandler)
-                    .setCommunications(communications)
-                    .send();
-        }
-    }
-
-    /**
-     * 取得需要发送的用于召唤楼层的指令
-     *
-     * @param position GridView Item Index
-     * @return String[]
-     */
-    private String[] getCallCode(int floor) {
-        int section_location = 0;
-        String searchCondition = "";
-        String[] conditions = new String[]{"1-8",
-                "9-16",
-                "17-24",
-                "25-32",
-                "33-40",
-                "41-48"};
-        for (String condition : conditions) {
-            String[] parts = condition.split("-");
-            if (floor >= Integer.parseInt(parts[0]) && floor <= Integer.parseInt(parts[1])) {
-                searchCondition = condition + "层信息";
-                section_location = floor - Integer.parseInt(parts[0]);
+                break;
             }
+            index++;
         }
-        String code = "";
-        int offset = 0;
-        int location = 0;
-        for (RealTimeMonitor stateCode : realTimeMonitors) {
-            if (searchCondition.equalsIgnoreCase(stateCode.getName())) {
-                code = stateCode.getCode() + ApplicationConfig.MOVE_SIDE_CODE[section_location];
-                location = offset;
-            }
-            offset++;
-        }
-        return new String[]{code, String.valueOf(location)};
     }
 
     /**
      * 取得电梯层数
      */
     private void loadDataAndRenderView() {
-        if (communications != null) {
-            if (BluetoothTool.getInstance().isPrepared()) {
-                BluetoothTool.getInstance()
-                        .setHandler(mMoveInsideHandler)
-                        .setCommunications(communications)
-                        .send();
-            }
+        isSyncing = true;
+        if (BluetoothTool.getInstance().isPrepared()) {
+            mMoveInsideHandler.sendCount = getFloorsCommunications.length;
+            BluetoothTool.getInstance()
+                    .setHandler(mMoveInsideHandler)
+                    .setCommunications(getFloorsCommunications)
+                    .send();
         }
     }
 
     @Override
     public void run() {
-        if (hasGetFloors) {
-            if (!isWritingData) {
-                MoveInsideActivity.this.syncMoveInsideInfoStatus();
-            }
-        } else {
-            MoveInsideActivity.this.loadDataAndRenderView();
+        switch (currentTask) {
+            case GET_FLOOR:
+                loadDataAndRenderView();
+                break;
+            case GET_CALL_STATUS:
+                syncMoveInsideInfoStatus();
+                break;
+            case CALL_FLOOR:
+                moveInsideCallFloor();
+                break;
         }
     }
 
     // ================================= 获取电梯最高层和最底层 ========================================== //
     private class MoveInsideHandler extends BluetoothHandler {
+
+        public int sendCount;
+
+        public int receiveCount;
+
+        private List<ParameterSettings> settingsList;
 
         public MoveInsideHandler(Activity activity) {
             super(activity);
@@ -669,18 +500,44 @@ public class MoveInsideActivity extends Activity implements Runnable {
         @Override
         public void onMultiTalkBegin(Message msg) {
             super.onMultiTalkBegin(msg);
+            receiveCount = 0;
+            settingsList = new ArrayList<ParameterSettings>();
         }
 
         @Override
         public void onMultiTalkEnd(Message msg) {
             super.onMultiTalkEnd(msg);
+            if (sendCount == receiveCount && settingsList.size() == 2) {
+                byte[] data1 = settingsList.get(0).getReceived();
+                byte[] data2 = settingsList.get(1).getReceived();
+                int top = ByteBuffer.wrap(new byte[]{data1[4], data1[5]}).getShort();
+                int bottom = ByteBuffer.wrap(new byte[]{data2[4], data2[5]}).getShort();
+                moveSidePagerAdapter = new MoveSidePagerAdapter(MoveInsideActivity.this,
+                        new int[]{bottom, top});
+                moveSidePagerAdapter.setOnSelectFloorListener(new MoveSidePagerAdapter.OnSelectFloorListener() {
+                    @Override
+                    public void onSelect(int floor) {
+                        MoveInsideActivity.this.currentCallFloor = floor;
+                        MoveInsideActivity.this.isSyncing = false;
+                        MoveInsideActivity.this.currentTask = CALL_FLOOR;
+                    }
+                });
+                MoveInsideActivity.this.viewPager.setAdapter(moveSidePagerAdapter);
+                MoveInsideActivity.this.createGetMoveInsideInfoCommunications();
+                MoveInsideActivity.this.loadView.setVisibility(View.GONE);
+                MoveInsideActivity.this.viewPager.setVisibility(View.VISIBLE);
+                MoveInsideActivity.this.isSyncing = false;
+                MoveInsideActivity.this.currentTask = GET_CALL_STATUS;
+            }
+            MoveInsideActivity.this.isSyncing = false;
         }
 
         @Override
         public void onTalkReceive(Message msg) {
             super.onTalkReceive(msg);
-            if (msg.obj != null && msg.obj instanceof byte[]) {
-                MoveInsideActivity.this.onGetFloors((byte[]) msg.obj);
+            if (msg.obj != null && msg.obj instanceof ParameterSettings) {
+                settingsList.add((ParameterSettings) msg.obj);
+                receiveCount++;
             }
         }
 
@@ -710,15 +567,17 @@ public class MoveInsideActivity extends Activity implements Runnable {
         @Override
         public void onMultiTalkEnd(Message msg) {
             super.onMultiTalkEnd(msg);
+            MoveInsideActivity.this.isSyncing = false;
         }
 
         @Override
         public void onTalkReceive(Message msg) {
+            super.onTalkReceive(msg);
             if (msg.obj != null && msg.obj instanceof String) {
                 String receive = (String) msg.obj;
                 if (receive.contains(writeCode)) {
-                    MoveInsideActivity.this.isWriteSuccessful = true;
-                    MoveInsideActivity.this.isWritingData = false;
+                    MoveInsideActivity.this.isSyncing = false;
+                    MoveInsideActivity.this.currentTask = GET_CALL_STATUS;
                     // 写入内召日志
                     LogUtils.getInstance().write(ApplicationConfig.LogMoveInside, writeCode, receive, floor);
                 }
@@ -734,7 +593,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
 
         private int receiveCount;
 
-        private List<ObjectListHolder> holderList;
+        private List<RealTimeMonitor> monitorList;
 
         public SyncMoveInsideInfoHandler(Activity activity) {
             super(activity);
@@ -745,31 +604,28 @@ public class MoveInsideActivity extends Activity implements Runnable {
         public void onMultiTalkBegin(Message msg) {
             super.onMultiTalkBegin(msg);
             receiveCount = 0;
-            holderList = new ArrayList<ObjectListHolder>();
+            monitorList = new ArrayList<RealTimeMonitor>();
         }
 
         @Override
         public void onMultiTalkEnd(Message msg) {
             super.onMultiTalkEnd(msg);
             if (sendCount == receiveCount) {
-                List<RealTimeMonitor> monitorList = new ArrayList<RealTimeMonitor>();
-                for (ObjectListHolder holder : holderList) {
-                    monitorList.addAll(holder.getRealTimeMonitorList());
-                }
                 List<Integer> calledFloorList = new ArrayList<Integer>();
+                int index = 0;
                 for (RealTimeMonitor monitor : monitorList) {
-                    if (monitor.getName().equalsIgnoreCase(ApplicationConfig.moveInsideInfoName[0])) {
+                    Log.v(TAG, monitor.getName() + monitor.getCode());
+                    if (monitor.getStateID() == ApplicationConfig.CurrentFloorType) {
                         MoveInsideActivity.this.currentFloorTextView
                                 .setText(String.valueOf(ParseSerialsUtils.getIntFromBytes(monitor.getReceived())));
                     } else {
-                        String callFloor = SerialUtility.byte2HexStr(new byte[]{monitor.getReceived()[4],
-                                monitor.getReceived()[5]});
-                        int length01 = ApplicationConfig.MOVE_SIDE_CODE.length;
+                        String callFloor = SerialUtility.byte2HexStr(new byte[]{monitor.getReceived()[4], monitor.getReceived()[5]});
+                        int length01 = ApplicationConfig.MoveSideCallCode.length;
                         for (int m = 0; m < length01; m++) {
-                            if (callFloor.equalsIgnoreCase(ApplicationConfig.MOVE_SIDE_CODE[m])) {
-                                int length02 = ApplicationConfig.moveInsideName.length;
+                            if (callFloor.equalsIgnoreCase(ApplicationConfig.MoveSideCallCode[m])) {
+                                int length02 = moveInsideMonitorList.size();
                                 for (int n = 0; n < length02; n++) {
-                                    if (monitor.getName().equalsIgnoreCase(ApplicationConfig.moveInsideName[n])) {
+                                    if (monitor.getName().equalsIgnoreCase(moveInsideMonitorList.get(n).getName())) {
                                         /**
                                          * 当前所有召唤的楼层
                                          */
@@ -779,6 +635,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
                             }
                         }
                     }
+                    index++;
                 }
                 if (calledFloorList.size() > 0) {
                     /**
@@ -794,15 +651,26 @@ public class MoveInsideActivity extends Activity implements Runnable {
 
         @Override
         public void onTalkReceive(Message msg) {
+            super.onTalkReceive(msg);
             if (msg.obj != null && msg.obj instanceof ObjectListHolder) {
-                holderList.add((ObjectListHolder) msg.obj);
+                monitorList.addAll(((ObjectListHolder) msg.obj).getRealTimeMonitorList());
                 receiveCount++;
             }
         }
+    }
+
+    private class SortComparator implements Comparator<RealTimeMonitor> {
 
         @Override
-        public void onTalkError(Message msg) {
-            super.onTalkError(msg);
+        public int compare(RealTimeMonitor object1, RealTimeMonitor object2) {
+            if (object1.getSort() < object2.getSort()) {
+                return -1;
+            } else if (object1.getSort() > object2.getSort()) {
+                return 1;
+            } else {
+                return 0;
+            }
         }
+
     }
 }

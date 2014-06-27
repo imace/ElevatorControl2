@@ -23,11 +23,10 @@ public class ParseSerialsUtils {
      * @param monitor RealTimeMonitor
      * @return Value String
      */
-    @SuppressLint("GetValueTextFromRealTimeMonitor")
     public static String getValueTextFromRealTimeMonitor(RealTimeMonitor monitor) {
         byte[] data = monitor.getReceived();
         if (data.length == 8) {
-            if (monitor.getDescription() == null && monitor.getDescription().length() <= 0) {
+            if (monitor.getDescription() != null && monitor.getDescription().length() > 0) {
                 return TextLocalize.getInstance().getViewDetailText();
             }
             int value = getIntFromBytes(data);
@@ -37,8 +36,12 @@ public class ParseSerialsUtils {
                 }
                 return String.format("%d", value);
             }
-            Float floatValue = value * Float.parseFloat(monitor.getScale());
-            return String.format("%.2f", floatValue);
+            try {
+                return "" + value * Integer.parseInt(monitor.getScale());
+            } catch (Exception e) {
+                double doubleValue = (double) value * Double.parseDouble(monitor.getScale());
+                return String.format("%." + (monitor.getScale().length() - 2) + "f", doubleValue);
+            }
         }
         return "";
     }

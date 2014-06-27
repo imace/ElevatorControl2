@@ -37,7 +37,12 @@
     <string name="retry_connect_device">重试</string>
     <string name="connect_server_timeout">服务器连接超时</string>
     <string name="normal_device_text">标准设备</string>
+    <string name="check_parameter_data_update_text">正在检查设备参数更新，请稍后。</string>
     <string name="update_parameter_data_wait_message">更新数据中</string>
+    <string name="recognise_device_wait_text">正在识别设备，请稍后。</string>
+    <string name="recognise_device_failed_text">未能识别设备，请尝试其他设备。</string>
+
+    <string name="code_parse_error_tips">内部数据出错，请联系管理员。</string>
 
     <string name="view_detail_text">查看详细-></string>
 
@@ -112,6 +117,21 @@
     <string name="register_failed_text">提交失败，请重试。</string>
     <string name="regist_successful_wait_text">注册提交成功，请等待审核。</string>
 
+    <!-- 内部用户注册 -->
+    <string name="internal_register_user_text">内部用户注册</string>
+    <string name="internal_username">用户姓名</string>
+    <string name="internal_number">工号</string>
+    <string name="internal_cellphone">手机</string>
+    <string name="internal_department">部门</string>
+    <string name="internal_email">邮箱</string>
+    <string name="internal_remark">备注</string>
+
+    <string name="internal_validate_username_error">用户名长度不符合要求最大20个字符</string>
+    <string name="internal_validate_number_error">工号必填</string>
+    <string name="internal_validate_cellphone_error">手机号必填</string>
+    <string name="internal_validate_department_error">部门名称必填</string>
+    <string name="internal_validate_email_error">邮箱必填</string>
+
     <!-- 选择设备型号 -->
     <string name="select_device_type_text">选择设备型号</string>
     <string name="cannot_match_device_text">未能自动匹配当前连接的设备型号，请手动选择设备型号。</string>
@@ -139,7 +159,7 @@
         <item>软件更新</item>
 
         <item>工具</item>
-        <item>专有权限申请</item>
+        <item>专用设备权限申请</item>
         <item>扫描条形码</item>
         <item>远程协助</item>
         <item>蓝牙地址</item>
@@ -316,7 +336,7 @@
     <string name="download_application_title">下载更新包中</string>
 
     <!-- 申请权限 -->
-    <string name="apply_permission_text">专有权限申请</string>
+    <string name="apply_permission_text">专有设备权限申请</string>
     <string name="apply_device_label_text">设备型号</string>
     <string name="apply_true_name_text">真实姓名</string>
     <string name="apply_company_name_text">公司名称</string>
@@ -348,8 +368,9 @@
     <string name="input_message_title_text_title_text">填写标题发送</string>
     <string name="input_title_hint">输入标题</string>
     <string name="input_content_hint">输入文本内容</string>
-    <string name="contact_item_template">{param0} - {param1}</string>
     <string name="select_receiver_title">选择接收方</string>
+    <string name="connect_server_timeout_text">连接服务器超时</string>
+    <string name="chat_message_send_failed_text">消息发送失败</string>
 
     <!-- 固件烧录错误信息 -->
     <string-array name="burn_error_code_array">

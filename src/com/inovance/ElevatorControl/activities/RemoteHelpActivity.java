@@ -9,9 +9,12 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -23,8 +26,8 @@ import com.bluetoothtool.BluetoothTool;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.adapters.ChatMessageAdapter;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
+import com.inovance.ElevatorControl.config.ConfigFactory;
 import com.inovance.ElevatorControl.models.ChatMessage;
-import com.inovance.ElevatorControl.models.ConfigFactory;
 import com.inovance.ElevatorControl.models.User;
 import com.inovance.ElevatorControl.utils.FileTransport;
 import com.inovance.ElevatorControl.utils.FileTransport.OnFileDownloadComplete;
@@ -41,6 +44,8 @@ import org.json.JSONObject;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by IntelliJ IDEA.
@@ -50,7 +55,7 @@ import java.util.List;
  */
 
 public class RemoteHelpActivity extends Activity implements OnGetResultListener,
-        OnRequestFailureListener, OnFileUploadComplete, OnFileDownloadComplete {
+        OnRequestFailureListener, OnFileUploadComplete, OnFileDownloadComplete, Runnable{
 
     private static final String TAG = RemoteHelpActivity.class.getSimpleName();
 
@@ -76,6 +81,26 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
     @InjectView(R.id.chat_list_view)
     ListView chatListView;
 
+    private Runnable syncTask;
+
+    private boolean running = false;
+
+    private static final int SYNC_TIME = 5000;
+
+    private Handler syncHandler = new Handler();
+
+    private Handler refreshHandler = new Handler(){
+
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            //chatMessageAdapter.updateChatMessageList(chatMessageList);
+        }
+
+    };
+
+    private ExecutorService pool = Executors.newSingleThreadExecutor();
+
     /**
      * 所有已注册用户列表
      */
@@ -93,9 +118,8 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
             @Override
             public void onClick(View view) {
                 List<String> items = new ArrayList<String>();
-                String template = getString(R.string.contact_item_template);
                 for (User user : registUserList) {
-                    items.add(template.replace("{param0}", user.getName()).replace("{param1}", user.getCellPhone()));
+                    items.add(user.getName() + " - " + user.getCellPhone());
                 }
                 AlertDialog.Builder builder = new AlertDialog.Builder(RemoteHelpActivity.this);
                 AlertDialog dialog = builder.setTitle(R.string.select_receiver_title)
@@ -145,6 +169,16 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
             }
         });
         chatListView.setAdapter(chatMessageAdapter);
+        syncTask = new Runnable() {
+            @Override
+            public void run() {
+                if (running) {
+                    chatMessageList.clear();
+                    pool.execute(RemoteHelpActivity.this);
+                    syncHandler.postDelayed(this, SYNC_TIME);
+                }
+            }
+        };
     }
 
     @Override
@@ -158,6 +192,9 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
         WebApi.getInstance().getRegistUserList(this);
         FileTransport.getInstance().setOnFileDownloadComplete(this);
         FileTransport.getInstance().setOnFileUploadComplete(this);
+
+        running = true;
+        syncHandler.postDelayed(syncTask, SYNC_TIME);
     }
 
     @Override
@@ -243,7 +280,12 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
             downloadUtils.startDownloadProfile(new ProfileDownloadUtils.OnDownloadCompleteListener() {
                 @Override
                 public void onComplete(String JSONString) {
-
+                    try {
+                        InputStream inputStream = IOUtils.toInputStream(JSONString, "UTF-8");
+                        showSendChatContentDialog(ChatMessage.TYPE_PROFILE, "json", inputStream);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             });
         } else {
@@ -283,7 +325,7 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
             Bundle extras = data.getExtras();
             Bitmap imageBitmap = (Bitmap) extras.get("data");
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            imageBitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream);
+            imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
             InputStream inputStream = new ByteArrayInputStream(stream.toByteArray());
             // 上传图片
             showSendChatContentDialog(ChatMessage.TYPE_PICTURE, "jpeg", inputStream);
@@ -480,25 +522,6 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
         return "";
     }
 
-    /**
-     * Get byte from inputStream
-     *
-     * @param inputStream inputStream
-     * @return byte[]
-     * @throws IOException
-     */
-    public byte[] getBytes(InputStream inputStream) throws IOException {
-        ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
-        int bufferSize = 1024;
-        byte[] buffer = new byte[bufferSize];
-
-        int len = 0;
-        while ((len = inputStream.read(buffer)) != -1) {
-            byteBuffer.write(buffer, 0, len);
-        }
-        return byteBuffer.toByteArray();
-    }
-
     @Override
     public void onResult(String tag, String responseString) {
         // 发送的信息
@@ -512,7 +535,7 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
                         ChatMessage message = new ChatMessage(object);
                         message.setChatType(ChatMessage.SEND);
                         chatMessageList.add(message);
-                        chatMessageAdapter.updateChatMessageList(chatMessageList);
+                        refreshHandler.sendEmptyMessage(0);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -530,7 +553,7 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
                         ChatMessage message = new ChatMessage(object);
                         message.setChatType(ChatMessage.RECEIVE);
                         chatMessageList.add(message);
-                        chatMessageAdapter.updateChatMessageList(chatMessageList);
+                        refreshHandler.sendEmptyMessage(0);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -573,13 +596,41 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
         int index = file.getName().lastIndexOf('.') + 1;
         String extension = file.getName().substring(index).toLowerCase();
         String type = mime.getMimeTypeFromExtension(extension);
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setDataAndType(Uri.fromFile(file), type);
-        startActivity(intent);
+        if (extension.contains("json")) {
+            try {
+                InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(file));
+                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                String receiveString = "";
+                StringBuilder stringBuilder = new StringBuilder();
+                while ((receiveString = bufferedReader.readLine()) != null) {
+                    stringBuilder.append(receiveString);
+                }
+                bufferedReader.close();
+                inputStreamReader.close();
+                Intent intent = new Intent(RemoteHelpActivity.this, ParameterViewerActivity.class);
+                intent.putExtra("profileName", "Remote profile");
+                intent.putExtra("profileContent", stringBuilder.toString());
+                startActivity(intent);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(Uri.fromFile(file), type);
+            startActivity(intent);
+        }
     }
 
     @Override
     public void onUploadComplete() {
+        chatMessageList.clear();
+    }
 
+    @Override
+    public void run() {
+        WebApi.getInstance().getSendChatMessage(this, getPhoneNumber());
+        WebApi.getInstance().getReceiveChatMessage(this, getPhoneNumber());
     }
 }

@@ -4,9 +4,11 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.util.Log;
 import android.view.View;
 import android.widget.*;
 import com.bluetoothtool.BluetoothTool;
+import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.activities.CheckAuthorizationActivity;
 import com.inovance.ElevatorControl.adapters.CheckedListViewAdapter;
@@ -22,6 +24,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -123,22 +126,23 @@ public class CustomDialog {
                     JSONObject value = jsonArray.getJSONObject(i);
                     int alwaysClose = Integer.parseInt(value.optString("id")) + 32;
                     if (type == 3 || type == 25) {
-                        statusList[i] = value.optString("id") + "/" + alwaysClose + ":" + value.optString("value");
+                        if (i == 0) {
+                            statusList[i] = value.optString("id") + ":" + value.optString("value");
+                        } else {
+                            statusList[i] = value.optString("id") + "/" + alwaysClose + ":" + value.optString("value");
+                        }
                     } else {
                         statusList[i] = value.optString("id") + ":" + value.optString("value");
                     }
                     spinnerList[i] = value.optString("value");
                 }
                 // 端子 X1 - x24
-                if (Integer.parseInt(settings.getType()) == 3
-                        && !settings.getName().contains("X25")
-                        && !settings.getName().contains("X26")
-                        && !settings.getName().contains("X27")) {
+                if (Integer.parseInt(settings.getType()) == ApplicationConfig.InputTerminalType) {
                     View dialogView = activity.getLayoutInflater()
                             .inflate(R.layout.parameter_terminal_status_dialog, null);
                     final ListView listView = (ListView) dialogView.findViewById(R.id.list_view);
                     TextView defaultValue = (TextView) dialogView.findViewById(R.id.default_value);
-                    ToggleButton toggleButton = (ToggleButton) dialogView.findViewById(R.id.toggle_button);
+                    final ToggleButton toggleButton = (ToggleButton) dialogView.findViewById(R.id.toggle_button);
                     boolean toggleButtonStatus = true;
                     defaultValue.setText("出厂值: " + settings.getDefaultValue());
                     int index = ParseSerialsUtils.getIntFromBytes(settings.getReceived());
@@ -163,7 +167,7 @@ public class CustomDialog {
                     return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
                             .setView(dialogView)
                             .setTitle(settings.getCodeText() + " " + settings.getName());
-                } else if (Integer.parseInt(settings.getType()) == 25) {
+                } else if (Integer.parseInt(settings.getType()) == ApplicationConfig.FloorShowType) {
                     View dialogView = activity.getLayoutInflater()
                             .inflate(R.layout.parameter_type25_dialog, null);
                     Spinner modSpinner = (Spinner) dialogView.findViewById(R.id.mod_value);
@@ -201,14 +205,8 @@ public class CustomDialog {
             ListView listView = (ListView) dialogView.findViewById(R.id.switch_list);
             List<ParameterStatusItem> itemList = new ArrayList<ParameterStatusItem>();
             boolean[] booleanArray = ParseSerialsUtils
-                    .getBooleanValueArray(new byte[]{settings.getReceived()[4], settings.getReceived()[4]});
-            boolean[] newBooleanArray = new boolean[booleanArray.length];
-            int booleanArrayLength = booleanArray.length;
-            for (int i = booleanArrayLength - 1; i >= 0; i--) {
-                newBooleanArray[booleanArrayLength - i - 1] = booleanArray[i];
-            }
-            booleanArray = newBooleanArray;
-            boolean isSpecial = settings.getCode().contains("F525");
+                    .getBooleanValueArray(new byte[]{settings.getReceived()[4], settings.getReceived()[5]});
+            boolean isSpecial = Integer.parseInt(settings.getType()) == ApplicationConfig.InputSelectType;
             try {
                 JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
                 int size = jsonArray.length();

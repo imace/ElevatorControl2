@@ -29,7 +29,9 @@ public class BluetoothTool implements Runnable {
      */
     private BluetoothHandler handler;
 
-    public int crcValue = -1;
+    public int crcValue = CRCValueNone;
+
+    public static final int CRCValueNone = -1;
 
     /**
      * 蓝牙设备搜索 Handler
@@ -140,7 +142,7 @@ public class BluetoothTool implements Runnable {
                 context.unregisterReceiver(broadcastReceiver);
                 broadcastReceiver = null;
             } catch (Exception e) {
-                Log.d(TAG, "context failed unregistered...");
+                e.printStackTrace();
             }
         }
         broadcastReceiver = null;
@@ -156,17 +158,17 @@ public class BluetoothTool implements Runnable {
                 try {
                     bluetoothSocket.getInputStream().close();
                 } catch (IOException e) {
-                    Log.d(TAG, e.getMessage());
+                    e.printStackTrace();
                 }
                 try {
                     bluetoothSocket.getOutputStream().close();
                 } catch (IOException e) {
-                    Log.d(TAG, e.getMessage());
+                    e.printStackTrace();
                 }
                 try {
                     bluetoothSocket.close();
                 } catch (IOException e) {
-                    Log.d(TAG, e.getMessage());
+                    e.printStackTrace();
                 } finally {
                     bluetoothSocket = null;
                 }
@@ -187,14 +189,13 @@ public class BluetoothTool implements Runnable {
             msgError.what = BluetoothState.onTalkError;
             try {
                 if (null == communication || null == bluetoothSocket || !bluetoothSocket.isConnected()) {
-                    final String errorMessage = "cannot send or receive! "
+                    msgError.obj = "cannot send or receive! "
                             + ((communication == null) ? "communication==null" : "")
                             + ((bluetoothSocket == null) ? "bluetoothSocket" : "")
                             + ((bluetoothSocket.isConnected()) ? "connected" : "unconnected");
-                    msgError.obj = errorMessage;
-                    if (null != handler)
+                    if (null != handler) {
                         handler.sendMessage(msgError);
-                    Log.d(TAG, errorMessage);
+                    }
                 }
                 if (null != handler) {
                     handler.sendEmptyMessage(BluetoothState.onBeforeTalkSend);
@@ -455,7 +456,6 @@ public class BluetoothTool implements Runnable {
             try {
                 if (bluetoothSocket != null) {
                     int length = bluetoothSocket.getInputStream().available();
-                    Log.v(TAG, String.valueOf(length));
                     if (length <= 0) {
                         abortTalking = false;
                         pool.execute(this);
@@ -468,7 +468,6 @@ public class BluetoothTool implements Runnable {
                     break;
                 }
             } catch (IOException e) {
-                Log.v(TAG, e.getMessage());
                 e.printStackTrace();
                 break;
             }
@@ -585,7 +584,7 @@ public class BluetoothTool implements Runnable {
             abortTalking = true;
             pool.awaitTermination(100, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            e.printStackTrace();
         } finally {
             abortTalking = false;
         }

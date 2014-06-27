@@ -16,6 +16,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import com.bluetoothtool.BluetoothTool;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
@@ -139,6 +140,12 @@ public class UpdateApplication {
                                 mListener.onNoUpdate();
                             }
                         }
+                    }
+                });
+                WebApi.getInstance().setOnFailureListener(new WebApi.OnRequestFailureListener() {
+                    @Override
+                    public void onFailure(int statusCode, Throwable throwable) {
+                        Toast.makeText(activity, throwable.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
                 WebApi.getInstance().getLastSoftwareVersion(activity);

@@ -5,7 +5,6 @@ import android.bluetooth.BluetoothSocket;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -256,7 +255,6 @@ public class FirmwareManageActivity extends FragmentActivity {
 
         @Override
         public void ProgramInfo(android.os.Message msg) {
-            Log.v(TAG, String.valueOf(msg.arg1));
             switch (msg.arg1) {
                 case IProgram.PROGRAM_BINFILE_READINFO:
                     if (1 == msg.arg2) {
@@ -292,7 +290,7 @@ public class FirmwareManageActivity extends FragmentActivity {
                 case IProgram.PROGRAM_TIME:
                     // 烧录总时间
                     int second = msg.arg2;
-                    String strTime = String.format("烧录用时%d秒", second);
+                    String strTime = String.format("烧录用时%d分%d秒", second / 60, second % 60);
                     burningMessageTextView.setText(strTime);
                     cancelButton.setEnabled(true);
                     confirmButton.setEnabled(false);
@@ -307,6 +305,11 @@ public class FirmwareManageActivity extends FragmentActivity {
                         } else {
                             tempFirmWare.setBurnTimes(burnTime);
                             FirmwareDao.updateItem(FirmwareManageActivity.this, tempFirmWare);
+                        }
+                        // 刷新烧录固件列表
+                        FirmwareManageFragment fragment = mFirmwareManageAdapter.getItem(pageIndex);
+                        if (fragment != null) {
+                            fragment.refreshFirmwareBurnView();
                         }
                     }
                     // 写入烧录成功日志日志

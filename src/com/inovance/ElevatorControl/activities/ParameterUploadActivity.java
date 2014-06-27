@@ -225,7 +225,7 @@ public class ParameterUploadActivity extends Activity {
         uploadDialog.setCancelable(false);
         uploadDialog.setCanceledOnTouchOutside(false);
         uploadDialog.show();
-        dialogButton = (Button) uploadDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+        dialogButton = uploadDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
         dialogButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -276,10 +276,10 @@ public class ParameterUploadActivity extends Activity {
                         BluetoothTalk talk = new BluetoothTalk() {
                             @Override
                             public void beforeSend() {
-                                this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0106"
+                                this.setSendBuffer(SerialUtility.crc16("0106"
                                         + ParseSerialsUtils.getCalculatedCode(item)
                                         + item.getHexValueString()
-                                        + "0001")));
+                                        + "0001"));
                             }
 
                             @Override
@@ -403,7 +403,7 @@ public class ParameterUploadActivity extends Activity {
                                     .setPositiveButton(R.string.dialog_btn_ok, new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialogInterface, int i) {
-                                            getElevatorStatus(index);
+                                            onUploadButtonClick(index);
                                         }
                                     });
                             builder.create().show();

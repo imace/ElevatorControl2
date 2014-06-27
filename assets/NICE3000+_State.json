@@ -241,7 +241,7 @@
     },
     {
         "code": "2000",
-        "name": "1-8层信息",
+        "name": "1~8层信息",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -253,7 +253,7 @@
     },
     {
         "code": "2001",
-        "name": "9-16层信息",
+        "name": "9~16层信息",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -265,7 +265,7 @@
     },
     {
         "code": "2002",
-        "name": "17-24层信息",
+        "name": "17~24层信息",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -277,7 +277,7 @@
     },
     {
         "code": "2003",
-        "name": "25-32层信息",
+        "name": "25~32层信息",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -289,7 +289,7 @@
     },
     {
         "code": "2004",
-        "name": "33-40层信息",
+        "name": "33~40层信息",
         "productId": 0,
         "description": null,
         "childId": null,
@@ -301,7 +301,7 @@
     },
     {
         "code": "2005",
-        "name": "41-48层信息",
+        "name": "41~48层信息",
         "productId": 0,
         "description": null,
         "childId": null,

@@ -28,6 +28,8 @@ public class GlobalHandler {
 
     public static final int NO_DATA_RECEIVE = 4;
 
+    public static final int CODE_DATA_ERROR = 5;
+
     public static GlobalHandler getInstance(Activity activity) {
         if (null == instance.activity) {
             instance.activity = activity;
@@ -52,6 +54,9 @@ public class GlobalHandler {
                             break;
                         case NO_DATA_RECEIVE:
                             onNoDataReceived();
+                            break;
+                        case CODE_DATA_ERROR:
+                            onParseCodeError();
                             break;
                     }
                 }
@@ -93,6 +98,14 @@ public class GlobalHandler {
         if (activity != null) {
             Toast.makeText(activity,
                     R.string.error_no_data_received,
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void onParseCodeError(){
+        if (activity != null) {
+            Toast.makeText(activity,
+                    R.string.code_parse_error_tips,
                     Toast.LENGTH_SHORT).show();
         }
     }

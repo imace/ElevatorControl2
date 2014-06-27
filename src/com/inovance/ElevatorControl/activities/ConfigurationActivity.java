@@ -112,7 +112,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
     /**
      * 同步实时状态 Task
      */
-    private Runnable syncStatusTask;
+    private Runnable syncTask;
 
     /**
      * 当前 Loop 是否运行
@@ -220,7 +220,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
             }
         });
         // 同步实时状态
-        syncStatusTask = new Runnable() {
+        syncTask = new Runnable() {
             @Override
             public void run() {
                 if (isRunning) {
@@ -228,7 +228,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                         if (!isSyncing) {
                             pool.execute(ConfigurationActivity.this);
                         }
-                        syncHandler.postDelayed(syncStatusTask, SYNC_TIME);
+                        syncHandler.postDelayed(syncTask, SYNC_TIME);
                     }
                 }
             }
@@ -257,7 +257,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
             isRunning = true;
             isSyncing = false;
             currentTask = GET_SYSTEM_STATUS;
-            syncHandler.postDelayed(syncStatusTask, SYNC_TIME);
+            syncHandler.postDelayed(syncTask, SYNC_TIME);
         }
     }
 
@@ -297,7 +297,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
      * 重新从数据库加载数据
      */
     private void reloadDataFromDataBase() {
-        talkStateList = RealTimeMonitorDao.findByStateIDs(this, ApplicationConfig.MonitorStateCode);
+        talkStateList = RealTimeMonitorDao.findAllByStateIDs(this, ApplicationConfig.MonitorStateCode);
         // 输入端子 ID
         int inputStateID = ApplicationConfig.MonitorStateCode[5];
         // 输出端子 ID
@@ -336,9 +336,9 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
             communications[0] = new BluetoothTalk() {
                 @Override
                 public void beforeSend() {
-                    this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0103"
+                    this.setSendBuffer(SerialUtility.crc16("0103"
                             + monitor.getCode()
-                            + "0001")));
+                            + "0001"));
                 }
 
                 @Override
@@ -390,9 +390,9 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                 realTimeStateCommunications[index] = new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0103"
+                        this.setSendBuffer(SerialUtility.crc16("0103"
                                 + code
-                                + "0001")));
+                                + "0001"));
                     }
 
                     @Override
@@ -460,11 +460,10 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                 getHVXTerminalCommunications[i] = new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16(SerialUtility
-                                .hexStringToInt("0103"
+                        this.setSendBuffer(SerialUtility.crc16("0103"
                                         + ParseSerialsUtils.getCalculatedCode(firstItem)
                                         + String.format("%04x", length)
-                                        + "0001")));
+                                        + "0001"));
                     }
 
                     @Override
@@ -492,8 +491,8 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                                 for (int j = 0; j < length; j++) {
                                     if (position * 10 + j < terminalList.size()) {
                                         ParameterSettings item = terminalList.get(position * 10 + j);
-                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStringToInt("01030002"
-                                                + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
+                                        byte[] tempData = SerialUtility.crc16("01030002"
+                                                + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]}));
                                         item.setReceived(tempData);
                                         tempList.add(item);
                                     }
@@ -546,11 +545,10 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                 getXTerminalCommunications[i] = new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16(SerialUtility
-                                .hexStringToInt("0103"
+                        this.setSendBuffer(SerialUtility.crc16("0103"
                                         + ParseSerialsUtils.getCalculatedCode(firstItem)
                                         + String.format("%04x", length)
-                                        + "0001")));
+                                        + "0001"));
                     }
 
                     @Override
@@ -578,8 +576,8 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                                 for (int j = 0; j < length; j++) {
                                     if (position * 10 + j < terminalList.size()) {
                                         ParameterSettings item = terminalList.get(position * 10 + j);
-                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStringToInt("01030002"
-                                                + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
+                                        byte[] tempData = SerialUtility.crc16("01030002"
+                                                + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]}));
                                         item.setReceived(tempData);
                                         tempList.add(item);
                                     }
@@ -632,11 +630,10 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                 getYTerminalCommunications[i] = new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16(SerialUtility
-                                .hexStringToInt("0103"
+                        this.setSendBuffer(SerialUtility.crc16("0103"
                                         + ParseSerialsUtils.getCalculatedCode(firstItem)
                                         + String.format("%04x", length)
-                                        + "0001")));
+                                        + "0001"));
                     }
 
                     @Override
@@ -664,8 +661,8 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                                 for (int j = 0; j < length; j++) {
                                     if (position * 10 + j < terminalList.size()) {
                                         ParameterSettings item = terminalList.get(position * 10 + j);
-                                        byte[] tempData = SerialUtility.crc16(SerialUtility.hexStringToInt("01030002"
-                                                + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
+                                        byte[] tempData = SerialUtility.crc16("01030002"
+                                                + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]}));
                                         item.setReceived(tempData);
                                         tempList.add(item);
                                     }
@@ -812,9 +809,9 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                     ConfigurationActivity.this.terminalListView.setAdapter(adapter);
                     ConfigurationActivity.this.waitTextView.setVisibility(View.GONE);
                     ConfigurationActivity.this.terminalListView.setVisibility(View.VISIBLE);
-                    ConfigurationActivity.this.isSyncing = false;
                 }
             }
+            ConfigurationActivity.this.isSyncing = false;
         }
 
         @Override
@@ -918,11 +915,9 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                     ConfigurationActivity.this.terminalListView.setAdapter(adapter);
                     ConfigurationActivity.this.waitTextView.setVisibility(View.GONE);
                     ConfigurationActivity.this.terminalListView.setVisibility(View.VISIBLE);
-                    ConfigurationActivity.this.isSyncing = false;
                 }
-            } else {
-                ConfigurationActivity.this.startGetXTerminalCommunications();
             }
+            ConfigurationActivity.this.isSyncing = false;
         }
 
         @Override
@@ -1007,11 +1002,9 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                     ConfigurationActivity.this.terminalListView.setAdapter(adapter);
                     ConfigurationActivity.this.waitTextView.setVisibility(View.GONE);
                     ConfigurationActivity.this.terminalListView.setVisibility(View.VISIBLE);
-                    ConfigurationActivity.this.isSyncing = false;
                 }
-            } else {
-                ConfigurationActivity.this.startGetYTerminalCommunications();
             }
+            ConfigurationActivity.this.isSyncing = false;
         }
 
         @Override

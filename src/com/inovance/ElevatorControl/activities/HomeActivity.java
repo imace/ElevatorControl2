@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -234,7 +235,7 @@ public class HomeActivity extends Activity implements Runnable {
      */
     private void syncElevatorStatus() {
         if (communications == null) {
-            final List<RealTimeMonitor> monitorLists = RealTimeMonitorDao.findByStateIDs(this, ApplicationConfig.HomeStateCode);
+            final List<RealTimeMonitor> monitorLists = RealTimeMonitorDao.findAllByStateIDs(this, ApplicationConfig.HomeStateCode);
             int size = monitorLists.size();
             communications = new BluetoothTalk[size];
             for (int index = 0; index < size; index++) {
@@ -242,9 +243,9 @@ public class HomeActivity extends Activity implements Runnable {
                 communications[i] = new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0103"
+                        this.setSendBuffer(SerialUtility.crc16("0103"
                                 + monitorLists.get(i).getCode()
-                                + "0001")));
+                                + "0001"));
                     }
 
                     @Override
@@ -336,6 +337,7 @@ public class HomeActivity extends Activity implements Runnable {
         public void onMultiTalkEnd(Message msg) {
             super.onMultiTalkEnd(msg);
             if (sendCount == receiveCount) {
+                Log.v(TAG, "Received");
                 for (RealTimeMonitor monitor : receivedMonitorList) {
                     // 电梯运行速度
                     if (monitor.getStateID() == ApplicationConfig.HomeStateCode[0]) {
@@ -346,6 +348,8 @@ public class HomeActivity extends Activity implements Runnable {
                     // 系统状态
                     if (monitor.getStateID() == ApplicationConfig.HomeStateCode[1]) {
                         int elevatorBoxStatusCode = ParseSerialsUtils.getElevatorBoxStatusCode(monitor);
+                        // 如果为运行状态则改为关门维持状态,门机状态而非轿厢状态
+                        elevatorBoxStatusCode = elevatorBoxStatusCode == 5 ? 4 : elevatorBoxStatusCode;
                         int systemStatusCode = ParseSerialsUtils.getSystemStatusCode(monitor);
                         if (HomeActivity.this.elevatorBoxStatus == null || HomeActivity.this.systemStatus == null) {
                             try {

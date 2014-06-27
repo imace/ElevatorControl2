@@ -130,11 +130,10 @@ public class ProfileDownloadUtils implements Runnable {
             communications[i] = new BluetoothTalk() {
                 @Override
                 public void beforeSend() {
-                    this.setSendBuffer(SerialUtility.crc16(SerialUtility
-                            .hexStringToInt("0103"
+                    this.setSendBuffer(SerialUtility.crc16("0103"
                                     + ParseSerialsUtils.getCalculatedCode(firstItem)
                                     + String.format("%04x", length)
-                                    + "0001")));
+                                    + "0001"));
                 }
 
                 @Override
@@ -161,8 +160,8 @@ public class ProfileDownloadUtils implements Runnable {
                             List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
                             for (int j = 0; j < length; j++) {
                                 ParameterSettings item = list.get(position * 10 + j);
-                                byte[] tempData = SerialUtility.crc16(SerialUtility.hexStringToInt("01030002"
-                                        + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]})));
+                                byte[] tempData = SerialUtility.crc16("01030002"
+                                        + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]}));
                                 item.setReceived(tempData);
                                 tempList.add(item);
                             }

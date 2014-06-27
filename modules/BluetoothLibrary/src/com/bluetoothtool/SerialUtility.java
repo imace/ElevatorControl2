@@ -6,6 +6,9 @@ import android.annotation.SuppressLint;
  * 16进制值与String/Byte之间的转换
  */
 public class SerialUtility {
+
+    private static final String TAG = SerialUtility.class.getSimpleName();
+
     /**
      * 字符串转换成十六进制字符串
      *
@@ -54,11 +57,11 @@ public class SerialUtility {
      * @return String 每个Byte值之间空格分隔
      */
     public static String byte2HexStr(byte[] b) {
-        String stmp = "";
+        String stringTemp = "";
         StringBuilder sb = new StringBuilder("");
-        for (int n = 0; n < b.length; n++) {
-            stmp = Integer.toHexString(b[n] & 0xFF);
-            sb.append((stmp.length() == 1) ? "0" + stmp : stmp);
+        for (byte aB : b) {
+            stringTemp = Integer.toHexString(aB & 0xFF);
+            sb.append((stringTemp.length() == 1) ? "0" + stringTemp : stringTemp);
             sb.append("");
         }
         return sb.toString().toUpperCase().trim();
@@ -66,11 +69,11 @@ public class SerialUtility {
 
     @SuppressLint("DefaultLocale")
     public static String int2HexStr(int[] i) {
-        String stmp = "";
+        String stringTemp = "";
         StringBuilder sb = new StringBuilder("");
         for (int anI : i) {
-            stmp = Integer.toHexString(anI & 0xFF);
-            sb.append((stmp.length() == 1) ? "0" + stmp : stmp);
+            stringTemp = Integer.toHexString(anI & 0xFF);
+            sb.append((stringTemp.length() == 1) ? "0" + stringTemp : stringTemp);
             sb.append(" ");
         }
         return sb.toString().toUpperCase().trim();
@@ -108,6 +111,22 @@ public class SerialUtility {
                     + src.substring(m, n));
         }
         return ret;
+    }
+
+    /**
+     * Hex string to byte array
+     *
+     * @param String String
+     * @return byte[]
+     */
+    public static byte[] hexStringToByteArray(String string) {
+        int len = string.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(string.charAt(i), 16) << 4)
+                    + Character.digit(string.charAt(i + 1), 16));
+        }
+        return data;
     }
 
     /**
@@ -162,74 +181,46 @@ public class SerialUtility {
     /**
      * 为命令添加2位crc16校验码
      *
-     * @param data 纯命令
-     * @return 加入校验码之后的完整命令
-     */
-    public static byte[] crc16(int[] data) {
-        if (BluetoothTool.getInstance().crcValue == -1) {
-            int[] temdata = new int[data.length + 2];
-            int xda, xdapoly;
-            int i, j, xdabit;
-            xda = 0xFFFF;
-            xdapoly = 0xA001; // (X**16 + X**15 + X**2 + 1)
-            for (i = 0; i < data.length; i++) {
-                xda ^= data[i];
-                for (j = 0; j < 8; j++) {
-                    xdabit = (int) (xda & 0x01);
-                    xda >>= 1;
-                    if (xdabit == 1)
-                        xda ^= xdapoly;
-                }
-            }
-            System.arraycopy(data, 0, temdata, 0, data.length);
-            temdata[temdata.length - 2] = (int) (xda & 0xFF);
-            temdata[temdata.length - 1] = (int) (xda >> 8);
-            byte[] result = new byte[temdata.length];
-            for (int x = 0; x < temdata.length; x++) {
-                result[x] = (byte) (temdata[x]);
-            }
-            return result;
-        } else {
-            return specialCRC16(data);
-        }
-    }
-
-    /**
-     * 专用设备校验
-     *
-     * @param data int[]
+     * @param hexString Hex string
      * @return byte[]
      */
-    public static byte[] specialCRC16(int[] data) {
-        byte[] rawData = int2byte(data);
-        int crcValue = getSpecialDeviceCRCCheck(BluetoothTool.getInstance().crcValue, rawData, rawData.length);
+    public static byte[] crc16(String hexString) {
+        byte[] data = hexStringToByteArray(hexString);
+        int crcValue = BluetoothTool.getInstance().crcValue;
+        int checkedValue;
+        if (crcValue == BluetoothTool.CRCValueNone) {
+            checkedValue = getNormalDeviceCRCCheck(data);
+        } else {
+            checkedValue = getSpecialDeviceCRCCheck(crcValue, data);
+        }
         byte[] crcBytes = new byte[2];
-        crcBytes[0] = (byte) (crcValue & 0xFF);
-        crcBytes[1] = (byte) ((crcValue >> 8) & 0xFF);
-        byte[] result = new byte[rawData.length + crcBytes.length];
-        System.arraycopy(rawData, 0, result, 0, rawData.length);
-        System.arraycopy(crcBytes, 0, result, rawData.length, crcBytes.length);
+        crcBytes[0] = (byte) (checkedValue & 0xFF);
+        crcBytes[1] = (byte) ((checkedValue >> 8) & 0xFF);
+        byte[] result = new byte[data.length + crcBytes.length];
+        System.arraycopy(data, 0, result, 0, data.length);
+        System.arraycopy(crcBytes, 0, result, data.length, crcBytes.length);
         return result;
     }
 
     /**
      * 标准设备 CRC 校验
      *
-     * @param data   Data
-     * @param length Length
+     * @param data Data
      * @return int
      */
-    private static int getNormalDeviceCRCCheck(byte[] data, int length) {
+    private static int getNormalDeviceCRCCheck(byte[] data) {
         int crc_value = 0xFFFF;
-        for (int i = 0; i < length; i++) {
-            crc_value ^= (data[i] & 0xFF);
+        for (byte aData : data) {
+            crc_value ^= (aData & 0xFF);// 默认转为16进制进行异或
             for (int j = 0; j < 8; j++) {
                 if ((crc_value & 0x0001) > 0) {
                     crc_value = (crc_value >> 1) ^ 0xa001;
-                } else crc_value = crc_value >> 1;
+                } else {
+                    crc_value = crc_value >> 1;
+                }
             }
         }
-        return crc_value;
+        return (crc_value);
     }
 
     /**
@@ -239,13 +230,41 @@ public class SerialUtility {
      * @param length Length
      * @return int
      */
-    private static int getSpecialDeviceCRCCheck(int crcValue, byte[] data, int length) {
+    private static int getSpecialDeviceCRCCheck(int crcValue, byte[] data) {
+        int length = data.length;
         if (length < 0)
             return crcValue;
         for (byte a : data) {
-            crcValue ^= a;
+            crcValue ^= (a & 0xFF);
         }
         return crcValue;
+    }
+
+    /**
+     * 判断接受到的数据是否符合crc16
+     *
+     * @param data byte[]
+     * @return boolean
+     */
+    public static boolean isCRC16Valid(byte[] data) {
+        int length = data.length;
+        if (length <= 2)
+            return false;
+        byte[] trim = trimEnd(data);
+        if (trim.length <= 2)
+            return false;
+        byte[] trimBytes = new byte[length - 2];
+        System.arraycopy(data, 0, trimBytes, 0, length - 2);
+        int receivedCRCValue;
+        int crcValue = BluetoothTool.getInstance().crcValue;
+        if (crcValue == BluetoothTool.CRCValueNone) {
+            receivedCRCValue = getNormalDeviceCRCCheck(trimBytes);
+            int value = ((((data[length - 1] & 0xFF) << 8) | (data[length - 2] & 0xFF)));
+            return receivedCRCValue == value;
+        } else {
+            receivedCRCValue = getSpecialDeviceCRCCheck(crcValue, trimBytes);
+            return receivedCRCValue == crcValue;
+        }
     }
 
     /**
@@ -267,28 +286,6 @@ public class SerialUtility {
         temdata[0] = data[start] & 0xff;
         temdata[1] = data[start + 1] & 0xff;
         return temdata;
-    }
-
-    /**
-     * 判断接受到的数据是否符合crc16
-     *
-     * @param data byte[]
-     * @return boolean
-     */
-    public static boolean isCRC16Valid(byte[] data) {
-        if (data.length <= 2)
-            return false;
-        byte[] trim = trimEnd(data);
-        if (trim.length <= 2)
-            return false;
-        int crcValue = BluetoothTool.getInstance().crcValue;
-        if (crcValue == -1) {
-            int value = getNormalDeviceCRCCheck(trim, trim.length);
-            return value == 0;
-        } else {
-            int value = getSpecialDeviceCRCCheck(crcValue, trim, trim.length);
-            return value == 0;
-        }
     }
 
     /**
@@ -354,7 +351,7 @@ public class SerialUtility {
         for (int i = 0; i < srcLength; i++) {
             int x = src[i];
             int j = i << 2;
-            dst[j++] = (byte) ((x >>> 0) & 0xff);
+            dst[j++] = (byte) ((x) & 0xff);
             dst[j++] = (byte) ((x >>> 8) & 0xff);
             dst[j++] = (byte) ((x >>> 16) & 0xff);
             dst[j++] = (byte) ((x >>> 24) & 0xff);

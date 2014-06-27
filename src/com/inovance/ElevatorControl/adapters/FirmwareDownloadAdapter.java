@@ -61,7 +61,7 @@ public class FirmwareDownloadAdapter extends BaseAdapter {
         if (convertView == null) {
             convertView = mInflater.inflate(R.layout.firmware_download_item, null);
             holder = new ViewHolder();
-            holder.approveDate = (TextView) convertView.findViewById(R.id.approve_date);
+            holder.firmwareName = (TextView) convertView.findViewById(R.id.firmware_name);
             holder.moreOptionButton = (ImageButton) convertView.findViewById(R.id.more_option);
             convertView.setTag(holder);
         } else {
@@ -69,7 +69,7 @@ public class FirmwareDownloadAdapter extends BaseAdapter {
         }
         final Firmware firmware = getItem(position);
         final int index = position;
-        holder.approveDate.setText(firmware.getApproveDate());
+        holder.firmwareName.setText(firmware.getFileURL());
         holder.moreOptionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -84,7 +84,7 @@ public class FirmwareDownloadAdapter extends BaseAdapter {
     // ====================== View Holder ==================================
 
     private class ViewHolder {
-        TextView approveDate;
+        TextView firmwareName;
         ImageButton moreOptionButton;
     }
 

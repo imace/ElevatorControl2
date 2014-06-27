@@ -6,7 +6,7 @@ import com.bluetoothtool.BluetoothTool;
 import com.inovance.ElevatorControl.cache.LruCacheTool;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ShortcutDao;
-import com.inovance.ElevatorControl.models.ConfigFactory;
+import com.inovance.ElevatorControl.config.ConfigFactory;
 import com.inovance.ElevatorControl.models.Shortcut;
 import com.inovance.ElevatorControl.utils.LogUtils;
 import com.inovance.ElevatorControl.utils.TextLocalize;
@@ -33,14 +33,14 @@ public class ElevatorControlApplication extends Application {
         // 初始化缓存组件
         LruCacheTool.getInstance().initCache(getApplicationContext());
         LogUtils.getInstance().init(getApplicationContext());
-        writeDefaultShortcutData();
         ConfigFactory.getInstance().init(getApplicationContext());
         TextLocalize.getInstance().init(getApplicationContext());
+        writeDefaultShortcutData();
         //ACRA.init(this);
     }
 
     private void writeDefaultShortcutData() {
-        SharedPreferences settings = getSharedPreferences(ApplicationConfig.PREFS_NAME, 0);
+        SharedPreferences settings = getSharedPreferences(ApplicationConfig.PREFERENCE_FILE_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
         boolean hasWriteDefaultData = settings.getBoolean("hasWriteDefaultData", false);
         if (!hasWriteDefaultData) {

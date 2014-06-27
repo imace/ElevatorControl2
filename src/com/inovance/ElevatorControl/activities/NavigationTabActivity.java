@@ -23,9 +23,10 @@ import com.bluetoothtool.BluetoothTool;
 import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
+import com.inovance.ElevatorControl.config.ConfigFactory;
 import com.inovance.ElevatorControl.handlers.GlobalHandler;
 import com.inovance.ElevatorControl.handlers.SearchBluetoothHandler;
-import com.inovance.ElevatorControl.models.ConfigFactory;
+import com.inovance.ElevatorControl.models.CommunicationCode;
 import com.inovance.ElevatorControl.models.Device;
 import com.inovance.ElevatorControl.models.NormalDevice;
 import com.inovance.ElevatorControl.models.SpecialDevice;
@@ -186,14 +187,17 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
      */
     private static final int MaxRetryTime = 5;
 
+    /**
+     * 专有设备通信码
+     */
+    private List<CommunicationCode> communicationCodeList = new ArrayList<CommunicationCode>();
+
+    /**
+     * 当前正在尝试的通信码索引
+     */
     private int specialDeviceCodeIndex = -1;
 
     private Handler delayHandler = new Handler();
-
-    /**
-     * 专用设备通信码
-     */
-    private String[] specialDeviceCode = new String[0];
 
     /**
      * 可供选择的标准设备列表
@@ -204,6 +208,29 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
      * 可供选择的专有设备列表
      */
     private List<SpecialDevice> specialDeviceList = new ArrayList<SpecialDevice>();
+
+    private static final int StartRecogniseDevice = 1;
+
+    private static final int FailedRecogniseDevice = 2;
+
+    private Handler messageHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case StartRecogniseDevice:
+                    Toast.makeText(NavigationTabActivity.this,
+                            R.string.recognise_device_wait_text,
+                            Toast.LENGTH_SHORT).show();
+                    break;
+                case FailedRecogniseDevice:
+                    Toast.makeText(NavigationTabActivity.this,
+                            R.string.recognise_device_failed_text,
+                            Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        }
+    };
 
     private ExecutorService pool = Executors.newSingleThreadExecutor();
 
@@ -272,6 +299,9 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
         if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(intent, REQUEST_BLUETOOTH_ENABLE);
+        } else {
+            WebApi.getInstance().getSpecialDeviceCodeList(this,
+                    BluetoothAdapter.getDefaultAdapter().getAddress());
         }
     }
 
@@ -303,6 +333,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
             talkTime = 0;
             currentTask = GET_NORMAL_DEVICE_TYPE;
             delayHandler.postDelayed(getDeviceTypeTask, LOOP_TIME);
+            messageHandler.sendEmptyMessage(StartRecogniseDevice);
         }
     }
 
@@ -525,17 +556,18 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
     }
 
     /**
-     * 取得设备型号、厂家编号
+     * 取得标准设备型号、厂家编号
      */
     private void getNormalDeviceType() {
         if (getNormalDeviceTypeTalk == null) {
+            BluetoothTool.getInstance().crcValue = BluetoothTool.CRCValueNone;
             getNormalDeviceTypeTalk = new BluetoothTalk[]{
                     new BluetoothTalk() {
                         @Override
                         public void beforeSend() {
-                            this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0103"
+                            this.setSendBuffer(SerialUtility.crc16("0103"
                                     + ApplicationConfig.GetDeviceTypeCode
-                                    + "0001")));
+                                    + "0001"));
                         }
 
                         @Override
@@ -578,50 +610,59 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
      * 取得专用设备型号
      */
     private void getSpecialDeviceType() {
-        if (specialDeviceCodeIndex < specialDeviceCode.length) {
-            BluetoothTalk[] talks = new BluetoothTalk[1];
-            talks[0] = new BluetoothTalk() {
-                @Override
-                public void beforeSend() {
-                    this.setSendBuffer(SerialUtility.crc16(SerialUtility.hexStringToInt("0103"
-                            + specialDeviceCode[specialDeviceCodeIndex].split(":")[0].replace("0x", "")
-                            + "0001")));
-                }
-
-                @Override
-                public void afterSend() {
-
-                }
-
-                @Override
-                public void beforeReceive() {
-
-                }
-
-                @Override
-                public void afterReceive() {
-
-                }
-
-                @Override
-                public Object onParse() {
-                    if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
-                        String result = SerialUtility.byte2HexStr(getReceivedBuffer());
-                        if (!result.contains(ApplicationConfig.ErrorCode)) {
-                            return result;
-                        }
+        if (specialDeviceCodeIndex < communicationCodeList.size()) {
+            final CommunicationCode code = communicationCodeList.get(specialDeviceCodeIndex);
+            BluetoothTool.getInstance().crcValue = code.getCrcValue();
+            // 通信码是否过期
+            if (!code.isExpire()) {
+                BluetoothTalk[] talks = new BluetoothTalk[1];
+                talks[0] = new BluetoothTalk() {
+                    @Override
+                    public void beforeSend() {
+                        this.setSendBuffer(SerialUtility.crc16("0103"
+                                + ApplicationConfig.GetDeviceTypeCode
+                                + "0001"));
                     }
-                    return null;
+
+                    @Override
+                    public void afterSend() {
+
+                    }
+
+                    @Override
+                    public void beforeReceive() {
+
+                    }
+
+                    @Override
+                    public void afterReceive() {
+
+                    }
+
+                    @Override
+                    public Object onParse() {
+                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                            String result = SerialUtility.byte2HexStr(getReceivedBuffer());
+                            if (!result.contains(ApplicationConfig.ErrorCode)) {
+                                return result;
+                            }
+                        }
+                        return null;
+                    }
+                };
+                if (BluetoothTool.getInstance().isConnected()) {
+                    BluetoothTool.getInstance()
+                            .setHandler(getSpecialDeviceTypeHandler)
+                            .setCommunications(talks)
+                            .send();
                 }
-            };
-            if (BluetoothTool.getInstance().isConnected()) {
-                BluetoothTool.getInstance().crcValue = Integer.parseInt(specialDeviceCode[specialDeviceCodeIndex]
-                        .split(":")[0].replace("0x", ""), 16);
-                BluetoothTool.getInstance()
-                        .setHandler(getSpecialDeviceTypeHandler)
-                        .setCommunications(talks)
-                        .send();
+            } else {
+                talkTime = 0;
+                specialDeviceCodeIndex++;
             }
+        } else {
+            isRunning = false;
+            messageHandler.sendEmptyMessage(FailedRecogniseDevice);
         }
     }
 
@@ -647,8 +688,8 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
                             @Override
                             public void onClick(DialogInterface dialogInterface, int position) {
                                 NormalDevice device = tempNormalDevice.get(position);
-                                BluetoothTool.getInstance()
-                                        .setHasSelectDeviceType(true);
+                                BluetoothTool.getInstance().setHasSelectDeviceType(true);
+                                // 选择标准设备
                                 ConfigFactory.getInstance().selectDevice(NavigationTabActivity.this,
                                         device.getID(),
                                         device.getName(),
@@ -668,7 +709,6 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
 
     @Override
     public void run() {
-        Log.v(TAG, String.valueOf(currentTask));
         switch (currentTask) {
             case SEARCH_DEVICE:
                 BluetoothTool.getInstance()
@@ -677,6 +717,8 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
                 break;
             case CONNECT_DEVICE:
                 if (tempDevice != null) {
+                    hasGetDeviceType = false;
+                    BluetoothTool.getInstance().setHasSelectDeviceType(false);
                     BluetoothTool.getInstance().connectDevice(tempDevice);
                 }
                 break;
@@ -723,10 +765,11 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
             try {
                 JSONArray jsonArray = new JSONArray(responseString);
                 int size = jsonArray.length();
-                specialDeviceCode = new String[size];
+                communicationCodeList = new ArrayList<CommunicationCode>();
                 for (int i = 0; i < size; i++) {
                     JSONObject object = jsonArray.getJSONObject(i);
-                    specialDeviceCode[i] = object.optString("") + ":" + object.optString("");
+                    CommunicationCode code = new CommunicationCode(object);
+                    communicationCodeList.add(code);
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -764,6 +807,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
             if (msg.obj != null && msg.obj instanceof Integer) {
                 isRunning = false;
                 hasGetDeviceType = true;
+                BluetoothTool.getInstance().crcValue = BluetoothTool.CRCValueNone;
                 showNormalDeviceSelect((Integer) msg.obj);
             }
         }
@@ -799,8 +843,24 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
             if (msg.obj != null && msg.obj instanceof String) {
                 isRunning = false;
                 hasGetDeviceType = true;
+                CommunicationCode code = communicationCodeList.get(specialDeviceCodeIndex);
+                for (SpecialDevice device : specialDeviceList) {
+                    if (code.getCode().equalsIgnoreCase(device.getCode())) {
+                        BluetoothTool.getInstance().setHasSelectDeviceType(true);
+                        // 选择专有设备
+                        ConfigFactory.getInstance().selectDevice(NavigationTabActivity.this,
+                                device.getID(),
+                                device.getName(),
+                                Device.SpecialDevice,
+                                new ConfigFactory.OnDeployFinishListener() {
+                                    @Override
+                                    public void onComplete() {
+                                        NavigationTabActivity.this.startHomeActivityStatusSyncTask();
+                                    }
+                                });
+                    }
+                }
             }
-
         }
 
         @Override

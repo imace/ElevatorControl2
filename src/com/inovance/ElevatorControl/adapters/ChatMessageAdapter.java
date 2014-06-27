@@ -148,7 +148,7 @@ public class ChatMessageAdapter extends BaseAdapter {
                 holder.phoneNumberView.setText("To:" + item.getToNumber());
                 break;
             case ChatMessage.RECEIVE:
-                holder.phoneNumberView.setText("From:" + item.getToNumber());
+                holder.phoneNumberView.setText("From:" + item.getFromNumber());
                 break;
         }
         holder.timeView.setText(timeString);
