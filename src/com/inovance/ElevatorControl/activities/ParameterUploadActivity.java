@@ -5,24 +5,25 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Environment;
 import android.os.Message;
 import android.view.*;
 import android.widget.*;
 import butterknife.InjectView;
 import butterknife.Views;
-import com.bluetoothtool.BluetoothHandler;
-import com.bluetoothtool.BluetoothTalk;
-import com.bluetoothtool.BluetoothTool;
-import com.bluetoothtool.SerialUtility;
+import com.bluetoothtool.*;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ProfileDao;
+import com.inovance.ElevatorControl.daos.RealTimeMonitorDao;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.models.Profile;
+import com.inovance.ElevatorControl.models.RealTimeMonitor;
 import com.inovance.ElevatorControl.utils.LogUtils;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
 import com.inovance.ElevatorControl.utils.TextLocalize;
+import com.inovance.ElevatorControl.views.dialogs.CustomDialog;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -83,9 +84,19 @@ public class ParameterUploadActivity extends Activity {
     private AlertDialog uploadDialog;
 
     /**
-     * 上传提示文字
+     * 上传结束错误信息
      */
     private TextView uploadTipsTextView;
+
+    /**
+     * 上传文字指示
+     */
+    private View progressView;
+
+    /**
+     * 当前进度文字指示
+     */
+    private TextView currentProgress;
 
     /**
      * 写入进度
@@ -102,6 +113,18 @@ public class ParameterUploadActivity extends Activity {
      */
     private Button dialogButton;
 
+    /**
+     * 用于取得电梯运行状态的通信内容
+     */
+    private BluetoothTalk[] getElevatorStatusCommunication;
+
+    private ElevatorStatusHandler elevatorStatusHandler;
+
+    /**
+     * 电梯运行状态是否已读取到
+     */
+    private boolean hasGetElevatorStatus;
+
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
@@ -112,6 +135,8 @@ public class ParameterUploadActivity extends Activity {
         Views.inject(this);
         profileList = ProfileDao.findAll(this);
         uploadParameterHandler = new UploadParameterHandler(this);
+        elevatorStatusHandler = new ElevatorStatusHandler(this);
+        hasGetElevatorStatus = false;
         profileAdapter = new LocalProfileAdapter();
         listView.setAdapter(profileAdapter);
     }
@@ -145,96 +170,139 @@ public class ParameterUploadActivity extends Activity {
      *
      * @param index ListView Item Index
      */
-    // TODO
     private void getElevatorStatus(final int index) {
-        BluetoothHandler handler = new BluetoothHandler(this) {
-            @Override
-            public void onTalkReceive(Message msg) {
-                if (msg.obj != null && msg.obj instanceof Integer) {
-                    int status = ((Integer) msg.obj).intValue();
-                    if (status == 3) {
-                        onUploadButtonClick(index);
-                    } else {
-                        AlertDialog.Builder builder = new android.app.AlertDialog.Builder(ParameterUploadActivity.this,
-                                R.style.CustomDialogStyle)
-                                .setTitle(R.string.cannot_upload_profile_title)
-                                .setMessage(R.string.elevator_running_cannot_upload_message)
-                                .setNegativeButton(R.string.dialog_btn_cancel, null)
-                                .setPositiveButton(R.string.dialog_btn_ok, null);
-                        builder.create().show();
-                    }
-                }
+        if (getElevatorStatusCommunication == null) {
+            final RealTimeMonitor monitor = RealTimeMonitorDao.findByStateID(this,
+                    ApplicationConfig.RunningStatusType);
+            if (monitor != null) {
+                getElevatorStatusCommunication = new BluetoothTalk[]{
+                        new BluetoothTalk() {
+                            @Override
+                            public void beforeSend() {
+                                this.setSendBuffer(SerialUtility.crc16("0103"
+                                        + monitor.getCode()
+                                        + "0001"));
+                            }
+
+                            @Override
+                            public void afterSend() {
+
+                            }
+
+                            @Override
+                            public void beforeReceive() {
+
+                            }
+
+                            @Override
+                            public void afterReceive() {
+
+                            }
+
+                            @Override
+                            public Object onParse() {
+                                if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                                    byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
+                                    if (data.length == 8) {
+                                        monitor.setReceived(data);
+                                        return monitor;
+                                    }
+                                }
+                                return null;
+                            }
+                        }
+                };
             }
-        };
-        if (BluetoothTool.getInstance().isPrepared()) {
-            BluetoothTool.getInstance()
-                    .setHandler(handler)
-                    .setCommunications(null)
-                    .send();
+        }
+        if (getElevatorStatusCommunication != null) {
+            if (BluetoothTool.getInstance().isPrepared()) {
+                if (!ParameterUploadActivity.this.hasGetElevatorStatus) {
+                    elevatorStatusHandler.index = index;
+                    BluetoothTool.getInstance()
+                            .setCommunications(getElevatorStatusCommunication)
+                            .setHandler(elevatorStatusHandler)
+                            .send();
+                }
+
+            }
         }
     }
 
     /**
-     * 上传参数
+     * 已经读取到电梯状态
      *
-     * @param position ListView index
+     * @param position Item position
+     * @param status   Status
      */
-    private void onUploadButtonClick(int position) {
-        Profile profile = profileList.get(position);
-        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            File directory = new File(getApplicationContext().getExternalCacheDir().getPath()
-                    + "/"
-                    + DIRECTORY_NAME);
-            File file = new File(directory, profile.getFileName());
-            try {
-                InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(file));
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                String receiveString = "";
-                StringBuilder stringBuilder = new StringBuilder();
-                while ((receiveString = bufferedReader.readLine()) != null) {
-                    stringBuilder.append(receiveString);
+    private void onGetElevatorStatus(int position, int status) {
+        if (status == 3) {
+            // 电梯停机状态
+            Profile profile = profileList.get(position);
+            if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+                File directory = new File(getApplicationContext().getExternalCacheDir().getPath()
+                        + "/"
+                        + DIRECTORY_NAME);
+                File file = new File(directory, profile.getFileName());
+                try {
+                    InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(file));
+                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                    String receiveString = "";
+                    StringBuilder stringBuilder = new StringBuilder();
+                    while ((receiveString = bufferedReader.readLine()) != null) {
+                        stringBuilder.append(receiveString);
+                    }
+                    bufferedReader.close();
+                    inputStreamReader.close();
+                    JSONArray groups = new JSONArray(stringBuilder.toString());
+                    // 生成通讯内容
+                    generateCommunicationsList(groups);
+                    // 开始上传参数
+                    uploadParameterHandler.receiveCount = 0;
+                    ParameterUploadActivity.this.startCommunication(0);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-                bufferedReader.close();
-                inputStreamReader.close();
-                JSONArray groups = new JSONArray(stringBuilder.toString());
-                // 生成通讯内容
-                generateCommunicationsList(groups);
-                // 开始上传参数
-                uploadParameterHandler.receiveCount = 0;
-                ParameterUploadActivity.this.startCommunication(0);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            LayoutInflater inflater = ParameterUploadActivity.this.getLayoutInflater();
+            View dialogView = inflater.inflate(R.layout.parameters_upload_dialog, null);
+            tipsView = (ScrollView) dialogView.findViewById(R.id.tips_view);
+            progressView = dialogView.findViewById(R.id.progress_view);
+            currentProgress = (TextView) dialogView.findViewById(R.id.current_progress);
+            uploadTipsTextView = (TextView) dialogView.findViewById(R.id.upload_tips);
+            uploadProgressBar = (ProgressBar) dialogView.findViewById(R.id.progress_bar);
+            uploadProgressBar.setProgress(0);
+            uploadProgressBar.setMax(parameterSettingsList.size());
+            currentProgress.setText("0%");
+            builder.setTitle(R.string.uploading_profile_text);
+            builder.setView(dialogView);
+            builder.setNegativeButton(R.string.dialog_btn_cancel, null);
+            uploadDialog = builder.create();
+            uploadDialog.setCancelable(false);
+            uploadDialog.setCanceledOnTouchOutside(false);
+            uploadDialog.show();
+            dialogButton = uploadDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+            dialogButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    BluetoothTool.getInstance().setHandler(null);
+                    uploadProgressBar.setProgress(0);
+                    uploadDialog.dismiss();
+                    uploadDialog = null;
+                }
+            });
+        } else {
+            // 电梯处于运行状态
+            AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                    .setTitle(R.string.upload_profile_failed_title)
+                    .setMessage(R.string.upload_profile_failed_message)
+                    .setPositiveButton(R.string.dialog_btn_ok, null);
+            builder.create().show();
         }
-        AlertDialog.Builder builder = new AlertDialog.Builder(ParameterUploadActivity.this);
-        LayoutInflater inflater = ParameterUploadActivity.this.getLayoutInflater();
-        View dialogView = inflater.inflate(R.layout.parameters_upload_dialog, null);
-        tipsView = (ScrollView) dialogView.findViewById(R.id.tips_view);
-        uploadTipsTextView = (TextView) dialogView.findViewById(R.id.upload_tips);
-        uploadProgressBar = (ProgressBar) dialogView.findViewById(R.id.progress_bar);
-        uploadProgressBar.setProgress(0);
-        uploadProgressBar.setMax(parameterSettingsList.size());
-        builder.setTitle(R.string.uploading_profile_text);
-        builder.setView(dialogView);
-        builder.setNegativeButton(R.string.dialog_btn_cancel, null);
-        uploadDialog = builder.create();
-        uploadDialog.setCancelable(false);
-        uploadDialog.setCanceledOnTouchOutside(false);
-        uploadDialog.show();
-        dialogButton = uploadDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
-        dialogButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                BluetoothTool.getInstance().setHandler(null);
-                uploadProgressBar.setProgress(0);
-                uploadDialog.dismiss();
-                uploadDialog = null;
-            }
-        });
     }
 
     /**
@@ -249,29 +317,29 @@ public class ParameterUploadActivity extends Activity {
         for (int i = 0; i < size; i++) {
             try {
                 JSONObject groupsJSONObject = groupArray.getJSONObject(i);
-                JSONArray detailArray = groupsJSONObject.getJSONArray("parameterSettings");
+                JSONArray detailArray = groupsJSONObject.getJSONArray("parameterSettings".toUpperCase());
                 int length = detailArray.length();
                 List<BluetoothTalk> talkList = new ArrayList<BluetoothTalk>();
                 for (int j = 0; j < length; j++) {
                     JSONObject jsonObject = detailArray.getJSONObject(j);
-                    int mode = Integer.parseInt(jsonObject.optString("mode"));
+                    int mode = Integer.parseInt(jsonObject.optString("mode".toUpperCase()));
                     if (mode != 3) {
                         final ParameterSettings item = new ParameterSettings();
-                        item.setCode(jsonObject.optString("code"));
-                        item.setName(jsonObject.optString("name"));
-                        item.setProductId(String.valueOf(jsonObject.optInt("productId")));
-                        item.setDescription(jsonObject.optString("description"));
+                        item.setCode(jsonObject.optString("code".toUpperCase()));
+                        item.setName(jsonObject.optString("name".toUpperCase()));
+                        item.setProductId(String.valueOf(jsonObject.optInt("productId".toUpperCase())));
+                        item.setDescription(jsonObject.optString("description".toUpperCase()));
                         item.setDescriptionType(ParameterSettings
                                 .ParseDescriptionToType(item.getDescription()));
-                        item.setChildId(jsonObject.optString("childId"));
-                        item.setScope(jsonObject.optString("scope"));
-                        item.setUserValue(jsonObject.optString("userValue"));
-                        item.setHexValueString(jsonObject.optString("hexValue"));
-                        item.setDefaultValue(String.valueOf(jsonObject.optInt("defaultValue")));
-                        item.setScale(String.valueOf(jsonObject.optDouble("scale")));
-                        item.setUnit(jsonObject.optString("unit"));
-                        item.setType(String.valueOf(jsonObject.optInt("type")));
-                        item.setMode(String.valueOf(jsonObject.optInt("mode")));
+                        item.setChildId(jsonObject.optString("childId".toUpperCase()));
+                        item.setScope(jsonObject.optString("scope".toUpperCase()));
+                        item.setUserValue(jsonObject.optString("userValue".toUpperCase()));
+                        item.setHexValueString(jsonObject.optString("hexValue".toUpperCase()));
+                        item.setDefaultValue(String.valueOf(jsonObject.optInt("defaultValue".toUpperCase())));
+                        item.setScale(String.valueOf(jsonObject.optDouble("scale".toUpperCase())));
+                        item.setUnit(jsonObject.optString("unit".toUpperCase()));
+                        item.setType(String.valueOf(jsonObject.optInt("type".toUpperCase())));
+                        item.setMode(String.valueOf(jsonObject.optInt("mode".toUpperCase())));
                         parameterSettingsList.add(item);
                         BluetoothTalk talk = new BluetoothTalk() {
                             @Override
@@ -403,7 +471,7 @@ public class ParameterUploadActivity extends Activity {
                                     .setPositiveButton(R.string.dialog_btn_ok, new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialogInterface, int i) {
-                                            onUploadButtonClick(index);
+                                            writeProfile(index);
                                         }
                                     });
                             builder.create().show();
@@ -420,6 +488,30 @@ public class ParameterUploadActivity extends Activity {
             }
         });
         popupMenu.show();
+    }
+
+    /**
+     * 开始写入参数
+     */
+    private void writeProfile(final int index) {
+        ParameterUploadActivity.this.hasGetElevatorStatus = false;
+        // 读取电梯状态
+        new CountDownTimer(2500, 500) {
+
+            @Override
+            public void onTick(long l) {
+                if (!ParameterUploadActivity.this.hasGetElevatorStatus) {
+                    ParameterUploadActivity.this.getElevatorStatus(index);
+                } else {
+                    this.cancel();
+                }
+            }
+
+            @Override
+            public void onFinish() {
+
+            }
+        }.start();
     }
 
     /**
@@ -562,7 +654,8 @@ public class ParameterUploadActivity extends Activity {
                         errorList.add(settings);
                     }
                 }
-                ParameterUploadActivity.this.uploadProgressBar.setVisibility(View.GONE);
+                ParameterUploadActivity.this.currentProgress.setText("100%");
+                ParameterUploadActivity.this.progressView.setVisibility(View.GONE);
                 ParameterUploadActivity.this.handleParameterUploadComplete(errorList, noRespondList);
             }
             index++;
@@ -585,6 +678,48 @@ public class ParameterUploadActivity extends Activity {
                     index++;
                 }
                 ParameterUploadActivity.this.uploadProgressBar.setProgress(receiveCount);
+                int maxProgress = ParameterUploadActivity.this.uploadProgressBar.getMax();
+                int percentage = 100 * receiveCount / maxProgress;
+                ParameterUploadActivity.this.currentProgress.setText(percentage + "%");
+            }
+        }
+
+        @Override
+        public void onBluetoothConnectException(Message message) {
+            super.onBluetoothConnectException(message);
+            CustomDialog.showBluetoothExceptionDialog(ParameterUploadActivity.this, new CustomDialog.OnRetryListener() {
+                @Override
+                public void onClick() {
+                    BluetoothTool.getInstance().currentState = BluetoothState.CONNECTED;
+                    if (uploadDialog != null && uploadDialog.isShowing()) {
+                        uploadDialog.dismiss();
+                        uploadDialog = null;
+                    }
+                    writeProfile(index);
+                }
+            });
+        }
+    }
+
+    /**
+     * 读取电梯运行状态 Handler
+     */
+    private class ElevatorStatusHandler extends BluetoothHandler {
+
+        public int index;
+
+        public ElevatorStatusHandler(Activity activity) {
+            super(activity);
+        }
+
+        @Override
+        public void onTalkReceive(Message msg) {
+            super.onTalkReceive(msg);
+            if (msg.obj != null && msg.obj instanceof RealTimeMonitor) {
+                ParameterUploadActivity.this.hasGetElevatorStatus = true;
+                int status = ParseSerialsUtils.getElevatorStatus((RealTimeMonitor) msg.obj);
+                // 读取到电梯运行状态
+                ParameterUploadActivity.this.onGetElevatorStatus(index, status);
             }
         }
     }

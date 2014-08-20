@@ -5,6 +5,7 @@ import android.content.Context;
 import android.text.TextUtils;
 import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
+import com.inovance.ElevatorControl.config.ConfigFactory;
 import com.inovance.ElevatorControl.daos.ErrorHelpDao;
 import com.inovance.ElevatorControl.models.ErrorHelp;
 import com.inovance.ElevatorControl.models.ParameterSettings;
@@ -44,6 +45,32 @@ public class ParseSerialsUtils {
             }
         }
         return "";
+    }
+
+    /**
+     * 1:电梯下行
+     * 2:电梯上行
+     * 3:停机
+     *
+     * @return Status
+     */
+    public static int getElevatorStatus(RealTimeMonitor monitor) {
+        int rawValue = ParseSerialsUtils.getIntFromBytes(monitor.getReceived());
+        String deviceType = ConfigFactory.getInstance().getDeviceName();
+        if (deviceType.equalsIgnoreCase(ApplicationConfig.NormalDeviceType[0])) {
+            switch (rawValue) {
+                case 0:
+                    rawValue = 3;
+                    break;
+                case 1:
+                    rawValue = 1;
+                    break;
+                case 2:
+                    rawValue = 2;
+                    break;
+            }
+        }
+        return rawValue;
     }
 
     /**

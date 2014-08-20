@@ -343,8 +343,7 @@ public class RealTimeMonitor implements Cloneable {
                                 String[] entity = unit.split("#");
                                 jsonStringer.object();
                                 jsonStringer.key(entity[0]
-                                        .replace("Bit", "")
-                                        .replace("bit", "")
+                                        .replaceAll("(?i)bit", "")
                                         .replaceFirst("^0+(?!$)", ""));
                                 jsonStringer.array();
                                 for (int i = 1; i < entity.length; i++) {
@@ -360,8 +359,7 @@ public class RealTimeMonitor implements Cloneable {
                                 String[] entity = unit.split(":");
                                 jsonStringer.object();
                                 jsonStringer.key("id").value(entity.length > 0 ? entity[0]
-                                        .replace("Bit", "")
-                                        .replace("bit", "")
+                                        .replaceAll("(?i)bit", "")
                                         .replaceFirst("^0+(?!$)", "") : "");
                                 jsonStringer.key("value").value(entity.length > 1 ? entity[1] : "");
                                 jsonStringer.endObject();
@@ -374,8 +372,7 @@ public class RealTimeMonitor implements Cloneable {
                             String[] part = item.split(":");
                             jsonStringer.object();
                             jsonStringer.key("id").value(part.length > 0 ? part[0]
-                                    .replace("Bit", "")
-                                    .replace("bit", "")
+                                    .replaceAll("(?i)bit", "")
                                     .replaceFirst("^0+(?!$)", "") : "");
                             jsonStringer.key("value").value(part.length > 1 ? part[1] : "");
                             jsonStringer.endObject();

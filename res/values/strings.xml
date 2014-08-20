@@ -41,8 +41,11 @@
     <string name="update_parameter_data_wait_message">更新数据中</string>
     <string name="recognise_device_wait_text">正在识别设备，请稍后。</string>
     <string name="recognise_device_failed_text">未能识别设备，请尝试其他设备。</string>
-
     <string name="code_parse_error_tips">内部数据出错，请联系管理员。</string>
+
+    <string name="exit_whole_application">退出</string>
+    <string name="bluetooth_connect_exception_title">蓝牙设备异常</string>
+    <string name="bluetooth_connect_exception_message">蓝牙设备连接异常，请选择是否重试。</string>
 
     <string name="view_detail_text">查看详细-></string>
 
@@ -98,6 +101,11 @@
     <string name="error_code_text">当前故障</string>
     <string name="home_no_error_text">无</string>
     <string name="choice_device_type_title">选择设备型号</string>
+    <string name="choice_operation_title">请选择调试类型</string>
+    <string-array name="device_operation_array">
+        <item>参数调试</item>
+        <item>电梯烧录</item>
+    </string-array>
 
     <!-- 用户注册 -->
     <string name="register_user_text">用户注册</string>
@@ -107,7 +115,6 @@
     <string name="tel_phone_text">办公电话</string>
     <string name="email_text">邮箱</string>
     <string name="submit_text">提交</string>
-    <string name="register_failed_text">注册失败</string>
     <string name="verify_user_text">验证中…</string>
     <string name="field_require_hint">必填</string>
     <string name="user_name_error">用户名长度不符合要求最大6个字符</string>
@@ -181,6 +188,7 @@
     <string name="scan_barcode_text">扫描条形码码</string>
     <string name="shortcut_setting_text">快捷菜单设置</string>
     <string name="add_shortcut_dialog_title_text">新增快捷菜单</string>
+    <string name="edit_shortcut_dialog_title_text">编辑快捷菜单</string>
     <string name="shortcut_name_text">快捷菜单名称</string>
     <string name="shortcut_action_text">快捷动作</string>
     <string name="shortcut_item_operation_title_text">选择操作</string>
@@ -203,6 +211,7 @@
     <string name="open_camera_text">打开相机</string>
     <string name="scan_result_text">扫描结果：</string>
     <string name="choose_bluetooth_device">选择蓝牙设备…</string>
+    <string name="save_barcode_picture_successful_text">图片已保存</string>
 
     <!-- 参数上传 -->
     <string name="cannot_upload_profile_title">无法上传</string>
@@ -223,7 +232,8 @@
     <string name="uploading_profile_complete">全部正确写入！</string>
     <string name="upload_dialog_title">写入参数</string>
     <string name="upload_dialog_message">确定要写入参数吗</string>
-    <string name="write_failed_text">写入失败</string>
+    <string name="upload_profile_failed_title">无法上传</string>
+    <string name="upload_profile_failed_message">电梯正在运行，无法上传参数。</string>
 
     <!-- 参数读取 -->
     <string name="parameter_upload_text">参数写入 (手机 -> 一体机)</string>
@@ -269,8 +279,13 @@
     <string name="none_firmware_download_text">当前没有固件可以提取</string>
 
     <string name="burn_firmware_text">烧录</string>
+    <string name="delete_firmware_text">删除</string>
     <string name="will_burn_firmware_text">烧录程序</string>
     <string name="burning_firmware_text">正在烧录程序</string>
+    <string name="delete_firmware_title">删除程序</string>
+    <string name="delete_firmware_message">确定要删除该程序吗？</string>
+    <string name="firmware_expired_title">程序过期</string>
+    <string name="firmware_expired_message">程序超过使用期限</string>
 
     <string name="firmware_name_text">固件名称</string>
     <string name="create_date_text">提取时间</string>

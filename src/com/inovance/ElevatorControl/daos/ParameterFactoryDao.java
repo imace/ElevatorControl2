@@ -34,7 +34,6 @@ public class ParameterFactoryDao {
         int parameterGroupSettingsSize = db.findAll(ParameterGroupSettings.class).size();
         int realTimeMonitorSize = db.findAll(RealTimeMonitor.class).size();
         int errorHelpSize = db.findAll(ErrorHelp.class).size();
-        Log.v("ParameterFactoryDao", parameterSettingsSize + ":" + parameterGroupSettingsSize + ":" + realTimeMonitorSize + ":" + errorHelpSize);
         return parameterSettingsSize == 0 || parameterGroupSettingsSize == 0
                 || realTimeMonitorSize == 0 || errorHelpSize == 0;
     }
@@ -128,33 +127,33 @@ public class ParameterFactoryDao {
             for (int i = 0; i < size; i++) {
                 JSONObject groupsJSONObject = groups.getJSONObject(i);
                 ParameterGroupSettings settingsGroup = new ParameterGroupSettings();
-                settingsGroup.setGroupText(groupsJSONObject.optString("groupText"));
-                settingsGroup.setGroupId(groupsJSONObject.optString("groupId"));
+                settingsGroup.setGroupText(groupsJSONObject.optString("groupText".toUpperCase()));
+                settingsGroup.setGroupId(groupsJSONObject.optString("groupId".toUpperCase()));
                 settingsGroup.setValid(true);
                 settingsGroup.setLasttime(new Date());
                 settingsGroup.setDeviceID(deviceID);
                 // 保存groupEntity并且id设置为插入后的值
                 db.saveBindId(settingsGroup);
-                String groupID = groupsJSONObject.optString("groupId");
-                JSONArray settingJson = groupsJSONObject.getJSONArray("parameterSettings");
+                String groupID = groupsJSONObject.optString("groupId".toUpperCase());
+                JSONArray settingJson = groupsJSONObject.getJSONArray("parameterSettings".toUpperCase());
                 // 遍历settings
                 int length = settingJson.length();
                 for (int j = 0; j < length; j++) {
                     JSONObject jsonObject = settingJson.getJSONObject(j);
                     ParameterSettings settings = new ParameterSettings();
-                    settings.setCode(jsonObject.optString("code").replace("-", ""));
-                    settings.setName(jsonObject.optString("name"));
-                    settings.setProductId(jsonObject.optString("productId"));
-                    settings.setDescription(jsonObject.optString("description"));
+                    settings.setCode(jsonObject.optString("code".toUpperCase()).replace("-", ""));
+                    settings.setName(jsonObject.optString("name".toUpperCase()));
+                    settings.setProductId(jsonObject.optString("productId".toUpperCase()));
+                    settings.setDescription(jsonObject.optString("description".toUpperCase()));
                     settings.setDescriptionType(ParameterSettings.ParseDescriptionToType(settings.getDescription()));
                     settings.setJSONDescription(ParameterSettings.GenerateJSONDescription(settings.getDescription()));
-                    settings.setChildId(jsonObject.optString("childId"));
-                    settings.setScope(jsonObject.optString("scope").replaceAll("-", "").replace("～", "~"));
-                    settings.setDefaultValue(jsonObject.optString("defaultValue"));
-                    settings.setScale(jsonObject.optString("scale"));
-                    settings.setUnit(jsonObject.optString("unit"));
-                    settings.setType(jsonObject.optString("type"));
-                    settings.setMode(jsonObject.optString("mode"));
+                    settings.setChildId(jsonObject.optString("childId".toUpperCase()));
+                    settings.setScope(jsonObject.optString("scope".toUpperCase()).replaceAll("-", "").replace("～", "~"));
+                    settings.setDefaultValue(jsonObject.optString("defaultValue".toUpperCase()));
+                    settings.setScale(jsonObject.optString("scale".toUpperCase()));
+                    settings.setUnit(jsonObject.optString("unit".toUpperCase()));
+                    settings.setType(jsonObject.optString("type".toUpperCase()));
+                    settings.setMode(jsonObject.optString("mode".toUpperCase()));
                     settings.setDeviceID(deviceID);
                     settings.setParametergroupsettings(settingsGroup);
                     // 保存setting
@@ -173,16 +172,16 @@ public class ParameterFactoryDao {
             for (int i = 0; i < monitors.length(); i++) {
                 JSONObject jsonObject = monitors.getJSONObject(i);
                 RealTimeMonitor state = new RealTimeMonitor();
-                state.setName(jsonObject.optString("name"));
-                state.setCode(jsonObject.optString("code").replace("-", ""));
-                state.setChildId(jsonObject.optString("childId"));
-                state.setUnit(jsonObject.optString("unit"));
-                state.setDescription(jsonObject.optString("description"));
-                state.setProductId(jsonObject.optString("productId"));
-                state.setScale(jsonObject.optString("scale"));
-                state.setScope(jsonObject.optString("scope"));
-                state.setStateID(jsonObject.optInt("stateID"));
-                state.setSort(jsonObject.optInt("sort"));
+                state.setName(jsonObject.optString("name".toUpperCase()));
+                state.setCode(jsonObject.optString("code".toUpperCase()).replace("-", ""));
+                state.setChildId(jsonObject.optString("childId".toUpperCase()));
+                state.setUnit(jsonObject.optString("unit".toUpperCase()));
+                state.setDescription(jsonObject.optString("description".toUpperCase()));
+                state.setProductId(jsonObject.optString("productId".toUpperCase()));
+                state.setScale(jsonObject.optString("scale".toUpperCase()));
+                state.setScope(jsonObject.optString("scope".toUpperCase()));
+                state.setStateID(jsonObject.optInt("stateID".toUpperCase()));
+                state.setSort(jsonObject.optInt("sort".toUpperCase()));
                 state.setDescriptionType(RealTimeMonitor.ParseDescriptionToType(state.getStateID(), state.getDescription()));
                 state.setJSONDescription(RealTimeMonitor.GenerateJSONDescription(state.getStateID(), state.getDescription()));
                 state.setValid(true);
@@ -202,14 +201,14 @@ public class ParameterFactoryDao {
             for (int i = 0; i < errHelpList.length(); i++) {
                 JSONObject jsonObject = errHelpList.getJSONObject(i);
                 ErrorHelp errorHelp = new ErrorHelp();
-                errorHelp.setDisplay(jsonObject.optString("display"));
-                errorHelp.setName(jsonObject.optString("name"));
-                errorHelp.setChildIda(jsonObject.optString("childIda"));
-                errorHelp.setChildIdb(jsonObject.optString("childIdb"));
-                errorHelp.setLevel(jsonObject.optString("level"));
-                errorHelp.setProductId(String.valueOf(jsonObject.optInt("productId")));
-                errorHelp.setReason(jsonObject.optString("reason"));
-                errorHelp.setSolution(jsonObject.optString("solution"));
+                errorHelp.setDisplay(jsonObject.optString("display".toUpperCase()));
+                errorHelp.setName(jsonObject.optString("name".toUpperCase()));
+                errorHelp.setChildIda(jsonObject.optString("childIda".toUpperCase()));
+                errorHelp.setChildIdb(jsonObject.optString("childIdb".toUpperCase()));
+                errorHelp.setLevel(jsonObject.optString("level".toUpperCase()));
+                errorHelp.setProductId(String.valueOf(jsonObject.optInt("productId".toUpperCase())));
+                errorHelp.setReason(jsonObject.optString("reason".toUpperCase()));
+                errorHelp.setSolution(jsonObject.optString("solution".toUpperCase()));
                 errorHelp.setValid(true);
                 errorHelp.setLastTime(new Date());
                 errorHelp.setDeviceID(deviceID);

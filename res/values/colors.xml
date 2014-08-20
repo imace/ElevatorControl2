@@ -17,4 +17,8 @@
     <color name="preference_highlighted_color">#ffebebeb</color>
 
     <color name="image_button_highlighted_color">#60dedede</color>
+
+    <color name="viewfinder_mask">#60000000</color>
+    <color name="viewfinder_laser">#ffcc0000</color>
+    <color name="viewfinder_border">#ffafed44</color>
 </resources>

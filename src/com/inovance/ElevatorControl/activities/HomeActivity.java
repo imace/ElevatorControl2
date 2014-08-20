@@ -23,6 +23,7 @@ import com.inovance.ElevatorControl.daos.ShortcutDao;
 import com.inovance.ElevatorControl.models.RealTimeMonitor;
 import com.inovance.ElevatorControl.models.Shortcut;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
+import com.inovance.ElevatorControl.views.BlinkTextView;
 import com.inovance.ElevatorControl.views.DoorAnimationView;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -73,7 +74,7 @@ public class HomeActivity extends Activity implements Runnable {
      * 故障
      */
     @InjectView(R.id.error_status)
-    TextView errorStatusTextView;
+    BlinkTextView errorStatusTextView;
 
     /**
      * 获取当前要显示的状态信息的通信内容
@@ -125,32 +126,12 @@ public class HomeActivity extends Activity implements Runnable {
      */
     private List<Shortcut> shortcutList;
 
-    /**
-     * 闪烁故障码 Task
-     */
-    private Runnable textBlinkTask;
-
-    /**
-     * 用于闪烁 TextView 的 Handler
-     */
-    private Handler blinkHandler = new Handler();
-
-    /**
-     * 当前是否有故障发生
-     */
-    private boolean isErrorStatus = false;
-
     private ExecutorService pool = Executors.newSingleThreadExecutor();
 
     /**
      * 同步间隔
      */
     private static final int SYNC_TIME = 1500;
-
-    /**
-     * 闪烁间隔时间
-     */
-    private static final int BLINK_TIME = 600;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -171,24 +152,6 @@ public class HomeActivity extends Activity implements Runnable {
                 }
             }
         };
-        textBlinkTask = new Runnable() {
-            @Override
-            public void run() {
-                if (isRunning) {
-                    if (isErrorStatus) {
-                        float alpha = HomeActivity.this.errorStatusTextView.getAlpha();
-                        if (alpha == 0.0f) {
-                            HomeActivity.this.errorStatusTextView.setAlpha(1.0f);
-                        } else {
-                            HomeActivity.this.errorStatusTextView.setAlpha(0.0f);
-                        }
-                    } else {
-                        HomeActivity.this.errorStatusTextView.setAlpha(1.0f);
-                    }
-                    blinkHandler.postDelayed(textBlinkTask, BLINK_TIME);
-                }
-            }
-        };
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -205,6 +168,10 @@ public class HomeActivity extends Activity implements Runnable {
                 }
             }
         });
+        errorStatusTextView.setFadingDuration(0);
+        errorStatusTextView.setDelayAfterFadein(300);
+        errorStatusTextView.setDelayAfterFadeout(300);
+        errorStatusTextView.setEnabled(false);
     }
 
     @Override
@@ -227,7 +194,6 @@ public class HomeActivity extends Activity implements Runnable {
         isRunning = true;
         isReading = false;
         handler.postDelayed(syncTask, SYNC_TIME);
-        blinkHandler.postDelayed(textBlinkTask, BLINK_TIME);
     }
 
     /**
@@ -235,7 +201,9 @@ public class HomeActivity extends Activity implements Runnable {
      */
     private void syncElevatorStatus() {
         if (communications == null) {
-            final List<RealTimeMonitor> monitorLists = RealTimeMonitorDao.findAllByStateIDs(this, ApplicationConfig.HomeStateCode);
+            Log.v("TESTFORDEBUG", "STEP02");
+            final List<RealTimeMonitor> monitorLists = RealTimeMonitorDao.findAllByStateIDs(this,
+                    ApplicationConfig.HomeStateCode);
             int size = monitorLists.size();
             communications = new BluetoothTalk[size];
             for (int index = 0; index < size; index++) {
@@ -308,7 +276,7 @@ public class HomeActivity extends Activity implements Runnable {
         HomeActivity.this.syncElevatorStatus();
     }
 
-    // ==================================== HomeActivity Bluetooth Handler ===================================
+    // ====================================== HomeActivity Bluetooth Handler ===================================== //
 
     /**
      * 首页电梯实时状态
@@ -337,7 +305,6 @@ public class HomeActivity extends Activity implements Runnable {
         public void onMultiTalkEnd(Message msg) {
             super.onMultiTalkEnd(msg);
             if (sendCount == receiveCount) {
-                Log.v(TAG, "Received");
                 for (RealTimeMonitor monitor : receivedMonitorList) {
                     // 电梯运行速度
                     if (monitor.getStateID() == ApplicationConfig.HomeStateCode[0]) {
@@ -409,16 +376,16 @@ public class HomeActivity extends Activity implements Runnable {
                         String errorCode = ParseSerialsUtils.getErrorCode(monitor.getReceived());
                         NavigationTabActivity tabActivity = (NavigationTabActivity) HomeActivity.this.getParent();
                         if (errorCode.equalsIgnoreCase("E00")) {
-                            isErrorStatus = false;
                             HomeActivity.this.errorStatusTextView.setTextColor(0xff989898);
                             HomeActivity.this.errorStatusTextView.setText(R.string.home_no_error_text);
+                            errorStatusTextView.setEnabled(false);
                             if (tabActivity != null && tabActivity.troubleAnalyzeIcon != null) {
                                 tabActivity.troubleAnalyzeIcon.setImageResource(R.drawable.tab_trouble_analyze);
                             }
                         } else {
-                            isErrorStatus = true;
                             HomeActivity.this.errorStatusTextView.setTextColor(0xffff594b);
                             HomeActivity.this.errorStatusTextView.setText(errorCode);
+                            errorStatusTextView.setEnabled(true);
                             if (tabActivity != null && tabActivity.troubleAnalyzeIcon != null) {
                                 tabActivity.troubleAnalyzeIcon.setImageResource(R.drawable.tab_trouble_analyze_error);
                             }
@@ -430,7 +397,7 @@ public class HomeActivity extends Activity implements Runnable {
                     }
                     // 状态字功能(电梯开关门)
                     if (monitor.getStateID() == ApplicationConfig.HomeStateCode[4]) {
-                        int controllerStatus = ParseSerialsUtils.getIntFromBytes(monitor.getReceived());
+                        int controllerStatus = ParseSerialsUtils.getElevatorStatus(monitor);
                         doorAnimationView.setCurrentDirection(controllerStatus);
                     }
                 }

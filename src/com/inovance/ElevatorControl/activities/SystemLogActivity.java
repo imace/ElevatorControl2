@@ -11,6 +11,8 @@ import com.inovance.ElevatorControl.models.SystemLog;
 import com.inovance.ElevatorControl.utils.LogUtils;
 import com.mobsandgeeks.adapters.InstantAdapter;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -38,6 +40,7 @@ public class SystemLogActivity extends Activity {
     protected void onResume() {
         super.onResume();
         List<SystemLog> systemLogList = LogUtils.getInstance().readLogs();
+        Collections.sort(systemLogList, new SortComparator());
         InstantAdapter adapter = new InstantAdapter<SystemLog>(this,
                 R.layout.system_log_item,
                 SystemLog.class,
@@ -61,6 +64,21 @@ public class SystemLogActivity extends Activity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private class SortComparator implements Comparator<SystemLog> {
+
+        @Override
+        public int compare(SystemLog object1, SystemLog object2) {
+            if (object1.getTimestamp() < object2.getTimestamp()) {
+                return 1;
+            } else if (object1.getTimestamp() > object2.getTimestamp()) {
+                return -1;
+            } else {
+                return 0;
+            }
+        }
+
     }
 
 }

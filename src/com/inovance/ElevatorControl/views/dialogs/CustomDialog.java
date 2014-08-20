@@ -4,11 +4,9 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.util.Log;
 import android.view.View;
 import android.widget.*;
 import com.bluetoothtool.BluetoothTool;
-import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.activities.CheckAuthorizationActivity;
 import com.inovance.ElevatorControl.adapters.CheckedListViewAdapter;
@@ -24,7 +22,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -241,7 +238,7 @@ public class CustomDialog {
                 .setNeutralButton(R.string.dialog_btn_cancel, null);
     }
 
-    // ===================================== Exit dialog ========================================== //
+    // =========================================== Exit dialog =============================================== //
     public static AlertDialog.Builder exitDialog(final Activity activity) {
         return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
                 .setMessage(activity.getResources().getString(R.string.are_you_sure_exit))
@@ -268,7 +265,8 @@ public class CustomDialog {
                 });
     }
 
-    // ========================================== History Error Dialog ================================== //
+    // ============================================ History Error Dialog ===================================== //
+
     public static AlertDialog.Builder historyErrorDialog(final HistoryError historyError, final Activity activity) {
         final View dialogView = activity.getLayoutInflater().inflate(R.layout.error_detail_dialog, null);
         assert dialogView != null;
@@ -288,5 +286,41 @@ public class CustomDialog {
         return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
                 .setView(dialogView)
                 .setNeutralButton(R.string.dialog_btn_ok, null);
+    }
+
+    // ======================================== Handler bluetooth exception dialog ================================ //
+
+    public static interface OnRetryListener {
+        void onClick();
+    }
+
+    public static void showBluetoothExceptionDialog(final Activity activity, final OnRetryListener listener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity)
+                .setTitle(R.string.bluetooth_connect_exception_title)
+                .setMessage(R.string.bluetooth_connect_exception_message)
+                .setNegativeButton(R.string.exit_whole_application, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        WebApi.getInstance().removeListener();
+                        BluetoothTool.getInstance().setHandler(null);
+                        BluetoothTool.getInstance().kill();
+                        Intent intent = new Intent(activity, CheckAuthorizationActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        intent.putExtra("Exit", true);
+                        activity.startActivity(intent);
+                        activity.finish();
+                    }
+                }).setPositiveButton(R.string.retry_connect_device, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if (listener != null) {
+                            listener.onClick();
+                        }
+                    }
+                });
+        AlertDialog dialog = builder.create();
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
     }
 }

@@ -8,6 +8,7 @@ import android.os.Environment;
 import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,19 +17,20 @@ import android.widget.*;
 import butterknife.InjectView;
 import butterknife.OnClick;
 import butterknife.Views;
-import com.bluetoothtool.BluetoothHandler;
-import com.bluetoothtool.BluetoothTalk;
-import com.bluetoothtool.BluetoothTool;
-import com.bluetoothtool.SerialUtility;
+import com.bluetoothtool.*;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.config.ConfigFactory;
 import com.inovance.ElevatorControl.daos.ParameterGroupSettingsDao;
 import com.inovance.ElevatorControl.daos.ProfileDao;
-import com.inovance.ElevatorControl.models.*;
+import com.inovance.ElevatorControl.models.ObjectListHolder;
+import com.inovance.ElevatorControl.models.ParameterGroupSettings;
+import com.inovance.ElevatorControl.models.ParameterSettings;
+import com.inovance.ElevatorControl.models.Profile;
 import com.inovance.ElevatorControl.utils.GenerateJSON;
 import com.inovance.ElevatorControl.utils.LogUtils;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
+import com.inovance.ElevatorControl.views.dialogs.CustomDialog;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -70,11 +72,6 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
      * 读取参数进度
      */
     private ProgressBar downloadProgressBar;
-
-    /**
-     * 总的需要读取的参数数量
-     */
-    private TextView totalTextView;
 
     /**
      * 当前读取的参数位置
@@ -154,8 +151,7 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
             View dialogView = inflater.inflate(R.layout.parameters_duplicate_dialog, null);
             progressView = dialogView.findViewById(R.id.progress_view);
             downloadProgressBar = (ProgressBar) dialogView.findViewById(R.id.progress_bar);
-            totalTextView = (TextView) dialogView.findViewById(R.id.total_items);
-            currentTextView = (TextView) dialogView.findViewById(R.id.current_item);
+            currentTextView = (TextView) dialogView.findViewById(R.id.current_progress);
             fileNameEditText = (EditText) dialogView.findViewById(R.id.file_name);
             // 检测输入框内容是否为空
             fileNameEditText.addTextChangedListener(new TextWatcher() {
@@ -232,8 +228,7 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
             }
             downloadProgressBar.setMax(maxProgress);
             downloadProgressBar.setProgress(0);
-            totalTextView.setText("100");
-            currentTextView.setText("0/100");
+            currentTextView.setText("0%");
             progressView.setVisibility(View.VISIBLE);
             confirmButton.setEnabled(false);
             currentPosition = 0;
@@ -264,9 +259,8 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
                 @Override
                 public void beforeSend() {
                     this.setSendBuffer(SerialUtility.crc16("0103"
-                                    + ParseSerialsUtils.getCalculatedCode(firstItem)
-                                    + String.format("%04x", length)
-                                    + "0001"));
+                            + ParseSerialsUtils.getCalculatedCode(firstItem)
+                            + String.format("%04x", length)));
                 }
 
                 @Override
@@ -361,13 +355,13 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
                 ParameterDownloadActivity.this.downloadProgressBar.incrementProgressBy(receiveCount);
                 int currentProgress = ParameterDownloadActivity.this.downloadProgressBar.getProgress();
                 int maxProgress = ParameterDownloadActivity.this.downloadProgressBar.getMax();
-                int calculateProgress = 0;
+                int calculateProgress;
                 if (currentProgress == maxProgress) {
                     calculateProgress = 100;
                 } else {
                     calculateProgress = (100 * currentProgress) / maxProgress;
                 }
-                ParameterDownloadActivity.this.currentTextView.setText(calculateProgress + "/100");
+                ParameterDownloadActivity.this.currentTextView.setText(calculateProgress + "%");
                 ParameterDownloadActivity.this.parameterGroupLists
                         .get(index)
                         .getParametersettings()
@@ -437,6 +431,19 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
                 }
                 receiveCount++;
             }
+        }
+
+        @Override
+        public void onBluetoothConnectException(Message message) {
+            super.onBluetoothConnectException(message);
+            CustomDialog.showBluetoothExceptionDialog(ParameterDownloadActivity.this, new CustomDialog.OnRetryListener() {
+                @Override
+                public void onClick() {
+                    BluetoothTool.getInstance().currentState = BluetoothState.CONNECTED;
+                    downloadParameterHandler.receiveCount = 0;
+                    ParameterDownloadActivity.this.saveProfileToLocal();
+                }
+            });
         }
     }
 

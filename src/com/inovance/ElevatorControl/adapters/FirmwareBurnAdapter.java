@@ -6,14 +6,13 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import com.bluetoothtool.BluetoothTool;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.activities.FirmwareManageActivity;
 import com.inovance.ElevatorControl.models.Firmware;
 
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -27,21 +26,27 @@ public class FirmwareBurnAdapter extends BaseAdapter {
 
     private FirmwareManageActivity baseActivity;
 
-    private List<Firmware> firmwareLists;
+    private List<Firmware> firmwareList = new ArrayList<Firmware>();
 
     public FirmwareBurnAdapter(FirmwareManageActivity activity, List<Firmware> lists) {
         baseActivity = activity;
-        firmwareLists = lists;
+        firmwareList = lists;
+    }
+
+    public void setFirmwareList(List<Firmware> list) {
+        firmwareList.clear();
+        firmwareList = list;
+        notifyDataSetChanged();
     }
 
     @Override
     public int getCount() {
-        return firmwareLists.size();
+        return firmwareList.size();
     }
 
     @Override
     public Firmware getItem(int i) {
-        return firmwareLists.get(i);
+        return firmwareList.get(i);
     }
 
     @Override
@@ -70,16 +75,18 @@ public class FirmwareBurnAdapter extends BaseAdapter {
         holder.firmwareName.setText(firmware.getFileURL());
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         holder.createDate.setText(firmware.getDownloadDate());
-        String timeString = dateFormat.format(new Date(Long.parseLong(firmware.getExpireDate()) * 1000));
-        holder.expireDate.setText(timeString);
+        if (firmware.getExpireDate() == null || firmware.getExpireDate().length() == 0) {
+            holder.expireDate.setText("无");
+        } else {
+            String timeString = dateFormat.format(new Date(Long.parseLong(firmware.getExpireDate()) * 1000));
+            holder.expireDate.setText(timeString);
+        }
         int residueBurnTime = firmware.getTotalBurnTimes() - firmware.getBurnTimes();
         holder.residueTime.setText(String.valueOf(residueBurnTime));
         holder.moreOption.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (BluetoothTool.getInstance().isPrepared()) {
-                    baseActivity.onClickFirmwareBurnItemMoreOption(view, index, firmware);
-                }
+                baseActivity.onClickFirmwareBurnItemMoreOption(view, index, firmware);
             }
         });
         return convertView;

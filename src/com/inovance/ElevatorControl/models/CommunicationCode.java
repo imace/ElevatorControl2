@@ -21,8 +21,8 @@ public class CommunicationCode {
     private long expirationTime;
 
     public CommunicationCode(JSONObject object) {
-        this.code = object.optString("Code");
-        this.expirationTime = object.optLong("Ldate");
+        this.code = object.optString("Code".toUpperCase());
+        this.expirationTime = object.optLong("Ldate".toUpperCase());
     }
 
     public String getCode() {

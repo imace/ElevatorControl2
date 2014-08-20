@@ -9,6 +9,7 @@ import android.widget.TextView;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.models.ParameterStatusItem;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,7 +22,7 @@ public class ParameterStatusAdapter extends BaseAdapter {
 
     private Activity activity;
 
-    private List<ParameterStatusItem> statusItemList;
+    private List<ParameterStatusItem> statusItemList = new ArrayList<ParameterStatusItem>();
 
     private String[] statusTextArray;
 
@@ -32,7 +33,8 @@ public class ParameterStatusAdapter extends BaseAdapter {
     }
 
     public void setStatusList(List<ParameterStatusItem> list) {
-        statusItemList = list;
+        statusItemList.clear();
+        statusItemList.addAll(list);
         notifyDataSetChanged();
     }
 

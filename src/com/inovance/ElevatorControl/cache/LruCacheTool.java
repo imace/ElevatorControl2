@@ -85,16 +85,19 @@ public class LruCacheTool {
      * @return Cache text or null.
      */
     public String getCache(String cacheKey) {
-        try {
-            SimpleDiskCache.StringEntry stringEntry = diskCache.getString(cacheKey);
-            if (stringEntry != null) {
-                return stringEntry.getString();
-            } else {
-                return null;
+        if (cacheKey != null && cacheKey.length() > 0) {
+            try {
+                SimpleDiskCache.StringEntry stringEntry = diskCache.getString(cacheKey);
+                if (stringEntry != null) {
+                    return stringEntry.getString();
+                } else {
+                    return null;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            return null;
         }
+        return null;
     }
 
 }

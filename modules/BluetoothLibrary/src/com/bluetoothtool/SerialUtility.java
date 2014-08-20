@@ -257,13 +257,13 @@ public class SerialUtility {
         System.arraycopy(data, 0, trimBytes, 0, length - 2);
         int receivedCRCValue;
         int crcValue = BluetoothTool.getInstance().crcValue;
+        int value = ((((data[length - 1] & 0xFF) << 8) | (data[length - 2] & 0xFF)));
         if (crcValue == BluetoothTool.CRCValueNone) {
             receivedCRCValue = getNormalDeviceCRCCheck(trimBytes);
-            int value = ((((data[length - 1] & 0xFF) << 8) | (data[length - 2] & 0xFF)));
             return receivedCRCValue == value;
         } else {
             receivedCRCValue = getSpecialDeviceCRCCheck(crcValue, trimBytes);
-            return receivedCRCValue == crcValue;
+            return receivedCRCValue == value;
         }
     }
 

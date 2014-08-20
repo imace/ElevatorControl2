@@ -49,6 +49,11 @@ public class BluetoothState {
     public static final int PAIRING = 8;
 
     /**
+     * 连接异常
+     */
+    public static final int Exception = 9;
+
+    /**
      * 开始搜索
      */
     public static final int onBeginDiscovering = 0;
@@ -137,5 +142,10 @@ public class BluetoothState {
      * 设备切换
      */
     public static final int onDeviceChanged = 17;
+
+    /**
+     * 蓝牙设备连接异常
+     */
+    public static final int onBluetoothConnectException = 18;
 
 }

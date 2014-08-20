@@ -121,14 +121,15 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
                 <!-- 故障代码红色 -->
-                <TextView
+                <com.inovance.ElevatorControl.views.BlinkTextView
                         android:id="@+id/error_status"
                         android:gravity="center"
                         android:layout_gravity="center"
-                        style="@android:style/TextAppearance.Medium"
-                        android:textColor="#ffff594b"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
+                        android:layout_height="wrap_content"
+                        android:background="@android:color/transparent"
+                        style="@android:style/TextAppearance.Medium"
+                        android:textColor="#ffff594b"/>
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

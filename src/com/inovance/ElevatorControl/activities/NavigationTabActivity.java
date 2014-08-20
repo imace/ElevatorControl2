@@ -287,6 +287,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
             }
         });
         GlobalHandler.getInstance(NavigationTabActivity.this);
+        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
     }
 
     @Override
@@ -325,6 +326,36 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
     }
 
     /**
+     * 显示选择操作类型对话框
+     * 调试电梯
+     * 烧录 DSP
+     */
+    public void showSelectOperationDialog() {
+        String[] operationArray = getResources().getStringArray(R.array.device_operation_array);
+        AlertDialog.Builder builder = new AlertDialog.Builder(NavigationTabActivity.this);
+        builder.setTitle(R.string.choice_operation_title);
+        builder.setItems(operationArray, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        // 识别设备
+                        startGetNormalDeviceTypeTask();
+                        break;
+                    case 1:
+                        // 跳转到程序烧录界面
+                        switchTab(3, 2);
+                        break;
+                }
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);
+    }
+
+    /**
      * 取得当前连接的标准设备型号
      */
     public void startGetNormalDeviceTypeTask() {
@@ -356,6 +387,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
     protected void onPause() {
         super.onPause();
         WebApi.getInstance().removeListener();
+        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
     }
 
     /**
@@ -682,26 +714,26 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
             }
         }
         AlertDialog.Builder builder = new AlertDialog.Builder(NavigationTabActivity.this);
-        AlertDialog dialog = builder.setTitle(R.string.choice_device_type_title)
-                .setItems(names.toArray(new String[names.size()]),
-                        new DialogInterface.OnClickListener() {
+        builder.setTitle(R.string.choice_device_type_title);
+        builder.setItems(names.toArray(new String[names.size()]), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int position) {
+                NormalDevice device = tempNormalDevice.get(position);
+                BluetoothTool.getInstance().setHasSelectDeviceType(true);
+                // 选择标准设备
+                ConfigFactory.getInstance().selectDevice(NavigationTabActivity.this,
+                        device.getID(),
+                        device.getName(),
+                        Device.NormalDevice,
+                        new ConfigFactory.OnDeployFinishListener() {
                             @Override
-                            public void onClick(DialogInterface dialogInterface, int position) {
-                                NormalDevice device = tempNormalDevice.get(position);
-                                BluetoothTool.getInstance().setHasSelectDeviceType(true);
-                                // 选择标准设备
-                                ConfigFactory.getInstance().selectDevice(NavigationTabActivity.this,
-                                        device.getID(),
-                                        device.getName(),
-                                        Device.NormalDevice,
-                                        new ConfigFactory.OnDeployFinishListener() {
-                                            @Override
-                                            public void onComplete() {
-                                                NavigationTabActivity.this.startHomeActivityStatusSyncTask();
-                                            }
-                                        });
+                            public void onComplete() {
+                                NavigationTabActivity.this.startHomeActivityStatusSyncTask();
                             }
-                        }).create();
+                        });
+            }
+        });
+        AlertDialog dialog = builder.create();
         dialog.show();
         dialog.setCancelable(false);
         dialog.setCanceledOnTouchOutside(false);
@@ -874,6 +906,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
      */
     public void startHomeActivityStatusSyncTask() {
         if (hasGetDeviceType) {
+            Log.v("TESTFORDEBUG", "STEP01");
             switch (getTabHost().getCurrentTab()) {
                 case 0: {
                     if (getCurrentActivity() instanceof TroubleAnalyzeActivity) {

@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -93,7 +94,7 @@ public class ParameterViewerActivity extends Activity {
                     for (int m = 0; m < size; m++) {
                         JSONObject groupObject = groups.getJSONObject(m);
                         ParameterGroupSettings groupItem = new ParameterGroupSettings(groupObject);
-                        JSONArray settingArray = groupObject.getJSONArray("parameterSettings");
+                        JSONArray settingArray = groupObject.getJSONArray("parameterSettings".toUpperCase());
                         int length = settingArray.length();
                         List<ParameterSettings> settingsList = new ArrayList<ParameterSettings>();
                         for (int n = 0; n < length; n++) {

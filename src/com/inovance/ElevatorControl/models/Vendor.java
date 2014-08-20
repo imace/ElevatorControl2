@@ -62,9 +62,9 @@ public class Vendor {
     }
 
     public Vendor(JSONObject object) {
-        this.ID = object.optInt("ID");
-        this.name = object.optString("VendorName");
-        this.serialNumber = object.optString("VendorNum");
+        this.ID = object.optInt("ID".toUpperCase());
+        this.name = object.optString("VendorName".toUpperCase());
+        this.serialNumber = object.optString("VendorNum".toUpperCase());
     }
 
     public int getID() {

@@ -4,18 +4,14 @@
     <item
             android:state_activated="true"
             android:drawable="@drawable/card_view_highlighted"/>
-
     <item
             android:state_selected="true"
             android:drawable="@drawable/card_view_highlighted"/>
-
     <item
             android:state_focused="true"
             android:drawable="@drawable/card_view_highlighted"/>
-
     <item
             android:state_pressed="true"
             android:drawable="@drawable/card_view_highlighted"/>
-
     <item android:drawable="@drawable/card_view_background"/>
 </selector>

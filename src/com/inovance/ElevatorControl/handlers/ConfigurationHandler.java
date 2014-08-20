@@ -2,6 +2,7 @@ package com.inovance.ElevatorControl.handlers;
 
 import android.app.Activity;
 import android.os.Message;
+import android.util.Log;
 import com.bluetoothtool.BluetoothHandler;
 import com.inovance.ElevatorControl.activities.ConfigurationActivity;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
@@ -65,12 +66,12 @@ public class ConfigurationHandler extends BluetoothHandler {
             // 取得输入、输出端子位置索引
             RealTimeMonitor monitor;
             if (tempInputMonitor.size() > 0) {
-                monitor = tempInputMonitor.get(0);
+                monitor = tempInputMonitor.get(tempInputMonitor.size() - 1);
                 monitor.setCombineBytes(ConfigurationHandler.getCombineBytes(tempInputMonitor));
                 showMonitorList.add(monitor);
             }
             if (tempOutputMonitor.size() > 0) {
-                monitor = tempOutputMonitor.get(0);
+                monitor = tempOutputMonitor.get(tempOutputMonitor.size() - 1);
                 monitor.setCombineBytes(ConfigurationHandler.getCombineBytes(tempOutputMonitor));
                 showMonitorList.add(monitor);
             }
@@ -99,9 +100,9 @@ public class ConfigurationHandler extends BluetoothHandler {
         @Override
         public int compare(RealTimeMonitor object1, RealTimeMonitor object2) {
             if (object1.getSort() < object2.getSort()) {
-                return -1;
-            } else if (object1.getSort() > object2.getSort()) {
                 return 1;
+            } else if (object1.getSort() > object2.getSort()) {
+                return -1;
             } else {
                 return 0;
             }
@@ -109,7 +110,7 @@ public class ConfigurationHandler extends BluetoothHandler {
 
     }
 
-    private static byte[] getCombineBytes(List<RealTimeMonitor> monitorList) {
+    public static byte[] getCombineBytes(List<RealTimeMonitor> monitorList) {
         List<Byte> byteList = new ArrayList<Byte>();
         for (RealTimeMonitor monitor : monitorList) {
             byteList.add(monitor.getReceived()[4]);

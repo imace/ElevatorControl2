@@ -47,8 +47,8 @@ public class ParameterGroupSettings {
     }
 
     public ParameterGroupSettings(JSONObject object) {
-        this.groupId = object.optString("groupId");
-        this.groupText = object.optString("groupText");
+        this.groupId = object.optString("groupId".toUpperCase());
+        this.groupText = object.optString("groupText".toUpperCase());
     }
 
     public int getId() {

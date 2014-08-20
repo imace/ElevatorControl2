@@ -95,11 +95,15 @@ public class BluetoothTool implements Runnable {
     public int currentState;
 
     /**
+     * 读取超时时间
+     */
+    private static final int ReadTimeout = 15;
+
+    /**
      * 设置当前的实例 Activity Context
      *
      * @param activity context
      */
-
     public void init(Context Context) {
         instance.context = Context;
         instance.hasSelectDeviceType = false;
@@ -216,6 +220,41 @@ public class BluetoothTool implements Runnable {
                     handler.sendMessage(mg);
                 }
                 communication.afterSend();
+                // 暂停一段时间等待缓冲区接受消息
+                Thread.sleep(100);
+                int timeout = 0;
+                int available = 0;
+                while ((available = bluetoothSocket.getInputStream().available()) == 0
+                        && timeout < ReadTimeout) {
+                    if (abortTalking) {
+                        break;
+                    }
+                    timeout++;
+                    if (timeout == ReadTimeout) {
+                        // 蓝牙连接异常
+                        if (currentState != BluetoothState.Exception) {
+                            currentState = BluetoothState.Exception;
+                            if (handler != null) {
+                                handler.sendEmptyMessage(BluetoothState.onBluetoothConnectException);
+                            }
+                        }
+                        break;
+                    }
+                    Thread.sleep(200);
+                }
+                if (!abortTalking) {
+                    byte[] readBuffer = new byte[available];
+                    bluetoothSocket.getInputStream().read(readBuffer);
+                    communication.setReceivedBuffer(readBuffer);
+                    communication.afterReceive();
+                    Message mg = new Message();
+                    mg.what = BluetoothState.onTalkReceive;
+                    mg.obj = communication.onParse();
+                    if (handler != null) {
+                        handler.sendMessage(mg);
+                    }
+                }
+                /*
                 while (true) {
                     if (abortTalking) {
                         break;
@@ -238,6 +277,7 @@ public class BluetoothTool implements Runnable {
                         break;
                     }
                 }
+                */
             } catch (Exception e) {
                 msgError.obj = e.getMessage();
                 if (null != handler) {

@@ -44,14 +44,13 @@
             android:orientation="vertical"
             android:id="@+id/history_error_view"
             android:tag="history_error_view"
-            android:padding="@dimen/card_view_margin"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
         <!-- header -->
         <LinearLayout
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:layout_marginBottom="8dp"
+                android:visibility="gone"
                 android:background="@drawable/card_view_background"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/card_cell_height">
@@ -80,6 +79,8 @@
                 android:id="@+id/history_error_list"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
+                android:padding="@dimen/card_view_margin"
+                android:clipToPadding="false"
                 android:listSelector="@android:color/transparent"
                 android:dividerHeight="8dp"
                 android:scrollbarStyle="outsideOverlay"

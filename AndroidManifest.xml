@@ -180,5 +180,10 @@
         <activity android:icon="@drawable/ic_elevator_actionbar_white"
                   android:screenOrientation="portrait"
                   android:name=".activities.InternalRegisterActivity"/>
+        <!-- Zxing barcode scanner -->
+        <activity android:configChanges="orientation|keyboardHidden"
+                  android:windowSoftInputMode="stateAlwaysHidden"
+                  android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+                  android:name=".activities.ZxingScannerActivity"/>
     </application>
 </manifest>

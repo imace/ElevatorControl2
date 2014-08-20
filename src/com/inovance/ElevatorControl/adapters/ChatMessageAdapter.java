@@ -13,7 +13,10 @@ import com.inovance.ElevatorControl.views.SquareLayout;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Created by keith on 14-4-7.
@@ -53,13 +56,20 @@ public class ChatMessageAdapter extends BaseAdapter {
 
     private LayoutInflater mInflater;
 
-    public ChatMessageAdapter(Context context) {
+    public ChatMessageAdapter(Context context, List<ChatMessage> messageList) {
+        this.chatMessageList = messageList;
         mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     public void updateChatMessageList(List<ChatMessage> chatList) {
-        Collections.sort(chatList, new SortComparator());
-        this.chatMessageList = chatList;
+        // Collections.sort(chatList, new SortComparator());
+        this.chatMessageList.clear();
+        this.chatMessageList.addAll(chatList);
+        notifyDataSetChanged();
+    }
+
+    public void addChatMessageList(List<ChatMessage> chatList) {
+        this.chatMessageList.addAll(chatList);
         notifyDataSetChanged();
     }
 

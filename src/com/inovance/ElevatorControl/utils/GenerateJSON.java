@@ -35,26 +35,26 @@ public class GenerateJSON {
             jsonStringer.array();
             for (ParameterGroupSettings groupSetting : groupList) {
                 jsonStringer.object();
-                jsonStringer.key("groupText").value(groupSetting.getGroupText());
-                jsonStringer.key("groupId").value(groupSetting.getGroupId());
+                jsonStringer.key("groupText".toUpperCase()).value(groupSetting.getGroupText());
+                jsonStringer.key("groupId".toUpperCase()).value(groupSetting.getGroupId());
                 // Parameter Settings
-                jsonStringer.key("parameterSettings");
+                jsonStringer.key("parameterSettings".toUpperCase());
                 jsonStringer.array();
                 for (ParameterSettings detailSetting : groupSetting.getParametersettings().getList()) {
                     jsonStringer.object();
-                    jsonStringer.key("code").value(detailSetting.getCode());
-                    jsonStringer.key("name").value(detailSetting.getName());
-                    jsonStringer.key("productId").value(detailSetting.getProductId());
-                    jsonStringer.key("description").value(detailSetting.getDescription());
-                    jsonStringer.key("childId").value(detailSetting.getChildId());
-                    jsonStringer.key("scope").value(detailSetting.getScope());
-                    jsonStringer.key("userValue").value(detailSetting.getUserValue());
-                    jsonStringer.key("hexValue").value(detailSetting.getHexValueString());
-                    jsonStringer.key("defaultValue").value(detailSetting.getDefaultValue());
-                    jsonStringer.key("scale").value(detailSetting.getScale());
-                    jsonStringer.key("unit").value(detailSetting.getUnit());
-                    jsonStringer.key("type").value(detailSetting.getType());
-                    jsonStringer.key("mode").value(detailSetting.getMode());
+                    jsonStringer.key("code".toUpperCase()).value(detailSetting.getCode());
+                    jsonStringer.key("name".toUpperCase()).value(detailSetting.getName());
+                    jsonStringer.key("productId".toUpperCase()).value(detailSetting.getProductId());
+                    jsonStringer.key("description".toUpperCase()).value(detailSetting.getDescription());
+                    jsonStringer.key("childId".toUpperCase()).value(detailSetting.getChildId());
+                    jsonStringer.key("scope".toUpperCase()).value(detailSetting.getScope());
+                    jsonStringer.key("userValue".toUpperCase()).value(detailSetting.getUserValue());
+                    jsonStringer.key("hexValue".toUpperCase()).value(detailSetting.getHexValueString());
+                    jsonStringer.key("defaultValue".toUpperCase()).value(detailSetting.getDefaultValue());
+                    jsonStringer.key("scale".toUpperCase()).value(detailSetting.getScale());
+                    jsonStringer.key("unit".toUpperCase()).value(detailSetting.getUnit());
+                    jsonStringer.key("type".toUpperCase()).value(detailSetting.getType());
+                    jsonStringer.key("mode".toUpperCase()).value(detailSetting.getMode());
                     jsonStringer.endObject();
                 }
                 jsonStringer.endArray();

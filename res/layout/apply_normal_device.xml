@@ -103,6 +103,14 @@
                 android:id="@+id/submit_text"
                 android:background="@android:color/transparent"
                 android:text="@string/submit_text"
+                android:layout_marginRight="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        <TextView
+                style="@android:style/TextAppearance"
+                android:id="@+id/count_down_text"
+                android:visibility="gone"
+                android:background="@android:color/transparent"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
     </LinearLayout>

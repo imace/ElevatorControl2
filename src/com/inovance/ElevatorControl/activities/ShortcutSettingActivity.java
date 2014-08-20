@@ -28,6 +28,8 @@ import java.util.List;
  */
 public class ShortcutSettingActivity extends Activity {
 
+    private static final String TAG = ShortcutSettingActivity.class.getSimpleName();
+
     @InjectView(R.id.list_view)
     ListView listView;
 
@@ -143,7 +145,7 @@ public class ShortcutSettingActivity extends Activity {
         View dialogView = getLayoutInflater().inflate(R.layout.add_shortcut_dialog, null);
         final EditText shortcutName = (EditText) dialogView.findViewById(R.id.shortcut_name);
         final Spinner actionSpinner = (Spinner) dialogView.findViewById(R.id.action_spinner);
-        ArrayList<String> tabs = new ArrayList<String>();
+        final ArrayList<String> tabs = new ArrayList<String>();
         Collections.addAll(tabs, troubleAnalyzeTabArray);
         Collections.addAll(tabs, configurationTabArray);
         Collections.addAll(tabs, firmwareManageTabArray);
@@ -152,6 +154,17 @@ public class ShortcutSettingActivity extends Activity {
                 tabs.toArray(new String[tabs.size()]));
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         actionSpinner.setAdapter(adapter);
+        actionSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
+                shortcutName.setText(tabs.get(position));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
         if (edit) {
             Shortcut shortcut = shortcutList.get(index);
             shortcutName.setText(shortcut.getName());
@@ -159,10 +172,19 @@ public class ShortcutSettingActivity extends Activity {
             if (spinnerSelectIndex < tabs.size()) {
                 actionSpinner.setSelection(spinnerSelectIndex);
             }
+        } else {
+            shortcutName.setText(tabs.get(0));
         }
-        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.CustomDialogStyle)
-                .setView(dialogView)
-                .setTitle(R.string.add_shortcut_dialog_title_text);
+        AlertDialog.Builder builder;
+        if (edit) {
+            builder = new AlertDialog.Builder(this, R.style.CustomDialogStyle)
+                    .setView(dialogView)
+                    .setTitle(R.string.edit_shortcut_dialog_title_text);
+        } else {
+            builder = new AlertDialog.Builder(this, R.style.CustomDialogStyle)
+                    .setView(dialogView)
+                    .setTitle(R.string.add_shortcut_dialog_title_text);
+        }
         builder.setNegativeButton(R.string.dialog_btn_cancel, null);
         builder.setPositiveButton(R.string.dialog_btn_ok, new DialogInterface.OnClickListener() {
             @Override

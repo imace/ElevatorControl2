@@ -24,6 +24,7 @@ public class HelpSystemActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
         setContentView(R.layout.activity_help_system);
         Views.inject(this);
         String[] preferenceArray = getResources().getStringArray(R.array.preference_array);
@@ -45,7 +46,7 @@ public class HelpSystemActivity extends Activity {
                         startActivity(new Intent(HelpSystemActivity.this, ApplyPermissionActivity.class));
                         break;
                     case 5:
-                        startActivity(new Intent(HelpSystemActivity.this, BarcodeCaptureActivity.class));
+                        startActivity(new Intent(HelpSystemActivity.this, ZxingScannerActivity.class));
                         break;
                     case 6:
                         startActivity(new Intent(HelpSystemActivity.this, RemoteHelpActivity.class));
@@ -62,6 +63,12 @@ public class HelpSystemActivity extends Activity {
                 }
             }
         });
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
     }
 
     /**

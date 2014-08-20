@@ -195,7 +195,6 @@ public class BarcodeCaptureActivity extends Activity {
             ByteArrayOutputStream jpgData = new ByteArrayOutputStream();
             yuvimage.compressToJpeg(new Rect(0, 0, size.width, size.height), 80, jpgData);
             bitmapData = jpgData.toByteArray();
-
             Image barcode = new Image(size.width, size.height, "Y800");
             barcode.setData(data);
             int result = scanner.scanImage(barcode);

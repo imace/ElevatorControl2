@@ -82,6 +82,9 @@ public class BluetoothHandler extends Handler {
             case BluetoothState.onDeviceChanged:
                 onDeviceChanged(msg);
                 break;
+            case BluetoothState.onBluetoothConnectException:
+                onBluetoothConnectException(msg);
+                break;
         }
     }
 
@@ -273,7 +276,7 @@ public class BluetoothHandler extends Handler {
      *
      * @param message message
      */
-    public void onWillConnect(Message message){
+    public void onWillConnect(Message message) {
         if (DEBUG) {
             Log.v(TAG, "onWillConnect");
         }
@@ -284,9 +287,20 @@ public class BluetoothHandler extends Handler {
      *
      * @param message message
      */
-    public void onDeviceChanged(Message message){
+    public void onDeviceChanged(Message message) {
         if (DEBUG) {
             Log.v(TAG, "onWillConnect");
+        }
+    }
+
+    /**
+     * 蓝牙设备连接异常
+     *
+     * @param message message
+     */
+    public void onBluetoothConnectException(Message message) {
+        if (DEBUG) {
+            Log.v(TAG, "onBluetoothConnectException");
         }
     }
 }

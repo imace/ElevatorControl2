@@ -20,7 +20,6 @@ import com.inovance.ElevatorControl.adapters.MoveSidePagerAdapter;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ParameterSettingsDao;
 import com.inovance.ElevatorControl.daos.RealTimeMonitorDao;
-import com.inovance.ElevatorControl.models.ObjectListHolder;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.models.RealTimeMonitor;
 import com.inovance.ElevatorControl.utils.LogUtils;
@@ -43,7 +42,7 @@ import java.util.concurrent.Executors;
  * Date: 14-3-6.
  * Time: 11:04.
  */
-public class MoveOutsideActivity extends Activity implements Runnable {
+public class MoveOutsideActivity extends Activity implements Runnable, MoveSidePagerAdapter.OnSelectFloorListener {
 
     private static final String TAG = MoveOutsideActivity.class.getSimpleName();
 
@@ -78,11 +77,6 @@ public class MoveOutsideActivity extends Activity implements Runnable {
     LinearLayout loadView;
 
     /**
-     * 当前楼层
-     */
-    private RealTimeMonitor currentFloorMonitor;
-
-    /**
      * 用于召唤楼层的指令列表
      */
     private List<RealTimeMonitor> moveOutsideMonitorList;
@@ -90,18 +84,32 @@ public class MoveOutsideActivity extends Activity implements Runnable {
     /**
      * 用于获取电梯最高层和最底层的 Handler
      */
-    private MoveOutsideHandler mMoveOutsideHandler;
+    private FloorInformationHandler floorInformationHandler;
 
     /**
      * 获取最高层和最底层的通信内容
      */
     private BluetoothTalk[] getFloorsCommunications;
 
-    private static final int GET_FLOOR = 1;
+    /**
+     * 读取电梯最高层和最底层
+     */
+    private static final int GET_FLOOR_INFORMATION = 1;
 
-    private static final int GET_CALL_STATUS = 2;
+    /**
+     * 读取电梯当前楼层
+     */
+    private static final int GET_CURRENT_FLOOR = 2;
 
-    private static final int CALL_FLOOR = 3;
+    /**
+     * 读取当前楼层召唤信息
+     */
+    private static final int GET_CURRENT_FLOOR_CALL_STATE = 3;
+
+    /**
+     * 召唤楼层
+     */
+    private static final int CALL_FLOOR = 4;
 
     private int currentTask;
 
@@ -110,16 +118,31 @@ public class MoveOutsideActivity extends Activity implements Runnable {
      */
     private int currentCallFloor;
 
-    private static final int CALL_UP = 1;
+    private static int TOP_FLOOR = 1;
 
-    private static final int CALL_DOWN = 2;
+    private static int MIDDLE_FLOOR = 2;
 
-    private int currentCallDirection;
+    private static int BOTTOM_FLOOR = 3;
 
     /**
-     * 用于同步电梯召唤状态信息的 Handler
+     * 最高层还是最底层还是中间层
      */
-    private SyncMoveOutsideInfoHandler mSyncMoveOutsideInfoHandler;
+    private int floorLocation = MIDDLE_FLOOR;
+
+    /**
+     * 上召
+     */
+    private static final int CALL_UP = 1;
+
+    /**
+     * 下召
+     */
+    private static final int CALL_DOWN = 2;
+
+    /**
+     * 当前召唤方向
+     */
+    private int currentCallDirection;
 
     /**
      * 用于同步状态的 Task
@@ -137,9 +160,29 @@ public class MoveOutsideActivity extends Activity implements Runnable {
     private Handler syncHandler = new Handler();
 
     /**
+     * 最高层
+     */
+    private int topFloor;
+
+    /**
+     * 最底层
+     */
+    private int bottomFloor;
+
+    /**
+     * 读取电梯当前楼层 Handler
+     */
+    private GetCurrentFloorHandler getCurrentFloorHandler;
+
+    /**
+     * 读取当前楼层召唤信息 Handler
+     */
+    private GetCurrentFloorCallStateHandler getCurrentFloorCallStateHandler;
+
+    /**
      * 用于召唤楼层的 Handler
      */
-    private FloorHandler floorHandler;
+    private CallCurrentFloorHandler callCurrentFloorHandler;
 
     /**
      * 是否正在同步电梯召唤状态信息
@@ -153,7 +196,7 @@ public class MoveOutsideActivity extends Activity implements Runnable {
             "0001:0002", // 召唤一楼
             "0004:0008", // 召唤二楼
             "0010:0020", // 召唤三楼
-            "0040:0080" // 召唤四楼
+            "0040:0080" //  召唤四楼
     };
 
     /**
@@ -164,14 +207,21 @@ public class MoveOutsideActivity extends Activity implements Runnable {
     private ExecutorService pool = Executors.newSingleThreadExecutor();
 
     /**
-     * 同步间隔
+     * 读取当前楼层
      */
-    private static final int SYNC_TIME = 1000;
+    private BluetoothTalk[] getCurrentFloorCommunications;
 
     /**
-     * 用于读取电梯外召信息的通信内容
+     * 读取当前楼层召唤信息
      */
-    private BluetoothTalk[] getMoveOutsideInfoCommunications;
+    private BluetoothTalk[] getCurrentFloorCallStateCommunications;
+
+    /**
+     * 同步间隔
+     */
+    private static final int SYNC_TIME = 500;
+
+    // TODO Sync call state and current floor.
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -199,10 +249,10 @@ public class MoveOutsideActivity extends Activity implements Runnable {
 
             }
         });
-        mMoveOutsideHandler = new MoveOutsideHandler(this);
-        mSyncMoveOutsideInfoHandler = new SyncMoveOutsideInfoHandler(this);
-        floorHandler = new FloorHandler(this);
-        currentFloorMonitor = RealTimeMonitorDao.findByStateID(this, ApplicationConfig.CurrentFloorType);
+        floorInformationHandler = new FloorInformationHandler(this);
+        getCurrentFloorHandler = new GetCurrentFloorHandler(this);
+        getCurrentFloorCallStateHandler = new GetCurrentFloorCallStateHandler(this);
+        callCurrentFloorHandler = new CallCurrentFloorHandler(this);
         moveOutsideMonitorList = RealTimeMonitorDao.findAllByStateID(this, ApplicationConfig.MoveOutsideInformationType);
         Collections.sort(moveOutsideMonitorList, new SortComparator());
         createGetFloorsCommunication();
@@ -226,77 +276,23 @@ public class MoveOutsideActivity extends Activity implements Runnable {
         super.onResume();
         if (BluetoothTool.getInstance().isPrepared()) {
             running = true;
-            currentTask = GET_FLOOR;
+            currentTask = GET_FLOOR_INFORMATION;
             syncHandler.postDelayed(syncTask, SYNC_TIME);
         }
     }
 
     /**
-     * 生成获取电梯召唤信息的通信内容
+     * 生成用于读取当前楼层的通信内容
      */
-    private void createGetMoveOutsideInfoCommunications() {
-        if (getMoveOutsideInfoCommunications == null) {
-            int size = moveOutsideMonitorList.size();
-            final int count = size <= 10 ? 1 : ((size - size % 10) / 10 + (size % 10 == 0 ? 0 : 1));
-            getMoveOutsideInfoCommunications = new BluetoothTalk[count + 1];
-            for (int i = 0; i < count; i++) {
-                final int position = i;
-                final RealTimeMonitor firstItem = moveOutsideMonitorList.get(position * 10);
-                final int length = size <= 10 ? size : (size % 10 == 0 ? 10 : ((position == count - 1) ? size % 10 : 10));
-                getMoveOutsideInfoCommunications[i] = new BluetoothTalk() {
-                    @Override
-                    public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16("0103"
-                                        + firstItem.getCode()
-                                        + String.format("%04x", length)
-                                        + "0001"));
-                    }
-
-                    @Override
-                    public void afterSend() {
-
-                    }
-
-                    @Override
-                    public void beforeReceive() {
-
-                    }
-
-                    @Override
-                    public void afterReceive() {
-
-                    }
-
-                    @Override
-                    public Object onParse() {
-                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
-                            byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
-                            short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
-                            if (length * 2 == bytesLength) {
-                                List<RealTimeMonitor> tempList = new ArrayList<RealTimeMonitor>();
-                                for (int j = 0; j < length; j++) {
-                                    if (position * 10 + j < moveOutsideMonitorList.size()) {
-                                        RealTimeMonitor item = moveOutsideMonitorList.get(position * 10 + j);
-                                        byte[] tempData = SerialUtility.crc16("01030002"
-                                                + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]}));
-                                        item.setReceived(tempData);
-                                        tempList.add(item);
-                                    }
-                                }
-                                ObjectListHolder holder = new ObjectListHolder();
-                                holder.setRealTimeMonitorList(tempList);
-                                return holder;
-                            }
-                        }
-                        return null;
-                    }
-                };
-            }
-            getMoveOutsideInfoCommunications[count] = new BluetoothTalk() {
+    private void createGetCurrentFloorCommunications() {
+        if (getCurrentFloorCommunications == null) {
+            final RealTimeMonitor monitor = RealTimeMonitorDao.findByStateID(this, ApplicationConfig.CurrentFloorType);
+            getCurrentFloorCommunications = new BluetoothTalk[1];
+            getCurrentFloorCommunications[0] = new BluetoothTalk() {
                 @Override
                 public void beforeSend() {
                     this.setSendBuffer(SerialUtility.crc16("0103"
-                            + currentFloorMonitor.getCode()
+                            + monitor.getCode()
                             + "0001"));
                 }
 
@@ -318,12 +314,8 @@ public class MoveOutsideActivity extends Activity implements Runnable {
                 @Override
                 public Object onParse() {
                     if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
-                        ObjectListHolder holder = new ObjectListHolder();
-                        currentFloorMonitor.setReceived(getReceivedBuffer());
-                        List<RealTimeMonitor> tempList = new ArrayList<RealTimeMonitor>();
-                        tempList.add(currentFloorMonitor);
-                        holder.setRealTimeMonitorList(tempList);
-                        return holder;
+                        monitor.setReceived(getReceivedBuffer());
+                        return monitor;
                     }
                     return null;
                 }
@@ -332,15 +324,72 @@ public class MoveOutsideActivity extends Activity implements Runnable {
     }
 
     /**
-     * 同步外召信息
+     * 读取当前楼层
      */
-    private void syncMoveOutsideInfoStatus() {
-        if (BluetoothTool.getInstance().isPrepared()) {
-            isSyncing = true;
-            mSyncMoveOutsideInfoHandler.sendCount = getMoveOutsideInfoCommunications.length;
+    private void getCurrentFloor() {
+        createGetCurrentFloorCommunications();
+        if (BluetoothTool.getInstance().isPrepared() && getCurrentFloorCommunications != null) {
             BluetoothTool.getInstance()
-                    .setHandler(mSyncMoveOutsideInfoHandler)
-                    .setCommunications(getMoveOutsideInfoCommunications)
+                    .setHandler(getCurrentFloorHandler)
+                    .setCommunications(getCurrentFloorCommunications)
+                    .send();
+        }
+    }
+
+    /**
+     * 生成用于读取当前楼层召唤信息的通信内容
+     */
+    private void createCurrentFloorCallStateCommunications() {
+        int index = 0;
+        for (final RealTimeMonitor monitor : moveOutsideMonitorList) {
+            if (currentCallFloor >= (index * 4 + 1) && currentCallFloor <= (index + 1) * 4) {
+                getCurrentFloorCallStateCommunications = new BluetoothTalk[1];
+                getCurrentFloorCallStateCommunications[0] = new BluetoothTalk() {
+                    @Override
+                    public void beforeSend() {
+                        this.setSendBuffer(SerialUtility.crc16("0103"
+                                + monitor.getCode()
+                                + "0001"));
+                    }
+
+                    @Override
+                    public void afterSend() {
+
+                    }
+
+                    @Override
+                    public void beforeReceive() {
+
+                    }
+
+                    @Override
+                    public void afterReceive() {
+
+                    }
+
+                    @Override
+                    public Object onParse() {
+                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                            monitor.setReceived(getReceivedBuffer());
+                            return monitor;
+                        }
+                        return null;
+                    }
+                };
+            }
+            index++;
+        }
+    }
+
+    /**
+     * 读取当前楼层召唤信息
+     */
+    private void getCurrentFloorCallState() {
+        createCurrentFloorCallStateCommunications();
+        if (BluetoothTool.getInstance().isPrepared() && getCurrentFloorCallStateCommunications != null) {
+            BluetoothTool.getInstance()
+                    .setHandler(getCurrentFloorCallStateHandler)
+                    .setCommunications(getCurrentFloorCallStateCommunications)
                     .send();
         }
     }
@@ -372,6 +421,9 @@ public class MoveOutsideActivity extends Activity implements Runnable {
      */
     @OnClick(R.id.up_button)
     void OnUpButtonClick(View view) {
+        upButton.setEnabled(false);
+        upButton.setImageResource(R.drawable.elevator_up_highlighted);
+        // 发送上召指令
         isSyncing = false;
         currentCallDirection = CALL_UP;
         currentTask = CALL_FLOOR;
@@ -384,6 +436,10 @@ public class MoveOutsideActivity extends Activity implements Runnable {
      */
     @OnClick(R.id.down_button)
     void OnDownButtonClick(View view) {
+        // 高亮下召按钮并清空选中的楼层
+        downButton.setEnabled(false);
+        downButton.setImageResource(R.drawable.elevator_down_highlighted);
+        // 发送下召指令
         isSyncing = false;
         currentCallDirection = CALL_DOWN;
         currentTask = CALL_FLOOR;
@@ -436,12 +492,12 @@ public class MoveOutsideActivity extends Activity implements Runnable {
     /**
      * 读取电梯最高层和最底层
      */
-    private void loadDataAndRenderView() {
+    private void getFloorInformation() {
         isSyncing = true;
         if (BluetoothTool.getInstance().isPrepared()) {
-            mMoveOutsideHandler.sendCount = getFloorsCommunications.length;
+            floorInformationHandler.sendCount = getFloorsCommunications.length;
             BluetoothTool.getInstance()
-                    .setHandler(mMoveOutsideHandler)
+                    .setHandler(floorInformationHandler)
                     .setCommunications(getFloorsCommunications)
                     .send();
         }
@@ -501,11 +557,11 @@ public class MoveOutsideActivity extends Activity implements Runnable {
                 };
                 if (BluetoothTool.getInstance().isPrepared()) {
                     isSyncing = true;
-                    floorHandler.writeCode = callCode;
-                    floorHandler.floor = currentCallFloor;
-                    floorHandler.isUp = currentCallDirection == CALL_UP;
+                    callCurrentFloorHandler.writeCode = callCode;
+                    callCurrentFloorHandler.floor = currentCallFloor;
+                    callCurrentFloorHandler.isUp = currentCallDirection == CALL_UP;
                     BluetoothTool.getInstance()
-                            .setHandler(floorHandler)
+                            .setHandler(callCurrentFloorHandler)
                             .setCommunications(communications)
                             .send();
                 }
@@ -518,24 +574,46 @@ public class MoveOutsideActivity extends Activity implements Runnable {
     @Override
     public void run() {
         switch (currentTask) {
-            case GET_FLOOR:
-                loadDataAndRenderView();
+            case GET_FLOOR_INFORMATION:
+                // 读取楼层最高层最底层信息
+                getFloorInformation();
                 break;
-            case GET_CALL_STATUS:
-                syncMoveOutsideInfoStatus();
+            case GET_CURRENT_FLOOR:
+                // 读取当前楼层
+                getCurrentFloor();
+                break;
+            case GET_CURRENT_FLOOR_CALL_STATE:
+                // 读取当前选中楼层召唤信息
+                getCurrentFloorCallState();
                 break;
             case CALL_FLOOR:
+                // 召唤楼层
                 moveOutsideCallFloor();
                 break;
         }
     }
 
-    // ==================================== 召唤楼层 =================================================//
+    @Override
+    public void onSelect(int floor) {
+        MoveOutsideActivity.this.upButton.setEnabled(false);
+        MoveOutsideActivity.this.upButton.setImageResource(R.drawable.elevator_up_button);
+        MoveOutsideActivity.this.downButton.setEnabled(false);
+        MoveOutsideActivity.this.downButton.setImageResource(R.drawable.elevator_down_button);
+        if (floor == Math.min(topFloor, bottomFloor)) {
+            MoveOutsideActivity.this.floorLocation = BOTTOM_FLOOR;
+        } else if (floor == Math.max(topFloor, bottomFloor)) {
+            MoveOutsideActivity.this.floorLocation = TOP_FLOOR;
+        } else {
+            MoveOutsideActivity.this.floorLocation = MIDDLE_FLOOR;
+        }
+        MoveOutsideActivity.this.isSyncing = false;
+        MoveOutsideActivity.this.currentCallFloor = floor;
+        MoveOutsideActivity.this.currentTask = GET_CURRENT_FLOOR_CALL_STATE;
+    }
 
-    /**
-     * 召唤楼层
-     */
-    private class FloorHandler extends BluetoothHandler {
+    // ============================================== 召唤楼层 ==================================================== //
+
+    private class CallCurrentFloorHandler extends BluetoothHandler {
 
         public String writeCode;
 
@@ -543,9 +621,8 @@ public class MoveOutsideActivity extends Activity implements Runnable {
 
         public boolean isUp;
 
-        public FloorHandler(Activity activity) {
+        public CallCurrentFloorHandler(Activity activity) {
             super(activity);
-            TAG = FloorHandler.class.getSimpleName();
         }
 
         @Override
@@ -565,7 +642,7 @@ public class MoveOutsideActivity extends Activity implements Runnable {
                 String receive = (String) msg.obj;
                 if (receive.contains(writeCode)) {
                     MoveOutsideActivity.this.isSyncing = false;
-                    MoveOutsideActivity.this.currentTask = GET_CALL_STATUS;
+                    MoveOutsideActivity.this.currentTask = GET_CURRENT_FLOOR;
                     // 写入外召日志
                     LogUtils.getInstance().write(ApplicationConfig.LogMoveOutside,
                             writeCode,
@@ -577,8 +654,9 @@ public class MoveOutsideActivity extends Activity implements Runnable {
 
     }
 
-    // =================================== 读取电梯最高层和最底层 ==============================
-    private class MoveOutsideHandler extends BluetoothHandler {
+    // ========================================== 读取电梯最高层和最底层 ============================================= //
+
+    private class FloorInformationHandler extends BluetoothHandler {
 
         public int sendCount;
 
@@ -586,9 +664,8 @@ public class MoveOutsideActivity extends Activity implements Runnable {
 
         private List<ParameterSettings> settingsList;
 
-        public MoveOutsideHandler(Activity activity) {
+        public FloorInformationHandler(Activity activity) {
             super(activity);
-            TAG = MoveInsideActivity.class.getSimpleName();
         }
 
         @Override
@@ -604,32 +681,16 @@ public class MoveOutsideActivity extends Activity implements Runnable {
             if (sendCount == receiveCount && settingsList.size() == 2) {
                 byte[] data1 = settingsList.get(0).getReceived();
                 byte[] data2 = settingsList.get(1).getReceived();
-                final int top = ByteBuffer.wrap(new byte[]{data1[4], data1[5]}).getShort();
-                final int bottom = ByteBuffer.wrap(new byte[]{data2[4], data2[5]}).getShort();
+                MoveOutsideActivity.this.topFloor = ByteBuffer.wrap(new byte[]{data1[4], data1[5]}).getShort();
+                MoveOutsideActivity.this.bottomFloor = ByteBuffer.wrap(new byte[]{data2[4], data2[5]}).getShort();
                 moveSidePagerAdapter = new MoveSidePagerAdapter(MoveOutsideActivity.this,
-                        new int[]{bottom, top});
-                moveSidePagerAdapter.setOnSelectFloorListener(new MoveSidePagerAdapter.OnSelectFloorListener() {
-                    @Override
-                    public void onSelect(int floor) {
-                        if (floor == Math.min(top, bottom)) {
-                            MoveOutsideActivity.this.upButton.setEnabled(true);
-                            MoveOutsideActivity.this.downButton.setEnabled(false);
-                        } else if (floor == Math.max(top, bottom)) {
-                            MoveOutsideActivity.this.upButton.setEnabled(false);
-                            MoveOutsideActivity.this.downButton.setEnabled(true);
-                        } else {
-                            MoveOutsideActivity.this.upButton.setEnabled(true);
-                            MoveOutsideActivity.this.downButton.setEnabled(true);
-                        }
-                        MoveOutsideActivity.this.currentCallFloor = floor;
-                    }
-                });
+                        new int[]{MoveOutsideActivity.this.topFloor, MoveOutsideActivity.this.bottomFloor});
+                moveSidePagerAdapter.setOnSelectFloorListener(MoveOutsideActivity.this);
                 MoveOutsideActivity.this.viewPager.setAdapter(moveSidePagerAdapter);
-                MoveOutsideActivity.this.createGetMoveOutsideInfoCommunications();
                 MoveOutsideActivity.this.loadView.setVisibility(View.GONE);
                 MoveOutsideActivity.this.viewPager.setVisibility(View.VISIBLE);
                 MoveOutsideActivity.this.isSyncing = false;
-                MoveOutsideActivity.this.currentTask = GET_CALL_STATUS;
+                MoveOutsideActivity.this.currentTask = GET_CURRENT_FLOOR;
             }
             MoveOutsideActivity.this.isSyncing = false;
         }
@@ -644,60 +705,37 @@ public class MoveOutsideActivity extends Activity implements Runnable {
 
     }
 
-    // ============================== 同步外召信息 ================================================ //
-    private class SyncMoveOutsideInfoHandler extends BluetoothHandler {
+    // ========================================== 读取当前楼层 ==================================================== //
 
-        public int sendCount;
+    private class GetCurrentFloorHandler extends BluetoothHandler {
 
-        private int receiveCount;
+        private RealTimeMonitor monitor;
 
-        private List<RealTimeMonitor> monitorList;
-
-        public SyncMoveOutsideInfoHandler(Activity activity) {
+        public GetCurrentFloorHandler(Activity activity) {
             super(activity);
-            TAG = SyncMoveOutsideInfoHandler.class.getSimpleName();
         }
 
         @Override
-        public void onMultiTalkBegin(Message msg) {
-            super.onMultiTalkBegin(msg);
-            receiveCount = 0;
-            monitorList = new ArrayList<RealTimeMonitor>();
+        public void onBeginDiscovering(Message msg) {
+            super.onBeginDiscovering(msg);
+            monitor = null;
         }
 
         @Override
         public void onMultiTalkEnd(Message msg) {
             super.onMultiTalkEnd(msg);
-            if (sendCount == receiveCount) {
-                List<Integer> calledFloorList = new ArrayList<Integer>();
-                for (RealTimeMonitor monitor : monitorList) {
-                    if (monitor.getStateID() == ApplicationConfig.CurrentFloorType) {
-                        MoveOutsideActivity.this.currentFloorTextView
-                                .setText(String.valueOf(ParseSerialsUtils.getIntFromBytes(monitor.getReceived())));
-                    } else {
-                        String callFloor = SerialUtility.byte2HexStr(new byte[]{monitor.getReceived()[4],
-                                monitor.getReceived()[5]});
-                        int length01 = CallCode.length;
-                        for (int m = 0; m < length01; m++) {
-                            if (CallCode[m].contains(callFloor)) {
-                                int length02 = moveOutsideMonitorList.size();
-                                for (int n = 0; n < length02; n++) {
-                                    if (monitor.getName().equalsIgnoreCase(moveOutsideMonitorList.get(n).getName())) {
-                                        /**
-                                         * 当前所有被召唤的楼层
-                                         */
-                                        calledFloorList.add(n * 4 + m + 1);
-                                    }
-                                }
-                            }
-                        }
-                    }
+            if (monitor != null && monitor.getStateID() == ApplicationConfig.CurrentFloorType) {
+                int currentFloor = ParseSerialsUtils.getIntFromBytes(monitor.getReceived());
+                MoveOutsideActivity.this.currentFloorTextView.setText(String.valueOf(currentFloor));
+                // 取消召唤按钮高亮
+                if (currentFloor == MoveOutsideActivity.this.currentCallFloor) {
+                    MoveOutsideActivity.this.upButton.setEnabled(true);
+                    MoveOutsideActivity.this.upButton.setImageResource(R.drawable.elevator_up_button);
+                    MoveOutsideActivity.this.downButton.setEnabled(true);
+                    MoveOutsideActivity.this.downButton.setImageResource(R.drawable.elevator_down_button);
                 }
-                if (calledFloorList.size() > 0) {
-                    if (moveSidePagerAdapter != null) {
-                        moveSidePagerAdapter.updateCurrentCalledFloor(calledFloorList);
-                    }
-                }
+            } else {
+                MoveOutsideActivity.this.currentTask = GET_CURRENT_FLOOR;
             }
             MoveOutsideActivity.this.isSyncing = false;
         }
@@ -705,9 +743,79 @@ public class MoveOutsideActivity extends Activity implements Runnable {
         @Override
         public void onTalkReceive(Message msg) {
             super.onTalkReceive(msg);
-            if (msg.obj != null && msg.obj instanceof ObjectListHolder) {
-                monitorList.addAll(((ObjectListHolder) msg.obj).getRealTimeMonitorList());
-                receiveCount++;
+            if (msg.obj != null && msg.obj instanceof RealTimeMonitor) {
+                monitor = (RealTimeMonitor) msg.obj;
+            }
+        }
+    }
+
+    // ======================================= 读取当前楼层召唤信息 ================================================ //
+
+    private class GetCurrentFloorCallStateHandler extends BluetoothHandler {
+
+        private RealTimeMonitor monitor;
+
+        public GetCurrentFloorCallStateHandler(Activity activity) {
+            super(activity);
+        }
+
+        @Override
+        public void onMultiTalkBegin(Message msg) {
+            super.onMultiTalkBegin(msg);
+            monitor = null;
+        }
+
+        @Override
+        public void onMultiTalkEnd(Message msg) {
+            super.onMultiTalkEnd(msg);
+            if (monitor != null && monitor.getStateID() == ApplicationConfig.MoveOutsideInformationType) {
+                String result = SerialUtility.byte2HexStr(new byte[]{monitor.getReceived()[4],
+                        monitor.getReceived()[5]});
+                MoveOutsideActivity.this.upButton.setEnabled(true);
+                MoveOutsideActivity.this.upButton.setImageResource(R.drawable.elevator_up_button);
+                MoveOutsideActivity.this.downButton.setEnabled(true);
+                MoveOutsideActivity.this.downButton.setImageResource(R.drawable.elevator_down_button);
+                for (String item : CallCode) {
+                    String[] array = item.split(":");
+                    if (array.length == 2) {
+                        // 已经被上召
+                        if (result.equalsIgnoreCase(array[0])) {
+                            MoveOutsideActivity.this.upButton.setEnabled(false);
+                            MoveOutsideActivity.this.upButton.setImageResource(R.drawable.elevator_up_highlighted);
+                            MoveOutsideActivity.this.downButton.setEnabled(true);
+                            MoveOutsideActivity.this.downButton.setImageResource(R.drawable.elevator_down_button);
+                        }
+                        // 已经被下召
+                        if (result.equalsIgnoreCase(array[1])) {
+                            MoveOutsideActivity.this.upButton.setEnabled(true);
+                            MoveOutsideActivity.this.upButton.setImageResource(R.drawable.elevator_up_button);
+                            MoveOutsideActivity.this.downButton.setEnabled(false);
+                            MoveOutsideActivity.this.downButton.setImageResource(R.drawable.elevator_down_highlighted);
+                        }
+                    }
+                }
+                // 最高层不能上召
+                if (MoveOutsideActivity.this.floorLocation == TOP_FLOOR) {
+                    MoveOutsideActivity.this.upButton.setEnabled(false);
+                    MoveOutsideActivity.this.upButton.setImageResource(R.drawable.elevator_up_button);
+                }
+                //  最底层不能上召
+                if (MoveOutsideActivity.this.floorLocation == BOTTOM_FLOOR) {
+                    MoveOutsideActivity.this.downButton.setEnabled(false);
+                    MoveOutsideActivity.this.downButton.setImageResource(R.drawable.elevator_down_button);
+                }
+                MoveOutsideActivity.this.currentTask = GET_CURRENT_FLOOR;
+            } else {
+                MoveOutsideActivity.this.currentTask = GET_CURRENT_FLOOR_CALL_STATE;
+            }
+            MoveOutsideActivity.this.isSyncing = false;
+        }
+
+        @Override
+        public void onTalkReceive(Message msg) {
+            super.onResetBluetooth(msg);
+            if (msg.obj != null && msg.obj instanceof RealTimeMonitor) {
+                monitor = (RealTimeMonitor) msg.obj;
             }
         }
     }

@@ -2,6 +2,9 @@ package com.inovance.ElevatorControl.views.form;
 
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
@@ -27,6 +30,12 @@ import java.util.List;
  */
 public class SpecialApplyForm extends LinearLayout implements OnGetResultListener, OnRequestFailureListener {
 
+    private static final int CountDownFinished = 1000;
+
+    private static final int CountDownTick = 2000;
+
+    private static final int MaxWaitTime = 30;
+
     private AutoCompleteTextView vendorTextView;
 
     private Spinner deviceListSpinner;
@@ -37,13 +46,35 @@ public class SpecialApplyForm extends LinearLayout implements OnGetResultListene
 
     private View progressView;
 
-    private View submitTextView;
+    private TextView submitTextView;
+
+    private TextView countDownTextView;
 
     private List<Vendor> mVendorList = new ArrayList<Vendor>();
 
     private List<SpecialDevice> mDeviceList = new ArrayList<SpecialDevice>();
 
     private List<SpecialDevice> mCurrentDeviceList = new ArrayList<SpecialDevice>();
+
+    private Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case CountDownTick:
+                    String text = countDownTextView.getText().toString();
+                    countDownTextView.setText(Integer.parseInt(text) - 1 + "");
+                    break;
+                case CountDownFinished:
+                    submitView.setClickable(true);
+                    submitView.setEnabled(true);
+                    countDownTextView.setVisibility(View.GONE);
+                    submitTextView.setAlpha(1.0f);
+                    countDownTextView.setAlpha(1.0f);
+                    break;
+            }
+        }
+    };
 
     /**
      * 关联的设备列表
@@ -75,11 +106,31 @@ public class SpecialApplyForm extends LinearLayout implements OnGetResultListene
             @Override
             public void onClick(View v) {
                 submitApply();
+                submitView.setClickable(false);
+                submitView.setEnabled(false);
+                countDownTextView.setText(String.valueOf(MaxWaitTime));
+                countDownTextView.setVisibility(View.VISIBLE);
+                submitTextView.setAlpha(0.5f);
+                countDownTextView.setAlpha(0.5f);
+                new CountDownTimer(MaxWaitTime * 1000, 1000) {
+
+                    @Override
+                    public void onTick(long l) {
+                        handler.sendEmptyMessage(CountDownTick);
+                    }
+
+                    @Override
+                    public void onFinish() {
+                        handler.sendEmptyMessage(CountDownTick);
+                        handler.sendEmptyMessage(CountDownFinished);
+                    }
+                }.start();
             }
         });
         submitView.setEnabled(false);
         progressView = findViewById(R.id.submit_progress);
-        submitTextView = findViewById(R.id.submit_text);
+        submitTextView = (TextView)findViewById(R.id.submit_text);
+        countDownTextView = (TextView) findViewById(R.id.count_down_text);
     }
 
 

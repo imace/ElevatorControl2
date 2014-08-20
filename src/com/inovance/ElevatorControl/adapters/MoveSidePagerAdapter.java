@@ -251,7 +251,7 @@ public class MoveSidePagerAdapter extends PagerAdapter {
                 convertView.setBackgroundResource(R.drawable.elevator_button_background);
                 holder.floorTextView.setSelected(false);
             }
-            if (calledFloors != null && calledFloors.length > 0) {
+            if (calledFloors != null) {
                 int currentFloors = Math.min(floors[0], floors[1]) + position;
                 for (int floor : calledFloors) {
                     if (currentFloors == floor) {

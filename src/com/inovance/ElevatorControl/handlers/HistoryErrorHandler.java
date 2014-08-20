@@ -1,14 +1,11 @@
 package com.inovance.ElevatorControl.handlers;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.os.Message;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -18,7 +15,7 @@ import com.inovance.ElevatorControl.activities.TroubleAnalyzeActivity;
 import com.inovance.ElevatorControl.models.HistoryError;
 import com.inovance.ElevatorControl.models.ObjectListHolder;
 import com.inovance.ElevatorControl.models.ParameterSettings;
-import com.inovance.ElevatorControl.views.dialogs.CustomDialog;
+import com.mobsandgeeks.adapters.InstantAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +36,8 @@ public class HistoryErrorHandler extends BluetoothHandler {
 
     public int receiveCount;
 
+    private InstantAdapter instantAdapter;
+
     public HistoryErrorHandler(Activity activity) {
         super(activity);
         TAG = HistoryErrorHandler.class.getSimpleName();
@@ -56,6 +55,29 @@ public class HistoryErrorHandler extends BluetoothHandler {
     public void onMultiTalkEnd(Message msg) {
         super.onMultiTalkEnd(msg);
         if (sendCount == receiveCount) {
+            ViewPager pager = ((TroubleAnalyzeActivity) activity).pager;
+            View loadView = pager.findViewById(R.id.history_load_view);
+            View errorView = pager.findViewById(R.id.history_error_view);
+            View noErrorView = pager.findViewById(R.id.history_no_error_view);
+            View noDeviceView = pager.findViewById(R.id.history_no_device_view);
+            ListView listView = (ListView) pager.findViewById(R.id.history_error_list);
+            if (loadView != null && errorView != null && noErrorView != null
+                    && listView != null && noDeviceView != null) {
+                if (instantAdapter == null) {
+                    instantAdapter = new InstantAdapter<ParameterSettings>(activity,
+                            R.layout.list_parameter_group_item,
+                            ParameterSettings.class,
+                            parameterSettingsList);
+                    listView.setAdapter(instantAdapter);
+                } else {
+                    instantAdapter.notifyDataSetChanged();
+                }
+                loadView.setVisibility(View.GONE);
+                noErrorView.setVisibility(View.GONE);
+                noDeviceView.setVisibility(View.GONE);
+                errorView.setVisibility(View.VISIBLE);
+            }
+            /*
             int size = parameterSettingsList.size();
             if (size % 4 == 0) {
                 for (int index = 0; index < size / 4; index++) {
@@ -110,6 +132,7 @@ public class HistoryErrorHandler extends BluetoothHandler {
                     }
                 }
             }
+            */
         }
         ((TroubleAnalyzeActivity) activity).isSyncing = false;
     }

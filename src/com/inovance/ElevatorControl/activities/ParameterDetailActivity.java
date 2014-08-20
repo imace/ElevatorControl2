@@ -322,10 +322,8 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
      */
     private void getElevatorStatus(final int index, final ParameterSettings settings) {
         if (getElevatorStatusCommunication == null) {
-            List<RealTimeMonitor> monitorList = RealTimeMonitorDao
-                    .findByNames(this, new String[]{ApplicationConfig.STATUS_WORD_NAME});
-            if (monitorList.size() == 1) {
-                final RealTimeMonitor monitor = monitorList.get(0);
+            final RealTimeMonitor monitor = RealTimeMonitorDao.findByStateID(this, ApplicationConfig.RunningStatusType);
+            if (monitor != null) {
                 getElevatorStatusCommunication = new BluetoothTalk[]{
                         new BluetoothTalk() {
                             @Override
@@ -365,16 +363,18 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 };
             }
         }
-        if (BluetoothTool.getInstance().isPrepared()) {
-            if (!ParameterDetailActivity.this.hasGetElevatorStatus) {
-                getElevatorStatusHandler.index = index;
-                getElevatorStatusHandler.settings = settings;
-                BluetoothTool.getInstance()
-                        .setCommunications(getElevatorStatusCommunication)
-                        .setHandler(getElevatorStatusHandler)
-                        .send();
-            }
+        if (getElevatorStatusCommunication != null) {
+            if (BluetoothTool.getInstance().isPrepared()) {
+                if (!ParameterDetailActivity.this.hasGetElevatorStatus) {
+                    getElevatorStatusHandler.index = index;
+                    getElevatorStatusHandler.settings = settings;
+                    BluetoothTool.getInstance()
+                            .setCommunications(getElevatorStatusCommunication)
+                            .setHandler(getElevatorStatusHandler)
+                            .send();
+                }
 
+            }
         }
     }
 
@@ -883,9 +883,8 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                     @Override
                     public void beforeSend() {
                         this.setSendBuffer(SerialUtility.crc16("0103"
-                                        + ParseSerialsUtils.getCalculatedCode(firstItem)
-                                        + String.format("%04x", length)
-                                        + "0001"));
+                                + ParseSerialsUtils.getCalculatedCode(firstItem)
+                                + String.format("%04x", length)));
                     }
 
                     @Override
@@ -953,6 +952,8 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         Toast.makeText(ParameterDetailActivity.this,
                 R.string.write_parameter_successful,
                 Toast.LENGTH_SHORT).show();
+        // 刷新当前数据
+        refreshParameterData();
     }
 
     /**
@@ -1066,6 +1067,13 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
 
     @Override
     public void onRefreshButtonClick(RefreshActionItem sender) {
+        refreshParameterData();
+    }
+
+    /**
+     * 刷新当前数据
+     */
+    private void refreshParameterData() {
         mRefreshActionItem.showProgress(true);
         syncingParameter = true;
         currentTask = GetParameterDetail;
@@ -1259,7 +1267,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
             super.onTalkReceive(msg);
             if (msg.obj != null && msg.obj instanceof RealTimeMonitor) {
                 ParameterDetailActivity.this.hasGetElevatorStatus = true;
-                int status = ParseSerialsUtils.getIntFromBytes(((RealTimeMonitor) msg.obj).getReceived());
+                int status = ParseSerialsUtils.getElevatorStatus((RealTimeMonitor) msg.obj);
                 onGetElevatorStatus(this.index, status, this.settings);
             }
         }

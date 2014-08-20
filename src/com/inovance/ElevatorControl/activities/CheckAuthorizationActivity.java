@@ -83,6 +83,7 @@ public class CheckAuthorizationActivity extends Activity implements OnGetResultL
                 initializeData();
             }
         });
+        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
     }
 
     @Override
@@ -98,6 +99,7 @@ public class CheckAuthorizationActivity extends Activity implements OnGetResultL
     protected void onPause() {
         super.onPause();
         WebApi.getInstance().removeListener();
+        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
     }
 
     @OnClick(R.id.btn_sign_up)

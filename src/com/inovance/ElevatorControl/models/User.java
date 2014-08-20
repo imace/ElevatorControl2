@@ -1,5 +1,6 @@
 package com.inovance.ElevatorControl.models;
 
+import com.inovance.ElevatorControl.config.ConfigFactory;
 import net.tsz.afinal.annotation.sqlite.Id;
 import org.json.JSONObject;
 
@@ -44,17 +45,31 @@ public class User {
      */
     private String bluetoothAddress;
 
+    /**
+     * 用户权限
+     */
+    private int permission;
+
     public User() {
 
     }
 
     public User(JSONObject object) {
-        this.name = object.optString("UserName");
-        this.bluetoothAddress = object.optString("BluetoothAddress");
-        this.company = object.optString("CompanyName");
-        this.cellPhone = object.optString("MobilePhone");
-        this.telephone = object.optString("ContactTel");
-        this.email = object.optString("Email");
+        this.name = object.optString("UserName".toUpperCase());
+        this.bluetoothAddress = object.optString("BluetoothAddress".toUpperCase());
+        this.company = object.optString("CompanyName".toUpperCase());
+        this.cellPhone = object.optString("MobilePhone".toUpperCase());
+        this.telephone = object.optString("ContactTel".toUpperCase());
+        this.email = object.optString("Email".toUpperCase());
+        switch (object.optInt("Permission".toUpperCase())) {
+            case 0:
+                this.permission = ConfigFactory.Normal;
+                break;
+            case 1:
+                this.permission = ConfigFactory.Special;
+                break;
+        }
+
     }
 
     public int getId() {
@@ -111,5 +126,13 @@ public class User {
 
     public void setBluetoothAddress(String bluetoothAddress) {
         this.bluetoothAddress = bluetoothAddress;
+    }
+
+    public int getPermission() {
+        return permission;
+    }
+
+    public void setPermission(int permission) {
+        this.permission = permission;
     }
 }

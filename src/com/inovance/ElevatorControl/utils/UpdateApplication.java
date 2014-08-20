@@ -132,7 +132,9 @@ public class UpdateApplication {
                 WebApi.getInstance().setOnResultListener(new WebApi.OnGetResultListener() {
                     @Override
                     public void onResult(String tag, String responseString) {
-                        if (!currentVersionName.equalsIgnoreCase(responseString)) {
+                        if (responseString != null
+                                && responseString.length() > 0
+                                && !currentVersionName.equalsIgnoreCase(responseString)) {
                             lastVersionName = responseString;
                             confirmUpdateApplication();
                         } else {

@@ -68,19 +68,19 @@ public class Firmware {
     }
 
     public Firmware(JSONObject object) {
-        this.ID = object.optInt("ID");
-        this.bluetoothAddress = object.optString("BluetoothAddress");
-        this.deviceID = object.optString("FK_DeviceID");
-        this.isSpecialDevice = object.optString("IsSpecialDevice").equalsIgnoreCase("true");
-        this.remark = object.optString("Remark");
-        this.isApproved = object.optString("ApproveState").equalsIgnoreCase("已审批");
-        this.createDate = object.optString("CreateDate");
-        this.approveDate = object.optString("ApproveDate");
-        this.approveRemark = object.optString("ApproveRemark");
-        this.fileURL = object.optString("FileUrl");
-        this.downloadDate = object.optString("GetFileDate");
-        this.totalBurnTimes = object.optInt("UseTimes");
-        this.expireDate = object.optString("DateLimit");
+        this.ID = object.optInt("ID".toUpperCase());
+        this.bluetoothAddress = object.optString("BluetoothAddress".toUpperCase());
+        this.deviceID = object.optString("FK_DeviceID".toUpperCase());
+        this.isSpecialDevice = object.optString("IsSpecialDevice".toUpperCase()).equalsIgnoreCase("true");
+        this.remark = object.optString("Remark".toUpperCase());
+        this.isApproved = object.optString("ApproveState".toUpperCase()).equalsIgnoreCase("已审批");
+        this.createDate = object.optString("CreateDate".toUpperCase());
+        this.approveDate = object.optString("ApproveDate".toUpperCase());
+        this.approveRemark = object.optString("ApproveRemark".toUpperCase());
+        this.fileURL = object.optString("FileUrl".toUpperCase());
+        this.downloadDate = object.optString("GetFileDate".toUpperCase());
+        this.totalBurnTimes = object.optInt("UseTimes".toUpperCase());
+        this.expireDate = object.optString("DateLimit".toUpperCase());
     }
 
     public int getID() {
@@ -201,6 +201,18 @@ public class Firmware {
 
     public void setExpireDate(String expireDate) {
         this.expireDate = expireDate;
+    }
+
+    /**
+     * 是否超过使用期限
+     *
+     * @return boolean
+     */
+    public boolean isExpired() {
+        if (getExpireDate() == null || getExpireDate().length() == 0) {
+            return false;
+        }
+        return System.currentTimeMillis() > Long.parseLong(getExpireDate()) * 1000;
     }
 
 }

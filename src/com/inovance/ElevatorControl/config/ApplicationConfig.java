@@ -73,7 +73,7 @@ public class ApplicationConfig {
      * 当前故障信息	124
      * 参数密码解锁	125
      */
-    public static final int[] MonitorStateCode = new int[]{100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 115};
+    public static final int[] MonitorStateCode = new int[]{100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 115, 124, 114};
 
     /**
      * 输入端子
@@ -89,6 +89,11 @@ public class ApplicationConfig {
      * 高压输入端子
      */
     public static final int HVInputTerminalType = 11;
+
+    /**
+     * 状态字
+     */
+    public static final int RunningStatusType = 118;
 
     /**
      * F5-25
@@ -284,7 +289,8 @@ public class ApplicationConfig {
      */
     public static final int ErrorHelpType = 3;
 
-    public static final String DomainName = "http://222.92.112.36:6954/HuiChuanAPI.asmx/";
+    public static final String DomainName = "http://58.60.228.147:8007/HuiChuanAPI.asmx/";
+    //public static final String DomainName = "http://222.92.112.36:6954/HuiChuanAPI.asmx/";
 
     // 验证是否注册用户
     // 参数：blueAddress 设备蓝牙地址
@@ -415,6 +421,12 @@ public class ApplicationConfig {
     // 返回值：返回文件列表
     public static final String GetReceiveChatMessage = "GetReceiveFileList?phoneNum=";
 
+    // 获得该号码发送或待接收的文件列表
+    // phoneNum: 手机号码
+    // date：起始时间戳
+    // 返回值：返回文件列表(ty=1:待接收;ty=0:发送)
+    public static final String GetChatMessage = "GetAssistanceFileList?phoneNum={param0}&date={param1}";
+
     // 接收远程协助文件
     // 参数：id：文件列表记录的ID
     // 返回值：返回文件流
@@ -426,14 +438,14 @@ public class ApplicationConfig {
     public static final String GetRegistUserList = "GetInternalUserList";
 
     // 发送内部用户注册信息
-    // 参数:UserName:用户姓名
-    // WorkNo:工号
-    // MobilePhone:手机号
-    // Are:片区 默认为空
-    // Department:部门
-    // Email:Email
-    // Remark:备注
-    // Blue:蓝牙地址
+    // 参数：UserName：用户姓名
+    // WorkNo：工号
+    // MobilePhone：手机号
+    // Are：片区 默认为空
+    // Department：部门
+    // Email：Email
+    // Remark：备注
+    // Blue：蓝牙地址
     // 返回值：成功返回数据库记录,失败返回错误信息
     public static final String RegisterInternalUser = "SendRegisterInternal";
 }

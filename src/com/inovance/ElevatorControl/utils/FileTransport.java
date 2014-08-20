@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 import com.inovance.ElevatorControl.R;
@@ -30,7 +31,7 @@ public class FileTransport implements Runnable {
 
     private ProgressDialog transportDialog;
 
-    public static final String sendChatMessageURL = "http://222.92.112.36:6954/Assistance.aspx";
+    public static final String sendChatMessageURL = "http://58.60.228.147:8007/Assistance.aspx";
 
     private Context context;
 
@@ -114,6 +115,7 @@ public class FileTransport implements Runnable {
      * @param url     URL
      */
     public void downloadFile(Context context, String url) {
+        Log.v(TAG, url);
         this.context = context;
         showTransportDialog();
         new AsyncDownloadTask().execute(url);
@@ -196,6 +198,7 @@ public class FileTransport implements Runnable {
             int length = -1;
 
             while ((length = uploadInputStream.read(buffer)) != -1) {
+                Log.v(TAG, length + "");
                 dataOutputStream.write(buffer, 0, length);
                 uploaded += length;
                 Message message = new Message();
@@ -243,6 +246,7 @@ public class FileTransport implements Runnable {
                 connection.connect();
                 String raw = connection.getHeaderField("Content-Disposition");
                 String contentType = connection.getContentType();
+                Log.v(TAG, contentType);
                 String fileName;
                 if (raw != null && raw.contains("=")) {
                     fileName = raw.split("=")[1];

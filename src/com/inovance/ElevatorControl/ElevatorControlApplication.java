@@ -10,6 +10,8 @@ import com.inovance.ElevatorControl.config.ConfigFactory;
 import com.inovance.ElevatorControl.models.Shortcut;
 import com.inovance.ElevatorControl.utils.LogUtils;
 import com.inovance.ElevatorControl.utils.TextLocalize;
+import org.acra.ACRA;
+import org.acra.annotation.ReportsCrashes;
 
 /**
  * Created by keith on 14-3-8.
@@ -18,12 +20,13 @@ import com.inovance.ElevatorControl.utils.TextLocalize;
  * Time 下午9:55
  */
 
-/*
 @ReportsCrashes(
         formKey = "crashReport",
-        formUri = "http://www.report.com/reportpath"
+        formUri = "http://127.0.0.1:8888"
 )
-*/
+
+// TODO 改进内外召UI，让其更加直观
+// TODO 测试远程协助：接口问题无法进行测试
 public class ElevatorControlApplication extends Application {
 
     @Override

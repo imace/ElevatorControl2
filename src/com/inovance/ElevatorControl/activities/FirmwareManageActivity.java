@@ -2,6 +2,7 @@ package com.inovance.ElevatorControl.activities;
 
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothSocket;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
@@ -180,70 +181,123 @@ public class FirmwareManageActivity extends FragmentActivity {
         tempFirmWare = firmware;
         PopupMenu popupMenu = new PopupMenu(this, view);
         MenuInflater inflater = popupMenu.getMenuInflater();
-        inflater.inflate(R.menu.burn_option_menu, popupMenu.getMenu());
+        // 烧录 DSP 只需要连接蓝牙设备，不需要识别设备类型
+        if (BluetoothTool.getInstance().isConnected()) {
+            inflater.inflate(R.menu.burn_option_menu_connected, popupMenu.getMenu());
+        }
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(FirmwareManageActivity.this);
-                LayoutInflater inflater = FirmwareManageActivity.this.getLayoutInflater();
-                View dialogView = inflater.inflate(R.layout.firmware_burn_dialog, null);
-                firmwareMetaView = dialogView.findViewById(R.id.firmware_meta_view);
-                burnView = dialogView.findViewById(R.id.burn_view);
-                firmwareMetaTextView = (TextView) dialogView.findViewById(R.id.firmware_meta);
-                burningMessageTextView = (TextView) dialogView.findViewById(R.id.burning_message);
-                burningProgressBar = (ProgressBar) dialogView.findViewById(R.id.progress_bar);
-                builder.setTitle(R.string.will_burn_firmware_text);
-                builder.setView(dialogView);
-                builder.setNegativeButton(R.string.dialog_btn_cancel, null);
-                builder.setPositiveButton(R.string.burn_firmware_text, null);
-                burningProgressBar.setMax(100);
-                burnDialog = builder.create();
-                burnDialog.setCancelable(false);
-                burnDialog.setCanceledOnTouchOutside(false);
-                burnDialog.show();
-                try {
-                    File file = new File(getExternalCacheDir().getPath()
-                            + "/" + ApplicationConfig.FIRMWARE_FOLDER
-                            + "/" + firmware.getFileName() + ".bin");
-                    FileInputStream fileInputStream = new FileInputStream(file);
-                    if (BluetoothTool.getInstance().isPrepared()) {
-                        BluetoothSocket socket = BluetoothTool.getInstance()
-                                .bluetoothSocket;
-                        IProgram.getInstance().SetProgramPara(socket, fileInputStream, burnHandler);
-                    }
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
+                switch (item.getItemId()) {
+                    case R.id.action_burn:
+                        showBurnFirmwareDialog();
+                        break;
+                    case R.id.action_delete:
+                        showDeleteFirmwareDialog();
+                        break;
                 }
-                cancelButton = burnDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
-                confirmButton = burnDialog.getButton(AlertDialog.BUTTON_POSITIVE);
-                cancelButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        if (burnDialog != null && burnDialog.isShowing()) {
-                            burnDialog.dismiss();
-                        }
-                    }
-                });
-                confirmButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        if (BluetoothTool.getInstance().isPrepared()) {
-                            burnDialog.setTitle(R.string.burning_firmware_text);
-                            confirmButton.setEnabled(false);
-                            cancelButton.setEnabled(false);
-                            firmwareMetaView.setVisibility(View.GONE);
-                            burnView.setVisibility(View.VISIBLE);
-                            burningProgressBar.setVisibility(View.VISIBLE);
-                            IProgram.getInstance().StartProgram();
-                        }
-                    }
-                });
-                cancelButton.setEnabled(true);
-                confirmButton.setEnabled(false);
                 return false;
             }
         });
         popupMenu.show();
+    }
+
+    /**
+     * 弹出烧录确认对话框
+     */
+    private void showBurnFirmwareDialog() {
+        if (tempFirmWare.isExpired()) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                    .setTitle(R.string.firmware_expired_title)
+                    .setMessage(R.string.firmware_expired_message)
+                    .setPositiveButton(R.string.dialog_btn_ok, null);
+            builder.create().show();
+        } else {
+            AlertDialog.Builder builder = new AlertDialog.Builder(FirmwareManageActivity.this);
+            LayoutInflater inflater = FirmwareManageActivity.this.getLayoutInflater();
+            View dialogView = inflater.inflate(R.layout.firmware_burn_dialog, null);
+            firmwareMetaView = dialogView.findViewById(R.id.firmware_meta_view);
+            burnView = dialogView.findViewById(R.id.burn_view);
+            firmwareMetaTextView = (TextView) dialogView.findViewById(R.id.firmware_meta);
+            burningMessageTextView = (TextView) dialogView.findViewById(R.id.burning_message);
+            burningProgressBar = (ProgressBar) dialogView.findViewById(R.id.progress_bar);
+            builder.setTitle(R.string.will_burn_firmware_text);
+            builder.setView(dialogView);
+            builder.setNegativeButton(R.string.dialog_btn_cancel, null);
+            builder.setPositiveButton(R.string.burn_firmware_text, null);
+            burningProgressBar.setMax(100);
+            burnDialog = builder.create();
+            burnDialog.setCancelable(false);
+            burnDialog.setCanceledOnTouchOutside(false);
+            burnDialog.show();
+            try {
+                File file = new File(getExternalCacheDir().getPath()
+                        + "/" + ApplicationConfig.FIRMWARE_FOLDER
+                        + "/" + tempFirmWare.getFileName() + ".bin");
+                FileInputStream fileInputStream = new FileInputStream(file);
+                // 蓝牙设备连接已经建立
+                if (BluetoothTool.getInstance().isConnected()) {
+                    BluetoothSocket socket = BluetoothTool.getInstance().bluetoothSocket;
+                    IProgram.getInstance().SetProgramPara(socket, fileInputStream, burnHandler);
+                }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            cancelButton = burnDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+            confirmButton = burnDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            cancelButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (burnDialog != null && burnDialog.isShowing()) {
+                        burnDialog.dismiss();
+                    }
+                }
+            });
+            confirmButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (BluetoothTool.getInstance().isPrepared()) {
+                        burnDialog.setTitle(R.string.burning_firmware_text);
+                        confirmButton.setEnabled(false);
+                        cancelButton.setEnabled(false);
+                        firmwareMetaView.setVisibility(View.GONE);
+                        burnView.setVisibility(View.VISIBLE);
+                        burningProgressBar.setVisibility(View.VISIBLE);
+                        IProgram.getInstance().StartProgram();
+                    }
+                }
+            });
+            cancelButton.setEnabled(true);
+            confirmButton.setEnabled(false);
+        }
+    }
+
+    /**
+     * 弹出删除固件对话框
+     */
+    private void showDeleteFirmwareDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(FirmwareManageActivity.this);
+        builder.setTitle(R.string.delete_firmware_title);
+        builder.setMessage(R.string.delete_firmware_message);
+        builder.setNegativeButton(R.string.dialog_btn_cancel, null);
+        builder.setPositiveButton(R.string.dialog_btn_ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                // 删除固件
+                File file = new File(getExternalCacheDir().getPath()
+                        + "/" + ApplicationConfig.FIRMWARE_FOLDER
+                        + "/" + tempFirmWare.getFileName() + ".bin");
+                file.delete();
+                // 删除数据库记录
+                FirmwareDao.deleteItem(FirmwareManageActivity.this, tempFirmWare);
+                // 刷新烧录固件列表
+                FirmwareManageFragment fragment = mFirmwareManageAdapter.getItem(pageIndex);
+                if (fragment != null) {
+                    fragment.refreshFirmwareBurnView();
+                }
+            }
+        });
+        builder.create().show();
     }
 
     // ================================= Firmware burn handler ========================================
@@ -301,6 +355,12 @@ public class FirmwareManageActivity extends FragmentActivity {
                     if (tempFirmWare != null) {
                         int burnTime = tempFirmWare.getBurnTimes() + 1;
                         if (burnTime == tempFirmWare.getTotalBurnTimes()) {
+                            // 删除固件
+                            File file = new File(getExternalCacheDir().getPath()
+                                    + "/" + ApplicationConfig.FIRMWARE_FOLDER
+                                    + "/" + tempFirmWare.getFileName() + ".bin");
+                            file.delete();
+                            // 删除数据库记录
                             FirmwareDao.deleteItem(FirmwareManageActivity.this, tempFirmWare);
                         } else {
                             tempFirmWare.setBurnTimes(burnTime);

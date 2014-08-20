@@ -28,10 +28,10 @@ public class NormalDevice {
     private String description;
 
     public NormalDevice(JSONObject object) {
-        this.ID = object.optInt("ID");
-        this.name = object.optString("DeviceName");
-        this.number = object.optString("DeviceNum");
-        this.description = object.optString("DeviceDescription");
+        this.ID = object.optInt("ID".toUpperCase());
+        this.name = object.optString("DeviceName".toUpperCase());
+        this.number = object.optString("DeviceNum".toUpperCase());
+        this.description = object.optString("DeviceDescription".toUpperCase());
     }
 
     public String getDescription() {

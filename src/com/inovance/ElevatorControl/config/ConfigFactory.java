@@ -43,14 +43,14 @@ public class ConfigFactory implements OnGetResultListener, OnRequestFailureListe
     /**
      * 普通用户权限
      */
-    public static final int Normal = 1;
+    public static final int Normal = 0;
 
     /**
      * 专有设备权限
      */
-    public static final int Special = 2;
+    public static final int Special = 1;
 
-    private int Permission = Special;
+    private int permission = Normal;
 
     /**
      * 当前登录的用户
@@ -121,6 +121,7 @@ public class ConfigFactory implements OnGetResultListener, OnRequestFailureListe
 
     public void setCurrentUser(User currentUser) {
         this.currentUser = currentUser;
+        this.permission = this.currentUser.getPermission();
     }
 
     /**
@@ -171,11 +172,11 @@ public class ConfigFactory implements OnGetResultListener, OnRequestFailureListe
     }
 
     public int getPermission() {
-        return Permission;
+        return permission;
     }
 
     public void setPermission(int permission) {
-        Permission = permission;
+        this.permission = permission;
     }
 
     /**
@@ -203,39 +204,41 @@ public class ConfigFactory implements OnGetResultListener, OnRequestFailureListe
                     JSONObject object = jsonArray.getJSONObject(i);
                     String type = object.optString("codeType");
                     String updateTime = object.optString("updateTime");
-                    if (type.equalsIgnoreCase("funcode")) {
-                        if (currentDevice.getFunctionCodeUpdateTime() == null
-                                || !currentDevice.getFunctionCodeUpdateTime().equalsIgnoreCase(updateTime)) {
-                            ParameterFactoryDao.emptyRecordByDeviceID(context, getDeviceSQLID(), ApplicationConfig.FunctionCodeType);
-                            updateFunctionCodeComplete = false;
-                            currentDevice.setFunctionCodeUpdateTime(updateTime);
-                            showUpdateDialog();
-                            WebApi.getInstance().getFunctionCode(context, currentDevice.getRemoteID(), currentDevice.getDeviceType());
-                        } else {
-                            updateFunctionCodeComplete = true;
+                    if (!updateTime.equalsIgnoreCase("null")) {
+                        if (type.equalsIgnoreCase("funcode")) {
+                            if (currentDevice.getFunctionCodeUpdateTime() == null
+                                    || !currentDevice.getFunctionCodeUpdateTime().equalsIgnoreCase(updateTime)) {
+                                ParameterFactoryDao.emptyRecordByDeviceID(context, getDeviceSQLID(), ApplicationConfig.FunctionCodeType);
+                                updateFunctionCodeComplete = false;
+                                currentDevice.setFunctionCodeUpdateTime(updateTime);
+                                showUpdateDialog();
+                                WebApi.getInstance().getFunctionCode(context, currentDevice.getRemoteID(), currentDevice.getDeviceType());
+                            } else {
+                                updateFunctionCodeComplete = true;
+                            }
                         }
-                    }
-                    if (type.equalsIgnoreCase("state")) {
-                        if (currentDevice.getStateCodeUpdateTime() == null
-                                || !currentDevice.getStateCodeUpdateTime().equalsIgnoreCase(updateTime)) {
-                            ParameterFactoryDao.emptyRecordByDeviceID(context, getDeviceSQLID(), ApplicationConfig.StateCodeType);
-                            currentDevice.setStateCodeUpdateTime(updateTime);
-                            updateStateCodeComplete = false;
-                            showUpdateDialog();
-                            WebApi.getInstance().getStateCode(context, currentDevice.getRemoteID(), currentDevice.getDeviceType());
-                        } else {
-                            updateStateCodeComplete = true;
+                        if (type.equalsIgnoreCase("state")) {
+                            if (currentDevice.getStateCodeUpdateTime() == null
+                                    || !currentDevice.getStateCodeUpdateTime().equalsIgnoreCase(updateTime)) {
+                                ParameterFactoryDao.emptyRecordByDeviceID(context, getDeviceSQLID(), ApplicationConfig.StateCodeType);
+                                currentDevice.setStateCodeUpdateTime(updateTime);
+                                updateStateCodeComplete = false;
+                                showUpdateDialog();
+                                WebApi.getInstance().getStateCode(context, currentDevice.getRemoteID(), currentDevice.getDeviceType());
+                            } else {
+                                updateStateCodeComplete = true;
+                            }
                         }
-                    }
-                    if (type.equalsIgnoreCase("help")) {
-                        if (currentDevice.getErrorHelpUpdateTime() == null
-                                || !currentDevice.getErrorHelpUpdateTime().equalsIgnoreCase(updateTime)) {
-                            currentDevice.setErrorHelpUpdateTime(updateTime);
-                            updateErrorHelpComplete = false;
-                            showUpdateDialog();
-                            WebApi.getInstance().getErrorHelpList(context, currentDevice.getRemoteID(), currentDevice.getDeviceType());
-                        } else {
-                            updateErrorHelpComplete = true;
+                        if (type.equalsIgnoreCase("help")) {
+                            if (currentDevice.getErrorHelpUpdateTime() == null
+                                    || !currentDevice.getErrorHelpUpdateTime().equalsIgnoreCase(updateTime)) {
+                                currentDevice.setErrorHelpUpdateTime(updateTime);
+                                updateErrorHelpComplete = false;
+                                showUpdateDialog();
+                                WebApi.getInstance().getErrorHelpList(context, currentDevice.getRemoteID(), currentDevice.getDeviceType());
+                            } else {
+                                updateErrorHelpComplete = true;
+                            }
                         }
                     }
                 }

@@ -39,6 +39,8 @@ public class WebApi {
 
     private static final String BASE64_TAG = "base64Binary";
 
+    private static final int RequestTimeout = 4000;
+
     /**
      * 请求失败
      */
@@ -53,9 +55,9 @@ public class WebApi {
         void onResult(String tag, String responseString);
     }
 
-    private static WebApi ourInstance = new WebApi();
+    private static WebApi instance = new WebApi();
 
-    private static AsyncHttpClient client = new AsyncHttpClient();
+    private AsyncHttpClient client = new AsyncHttpClient();
 
     private OnRequestFailureListener onFailureListener;
 
@@ -75,7 +77,8 @@ public class WebApi {
     }
 
     public static WebApi getInstance() {
-        return ourInstance;
+        instance.client.setTimeout(RequestTimeout);
+        return instance;
     }
 
     private WebApi() {
@@ -121,15 +124,18 @@ public class WebApi {
         }
     }
 
-    // 参数:UserName:用户姓名
-    // WorkNo:工号
-    // MobilePhone:手机号
-    // Are:片区 默认为空
-    // Department:部门
-    // Email:Email
-    // Remark:备注
-    // Blue:蓝牙地址
-    // 返回值：成功返回数据库记录,失败返回错误信息
+    /**
+     * 注册内部用户
+     *
+     * @param context          Context
+     * @param name             用户姓名
+     * @param number           工号
+     * @param cellphone        手机号
+     * @param department       部门
+     * @param email            Email
+     * @param remark           备注
+     * @param bluetoothAddress 蓝牙地址
+     */
     public void registerInternalUser(Context context, String name, String number,
                                      String cellphone, String department, String email,
                                      String remark, String bluetoothAddress) {
@@ -562,6 +568,21 @@ public class WebApi {
         startGetRequest(context, requestURL, ApplicationConfig.GetReceiveChatMessage, false);
     }
 
+    /**
+     * 获得该号码发送或待接收的文件列表
+     * 返回值：返回文件列表(ty=1:待接收;ty=0:发送)
+     *
+     * @param context     Context
+     * @param phoneNumber 手机号码
+     * @param timestamp   起始时间戳
+     */
+    public void getChatMessage(Context context, String phoneNumber, long timestamp) {
+        String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetChatMessage;
+        requestURL = requestURL.replace("{param0}", phoneNumber);
+        requestURL = requestURL.replace("{param1}", String.valueOf(timestamp));
+        startGetRequest(context, requestURL, ApplicationConfig.GetChatMessage, false);
+    }
+
     public void getRegistUserList(Context context) {
         String requestURL = ApplicationConfig.DomainName
                 + ApplicationConfig.GetRegistUserList;
@@ -576,6 +597,7 @@ public class WebApi {
      * @param cached Cached
      */
     private void startGetRequest(Context context, final String url, final String tag, final boolean cached) {
+        Log.v(TAG, url);
         boolean needFetchRemote;
         if (cached) {
             String cacheString = LruCacheTool.getInstance().getCache(url);
@@ -689,5 +711,4 @@ public class WebApi {
         }
 
     }
-
 }

@@ -159,22 +159,28 @@ public class ConfigurationFragment extends Fragment {
                     if (monitor.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[2] ||
                             monitor.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[3]) {
                         AlertDialog dialog = CustomDialog.terminalDetailDialog(getActivity(), monitor).create();
-                        dialog.setInverseBackgroundForced(true);
                         dialog.show();
                     }
+                    // 高压输入端子状态
                     if (monitor.getStateID() == ApplicationConfig.MonitorStateCode[14]) {
-                        ((ConfigurationActivity) getActivity()).setHVInputTerminalStatus(monitor);
+                        ((ConfigurationActivity) getActivity()).viewHVInputTerminalStatus(position);
                     }
+                    // 输入端子状态
                     if (monitor.getStateID() == ApplicationConfig.MonitorStateCode[5]) {
-                        ((ConfigurationActivity) getActivity()).seeInputTerminalStatus(monitor);
+                        ((ConfigurationActivity) getActivity()).viewInputTerminalStatus(position);
                     }
+                    // 输出端子状态
                     if (monitor.getStateID() == ApplicationConfig.MonitorStateCode[6]) {
-                        ((ConfigurationActivity) getActivity()).seeOutputTerminalStatus(monitor);
+                        ((ConfigurationActivity) getActivity()).viewOutputTerminalStatus(position);
                     }
                 }
             });
             hasBindListListener = true;
         }
+    }
+
+    public List<RealTimeMonitor> getMonitorViewData() {
+        return monitorList;
     }
 
     /**

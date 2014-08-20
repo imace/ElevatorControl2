@@ -1,5 +1,6 @@
 package com.inovance.ElevatorControl.models;
 
+import android.util.Log;
 import net.tsz.afinal.annotation.sqlite.Id;
 import org.json.JSONObject;
 
@@ -49,6 +50,8 @@ public class ChatMessage {
     @Id
     private int ID;
 
+    private int remoteID;
+
     /**
      * 标题
      */
@@ -89,12 +92,23 @@ public class ChatMessage {
     }
 
     public ChatMessage(JSONObject object) {
-        this.ID = object.optInt("ID");
-        this.title = object.optString("Title");
-        this.fromNumber = object.optString("FromNum");
-        this.toNumber = object.optString("ToNum");
-        this.timeString = object.optString("CreateDate");
-        int type = object.optInt("FileType");
+        this.remoteID = object.optInt("ID".toUpperCase());
+        this.title = object.optString("Title".toUpperCase());
+        this.fromNumber = object.optString("FromNum".toUpperCase());
+        this.toNumber = object.optString("ToNum".toUpperCase());
+        this.timeString = object.optString("CreateDate".toUpperCase());
+        switch (object.optInt("ty".toUpperCase())) {
+            case 0:
+                this.chatType = SEND;
+                break;
+            case 1:
+                this.chatType = RECEIVE;
+                break;
+            default:
+                this.chatType = RECEIVE;
+                break;
+        }
+        int type = object.optInt("FileType".toUpperCase());
         switch (type) {
             case 0:
                 this.contentType = TYPE_TEXT;
@@ -176,6 +190,14 @@ public class ChatMessage {
 
     public void setFileUrl(String fileUrl) {
         this.fileUrl = fileUrl;
+    }
+
+    public int getRemoteID() {
+        return remoteID;
+    }
+
+    public void setRemoteID(int remoteID) {
+        this.remoteID = remoteID;
     }
 
 }

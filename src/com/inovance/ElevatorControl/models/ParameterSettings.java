@@ -133,20 +133,20 @@ public class ParameterSettings implements Cloneable {
     }
 
     public ParameterSettings(JSONObject object) {
-        this.code = object.optString("code");
-        this.name = object.optString("name");
-        this.productId = object.optString("productId");
-        this.description = object.optString("description");
+        this.code = object.optString("code".toUpperCase());
+        this.name = object.optString("name".toUpperCase());
+        this.productId = object.optString("productId".toUpperCase());
+        this.description = object.optString("description".toUpperCase());
         this.descriptionType = ParameterSettings.ParseDescriptionToType(this.getDescription());
-        this.childId = object.optString("childId");
-        this.scope = object.optString("scope");
-        this.userValue = object.optString("userValue");
-        this.hexValueString = object.optString("hexValue");
-        this.defaultValue = object.optString("defaultValue");
-        this.scale = object.optString("scale");
-        this.unit = object.optString("unit");
-        this.type = object.optString("type");
-        this.mode = object.optString("mode");
+        this.childId = object.optString("childId".toUpperCase());
+        this.scope = object.optString("scope".toUpperCase());
+        this.userValue = object.optString("userValue".toUpperCase());
+        this.hexValueString = object.optString("hexValue".toUpperCase());
+        this.defaultValue = object.optString("defaultValue".toUpperCase());
+        this.scale = object.optString("scale".toUpperCase());
+        this.unit = object.optString("unit".toUpperCase());
+        this.type = object.optString("type".toUpperCase());
+        this.mode = object.optString("mode".toUpperCase());
     }
 
     public int getId() {
@@ -373,8 +373,7 @@ public class ParameterSettings implements Cloneable {
                         String[] part = item.split(":");
                         jsonStringer.object();
                         jsonStringer.key("id").value(part.length > 0 ? part[0]
-                                .replace("Bit", "")
-                                .replace("bit", "")
+                                .replaceAll("(?i)bit", "")
                                 .replaceFirst("^0+(?!$)", "") : "");
                         jsonStringer.key("value").value(part.length > 1 ? part[1] : "");
                         jsonStringer.endObject();

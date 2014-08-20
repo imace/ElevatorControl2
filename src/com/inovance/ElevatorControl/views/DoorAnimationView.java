@@ -71,7 +71,9 @@ public class DoorAnimationView extends LinearLayout {
 
     /**
      * Set current direction
-     *
+     * 1 电梯上行
+     * 2 电梯下行
+     * 3 电梯停止
      * @param direction Current direction
      */
     public void setCurrentDirection(int direction) {

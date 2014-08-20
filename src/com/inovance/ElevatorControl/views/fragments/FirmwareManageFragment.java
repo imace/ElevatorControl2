@@ -113,9 +113,14 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
     @Override
     public void onResume() {
         super.onResume();
-        int currentPager = ((FirmwareManageActivity) getActivity()).pager.getCurrentItem();
-        if (currentPager == 0) {
-            loadFirmwareApplyView();
+        int currentPage = ((FirmwareManageActivity) getActivity()).pager.getCurrentItem();
+        switch (currentPage) {
+            case 0:
+                loadFirmwareApplyView();
+                break;
+            case 1:
+                refreshFirmwareBurnView();
+                break;
         }
     }
 
@@ -223,9 +228,9 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
      */
     public void refreshFirmwareBurnView() {
         if (firmwareBurnAdapter != null) {
-            burnFirmwareList.clear();
+            burnFirmwareList = new ArrayList<Firmware>();
             burnFirmwareList.addAll(FirmwareDao.findAll(context));
-            firmwareBurnAdapter.notifyDataSetChanged();
+            firmwareBurnAdapter.setFirmwareList(burnFirmwareList);
         }
     }
 
@@ -282,148 +287,156 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
     // ============================================= Web APi Listener ================================= //
     @Override
     public void onResult(String tag, String responseString) {
-        int currentPager = ((FirmwareManageActivity) getActivity()).pager.getCurrentItem();
-        if (currentPager == 0) {
-            if (tag.equalsIgnoreCase(ApplicationConfig.GetNormalDeviceList)) {
-                try {
-                    List<NormalDevice> deviceList = new ArrayList<NormalDevice>();
-                    JSONArray jsonArray = new JSONArray(responseString);
-                    int size = jsonArray.length();
-                    for (int i = 0; i < size; i++) {
-                        JSONObject object = jsonArray.getJSONObject(i);
-                        NormalDevice device = new NormalDevice(object);
-                        deviceList.add(device);
-                    }
-                    normalApplyView.setSpinnerDataSource(deviceList);
-                } catch (JSONException e) {
-                    Toast.makeText(getActivity(), R.string.read_data_error, Toast.LENGTH_SHORT).show();
-                }
-            }
-            if (tag.equalsIgnoreCase(ApplicationConfig.GetVendorList)) {
-                try {
-                    List<Vendor> vendorList = new ArrayList<Vendor>();
-                    JSONArray jsonArray = new JSONArray(responseString);
-                    int size = jsonArray.length();
-                    for (int i = 0; i < size; i++) {
-                        JSONObject object = jsonArray.getJSONObject(i);
-                        Vendor vendor = new Vendor(object);
-                        vendorList.add(vendor);
-                    }
-                    specialApplyView.setVendorList(vendorList);
-                } catch (JSONException e) {
-                    Toast.makeText(getActivity(), R.string.read_data_error, Toast.LENGTH_SHORT).show();
-                }
-            }
-            if (tag.equalsIgnoreCase(ApplicationConfig.GetSpecialDeviceList)) {
-                try {
-                    List<SpecialDevice> deviceList = new ArrayList<SpecialDevice>();
-                    JSONArray jsonArray = new JSONArray(responseString);
-                    int size = jsonArray.length();
-                    for (int i = 0; i < size; i++) {
-                        JSONObject object = jsonArray.getJSONObject(i);
-                        SpecialDevice device = new SpecialDevice(object);
-                        deviceList.add(device);
-                    }
-                    specialApplyView.setDeviceList(deviceList);
-                } catch (JSONException e) {
-                    Toast.makeText(getActivity(), R.string.read_data_error, Toast.LENGTH_SHORT).show();
-                }
-            }
-            if (tag.equalsIgnoreCase(ApplicationConfig.GetDeviceListByVendorID)) {
-                try {
-                    List<SpecialDevice> deviceList = new ArrayList<SpecialDevice>();
-                    JSONArray jsonArray = new JSONArray(responseString);
-                    int size = jsonArray.length();
-                    for (int i = 0; i < size; i++) {
-                        JSONObject object = jsonArray.getJSONObject(i);
-                        SpecialDevice device = new SpecialDevice(object);
-                        deviceList.add(device);
-                    }
-                    specialApplyView.setDeviceList(deviceList);
-                } catch (JSONException e) {
-                    Toast.makeText(getActivity(), R.string.read_data_error, Toast.LENGTH_SHORT).show();
-                }
-            }
-        }
-        if (currentPager == 1) {
-            if (tag.equalsIgnoreCase(ApplicationConfig.GetAllFirmwareNotDownload)) {
-                if (responseString != null && responseString.length() > 0) {
-                    try {
-                        JSONArray jsonArray = new JSONArray(responseString);
-                        int size = jsonArray.length();
-                        List<Firmware> firmwareList = new ArrayList<Firmware>();
-                        for (int i = 0; i < size; i++) {
-                            JSONObject object = jsonArray.getJSONObject(i);
-                            Firmware firmware = new Firmware(object);
-                            firmwareList.add(firmware);
-                        }
-                        FirmwareDownloadAdapter adapter = new FirmwareDownloadAdapter(getActivity(), firmwareList);
-                        adapter.setOnDownloadButtonClickListener(new FirmwareDownloadAdapter
-                                .onDownloadButtonClickListener() {
-                            @Override
-                            public void onClick(View view, int position, Firmware firmware) {
-                                FirmwareManageFragment.this.downloadFirmware(view, firmware);
+            int currentPager = ((FirmwareManageActivity) getActivity()).pager.getCurrentItem();
+            if (currentPager == 0) {
+                if (tag.equalsIgnoreCase(ApplicationConfig.GetNormalDeviceList)) {
+                    if (responseString != null && responseString.length() > 0) {
+                        try {
+                            List<NormalDevice> deviceList = new ArrayList<NormalDevice>();
+                            JSONArray jsonArray = new JSONArray(responseString);
+                            int size = jsonArray.length();
+                            for (int i = 0; i < size; i++) {
+                                JSONObject object = jsonArray.getJSONObject(i);
+                                NormalDevice device = new NormalDevice(object);
+                                deviceList.add(device);
                             }
-                        });
-                        firmwareDownloadListView.setAdapter(adapter);
+                            normalApplyView.setSpinnerDataSource(deviceList);
+                        } catch (JSONException e) {
+                            Toast.makeText(getActivity(), R.string.read_data_error, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+                if (tag.equalsIgnoreCase(ApplicationConfig.GetVendorList)) {
+                    if (responseString != null && responseString.length() > 0) {
+                        try {
+                            List<Vendor> vendorList = new ArrayList<Vendor>();
+                            JSONArray jsonArray = new JSONArray(responseString);
+                            int size = jsonArray.length();
+                            for (int i = 0; i < size; i++) {
+                                JSONObject object = jsonArray.getJSONObject(i);
+                                Vendor vendor = new Vendor(object);
+                                vendorList.add(vendor);
+                            }
+                            specialApplyView.setVendorList(vendorList);
+                        } catch (JSONException e) {
+                            Toast.makeText(getActivity(), R.string.read_data_error, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+                if (tag.equalsIgnoreCase(ApplicationConfig.GetSpecialDeviceList)) {
+                    if (responseString != null && responseString.length() > 0) {
+                        try {
+                            List<SpecialDevice> deviceList = new ArrayList<SpecialDevice>();
+                            JSONArray jsonArray = new JSONArray(responseString);
+                            int size = jsonArray.length();
+                            for (int i = 0; i < size; i++) {
+                                JSONObject object = jsonArray.getJSONObject(i);
+                                SpecialDevice device = new SpecialDevice(object);
+                                deviceList.add(device);
+                            }
+                            specialApplyView.setDeviceList(deviceList);
+                        } catch (JSONException e) {
+                            Toast.makeText(getActivity(), R.string.read_data_error, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+                if (tag.equalsIgnoreCase(ApplicationConfig.GetDeviceListByVendorID)) {
+                    if (responseString != null && responseString.length() > 0) {
+                        try {
+                            List<SpecialDevice> deviceList = new ArrayList<SpecialDevice>();
+                            JSONArray jsonArray = new JSONArray(responseString);
+                            int size = jsonArray.length();
+                            for (int i = 0; i < size; i++) {
+                                JSONObject object = jsonArray.getJSONObject(i);
+                                SpecialDevice device = new SpecialDevice(object);
+                                deviceList.add(device);
+                            }
+                            specialApplyView.setDeviceList(deviceList);
+                        } catch (JSONException e) {
+                            Toast.makeText(getActivity(), R.string.read_data_error, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+            }
+            if (currentPager == 1) {
+                if (tag.equalsIgnoreCase(ApplicationConfig.GetAllFirmwareNotDownload)) {
+                    if (responseString != null && responseString.length() > 0) {
+                        try {
+                            JSONArray jsonArray = new JSONArray(responseString);
+                            int size = jsonArray.length();
+                            List<Firmware> firmwareList = new ArrayList<Firmware>();
+                            for (int i = 0; i < size; i++) {
+                                JSONObject object = jsonArray.getJSONObject(i);
+                                Firmware firmware = new Firmware(object);
+                                firmwareList.add(firmware);
+                            }
+                            FirmwareDownloadAdapter adapter = new FirmwareDownloadAdapter(getActivity(), firmwareList);
+                            adapter.setOnDownloadButtonClickListener(new FirmwareDownloadAdapter
+                                    .onDownloadButtonClickListener() {
+                                @Override
+                                public void onClick(View view, int position, Firmware firmware) {
+                                    FirmwareManageFragment.this.downloadFirmware(view, firmware);
+                                }
+                            });
+                            firmwareDownloadListView.setAdapter(adapter);
+                            downloadListLoadView.setVisibility(View.GONE);
+                            emptyFirmwareView.setVisibility(View.GONE);
+                            firmwareDownloadListView.setVisibility(View.VISIBLE);
+                        } catch (JSONException e) {
+                            Toast.makeText(getActivity(), R.string.read_data_error, Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        firmwareDownloadListView.setVisibility(View.GONE);
                         downloadListLoadView.setVisibility(View.GONE);
-                        emptyFirmwareView.setVisibility(View.GONE);
-                        firmwareDownloadListView.setVisibility(View.VISIBLE);
-                    } catch (JSONException e) {
-                        Toast.makeText(getActivity(), R.string.read_data_error, Toast.LENGTH_SHORT).show();
+                        emptyFirmwareView.setVisibility(View.VISIBLE);
                     }
-                } else {
-                    firmwareDownloadListView.setVisibility(View.GONE);
-                    downloadListLoadView.setVisibility(View.GONE);
-                    emptyFirmwareView.setVisibility(View.VISIBLE);
+                }
+                if (tag.equalsIgnoreCase(ApplicationConfig.DownloadFirmware)) {
+                    byte[] binData = Base64.decode(responseString, Base64.DEFAULT);
+                    File directory = new File(getActivity().getExternalCacheDir().getPath()
+                            + "/"
+                            + ApplicationConfig.FIRMWARE_FOLDER);
+                    if (!directory.exists()) {
+                        directory.mkdir();
+                    }
+                    String fileName = UUID.randomUUID().toString();
+                    File file = new File(getActivity().getExternalCacheDir().getPath()
+                            + "/"
+                            + ApplicationConfig.FIRMWARE_FOLDER
+                            + "/"
+                            + fileName + ".bin");
+                    try {
+                        FileOutputStream outputStream = new FileOutputStream(file);
+                        outputStream.write(binData);
+                        outputStream.close();
+                        if (firmware != null) {
+                            // 存储到数据库中
+                            DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                            firmware.setDownloadDate(dateFormat.format(new Date()));
+                            firmware.setFileName(fileName);
+                            FirmwareDao.saveItem(getActivity(), firmware);
+                            // 从服务器删除已提取的程序
+                            WebApi.getInstance().deleteFileFromServer(getActivity(), firmware.getID());
+                        }
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (tag.equalsIgnoreCase(ApplicationConfig.DeleteFile)) {
+                    if (responseString.equalsIgnoreCase("success")) {
+                        if (downloadDialog != null && downloadDialog.isShowing()) {
+                            downloadDialog.dismiss();
+                        }
+                        Toast.makeText(getActivity(), R.string.download_successful_message, Toast.LENGTH_SHORT).show();
+                        downloadListLoadView.setVisibility(View.VISIBLE);
+                        firmwareDownloadListView.setVisibility(View.GONE);
+                        String bluetoothAddress = BluetoothAdapter.getDefaultAdapter().getAddress();
+                        WebApi.getInstance().getAllFirmwareNotDownload(getActivity(), bluetoothAddress);
+                    }
                 }
             }
-            if (tag.equalsIgnoreCase(ApplicationConfig.DownloadFirmware)) {
-                byte[] binData = Base64.decode(responseString, Base64.DEFAULT);
-                File directory = new File(getActivity().getExternalCacheDir().getPath()
-                        + "/"
-                        + ApplicationConfig.FIRMWARE_FOLDER);
-                if (!directory.exists()) {
-                    directory.mkdir();
-                }
-                String fileName = UUID.randomUUID().toString();
-                File file = new File(getActivity().getExternalCacheDir().getPath()
-                        + "/"
-                        + ApplicationConfig.FIRMWARE_FOLDER
-                        + "/"
-                        + fileName + ".bin");
-                try {
-                    FileOutputStream outputStream = new FileOutputStream(file);
-                    outputStream.write(binData);
-                    outputStream.close();
-                    if (firmware != null) {
-                        // 存储到数据库中
-                        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-                        firmware.setDownloadDate(dateFormat.format(new Date()));
-                        firmware.setFileName(fileName);
-                        FirmwareDao.saveItem(getActivity(), firmware);
-                        // 从服务器删除已提取的程序
-                        WebApi.getInstance().deleteFileFromServer(getActivity(), firmware.getID());
-                    }
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (tag.equalsIgnoreCase(ApplicationConfig.DeleteFile)) {
-                if (responseString.equalsIgnoreCase("success")) {
-                    if (downloadDialog != null && downloadDialog.isShowing()) {
-                        downloadDialog.dismiss();
-                    }
-                    Toast.makeText(getActivity(), R.string.download_successful_message, Toast.LENGTH_SHORT).show();
-                    downloadListLoadView.setVisibility(View.VISIBLE);
-                    firmwareDownloadListView.setVisibility(View.GONE);
-                    String bluetoothAddress = BluetoothAdapter.getDefaultAdapter().getAddress();
-                    WebApi.getInstance().getAllFirmwareNotDownload(getActivity(), bluetoothAddress);
-                }
-            }
-        }
     }
 
     @Override

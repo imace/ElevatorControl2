@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
@@ -225,9 +224,9 @@ public class MoveInsideActivity extends Activity implements Runnable {
                     @Override
                     public void beforeSend() {
                         this.setSendBuffer(SerialUtility.crc16("0103"
-                                        + firstItem.getCode()
-                                        + String.format("%04x", length)
-                                        + "0001"));
+                                + firstItem.getCode()
+                                + String.format("%04x", length)
+                                + "0001"));
                     }
 
                     @Override
@@ -484,6 +483,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
     }
 
     // ================================= 获取电梯最高层和最底层 ========================================== //
+
     private class MoveInsideHandler extends BluetoothHandler {
 
         public int sendCount;
@@ -587,6 +587,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
     }
 
     // ============================== 同步内召信息 ================================================ //
+
     private class SyncMoveInsideInfoHandler extends BluetoothHandler {
 
         public int sendCount;
@@ -612,9 +613,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
             super.onMultiTalkEnd(msg);
             if (sendCount == receiveCount) {
                 List<Integer> calledFloorList = new ArrayList<Integer>();
-                int index = 0;
                 for (RealTimeMonitor monitor : monitorList) {
-                    Log.v(TAG, monitor.getName() + monitor.getCode());
                     if (monitor.getStateID() == ApplicationConfig.CurrentFloorType) {
                         MoveInsideActivity.this.currentFloorTextView
                                 .setText(String.valueOf(ParseSerialsUtils.getIntFromBytes(monitor.getReceived())));
@@ -626,21 +625,16 @@ public class MoveInsideActivity extends Activity implements Runnable {
                                 int length02 = moveInsideMonitorList.size();
                                 for (int n = 0; n < length02; n++) {
                                     if (monitor.getName().equalsIgnoreCase(moveInsideMonitorList.get(n).getName())) {
-                                        /**
-                                         * 当前所有召唤的楼层
-                                         */
+                                        // 当前所有召唤的楼层
                                         calledFloorList.add(n * 8 + m + 1);
                                     }
                                 }
                             }
                         }
                     }
-                    index++;
                 }
                 if (calledFloorList.size() > 0) {
-                    /**
-                     * 更新已召唤的楼层UI
-                     */
+                    // 更新已召唤的楼层UI
                     if (moveSidePagerAdapter != null) {
                         moveSidePagerAdapter.updateCurrentCalledFloor(calledFloorList);
                     }

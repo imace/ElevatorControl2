@@ -43,13 +43,13 @@ public class SpecialDevice {
     private String description;
 
     public SpecialDevice(JSONObject object) {
-        this.ID = object.optInt("ID");
-        this.name = object.optString("DeviceName");
-        this.displayName = object.optString("DeviceDisplayName");
-        this.number = object.optString("DeviceNum");
-        this.vendorID = object.optInt("FK_Vendor");
-        this.description = object.optString("DeviceDescription");
-        this.code = object.optString("Code");
+        this.ID = object.optInt("ID".toUpperCase());
+        this.name = object.optString("DeviceName".toUpperCase());
+        this.displayName = object.optString("DeviceDisplayName".toUpperCase());
+        this.number = object.optString("DeviceNum".toUpperCase());
+        this.vendorID = object.optInt("FK_Vendor".toUpperCase());
+        this.description = object.optString("DeviceDescription".toUpperCase());
+        this.code = object.optString("Code".toUpperCase());
     }
 
     public int getID() {

@@ -75,9 +75,8 @@ public class ProfileDownloadUtils implements Runnable {
         LayoutInflater inflater = activity.getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.parameters_duplicate_dialog, null);
         dialogView.findViewById(R.id.progress_view).setVisibility(View.VISIBLE);
-        ((TextView) dialogView.findViewById(R.id.total_items)).setText("100");
         dialogView.findViewById(R.id.file_name).setVisibility(View.GONE);
-        currentTextView = (TextView) dialogView.findViewById(R.id.current_item);
+        currentTextView = (TextView) dialogView.findViewById(R.id.current_progress);
         downloadProgressBar = (ProgressBar) dialogView.findViewById(R.id.progress_bar);
         parameterGroupLists = ParameterGroupSettingsDao.findAll(parentActivity);
         communicationsList = new ArrayList<BluetoothTalk[]>();
@@ -89,6 +88,7 @@ public class ProfileDownloadUtils implements Runnable {
         }
         downloadProgressBar.setMax(maxProgress);
         downloadProgressBar.setProgress(0);
+        currentTextView.setText("0%");
         builder.setTitle(R.string.save_file_dialog_title);
         builder.setView(dialogView);
         builder.setNegativeButton(R.string.dialog_btn_cancel, new DialogInterface.OnClickListener() {
@@ -234,7 +234,7 @@ public class ProfileDownloadUtils implements Runnable {
                 } else {
                     calculateProgress = (100 * currentProgress) / maxProgress;
                 }
-                ProfileDownloadUtils.this.currentTextView.setText(calculateProgress + "/100");
+                ProfileDownloadUtils.this.currentTextView.setText(calculateProgress + "%");
                 ProfileDownloadUtils.this.parameterGroupLists
                         .get(index)
                         .getParametersettings()
