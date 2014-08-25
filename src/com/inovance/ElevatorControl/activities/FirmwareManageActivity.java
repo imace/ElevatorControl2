@@ -184,6 +184,8 @@ public class FirmwareManageActivity extends FragmentActivity {
         // 烧录 DSP 只需要连接蓝牙设备，不需要识别设备类型
         if (BluetoothTool.getInstance().isConnected()) {
             inflater.inflate(R.menu.burn_option_menu_connected, popupMenu.getMenu());
+        } else {
+            inflater.inflate(R.menu.burn_option_menu_not_connected, popupMenu.getMenu());
         }
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override

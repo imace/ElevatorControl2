@@ -411,10 +411,7 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
 
                     @Override
                     public Object onParse() {
-                        Log.v(TAG + "Send", SerialUtility.byte2HexStr(getSendBuffer()));
-                        Log.v(TAG + "Receive", SerialUtility.byte2HexStr(getReceivedBuffer()));
                         if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
-                            Log.v(TAG + "Checked", SerialUtility.byte2HexStr(getReceivedBuffer()));
                             byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
                             if (data.length > 8) {
                                 short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();

@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -213,21 +212,28 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
 
     private static final int FailedRecogniseDevice = 2;
 
+    /**
+     * 连接设备失败
+     */
+    public boolean failedToConnectDevice = false;
+
     private Handler messageHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            switch (msg.what) {
-                case StartRecogniseDevice:
-                    Toast.makeText(NavigationTabActivity.this,
-                            R.string.recognise_device_wait_text,
-                            Toast.LENGTH_SHORT).show();
-                    break;
-                case FailedRecogniseDevice:
-                    Toast.makeText(NavigationTabActivity.this,
-                            R.string.recognise_device_failed_text,
-                            Toast.LENGTH_SHORT).show();
-                    break;
+            if (isRunning) {
+                switch (msg.what) {
+                    case StartRecogniseDevice:
+                        Toast.makeText(NavigationTabActivity.this,
+                                R.string.recognise_device_wait_text,
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                    case FailedRecogniseDevice:
+                        Toast.makeText(NavigationTabActivity.this,
+                                R.string.recognise_device_failed_text,
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                }
             }
         }
     };
@@ -556,6 +562,8 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
                 public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
                     tempDevice = tempDeviceList.get(position);
                     currentTask = CONNECT_DEVICE;
+                    // 连接设备
+                    failedToConnectDevice = false;
                     pool.execute(NavigationTabActivity.this);
                 }
 
@@ -748,7 +756,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
                         .search();
                 break;
             case CONNECT_DEVICE:
-                if (tempDevice != null) {
+                if (tempDevice != null && !failedToConnectDevice) {
                     hasGetDeviceType = false;
                     BluetoothTool.getInstance().setHasSelectDeviceType(false);
                     BluetoothTool.getInstance().connectDevice(tempDevice);
@@ -906,7 +914,6 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
      */
     public void startHomeActivityStatusSyncTask() {
         if (hasGetDeviceType) {
-            Log.v("TESTFORDEBUG", "STEP01");
             switch (getTabHost().getCurrentTab()) {
                 case 0: {
                     if (getCurrentActivity() instanceof TroubleAnalyzeActivity) {

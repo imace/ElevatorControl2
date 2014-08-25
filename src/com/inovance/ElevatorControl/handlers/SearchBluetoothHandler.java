@@ -103,6 +103,8 @@ public class SearchBluetoothHandler extends BluetoothHandler {
         super.onConnectFailed(msg);
         mNavigationTabActivity.showRefreshButtonProgress(false);
         mNavigationTabActivity.setSpinnerDataSource();
+        mNavigationTabActivity.failedToConnectDevice = true;
+        // 设备连接异常
         Toast.makeText(activity, R.string.failed_connect, Toast.LENGTH_SHORT).show();
     }
 

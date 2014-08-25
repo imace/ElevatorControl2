@@ -18,6 +18,13 @@ public class ProfileDao {
 
     private static final boolean DEBUG = false;
 
+    public static boolean checkExistence(Context context, String fileName) {
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
+        String condition = "fileName = '" + fileName + "'";
+        List<Profile> result = db.findAllByWhere(Profile.class, condition);
+        return result != null && result.size() > 0;
+    }
+
     public static List<Profile> findAll(Context context) {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         List<Profile> profileList = db.findAll(Profile.class);

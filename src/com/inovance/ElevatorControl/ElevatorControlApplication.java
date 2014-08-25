@@ -39,7 +39,7 @@ public class ElevatorControlApplication extends Application {
         ConfigFactory.getInstance().init(getApplicationContext());
         TextLocalize.getInstance().init(getApplicationContext());
         writeDefaultShortcutData();
-        //ACRA.init(this);
+        ACRA.init(this);
     }
 
     private void writeDefaultShortcutData() {

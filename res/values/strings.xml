@@ -249,6 +249,7 @@
     <string name="parameter_download_button_text">读取</string>
     <string name="download_parameter_save_successful">参数读取并保存完毕</string>
     <string name="save_parameter_failed">参数保存失败，请重试。</string>
+    <string name="profile_name_exist_message">文件名已存在，请重新命名。</string>
 
     <string name="confirm_restore_title">恢复出厂设置</string>
     <string name="confirm_restore_message">确定要恢复出厂设置吗？</string>

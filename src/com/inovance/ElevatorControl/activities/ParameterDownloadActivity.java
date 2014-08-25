@@ -8,7 +8,6 @@ import android.os.Environment;
 import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -189,8 +188,18 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
             downloadDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    downloadParameterHandler.receiveCount = 0;
-                    ParameterDownloadActivity.this.saveProfileToLocal();
+                    // Check file name exist
+                    boolean existence = ProfileDao.checkExistence(ParameterDownloadActivity.this,
+                            fileNameEditText.getText().toString());
+                    if (!existence) {
+                        downloadParameterHandler.receiveCount = 0;
+                        ParameterDownloadActivity.this.saveProfileToLocal();
+                    } else {
+                        // 提示用户重新命名文件
+                        Toast.makeText(ParameterDownloadActivity.this,
+                                R.string.profile_name_exist_message,
+                                Toast.LENGTH_SHORT).show();
+                    }
                 }
             });
             downloadDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener(new View.OnClickListener() {

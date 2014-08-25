@@ -13,6 +13,9 @@ public class ErrorHelpDao {
     private static final boolean DEBUG = false;
 
     public static ErrorHelp findByDisplay(Context context, String display) {
+        if (display.equalsIgnoreCase("E00")) {
+            return null;
+        }
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         String condition = "(" + " display = '" + display.toUpperCase() + "' or display='" + display.toLowerCase() + "'" + ")";
         condition = condition + " and deviceID ='" + ConfigFactory.getInstance().getDeviceSQLID() + "'";
@@ -44,8 +47,16 @@ public class ErrorHelpDao {
             errorHelp.setReason(reasonString);
             errorHelp.setSolution(solutionString);
             return helpList.get(0);
+        } else {
+            // 未知故障
+            ErrorHelp errorHelp = new ErrorHelp();
+            errorHelp.setName("未知故障");
+            errorHelp.setDisplay(display);
+            errorHelp.setLevel("未知");
+            errorHelp.setReason("未知");
+            errorHelp.setSolution("未知");
+            return errorHelp;
         }
-        return null;
     }
 
     public static void deleteAllByDeviceID(Context context, int deviceID) {

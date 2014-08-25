@@ -317,12 +317,8 @@ public class BluetoothTool implements Runnable {
             try {
                 BluetoothDevice.class.getMethod("createBond").invoke(device);
             } catch (Exception e) {
-                Message errorMessage = new Message();
-                errorMessage.what = BluetoothState.onConnectFailed;
-                errorMessage.obj = String.format(context.getResources().getString(R.string.failed_bond),
-                        device.getName() + "(" + device.getAddress() + ")");
                 if (searchHandler != null) {
-                    searchHandler.sendMessage(errorMessage);
+                    searchHandler.sendEmptyMessage(BluetoothState.onConnectFailed);
                 }
             }
         }
