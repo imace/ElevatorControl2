@@ -1,7 +1,6 @@
 package com.inovance.ElevatorControl.activities;
 
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
@@ -14,6 +13,8 @@ import android.widget.Toast;
 import com.google.zxing.Result;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.barcode.ZXingScannerView;
+import net.rdrei.android.dirchooser.DirectoryChooserFragment;
+import net.rdrei.android.dirchooser.DirectoryChooserFragment.OnFragmentInteractionListener;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -26,7 +27,7 @@ import java.util.Date;
  * Date: 14-7-30.
  * Time: 13:30.
  */
-public class ZxingScannerActivity extends FragmentActivity {
+public class ZxingScannerActivity extends FragmentActivity implements OnFragmentInteractionListener {
 
     private final static String TAG = ZxingScannerActivity.class.getSimpleName();
 
@@ -38,16 +39,17 @@ public class ZxingScannerActivity extends FragmentActivity {
 
     private ScannerFragment scannerFragment;
 
+    private DirectoryChooserFragment directoryChooserDialog;
+
     @Override
     public void onCreate(Bundle state) {
         super.onCreate(state);
         overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
         setContentView(R.layout.activity_zxing_scanner);
-
+        directoryChooserDialog = DirectoryChooserFragment.newInstance("DirectoryChooserDialog", null);
         scanText = (TextView) findViewById(R.id.scan_result_text);
         scanButton = (Button) findViewById(R.id.start_scan_button);
         saveButton = (Button) findViewById(R.id.save_picture_button);
-
         scannerFragment = new ScannerFragment();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.cameraPreview, scannerFragment);
@@ -66,24 +68,7 @@ public class ZxingScannerActivity extends FragmentActivity {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (scannerFragment.getBitmap() != null) {
-                    saveButton.setEnabled(false);
-                    File pictureFile = getOutputMediaFile();
-                    if (pictureFile == null) {
-                        return;
-                    }
-                    try {
-                        FileOutputStream fileOutputStream = new FileOutputStream(pictureFile);
-                        fileOutputStream.write(scannerFragment.getBitmap());
-                        fileOutputStream.close();
-                        Toast.makeText(getApplicationContext(),
-                                R.string.save_barcode_picture_successful_text,
-                                Toast.LENGTH_SHORT)
-                                .show();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
+                directoryChooserDialog.show(getFragmentManager(), null);
             }
         });
 
@@ -91,22 +76,26 @@ public class ZxingScannerActivity extends FragmentActivity {
         saveButton.setEnabled(false);
     }
 
-    private static File getOutputMediaFile() {
-        // To be safe, you should check that the SDCard is mounted
-        // using Environment.getExternalStorageState() before doing this.
-
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_DCIM), "/Picture");
-        // This location works best if you want the created images to be shared
-        // between applications and persist after your app has been uninstalled.
-
-        // Create the storage directory if it does not exist
-        if (!mediaStorageDir.exists()) {
-            mediaStorageDir.mkdirs();
+    private void savePicture(String path) {
+        if (scannerFragment.getBitmap() != null) {
+            saveButton.setEnabled(false);
+            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            File pictureFile = new File(path + File.separator + "IMG_" + timeStamp + ".jpg");
+            if (pictureFile == null) {
+                return;
+            }
+            try {
+                FileOutputStream fileOutputStream = new FileOutputStream(pictureFile);
+                fileOutputStream.write(scannerFragment.getBitmap());
+                fileOutputStream.close();
+                Toast.makeText(getApplicationContext(),
+                        R.string.save_barcode_picture_successful_text,
+                        Toast.LENGTH_SHORT)
+                        .show();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-        // Create a media file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        return new File(mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg");
     }
 
     @Override
@@ -117,6 +106,19 @@ public class ZxingScannerActivity extends FragmentActivity {
     @Override
     public void onPause() {
         super.onPause();
+    }
+
+    @Override
+    public void onSelectDirectory(String path) {
+        directoryChooserDialog.dismiss();
+        if (path != null && path.length() > 0) {
+            savePicture(path);
+        }
+    }
+
+    @Override
+    public void onCancelChooser() {
+        directoryChooserDialog.dismiss();
     }
 
     public class ScannerFragment extends Fragment implements ZXingScannerView.ResultHandler {

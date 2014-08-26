@@ -14,6 +14,7 @@ import com.inovance.ElevatorControl.adapters.DialogSwitchListViewAdapter;
 import com.inovance.ElevatorControl.adapters.ParameterStatusAdapter;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
 import com.inovance.ElevatorControl.daos.ErrorHelpDao;
+import com.inovance.ElevatorControl.factory.ParameterFactory;
 import com.inovance.ElevatorControl.models.*;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
 import com.inovance.ElevatorControl.web.WebApi;
@@ -119,10 +120,11 @@ public class CustomDialog {
                 String[] statusList = new String[size];
                 String[] spinnerList = new String[size];
                 int type = Integer.parseInt(settings.getType());
+                // TODO Input type show error
                 for (int i = 0; i < size; i++) {
                     JSONObject value = jsonArray.getJSONObject(i);
                     int alwaysClose = Integer.parseInt(value.optString("id")) + 32;
-                    if (type == 3 || type == 25) {
+                    if (type == ApplicationConfig.InputTerminalType || type == ApplicationConfig.FloorShowType) {
                         if (i == 0) {
                             statusList[i] = value.optString("id") + ":" + value.optString("value");
                         } else {
@@ -133,30 +135,22 @@ public class CustomDialog {
                     }
                     spinnerList[i] = value.optString("value");
                 }
-                // 端子 X1 - x24
+                // F5 组输入端子
                 if (Integer.parseInt(settings.getType()) == ApplicationConfig.InputTerminalType) {
                     View dialogView = activity.getLayoutInflater()
                             .inflate(R.layout.parameter_terminal_status_dialog, null);
                     final ListView listView = (ListView) dialogView.findViewById(R.id.list_view);
                     TextView defaultValue = (TextView) dialogView.findViewById(R.id.default_value);
                     final ToggleButton toggleButton = (ToggleButton) dialogView.findViewById(R.id.toggle_button);
-                    boolean toggleButtonStatus = true;
                     defaultValue.setText("出厂值: " + settings.getDefaultValue());
-                    int index = ParseSerialsUtils.getIntFromBytes(settings.getReceived());
-                    if (index >= 32 && index < 64) {
-                        index = index - 32;
-                        toggleButtonStatus = false;
-                    }
-                    if (index >= 96 && index < 127) {
-                        index = index - 32;
-                        toggleButtonStatus = false;
-                    }
-                    toggleButton.setChecked(toggleButtonStatus);
-                    final CheckedListViewAdapter adapter = new CheckedListViewAdapter(activity, statusList, index);
+                    // Get real index and toggle button state
+                    int[] indexStatus = ParameterFactory.getParameter().getIndexStatus(settings);
+                    toggleButton.setChecked(indexStatus[1] == 1);
+                    final CheckedListViewAdapter adapter = new CheckedListViewAdapter(activity, statusList, indexStatus[0]);
                     listView.setAdapter(adapter);
                     listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                         @Override
-                        public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                        public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                             listView.setSelection(position);
                             adapter.setCheckedIndex(position);
                         }

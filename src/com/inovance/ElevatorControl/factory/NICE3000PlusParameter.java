@@ -62,4 +62,21 @@ public class NICE3000PlusParameter implements ParameterFactory.Parameter {
         }
         return statusList;
     }
+
+    @Override
+    public int[] getIndexStatus(ParameterSettings settings) {
+        int state = 1;
+        int indexValue = ParseSerialsUtils.getIntFromBytes(settings.getReceived());
+        if (indexValue > 31 && indexValue < 64) {
+            indexValue -= 32;
+            state = 0;
+        } else if (indexValue >= 64 && indexValue < 96) {
+            indexValue -= 32;
+            state = 0;
+        } else if (indexValue >= 96) {
+            indexValue -= 64;
+            state = 0;
+        }
+        return new int[]{indexValue, state};
+    }
 }

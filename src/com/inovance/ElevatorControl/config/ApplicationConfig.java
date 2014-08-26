@@ -448,4 +448,10 @@ public class ApplicationConfig {
     // Blue：蓝牙地址
     // 返回值：成功返回数据库记录,失败返回错误信息
     public static final String RegisterInternalUser = "SendRegisterInternal";
+
+    // Crash report collect API
+    public static final String ReportsCrashesAPI = "http://58.60.228.147:8007/error.aspx";
+
+    // Upload message attachments API
+    public static final String UploadMessageAttachments = "http://58.60.228.147:8007/Assistance.aspx";
 }

@@ -8,6 +8,7 @@ import android.util.Log;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 import com.inovance.ElevatorControl.R;
+import com.inovance.ElevatorControl.config.ApplicationConfig;
 import net.tsz.afinal.core.AsyncTask;
 
 import java.io.*;
@@ -30,8 +31,6 @@ public class FileTransport implements Runnable {
     private static FileTransport instance = new FileTransport();
 
     private ProgressDialog transportDialog;
-
-    public static final String sendChatMessageURL = "http://58.60.228.147:8007/Assistance.aspx";
 
     private Context context;
 
@@ -166,7 +165,7 @@ public class FileTransport implements Runnable {
             String end = "\r\n";
             String twoHyphens = "--";
             String boundary = "*****++++++************++++++++++++";
-            URL url = new URL(sendChatMessageURL);
+            URL url = new URL(ApplicationConfig.UploadMessageAttachments);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setConnectTimeout(2000);
             connection.setDoInput(true);

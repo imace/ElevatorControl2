@@ -21,12 +21,10 @@ import org.acra.annotation.ReportsCrashes;
  */
 
 @ReportsCrashes(
-        formKey = "crashReport",
-        formUri = "http://127.0.0.1:8888"
+        formKey = "",
+        formUri = ApplicationConfig.ReportsCrashesAPI
 )
 
-// TODO 改进内外召UI，让其更加直观
-// TODO 测试远程协助：接口问题无法进行测试
 public class ElevatorControlApplication extends Application {
 
     @Override

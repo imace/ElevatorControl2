@@ -32,6 +32,10 @@ public class ParameterFactory {
     }
 
     public interface Parameter {
-        public List<ParameterStatusItem> getInputTerminalStateList(boolean[] bitValues, List<ParameterSettings> settingsList);
+        public List<ParameterStatusItem> getInputTerminalStateList(boolean[] bitValues,
+                                                                   List<ParameterSettings> settingsList);
+
+        public int[] getIndexStatus(ParameterSettings settings);
+
     }
 }

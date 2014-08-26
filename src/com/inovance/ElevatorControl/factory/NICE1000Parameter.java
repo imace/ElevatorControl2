@@ -54,4 +54,15 @@ public class NICE1000Parameter implements ParameterFactory.Parameter {
         }
         return statusList;
     }
+
+    @Override
+    public int[] getIndexStatus(ParameterSettings settings) {
+        int state = 1;
+        int indexValue = ParseSerialsUtils.getIntFromBytes(settings.getReceived());
+        if (indexValue > 100) {
+            indexValue -= 100;
+            state = 0;
+        }
+        return new int[]{indexValue, state};
+    }
 }

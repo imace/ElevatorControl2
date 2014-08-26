@@ -253,9 +253,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                     if (BluetoothTool.getInstance().isPrepared()) {
                         final ParameterSettings settings = listViewDataSource.get(position);
                         int mode = Integer.parseInt(settings.getMode());
-                        /**
-                         * 任意修改
-                         */
+                        // 任意修改
                         if (mode == ApplicationConfig.modifyType[0]) {
                             settings.setElevatorRunning(false);
                             if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[0]) {
@@ -264,16 +262,12 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                                 onClickListViewWithIndex(position);
                             }
                         }
-                        /**
-                         * 停机修改
-                         */
+                        // 停机修改
                         if (mode == ApplicationConfig.modifyType[1]) {
                             final int index = position;
                             settings.setElevatorRunning(false);
                             ParameterDetailActivity.this.hasGetElevatorStatus = false;
-                            /**
-                             * 读取电梯运行状态
-                             */
+                            // 读取电梯运行状态
                             new CountDownTimer(2400, 800) {
 
                                 @Override
@@ -291,9 +285,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                                 }
                             }.start();
                         }
-                        /**
-                         * 不可修改
-                         */
+                        // 不可修改
                         if (mode == ApplicationConfig.modifyType[2]) {
                             if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[0] ||
                                     settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[1]) {
@@ -445,9 +437,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
             }
         });
         if (count != 0) {
-            /**
-             * 需要远程获取数值的，在获取到数值之后再生成 Number Picker Dialog
-             */
+            // 需要远程获取数值的，在获取到数值之后再生成 Number Picker Dialog
             cancelButton.setEnabled(false);
             confirmButton.setEnabled(false);
             final String[] codeArray = ParameterDetailActivity.this.getCodeStringArray(settings);
@@ -477,9 +467,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 }
             }.start();
         } else {
-            /**
-             * 不需要获取数值范围的直接生成 Number Picker Dialog
-             */
+            // 不需要获取数值范围的直接生成 Number Picker Dialog
             createNumberPickerAndBindListener(settings);
         }
     }
@@ -1083,6 +1071,13 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
     @Override
     public void run() {
         switch (currentTask) {
+            // 读取电梯运行状态
+            case GetElevatorStatus:
+                break;
+            // 读取取值范围
+            case GetValueScope:
+                break;
+            // 读取参数
             case GetParameterDetail:
                 startCombinationCommunications();
                 break;
