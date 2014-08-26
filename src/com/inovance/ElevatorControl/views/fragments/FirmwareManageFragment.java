@@ -13,7 +13,7 @@ import com.inovance.ElevatorControl.activities.FirmwareManageActivity;
 import com.inovance.ElevatorControl.adapters.FirmwareBurnAdapter;
 import com.inovance.ElevatorControl.adapters.FirmwareDownloadAdapter;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.config.ConfigFactory;
+import com.inovance.ElevatorControl.config.ParameterUpdateTool;
 import com.inovance.ElevatorControl.daos.FirmwareDao;
 import com.inovance.ElevatorControl.models.Firmware;
 import com.inovance.ElevatorControl.models.NormalDevice;
@@ -132,7 +132,7 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
      */
     private void switchApplyView(LinearLayout container, int type) {
         container.removeAllViews();
-        if (type == ConfigFactory.Normal) {
+        if (type == ParameterUpdateTool.Normal) {
             if (normalApplyView == null) {
                 normalApplyView = new NormalApplyForm(getActivity());
             }
@@ -141,7 +141,7 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
             WebApi.getInstance().setOnResultListener(this);
             WebApi.getInstance().getNormalDeviceList(getActivity());
         }
-        if (type == ConfigFactory.Special) {
+        if (type == ParameterUpdateTool.Special) {
             if (specialApplyView == null) {
                 specialApplyView = new SpecialApplyForm(getActivity());
             }
@@ -160,27 +160,27 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
         if (segmentControl == null) {
             final LinearLayout container = (LinearLayout) getActivity().findViewById(R.id.apply_view_container);
             segmentControl = (SegmentControl) getActivity().findViewById(R.id.segment_control);
-            if (ConfigFactory.getInstance().getPermission() == ConfigFactory.Normal) {
+            if (ParameterUpdateTool.getInstance().getPermission() == ParameterUpdateTool.Normal) {
                 segmentControl.setItems(getResources().getStringArray(R.array.permission_array_normal));
                 normalApplyView = new NormalApplyForm(getActivity());
                 segmentControl.setCurrentItem(0);
-                switchApplyView(container, ConfigFactory.Normal);
+                switchApplyView(container, ParameterUpdateTool.Normal);
             }
-            if (ConfigFactory.getInstance().getPermission() == ConfigFactory.Special) {
+            if (ParameterUpdateTool.getInstance().getPermission() == ParameterUpdateTool.Special) {
                 segmentControl.setItems(getResources().getStringArray(R.array.permission_array_special));
                 normalApplyView = new NormalApplyForm(getActivity());
                 specialApplyView = new SpecialApplyForm(getActivity());
-                switchApplyView(container, ConfigFactory.Normal);
+                switchApplyView(container, ParameterUpdateTool.Normal);
                 segmentControl.setCurrentItem(0);
                 segmentControl.setOnItemClickListener(new SegmentControl.OnItemClickListener() {
                     @Override
                     public void onItemClick(View view, int position) {
                         switch (position) {
                             case 0:
-                                switchApplyView(container, ConfigFactory.Normal);
+                                switchApplyView(container, ParameterUpdateTool.Normal);
                                 break;
                             case 1:
-                                switchApplyView(container, ConfigFactory.Special);
+                                switchApplyView(container, ParameterUpdateTool.Special);
                                 break;
                         }
                     }
@@ -239,9 +239,9 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
      */
     public void loadFirmwareBurnView() {
         TextView deviceType = (TextView) getActivity().findViewById(R.id.device_type);
-        deviceType.setText(ConfigFactory.getInstance().getDeviceName());
+        deviceType.setText(ParameterUpdateTool.getInstance().getDeviceName());
         TextView supplierCode = (TextView) getActivity().findViewById(R.id.supplier_code);
-        supplierCode.setText(ConfigFactory.getInstance().getSupplierCode());
+        supplierCode.setText(ParameterUpdateTool.getInstance().getSupplierCode());
         GridView gridView = (GridView) getActivity().findViewById(R.id.firmware_list);
         burnFirmwareList = FirmwareDao.findAll(context);
         if (firmwareBurnAdapter == null) {

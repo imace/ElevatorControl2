@@ -8,7 +8,6 @@ import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 import butterknife.InjectView;
@@ -20,7 +19,7 @@ import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.adapters.TroubleAnalyzeAdapter;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.config.ConfigFactory;
+import com.inovance.ElevatorControl.config.ParameterUpdateTool;
 import com.inovance.ElevatorControl.daos.ErrorHelpDao;
 import com.inovance.ElevatorControl.daos.ParameterSettingsDao;
 import com.inovance.ElevatorControl.daos.RealTimeMonitorDao;
@@ -346,7 +345,7 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
 
     private String[] generateHistoryErrorStatusFilters() {
         String[] filters = new String[]{};
-        String deviceType = ConfigFactory.getInstance().getDeviceName();
+        String deviceType = ParameterUpdateTool.getInstance().getDeviceName();
         int[] index = new int[]{};
         if (deviceType.equalsIgnoreCase(ApplicationConfig.NormalDeviceType[0])) {
             index = new int[]{4, 13};

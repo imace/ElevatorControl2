@@ -16,7 +16,7 @@ import butterknife.OnClick;
 import butterknife.Views;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.config.ConfigFactory;
+import com.inovance.ElevatorControl.config.ParameterUpdateTool;
 import com.inovance.ElevatorControl.daos.ParameterFactoryDao;
 import com.inovance.ElevatorControl.models.User;
 import com.inovance.ElevatorControl.utils.UpdateApplication;
@@ -195,7 +195,7 @@ public class CheckAuthorizationActivity extends Activity implements OnGetResultL
                     int size = jsonArray.length();
                     if (size > 0) {
                         User user = new User(jsonArray.getJSONObject(0));
-                        ConfigFactory.getInstance().setCurrentUser(user);
+                        ParameterUpdateTool.getInstance().setCurrentUser(user);
                         WebApi.getInstance().setOnResultListener(this);
                         WebApi.getInstance().setOnFailureListener(this);
                         WebApi.getInstance().getNormalDeviceList(this);

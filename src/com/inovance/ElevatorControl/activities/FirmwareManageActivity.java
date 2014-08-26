@@ -302,7 +302,7 @@ public class FirmwareManageActivity extends FragmentActivity {
         builder.create().show();
     }
 
-    // ================================= Firmware burn handler ========================================
+    // ================================= Firmware burn handler ======================================== //
 
     /**
      * Burn firmware handler

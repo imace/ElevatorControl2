@@ -5,7 +5,7 @@ import android.content.Context;
 import android.text.TextUtils;
 import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.config.ConfigFactory;
+import com.inovance.ElevatorControl.config.ParameterUpdateTool;
 import com.inovance.ElevatorControl.daos.ErrorHelpDao;
 import com.inovance.ElevatorControl.models.ErrorHelp;
 import com.inovance.ElevatorControl.models.ParameterSettings;
@@ -56,7 +56,7 @@ public class ParseSerialsUtils {
      */
     public static int getElevatorStatus(RealTimeMonitor monitor) {
         int rawValue = ParseSerialsUtils.getIntFromBytes(monitor.getReceived());
-        String deviceType = ConfigFactory.getInstance().getDeviceName();
+        String deviceType = ParameterUpdateTool.getInstance().getDeviceName();
         if (deviceType.equalsIgnoreCase(ApplicationConfig.NormalDeviceType[0])) {
             switch (rawValue) {
                 case 0:

@@ -1,7 +1,11 @@
 package com.inovance.ElevatorControl.config;
 
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.widget.Toast;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.daos.DeviceDao;
@@ -21,11 +25,11 @@ import org.json.JSONObject;
  * Date: 14-5-29.
  * Time: 11:51.
  */
-public class ConfigFactory implements OnGetResultListener, OnRequestFailureListener {
+public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailureListener {
 
-    private static final String TAG = ConfigFactory.class.getSimpleName();
+    private static final String TAG = ParameterUpdateTool.class.getSimpleName();
 
-    private static ConfigFactory ourInstance = new ConfigFactory();
+    private static ParameterUpdateTool ourInstance = new ParameterUpdateTool();
 
     private Context context;
 
@@ -34,11 +38,15 @@ public class ConfigFactory implements OnGetResultListener, OnRequestFailureListe
     /**
      * 所有配置结束
      */
-    public static interface OnDeployFinishListener {
+    public static interface OnCheckResultListener {
+        // 参数更新成功并保存到本地
         void onComplete();
+
+        // 参数更新失败
+        void onFailed(Throwable throwable);
     }
 
-    private OnDeployFinishListener mListener;
+    private OnCheckResultListener mListener;
 
     /**
      * 普通用户权限
@@ -73,11 +81,31 @@ public class ConfigFactory implements OnGetResultListener, OnRequestFailureListe
      */
     private ProgressDialog updateDialog;
 
-    public static ConfigFactory getInstance() {
+    private IntentFilter intentFilter() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        return filter;
+    }
+
+    private BroadcastReceiver broadcastReceiver() {
+        return new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                boolean noConnectivity = intent.getBooleanExtra(ConnectivityManager.EXTRA_NO_CONNECTIVITY, false);
+                if (noConnectivity && mListener != null) {
+                    mListener.onFailed(null);
+                    // Unregister network state change broadcast receiver
+                    context.unregisterReceiver(broadcastReceiver());
+                }
+            }
+        };
+    }
+
+    public static ParameterUpdateTool getInstance() {
         return ourInstance;
     }
 
-    private ConfigFactory() {
+    private ParameterUpdateTool() {
 
     }
 
@@ -89,6 +117,8 @@ public class ConfigFactory implements OnGetResultListener, OnRequestFailureListe
     public void init(Context context) {
         this.context = context;
         this.currentDevice = DeviceDao.findByName(context, DefaultDeviceName, Device.NormalDevice);
+        // Register network state change broadcast receiver
+        context.registerReceiver(broadcastReceiver(), intentFilter());
     }
 
     public String getDeviceName() {
@@ -130,11 +160,11 @@ public class ConfigFactory implements OnGetResultListener, OnRequestFailureListe
      * @param remoteID   API 设备ID
      * @param deviceName 设备名称
      * @param deviceType 设备类型 标准、专有
-     * @param listener   OnDeployFinishListener
+     * @param listener   OnCheckResultListener
      */
     public void selectDevice(Context context,
                              int remoteID, String deviceName,
-                             int deviceType, OnDeployFinishListener listener) {
+                             int deviceType, OnCheckResultListener listener) {
         this.context = context;
         mListener = listener;
         Device device = DeviceDao.findByName(context, deviceName, deviceType);
@@ -208,11 +238,15 @@ public class ConfigFactory implements OnGetResultListener, OnRequestFailureListe
                         if (type.equalsIgnoreCase("funcode")) {
                             if (currentDevice.getFunctionCodeUpdateTime() == null
                                     || !currentDevice.getFunctionCodeUpdateTime().equalsIgnoreCase(updateTime)) {
-                                ParameterFactoryDao.emptyRecordByDeviceID(context, getDeviceSQLID(), ApplicationConfig.FunctionCodeType);
+                                ParameterFactoryDao.emptyRecordByDeviceID(context,
+                                        getDeviceSQLID(),
+                                        ApplicationConfig.FunctionCodeType);
                                 updateFunctionCodeComplete = false;
                                 currentDevice.setFunctionCodeUpdateTime(updateTime);
                                 showUpdateDialog();
-                                WebApi.getInstance().getFunctionCode(context, currentDevice.getRemoteID(), currentDevice.getDeviceType());
+                                WebApi.getInstance().getFunctionCode(context,
+                                        currentDevice.getRemoteID(),
+                                        currentDevice.getDeviceType());
                             } else {
                                 updateFunctionCodeComplete = true;
                             }
@@ -220,11 +254,15 @@ public class ConfigFactory implements OnGetResultListener, OnRequestFailureListe
                         if (type.equalsIgnoreCase("state")) {
                             if (currentDevice.getStateCodeUpdateTime() == null
                                     || !currentDevice.getStateCodeUpdateTime().equalsIgnoreCase(updateTime)) {
-                                ParameterFactoryDao.emptyRecordByDeviceID(context, getDeviceSQLID(), ApplicationConfig.StateCodeType);
+                                ParameterFactoryDao.emptyRecordByDeviceID(context,
+                                        getDeviceSQLID(),
+                                        ApplicationConfig.StateCodeType);
                                 currentDevice.setStateCodeUpdateTime(updateTime);
                                 updateStateCodeComplete = false;
                                 showUpdateDialog();
-                                WebApi.getInstance().getStateCode(context, currentDevice.getRemoteID(), currentDevice.getDeviceType());
+                                WebApi.getInstance().getStateCode(context,
+                                        currentDevice.getRemoteID(),
+                                        currentDevice.getDeviceType());
                             } else {
                                 updateStateCodeComplete = true;
                             }
@@ -235,7 +273,9 @@ public class ConfigFactory implements OnGetResultListener, OnRequestFailureListe
                                 currentDevice.setErrorHelpUpdateTime(updateTime);
                                 updateErrorHelpComplete = false;
                                 showUpdateDialog();
-                                WebApi.getInstance().getErrorHelpList(context, currentDevice.getRemoteID(), currentDevice.getDeviceType());
+                                WebApi.getInstance().getErrorHelpList(context,
+                                        currentDevice.getRemoteID(),
+                                        currentDevice.getDeviceType());
                             } else {
                                 updateErrorHelpComplete = true;
                             }
@@ -253,7 +293,9 @@ public class ConfigFactory implements OnGetResultListener, OnRequestFailureListe
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    ParameterFactoryDao.emptyRecordByDeviceID(context, getDeviceSQLID(), ApplicationConfig.FunctionCodeType);
+                    ParameterFactoryDao.emptyRecordByDeviceID(context,
+                            getDeviceSQLID(),
+                            ApplicationConfig.FunctionCodeType);
                     ParameterFactoryDao.saveFunctionCode(data, context, getDeviceSQLID());
                     DeviceDao.update(context, currentDevice);
                     updateFunctionCodeComplete = true;
@@ -267,7 +309,8 @@ public class ConfigFactory implements OnGetResultListener, OnRequestFailureListe
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    ParameterFactoryDao.emptyRecordByDeviceID(context, getDeviceSQLID(), ApplicationConfig.StateCodeType);
+                    ParameterFactoryDao.emptyRecordByDeviceID(context, getDeviceSQLID(),
+                            ApplicationConfig.StateCodeType);
                     ParameterFactoryDao.saveStateCode(data, context, getDeviceSQLID());
                     DeviceDao.update(context, currentDevice);
                     updateStateCodeComplete = true;
@@ -281,7 +324,9 @@ public class ConfigFactory implements OnGetResultListener, OnRequestFailureListe
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    ParameterFactoryDao.emptyRecordByDeviceID(context, getDeviceSQLID(), ApplicationConfig.ErrorHelpType);
+                    ParameterFactoryDao.emptyRecordByDeviceID(context,
+                            getDeviceSQLID(),
+                            ApplicationConfig.ErrorHelpType);
                     ParameterFactoryDao.saveErrorHelp(data, context, getDeviceSQLID());
                     DeviceDao.update(context, currentDevice);
                     updateErrorHelpComplete = true;
@@ -293,6 +338,9 @@ public class ConfigFactory implements OnGetResultListener, OnRequestFailureListe
 
     @Override
     public void onFailure(int statusCode, Throwable throwable) {
-        Toast.makeText(context, throwable.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+        // Timeout or network not reliable
+        if (mListener != null) {
+            mListener.onFailed(throwable);
+        }
     }
 }

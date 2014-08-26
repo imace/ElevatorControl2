@@ -2,7 +2,7 @@ package com.inovance.ElevatorControl.daos;
 
 import android.content.Context;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.config.ConfigFactory;
+import com.inovance.ElevatorControl.config.ParameterUpdateTool;
 import com.inovance.ElevatorControl.models.ParameterGroupSettings;
 import net.tsz.afinal.FinalDb;
 
@@ -13,7 +13,7 @@ public class ParameterGroupSettingsDao {
     private static final boolean DEBUG = false;
 
     public static List<ParameterGroupSettings> findAll(Context context) {
-        String condition = " deviceID = '" + ConfigFactory.getInstance().getDeviceSQLID() + "'";
+        String condition = " deviceID = '" + ParameterUpdateTool.getInstance().getDeviceSQLID() + "'";
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         return db.findAllByWhere(ParameterGroupSettings.class, condition);
     }

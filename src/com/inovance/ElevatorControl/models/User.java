@@ -1,6 +1,6 @@
 package com.inovance.ElevatorControl.models;
 
-import com.inovance.ElevatorControl.config.ConfigFactory;
+import com.inovance.ElevatorControl.config.ParameterUpdateTool;
 import net.tsz.afinal.annotation.sqlite.Id;
 import org.json.JSONObject;
 
@@ -63,10 +63,10 @@ public class User {
         this.email = object.optString("Email".toUpperCase());
         switch (object.optInt("Permission".toUpperCase())) {
             case 0:
-                this.permission = ConfigFactory.Normal;
+                this.permission = ParameterUpdateTool.Normal;
                 break;
             case 1:
-                this.permission = ConfigFactory.Special;
+                this.permission = ParameterUpdateTool.Special;
                 break;
         }
 

@@ -2,7 +2,7 @@ package com.inovance.ElevatorControl.daos;
 
 import android.content.Context;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.config.ConfigFactory;
+import com.inovance.ElevatorControl.config.ParameterUpdateTool;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import net.tsz.afinal.FinalDb;
 
@@ -32,7 +32,7 @@ public class ParameterSettingsDao {
                 }
             }
             condition = "(" + condition + ")" + " and "
-                    + " deviceID = '" + ConfigFactory.getInstance().getDeviceSQLID() + "'";
+                    + " deviceID = '" + ParameterUpdateTool.getInstance().getDeviceSQLID() + "'";
             return db.findAllByWhere(ParameterSettings.class, condition);
         }
         return new ArrayList<ParameterSettings>();
@@ -48,7 +48,7 @@ public class ParameterSettingsDao {
     public static List<ParameterSettings> findByType(Context context, int type) {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         String condition = " type = '" + type + "'" + " and "
-                + " deviceID = '" + ConfigFactory.getInstance().getDeviceSQLID() + "'";
+                + " deviceID = '" + ParameterUpdateTool.getInstance().getDeviceSQLID() + "'";
         return db.findAllByWhere(ParameterSettings.class, condition);
     }
 

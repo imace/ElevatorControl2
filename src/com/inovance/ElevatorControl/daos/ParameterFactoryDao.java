@@ -1,9 +1,8 @@
 package com.inovance.ElevatorControl.daos;
 
 import android.content.Context;
-import android.util.Log;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.config.ConfigFactory;
+import com.inovance.ElevatorControl.config.ParameterUpdateTool;
 import com.inovance.ElevatorControl.models.*;
 import com.inovance.ElevatorControl.utils.AssetUtils;
 import net.tsz.afinal.FinalDb;
@@ -56,7 +55,7 @@ public class ParameterFactoryDao {
         restoreFactoryParameterGroupSettings(context, device.getId());
         restoreFactoryRealTimeMonitor(context, device.getId());
         restoreFactoryErrorHelp(context, device.getId());
-        ConfigFactory.getInstance().init(context);
+        ParameterUpdateTool.getInstance().init(context);
     }
 
     /**

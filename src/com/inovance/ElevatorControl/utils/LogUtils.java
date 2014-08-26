@@ -3,7 +3,7 @@ package com.inovance.ElevatorControl.utils;
 import android.content.Context;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.config.ConfigFactory;
+import com.inovance.ElevatorControl.config.ParameterUpdateTool;
 import com.inovance.ElevatorControl.models.SystemLog;
 import net.tsz.afinal.FinalDb;
 
@@ -145,7 +145,7 @@ public class LogUtils {
     public void write(int type, String send, String result, String startValue, String finalValue) {
         SystemLog systemLog = new SystemLog();
         systemLog.setType(type);
-        systemLog.setDeviceType(ConfigFactory.getInstance().getDeviceName());
+        systemLog.setDeviceType(ParameterUpdateTool.getInstance().getDeviceName());
         systemLog.setSendCommand(send);
         systemLog.setReturnCommand(result);
         systemLog.setStartValue(startValue);
@@ -164,7 +164,7 @@ public class LogUtils {
     public void write(int type, String send, String result) {
         SystemLog systemLog = new SystemLog();
         systemLog.setType(type);
-        systemLog.setDeviceType(ConfigFactory.getInstance().getDeviceName());
+        systemLog.setDeviceType(ParameterUpdateTool.getInstance().getDeviceName());
         systemLog.setSendCommand(send);
         systemLog.setReturnCommand(result);
         systemLog.setTimestamp(System.currentTimeMillis());
@@ -181,7 +181,7 @@ public class LogUtils {
     public void write(int type, boolean result, String errorMessage) {
         SystemLog systemLog = new SystemLog();
         systemLog.setType(type);
-        systemLog.setDeviceType(ConfigFactory.getInstance().getDeviceName());
+        systemLog.setDeviceType(ParameterUpdateTool.getInstance().getDeviceName());
         systemLog.setBurnStatus(result ? SystemLog.BurnSuccessful : SystemLog.BurnFailed);
         systemLog.setBurnErrorMessage(errorMessage);
         systemLog.setTimestamp(System.currentTimeMillis());
@@ -199,7 +199,7 @@ public class LogUtils {
     public void write(int type, String send, String result, int floor) {
         SystemLog systemLog = new SystemLog();
         systemLog.setType(type);
-        systemLog.setDeviceType(ConfigFactory.getInstance().getDeviceName());
+        systemLog.setDeviceType(ParameterUpdateTool.getInstance().getDeviceName());
         systemLog.setSendCommand(send);
         systemLog.setReturnCommand(result);
         systemLog.setMoveSideFloor(floor);
@@ -219,7 +219,7 @@ public class LogUtils {
     public void write(int type, String send, String result, int floor, int direction) {
         SystemLog systemLog = new SystemLog();
         systemLog.setType(type);
-        systemLog.setDeviceType(ConfigFactory.getInstance().getDeviceName());
+        systemLog.setDeviceType(ParameterUpdateTool.getInstance().getDeviceName());
         systemLog.setSendCommand(send);
         systemLog.setReturnCommand(result);
         systemLog.setMoveSideFloor(floor);
@@ -236,7 +236,7 @@ public class LogUtils {
     public void write(int type) {
         SystemLog systemLog = new SystemLog();
         systemLog.setType(type);
-        systemLog.setDeviceType(ConfigFactory.getInstance().getDeviceName());
+        systemLog.setDeviceType(ParameterUpdateTool.getInstance().getDeviceName());
         systemLog.setTimestamp(System.currentTimeMillis());
         save(systemLog);
     }

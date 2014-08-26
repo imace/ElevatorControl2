@@ -22,7 +22,7 @@ import com.bluetoothtool.BluetoothTool;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.adapters.ChatMessageAdapter;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.config.ConfigFactory;
+import com.inovance.ElevatorControl.config.ParameterUpdateTool;
 import com.inovance.ElevatorControl.daos.ChatMessageDao;
 import com.inovance.ElevatorControl.models.ChatMessage;
 import com.inovance.ElevatorControl.models.User;
@@ -512,7 +512,7 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
     }
 
     private String getPhoneNumber() {
-        User user = ConfigFactory.getInstance().getCurrentUser();
+        User user = ParameterUpdateTool.getInstance().getCurrentUser();
         if (user != null) {
             return user.getCellPhone();
         }

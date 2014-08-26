@@ -2,7 +2,7 @@ package com.inovance.ElevatorControl.daos;
 
 import android.content.Context;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.config.ConfigFactory;
+import com.inovance.ElevatorControl.config.ParameterUpdateTool;
 import com.inovance.ElevatorControl.models.ErrorHelp;
 import net.tsz.afinal.FinalDb;
 
@@ -18,7 +18,7 @@ public class ErrorHelpDao {
         }
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         String condition = "(" + " display = '" + display.toUpperCase() + "' or display='" + display.toLowerCase() + "'" + ")";
-        condition = condition + " and deviceID ='" + ConfigFactory.getInstance().getDeviceSQLID() + "'";
+        condition = condition + " and deviceID ='" + ParameterUpdateTool.getInstance().getDeviceSQLID() + "'";
         List<ErrorHelp> helpList = db.findAllByWhere(ErrorHelp.class, condition);
         if (helpList != null && helpList.size() > 0) {
             ErrorHelp errorHelp = helpList.get(0);

@@ -201,7 +201,6 @@ public class HomeActivity extends Activity implements Runnable {
      */
     private void syncElevatorStatus() {
         if (communications == null) {
-            Log.v("TESTFORDEBUG", "STEP02");
             final List<RealTimeMonitor> monitorLists = RealTimeMonitorDao.findAllByStateIDs(this,
                     ApplicationConfig.HomeStateCode);
             int size = monitorLists.size();

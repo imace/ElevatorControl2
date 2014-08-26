@@ -1,9 +1,8 @@
 package com.inovance.ElevatorControl.daos;
 
 import android.content.Context;
-import android.util.Log;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.config.ConfigFactory;
+import com.inovance.ElevatorControl.config.ParameterUpdateTool;
 import com.inovance.ElevatorControl.models.RealTimeMonitor;
 import net.tsz.afinal.FinalDb;
 
@@ -18,7 +17,7 @@ public class RealTimeMonitorDao {
 
     public static List<RealTimeMonitor> findAll(Context context) {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
-        String condition = " deviceID = '" + ConfigFactory.getInstance().getDeviceSQLID() + "'";
+        String condition = " deviceID = '" + ParameterUpdateTool.getInstance().getDeviceSQLID() + "'";
         return db.findAllByWhere(RealTimeMonitor.class, condition);
     }
 
@@ -26,7 +25,7 @@ public class RealTimeMonitorDao {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         String condition = " stateID = '" + stateID + "'";
         condition = "(" + condition + ")" + " and "
-                + " deviceID = '" + ConfigFactory.getInstance().getDeviceSQLID() + "'";
+                + " deviceID = '" + ParameterUpdateTool.getInstance().getDeviceSQLID() + "'";
         List<RealTimeMonitor> monitorList = db.findAllByWhere(RealTimeMonitor.class, condition);
         if (monitorList != null && monitorList.size() == 1) {
             return monitorList.get(0);
@@ -38,7 +37,7 @@ public class RealTimeMonitorDao {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         String condition = " stateID = '" + stateID + "'";
         condition = "(" + condition + ")" + " and "
-                + " deviceID = '" + ConfigFactory.getInstance().getDeviceSQLID() + "'";
+                + " deviceID = '" + ParameterUpdateTool.getInstance().getDeviceSQLID() + "'";
         List<RealTimeMonitor> monitorList = db.findAllByWhere(RealTimeMonitor.class, condition);
         return monitorList != null ? monitorList : new ArrayList<RealTimeMonitor>();
     }
@@ -69,7 +68,7 @@ public class RealTimeMonitorDao {
                 }
             }
             condition = "(" + condition + ")" + " and "
-                    + " deviceID = '" + ConfigFactory.getInstance().getDeviceSQLID() + "'";
+                    + " deviceID = '" + ParameterUpdateTool.getInstance().getDeviceSQLID() + "'";
             return db.findAllByWhere(RealTimeMonitor.class, condition);
         }
         return new ArrayList<RealTimeMonitor>();
@@ -101,7 +100,7 @@ public class RealTimeMonitorDao {
                 }
             }
             condition = "(" + condition + ")" + " and "
-                    + " deviceID = '" + ConfigFactory.getInstance().getDeviceSQLID() + "'";
+                    + " deviceID = '" + ParameterUpdateTool.getInstance().getDeviceSQLID() + "'";
             return db.findAllByWhere(RealTimeMonitor.class, condition);
         }
         return new ArrayList<RealTimeMonitor>();

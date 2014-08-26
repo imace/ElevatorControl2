@@ -1,7 +1,7 @@
 package com.inovance.ElevatorControl.factory;
 
 import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.config.ConfigFactory;
+import com.inovance.ElevatorControl.config.ParameterUpdateTool;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.models.ParameterStatusItem;
 
@@ -17,7 +17,7 @@ public class ParameterFactory {
 
     public static Parameter getParameter() {
         // 当前连接的设备名称
-        String deviceName = ConfigFactory.getInstance().getDeviceName();
+        String deviceName = ParameterUpdateTool.getInstance().getDeviceName();
         if (deviceName.equals(ApplicationConfig.NormalDeviceType[0])) {
             return new NICE1000Parameter();
         } else if (deviceName.equals(ApplicationConfig.NormalDeviceType[1])) {

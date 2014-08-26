@@ -39,6 +39,8 @@
     <string name="normal_device_text">标准设备</string>
     <string name="check_parameter_data_update_text">正在检查设备参数更新，请稍后。</string>
     <string name="update_parameter_data_wait_message">更新数据中</string>
+    <string name="check_parameter_failed_use_local_parameter_message">检查设备参数更新失败，调用本地数据。</string>
+    <string name="check_parameter_failed_message">检查设备参数更新失败，请检查网络连接更新参数。</string>
     <string name="recognise_device_wait_text">正在识别设备，请稍后。</string>
     <string name="recognise_device_failed_text">未能识别设备，请尝试其他设备。</string>
     <string name="code_parse_error_tips">内部数据出错，请联系管理员。</string>

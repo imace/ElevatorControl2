@@ -19,7 +19,7 @@ import butterknife.Views;
 import com.bluetoothtool.*;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.config.ConfigFactory;
+import com.inovance.ElevatorControl.config.ParameterUpdateTool;
 import com.inovance.ElevatorControl.daos.ParameterGroupSettingsDao;
 import com.inovance.ElevatorControl.daos.ProfileDao;
 import com.inovance.ElevatorControl.models.ObjectListHolder;
@@ -112,8 +112,8 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
         setContentView(R.layout.activity_parameter_download);
         Views.inject(this);
         downloadParameterHandler = new DownloadParameterHandler(this);
-        deviceTypeTextView.setText(ConfigFactory.getInstance().getDeviceName());
-        supplierCodeTextView.setText(ConfigFactory.getInstance().getSupplierCode());
+        deviceTypeTextView.setText(ParameterUpdateTool.getInstance().getDeviceName());
+        supplierCodeTextView.setText(ParameterUpdateTool.getInstance().getSupplierCode());
     }
 
     @Override
@@ -409,8 +409,8 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
                         // 存入数据库
                         Profile profile = new Profile();
                         profile.setFileName(fileName);
-                        profile.setDeviceType(ConfigFactory.getInstance().getDeviceName());
-                        profile.setVendorName(ConfigFactory.getInstance().getSupplierCode());
+                        profile.setDeviceType(ParameterUpdateTool.getInstance().getDeviceName());
+                        profile.setVendorName(ParameterUpdateTool.getInstance().getSupplierCode());
                         profile.setCreateTime(String.valueOf(System.currentTimeMillis()));
                         ProfileDao.save(ParameterDownloadActivity.this, profile);
                         // 写入日志

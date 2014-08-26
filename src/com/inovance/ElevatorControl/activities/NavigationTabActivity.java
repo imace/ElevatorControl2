@@ -22,7 +22,8 @@ import com.bluetoothtool.BluetoothTool;
 import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.config.ConfigFactory;
+import com.inovance.ElevatorControl.config.ParameterUpdateTool;
+import com.inovance.ElevatorControl.daos.DeviceDao;
 import com.inovance.ElevatorControl.handlers.GlobalHandler;
 import com.inovance.ElevatorControl.handlers.SearchBluetoothHandler;
 import com.inovance.ElevatorControl.models.CommunicationCode;
@@ -726,17 +727,37 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
         builder.setItems(names.toArray(new String[names.size()]), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int position) {
-                NormalDevice device = tempNormalDevice.get(position);
+                final NormalDevice device = tempNormalDevice.get(position);
                 BluetoothTool.getInstance().setHasSelectDeviceType(true);
-                // 选择标准设备
-                ConfigFactory.getInstance().selectDevice(NavigationTabActivity.this,
+                // 检查标准设备功能码、状态码、故障帮助更新状态
+                ParameterUpdateTool.getInstance().selectDevice(NavigationTabActivity.this,
                         device.getID(),
                         device.getName(),
                         Device.NormalDevice,
-                        new ConfigFactory.OnDeployFinishListener() {
+                        new ParameterUpdateTool.OnCheckResultListener() {
                             @Override
                             public void onComplete() {
                                 NavigationTabActivity.this.startHomeActivityStatusSyncTask();
+                            }
+
+                            @Override
+                            public void onFailed(Throwable throwable) {
+                                Device temp = DeviceDao.findByName(NavigationTabActivity.this,
+                                        device.getName(),
+                                        Device.NormalDevice);
+                                if (temp != null) {
+                                    // 本地存在当前连接设备的参数
+                                    Toast.makeText(NavigationTabActivity.this,
+                                            R.string.check_parameter_failed_use_local_parameter_message,
+                                            Toast.LENGTH_SHORT).show();
+                                    // 使用本地保存的参数
+                                    NavigationTabActivity.this.startHomeActivityStatusSyncTask();
+                                } else {
+                                    // 本地不存在当前连接设备的参数
+                                    Toast.makeText(NavigationTabActivity.this,
+                                            R.string.check_parameter_failed_message,
+                                            Toast.LENGTH_SHORT).show();
+                                }
                             }
                         });
             }
@@ -884,18 +905,38 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
                 isRunning = false;
                 hasGetDeviceType = true;
                 CommunicationCode code = communicationCodeList.get(specialDeviceCodeIndex);
-                for (SpecialDevice device : specialDeviceList) {
+                for (final SpecialDevice device : specialDeviceList) {
                     if (code.getCode().equalsIgnoreCase(device.getCode())) {
                         BluetoothTool.getInstance().setHasSelectDeviceType(true);
-                        // 选择专有设备
-                        ConfigFactory.getInstance().selectDevice(NavigationTabActivity.this,
+                        // 检查专有设备功能码、状态码、故障帮助更新状态
+                        ParameterUpdateTool.getInstance().selectDevice(NavigationTabActivity.this,
                                 device.getID(),
                                 device.getName(),
                                 Device.SpecialDevice,
-                                new ConfigFactory.OnDeployFinishListener() {
+                                new ParameterUpdateTool.OnCheckResultListener() {
                                     @Override
                                     public void onComplete() {
                                         NavigationTabActivity.this.startHomeActivityStatusSyncTask();
+                                    }
+
+                                    @Override
+                                    public void onFailed(Throwable throwable) {
+                                        Device temp = DeviceDao.findByName(NavigationTabActivity.this,
+                                                device.getName(),
+                                                Device.SpecialDevice);
+                                        if (temp != null) {
+                                            // 本地存在当前连接设备的参数
+                                            Toast.makeText(NavigationTabActivity.this,
+                                                    R.string.check_parameter_failed_use_local_parameter_message,
+                                                    Toast.LENGTH_SHORT).show();
+                                            // 使用本地保存的参数
+                                            NavigationTabActivity.this.startHomeActivityStatusSyncTask();
+                                        } else {
+                                            // 本地不存在当前连接设备的参数
+                                            Toast.makeText(NavigationTabActivity.this,
+                                                    R.string.check_parameter_failed_message,
+                                                    Toast.LENGTH_SHORT).show();
+                                        }
                                     }
                                 });
                     }

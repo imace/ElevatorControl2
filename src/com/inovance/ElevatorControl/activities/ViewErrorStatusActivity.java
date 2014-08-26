@@ -13,8 +13,8 @@ import com.bluetoothtool.BluetoothTool;
 import com.bluetoothtool.SerialUtility;
 import com.inovance.ElevatorControl.R;
 import com.inovance.ElevatorControl.config.ApplicationConfig;
+import com.inovance.ElevatorControl.config.ParameterUpdateTool;
 import com.inovance.ElevatorControl.daos.ParameterSettingsDao;
-import com.inovance.ElevatorControl.config.ConfigFactory;
 import com.inovance.ElevatorControl.models.ObjectListHolder;
 import com.inovance.ElevatorControl.models.ParameterSettings;
 import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
@@ -60,7 +60,7 @@ public class ViewErrorStatusActivity extends Activity {
     }
 
     private void generateErrorStatusFilters() {
-        String deviceType = ConfigFactory.getInstance().getDeviceName();
+        String deviceType = ParameterUpdateTool.getInstance().getDeviceName();
         int[] index = new int[]{};
         if (deviceType.equalsIgnoreCase(ApplicationConfig.NormalDeviceType[0])) {
             index = new int[]{9, 13};

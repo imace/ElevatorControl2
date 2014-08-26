@@ -5,7 +5,6 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.os.Environment;
 import android.os.Message;
 import android.view.*;
@@ -464,14 +463,17 @@ public class ParameterUploadActivity extends Activity {
                     // 写入配置文件
                     case R.id.action_upload: {
                         if (BluetoothTool.getInstance().isPrepared()) {
-                            AlertDialog.Builder builder = new android.app.AlertDialog.Builder(ParameterUploadActivity.this, R.style.CustomDialogStyle)
+                            AlertDialog.Builder builder = new AlertDialog.Builder(ParameterUploadActivity.this,
+                                    R.style.CustomDialogStyle)
                                     .setTitle(R.string.upload_dialog_title)
                                     .setMessage(R.string.upload_dialog_message)
                                     .setNegativeButton(R.string.dialog_btn_cancel, null)
                                     .setPositiveButton(R.string.dialog_btn_ok, new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialogInterface, int i) {
-                                            writeProfile(index);
+                                            ParameterUploadActivity.this.hasGetElevatorStatus = false;
+                                            // 读取电梯状态
+                                            ParameterUploadActivity.this.getElevatorStatus(index);
                                         }
                                     });
                             builder.create().show();
@@ -488,30 +490,6 @@ public class ParameterUploadActivity extends Activity {
             }
         });
         popupMenu.show();
-    }
-
-    /**
-     * 开始写入参数
-     */
-    private void writeProfile(final int index) {
-        ParameterUploadActivity.this.hasGetElevatorStatus = false;
-        // 读取电梯状态
-        new CountDownTimer(2500, 500) {
-
-            @Override
-            public void onTick(long l) {
-                if (!ParameterUploadActivity.this.hasGetElevatorStatus) {
-                    ParameterUploadActivity.this.getElevatorStatus(index);
-                } else {
-                    this.cancel();
-                }
-            }
-
-            @Override
-            public void onFinish() {
-
-            }
-        }.start();
     }
 
     /**
@@ -598,7 +576,7 @@ public class ParameterUploadActivity extends Activity {
             holder.operationButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    onClickListViewItemMenuWithIndex(view, index);
+                    ParameterUploadActivity.this.onClickListViewItemMenuWithIndex(view, index);
                 }
             });
             return convertView;
@@ -618,7 +596,7 @@ public class ParameterUploadActivity extends Activity {
 
     }
 
-    // ====================================== Upload Parameter Handler =========================================
+    // ====================================== Upload Parameter Handler ========================================= //
 
     /**
      * 上传参数 Handler
@@ -687,17 +665,21 @@ public class ParameterUploadActivity extends Activity {
         @Override
         public void onBluetoothConnectException(Message message) {
             super.onBluetoothConnectException(message);
-            CustomDialog.showBluetoothExceptionDialog(ParameterUploadActivity.this, new CustomDialog.OnRetryListener() {
-                @Override
-                public void onClick() {
-                    BluetoothTool.getInstance().currentState = BluetoothState.CONNECTED;
-                    if (uploadDialog != null && uploadDialog.isShowing()) {
-                        uploadDialog.dismiss();
-                        uploadDialog = null;
-                    }
-                    writeProfile(index);
-                }
-            });
+            CustomDialog.showBluetoothExceptionDialog(ParameterUploadActivity.this,
+                    new CustomDialog.OnRetryListener() {
+                        @Override
+                        public void onClick() {
+                            BluetoothTool.getInstance().currentState = BluetoothState.CONNECTED;
+                            if (uploadDialog != null && uploadDialog.isShowing()) {
+                                uploadDialog.dismiss();
+                                uploadDialog = null;
+                            }
+                            // 重新写入参数配置
+                            ParameterUploadActivity.this.hasGetElevatorStatus = false;
+                            // 读取电梯状态
+                            ParameterUploadActivity.this.getElevatorStatus(index);
+                        }
+                    });
         }
     }
 
@@ -708,18 +690,35 @@ public class ParameterUploadActivity extends Activity {
 
         public int index;
 
+        private RealTimeMonitor monitor;
+
         public ElevatorStatusHandler(Activity activity) {
             super(activity);
+        }
+
+        @Override
+        public void onMultiTalkBegin(Message msg) {
+            super.onMultiTalkBegin(msg);
+            monitor = null;
         }
 
         @Override
         public void onTalkReceive(Message msg) {
             super.onTalkReceive(msg);
             if (msg.obj != null && msg.obj instanceof RealTimeMonitor) {
+                monitor = (RealTimeMonitor) msg.obj;
                 ParameterUploadActivity.this.hasGetElevatorStatus = true;
-                int status = ParseSerialsUtils.getElevatorStatus((RealTimeMonitor) msg.obj);
+                int status = ParseSerialsUtils.getElevatorStatus(monitor);
                 // 读取到电梯运行状态
                 ParameterUploadActivity.this.onGetElevatorStatus(index, status);
+            }
+        }
+
+        @Override
+        public void onMultiTalkEnd(Message msg) {
+            super.onMultiTalkEnd(msg);
+            if (monitor == null) {
+                ParameterUploadActivity.this.getElevatorStatus(index);
             }
         }
     }
