@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.utils;
+package com.inovance.elevatorcontrol.utils;
 
 /**
  * Reads bits-at-a-time where the number of bits is between 1 and 32.

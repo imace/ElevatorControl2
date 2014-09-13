@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.adapters;
+package com.inovance.elevatorcontrol.adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -6,9 +6,9 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.activities.FirmwareManageActivity;
-import com.inovance.ElevatorControl.models.Firmware;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.activities.FirmwareManageActivity;
+import com.inovance.elevatorcontrol.models.Firmware;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

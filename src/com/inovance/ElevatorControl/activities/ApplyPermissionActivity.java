@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.activities;
+package com.inovance.elevatorcontrol.activities;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -9,14 +9,14 @@ import android.view.View;
 import android.widget.*;
 import butterknife.InjectView;
 import butterknife.Views;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.models.SpecialDevice;
-import com.inovance.ElevatorControl.models.Vendor;
-import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
-import com.inovance.ElevatorControl.web.WebApi;
-import com.inovance.ElevatorControl.web.WebApi.OnGetResultListener;
-import com.inovance.ElevatorControl.web.WebApi.OnRequestFailureListener;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.models.SpecialDevice;
+import com.inovance.elevatorcontrol.models.Vendor;
+import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
+import com.inovance.elevatorcontrol.web.WebApi;
+import com.inovance.elevatorcontrol.web.WebApi.OnGetResultListener;
+import com.inovance.elevatorcontrol.web.WebApi.OnRequestFailureListener;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -160,7 +160,7 @@ public class ApplyPermissionActivity extends Activity implements OnGetResultList
             submitTextView.setVisibility(View.GONE);
             submitProgressView.setVisibility(View.VISIBLE);
             submitView.setEnabled(false);
-            int deviceID = mCurrentDeviceList.get(deviceSpinner.getSelectedItemPosition()).getID();
+            int deviceID = mCurrentDeviceList.get(deviceSpinner.getSelectedItemPosition()).getId();
             BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
             String bluetoothAddress = bluetoothAdapter.getAddress();
             WebApi.getInstance().applySpecialDevicePermission(this, deviceID,
@@ -195,7 +195,7 @@ public class ApplyPermissionActivity extends Activity implements OnGetResultList
                     if (item.getName().equalsIgnoreCase(vendorTextView.getText().toString())) {
                         List<String> nameList = new ArrayList<String>();
                         for (SpecialDevice device : mDeviceList) {
-                            if (device.getVendorID() == item.getID()) {
+                            if (device.getVendorID() == item.getId()) {
                                 nameList.add(device.getName());
                                 mCurrentDeviceList.add(device);
                             }

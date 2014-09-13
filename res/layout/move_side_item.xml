@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.inovance.ElevatorControl.views.SquareLayout
+<com.inovance.elevatorcontrol.views.SquareLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:kio="http://schemas.android.com/apk/res-auto"
         android:gravity="center"
@@ -7,7 +7,7 @@
         android:background="@drawable/elevator_button_background"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-    <com.inovance.ElevatorControl.views.TypefaceTextView
+    <com.inovance.elevatorcontrol.views.TypefaceTextView
             android:layout_centerInParent="true"
             android:id="@+id/floor_text"
             android:textSize="64sp"
@@ -18,4 +18,4 @@
             kio:customTypeface="fonts/helvetica_light.otf"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
-</com.inovance.ElevatorControl.views.SquareLayout>
+</com.inovance.elevatorcontrol.views.SquareLayout>

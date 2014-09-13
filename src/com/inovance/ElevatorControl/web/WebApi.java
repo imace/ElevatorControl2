@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.web;
+package com.inovance.elevatorcontrol.web;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -6,11 +6,11 @@ import android.net.NetworkInfo;
 import android.util.Log;
 import android.util.Xml;
 import android.widget.Toast;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.cache.LruCacheTool;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.models.Device;
-import com.inovance.ElevatorControl.models.User;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.cache.LruCacheTool;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.models.Device;
+import com.inovance.elevatorcontrol.models.User;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import org.apache.http.Header;

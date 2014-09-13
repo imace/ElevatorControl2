@@ -13,7 +13,7 @@
     <string name="restore_factory">恢复出厂设置</string>
     <string name="label_txt_name">名称</string>
     <string name="label_txt_code">功能码</string>
-    <string name="label_txt_productId">ID</string>
+    <string name="label_txt_productId">id</string>
     <string name="label_txt_value">值</string>
     <string name="label_txt_type">种类</string>
     <string name="label_txt_mode">★</string>

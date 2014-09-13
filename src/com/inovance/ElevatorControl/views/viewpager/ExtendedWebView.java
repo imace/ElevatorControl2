@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.views.viewpager;
+package com.inovance.elevatorcontrol.views.viewpager;
 
 import android.content.Context;
 import android.util.AttributeSet;

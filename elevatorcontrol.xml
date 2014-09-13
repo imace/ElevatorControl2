@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="elevatorcontrol" default="all">
+  
+  
+  <property file="elevatorcontrol.properties"/>
+  <!-- Uncomment the following property if no tests compilation is needed -->
+  <!-- 
+  <property name="skip.tests" value="true"/>
+   -->
+  
+  <!-- Compiler options -->
+  
+  <property name="compiler.debug" value="on"/>
+  <property name="compiler.generate.no.warnings" value="off"/>
+  <property name="compiler.args" value=""/>
+  <property name="compiler.max.memory" value="700m"/>
+  <patternset id="ignored.files">
+    <exclude name="**/CVS/**"/>
+    <exclude name="**/SCCS/**"/>
+    <exclude name="**/RCS/**"/>
+    <exclude name="**/rcs/**"/>
+    <exclude name="**/.DS_Store/**"/>
+    <exclude name="**/.svn/**"/>
+    <exclude name="**/.pyc/**"/>
+    <exclude name="**/.pyo/**"/>
+    <exclude name="**/*.pyc/**"/>
+    <exclude name="**/*.pyo/**"/>
+    <exclude name="**/.git/**"/>
+    <exclude name="**/*.hprof/**"/>
+    <exclude name="**/_svn/**"/>
+    <exclude name="**/.hg/**"/>
+    <exclude name="**/*.lib/**"/>
+    <exclude name="**/*~/**"/>
+    <exclude name="**/__pycache__/**"/>
+    <exclude name="**/.bundle/**"/>
+    <exclude name="**/*.rbc/**"/>
+    <exclude name="**/vssver.scc/**"/>
+    <exclude name="**/vssver2.scc/**"/>
+  </patternset>
+  <patternset id="library.patterns">
+    <include name="*.war"/>
+    <include name="*.ear"/>
+    <include name="*.apk"/>
+    <include name="*.zip"/>
+    <include name="*.swc"/>
+    <include name="*.ane"/>
+    <include name="*.egg"/>
+    <include name="*.jar"/>
+  </patternset>
+  <patternset id="compiler.resources">
+    <exclude name="**/?*.java"/>
+    <exclude name="**/?*.form"/>
+    <exclude name="**/?*.class"/>
+    <exclude name="**/?*.groovy"/>
+    <exclude name="**/?*.scala"/>
+    <exclude name="**/?*.flex"/>
+    <exclude name="**/?*.kt"/>
+    <exclude name="**/?*.clj"/>
+  </patternset>
+  
+  <!-- JDK definitions -->
+  
+  <property name="jdk.bin.android_api_19_platform" value="${jdk.home.android_api_19_platform}/../../../../../Library/Java/JavaVirtualMachines/jdk1.7.0_45.jdk/Contents/Home/bin"/>
+  <path id="jdk.classpath.android_api_19_platform">
+    <fileset dir="${jdk.home.android_api_19_platform}">
+      <include name="platforms/android-19/android.jar"/>
+      <include name="platforms/android-19/data/res"/>
+    </fileset>
+  </path>
+  
+  <property name="project.jdk.home" value="${jdk.home.android_api_19_platform}"/>
+  <property name="project.jdk.bin" value="${jdk.bin.android_api_19_platform}"/>
+  <property name="project.jdk.classpath" value="jdk.classpath.android_api_19_platform"/>
+  
+  
+  <!-- Project Libraries -->
+  
+  <path id="library.acra-4.5.0.classpath">
+    <pathelement location="${basedir}/libs/acra-4.5.0.jar"/>
+  </path>
+  
+  <path id="library.android-async-http-1.4.4.classpath">
+    <pathelement location="${basedir}/libs/android-async-http-1.4.4.jar"/>
+  </path>
+  
+  <path id="library.android-support-v4.classpath">
+    <pathelement location="${basedir}/libs/android-support-v4.jar"/>
+  </path>
+  
+  <path id="library.burn-program-1.0.0.classpath">
+    <pathelement location="${basedir}/libs/burn-program-1.0.0.jar"/>
+  </path>
+  
+  <path id="library.butterknife-3.0.0.classpath">
+    <pathelement location="${basedir}/libs/butterknife-3.0.0.jar"/>
+  </path>
+  
+  <path id="library.commons-io-2.4.classpath">
+    <pathelement location="${basedir}/libs/commons-io-2.4.jar"/>
+  </path>
+  
+  <path id="library.disklrucache-2.0.2.classpath">
+    <pathelement location="${basedir}/libs/disklrucache-2.0.2.jar"/>
+  </path>
+  
+  <path id="library.zxing-core-2.2.classpath">
+    <pathelement location="${basedir}/libs/zxing-core-2.2.jar"/>
+  </path>
+  <!-- Register Custom Compiler Taskdefs -->
+  <property name="javac2.home" value="${idea.home}/lib"/>
+  <path id="javac2.classpath">
+    <pathelement location="${javac2.home}/javac2.jar"/>
+    <pathelement location="${javac2.home}/jdom.jar"/>
+    <pathelement location="${javac2.home}/asm4-all.jar"/>
+    <pathelement location="${javac2.home}/jgoodies-forms.jar"/>
+  </path>
+  <target name="register.custom.compilers">
+    <taskdef name="javac2" classname="com.intellij.ant.Javac2" classpathref="javac2.classpath"/>
+    <taskdef name="instrumentIdeaExtensions" classname="com.intellij.ant.InstrumentIdeaExtensions" classpathref="javac2.classpath"/>
+  </target>
+  
+  <!-- Modules -->
+  
+  <import file="${basedir}/modules/AdapterKit/module_adapterkit.xml"/>
+  
+  <import file="${basedir}/modules/Afinal/module_afinal.xml"/>
+  
+  <import file="${basedir}/modules/BluetoothLibrary/module_bluetoothlibrary.xml"/>
+  
+  <import file="${basedir}/modules/DirectoryChooser/module_directorychooser.xml"/>
+  
+  <import file="${basedir}/modules/RefreshActionItem/module_refreshactionitem.xml"/>
+  
+  <import file="${basedir}/modules/ViewPagerIndicator/module_viewpagerindicator.xml"/>
+  
+  <import file="${basedir}/module_elevatorcontrol.xml"/>
+  
+  <target name="init" description="Build initialization">
+    <!-- Perform any build initialization in this target -->
+  </target>
+  
+  <target name="clean" depends="clean.module.adapterkit, clean.module.afinal, clean.module.bluetoothlibrary, clean.module.directorychooser, clean.module.refreshactionitem, clean.module.viewpagerindicator, clean.module.elevatorcontrol" description="cleanup all"/>
+  
+  <target name="build.modules" depends="init, clean, compile.module.adapterkit, compile.module.afinal, compile.module.bluetoothlibrary, compile.module.directorychooser, compile.module.refreshactionitem, compile.module.viewpagerindicator, compile.module.elevatorcontrol" description="build all modules"/>
+  
+  <target name="init.artifacts">
+    <property name="artifacts.temp.dir" value="${basedir}/__artifacts_temp"/>
+    <property name="artifact.output.elevatorcontrol" value="${basedir}/../../../Desktop"/>
+    <mkdir dir="${artifacts.temp.dir}"/>
+    <property name="temp.jar.path.ElevatorControl.apk" value="${artifacts.temp.dir}/ElevatorControl.apk"/>
+  </target>
+  
+  <target name="artifact.elevatorcontrol" depends="init.artifacts, compile.module.elevatorcontrol" description="Build &#39;ElevatorControl&#39; artifact">
+    <property name="artifact.temp.output.elevatorcontrol" value="${artifacts.temp.dir}/ElevatorControl"/>
+    <mkdir dir="${artifact.temp.output.elevatorcontrol}"/>
+    <zip destfile="${temp.jar.path.ElevatorControl.apk}">
+      <zipfileset src="/Users/Keith/Dropbox/InovanceProject/ElevatorControl/bin/classes/ElevatorControl.afp.apk!/"/>
+    </zip>
+    <copy file="${temp.jar.path.ElevatorControl.apk}" tofile="${artifact.temp.output.elevatorcontrol}/ElevatorControl.apk"/>
+  </target>
+  
+  <target name="build.all.artifacts" depends="artifact.elevatorcontrol" description="Build all artifacts">
+    <mkdir dir="${artifact.output.elevatorcontrol}"/>
+    <copy todir="${artifact.output.elevatorcontrol}">
+      <fileset dir="${artifact.temp.output.elevatorcontrol}"/>
+    </copy>
+    
+    <!-- Delete temporary files -->
+    <delete dir="${artifacts.temp.dir}"/>
+  </target>
+  
+  <target name="all" depends="build.modules, build.all.artifacts" description="build all"/>
+</project>

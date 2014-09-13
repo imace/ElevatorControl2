@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.adapters;
+package com.inovance.elevatorcontrol.adapters;
 
 import android.app.Activity;
 import android.view.LayoutInflater;
@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.RadioButton;
 import android.widget.TextView;
-import com.inovance.ElevatorControl.R;
+import com.inovance.elevatorcontrol.R;
 
 /**
  * Created by IntelliJ IDEA.

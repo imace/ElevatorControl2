@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.models;
+package com.inovance.elevatorcontrol.models;
 
 /**
  * Created by IntelliJ IDEA.
@@ -29,6 +29,11 @@ public class ParameterStatusItem {
      * 是否为 F5-25 组
      */
     private boolean isSpecial = false;
+
+    /**
+     * 是否在 FA-26 和 FA-37 内
+     */
+    private boolean isInFA26ToFA37 = false;
 
     /**
      * 是否可以写入
@@ -81,6 +86,14 @@ public class ParameterStatusItem {
 
     public void setSpecial(boolean isSpecial) {
         this.isSpecial = isSpecial;
+    }
+
+    public boolean isInFA26ToFA37() {
+        return isInFA26ToFA37;
+    }
+
+    public void setInFA26ToFA37(boolean isInFA26ToFA37) {
+        this.isInFA26ToFA37 = isInFA26ToFA37;
     }
 
 }

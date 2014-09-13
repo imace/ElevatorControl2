@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.activities;
+package com.inovance.elevatorcontrol.activities;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -18,21 +18,21 @@ import android.webkit.MimeTypeMap;
 import android.widget.*;
 import butterknife.InjectView;
 import butterknife.Views;
-import com.bluetoothtool.BluetoothTool;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.adapters.ChatMessageAdapter;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.config.ParameterUpdateTool;
-import com.inovance.ElevatorControl.daos.ChatMessageDao;
-import com.inovance.ElevatorControl.models.ChatMessage;
-import com.inovance.ElevatorControl.models.User;
-import com.inovance.ElevatorControl.utils.FileTransport;
-import com.inovance.ElevatorControl.utils.FileTransport.OnFileDownloadComplete;
-import com.inovance.ElevatorControl.utils.FileTransport.OnFileUploadComplete;
-import com.inovance.ElevatorControl.utils.ProfileDownloadUtils;
-import com.inovance.ElevatorControl.web.WebApi;
-import com.inovance.ElevatorControl.web.WebApi.OnGetResultListener;
-import com.inovance.ElevatorControl.web.WebApi.OnRequestFailureListener;
+import com.inovance.bluetoothtool.BluetoothTool;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.adapters.ChatMessageAdapter;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
+import com.inovance.elevatorcontrol.daos.ChatMessageDao;
+import com.inovance.elevatorcontrol.models.ChatMessage;
+import com.inovance.elevatorcontrol.models.User;
+import com.inovance.elevatorcontrol.utils.FileTransport;
+import com.inovance.elevatorcontrol.utils.FileTransport.OnFileDownloadComplete;
+import com.inovance.elevatorcontrol.utils.FileTransport.OnFileUploadComplete;
+import com.inovance.elevatorcontrol.utils.ProfileDownloadUtils;
+import com.inovance.elevatorcontrol.web.WebApi;
+import com.inovance.elevatorcontrol.web.WebApi.OnGetResultListener;
+import com.inovance.elevatorcontrol.web.WebApi.OnRequestFailureListener;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -85,6 +85,8 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
     private boolean running = false;
 
     private static final int SYNC_TIME = 3000;
+
+    private ChatMessage currentSelectMessage;
 
     private Handler syncHandler = new Handler();
 
@@ -223,6 +225,8 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
                     public void onClick(DialogInterface dialog, int position) {
                         switch (position) {
                             case 0:
+                                // TODO Cache downloaded file
+                                currentSelectMessage = message;
                                 FileTransport.getInstance().downloadFile(RemoteHelpActivity.this,
                                         ApplicationConfig.DomainName
                                                 + ApplicationConfig.GetChatMessageFile

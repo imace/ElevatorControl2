@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.views.component;
+package com.inovance.elevatorcontrol.views.component;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -9,7 +9,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import com.inovance.ElevatorControl.R;
+import com.inovance.elevatorcontrol.R;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;

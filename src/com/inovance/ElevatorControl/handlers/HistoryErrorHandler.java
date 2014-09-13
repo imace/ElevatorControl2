@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.handlers;
+package com.inovance.elevatorcontrol.handlers;
 
 import android.app.Activity;
 import android.os.Message;
@@ -9,12 +9,12 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import com.bluetoothtool.BluetoothHandler;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.activities.TroubleAnalyzeActivity;
-import com.inovance.ElevatorControl.models.HistoryError;
-import com.inovance.ElevatorControl.models.ObjectListHolder;
-import com.inovance.ElevatorControl.models.ParameterSettings;
+import com.inovance.bluetoothtool.BluetoothHandler;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.activities.TroubleAnalyzeActivity;
+import com.inovance.elevatorcontrol.models.HistoryError;
+import com.inovance.elevatorcontrol.models.ObjectListHolder;
+import com.inovance.elevatorcontrol.models.ParameterSettings;
 import com.mobsandgeeks.adapters.InstantAdapter;
 
 import java.util.ArrayList;

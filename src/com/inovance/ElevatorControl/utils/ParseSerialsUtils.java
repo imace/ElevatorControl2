@@ -1,15 +1,15 @@
-package com.inovance.ElevatorControl.utils;
+package com.inovance.elevatorcontrol.utils;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.text.TextUtils;
-import com.bluetoothtool.SerialUtility;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.config.ParameterUpdateTool;
-import com.inovance.ElevatorControl.daos.ErrorHelpDao;
-import com.inovance.ElevatorControl.models.ErrorHelp;
-import com.inovance.ElevatorControl.models.ParameterSettings;
-import com.inovance.ElevatorControl.models.RealTimeMonitor;
+import com.inovance.bluetoothtool.SerialUtility;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
+import com.inovance.elevatorcontrol.daos.ErrorHelpDao;
+import com.inovance.elevatorcontrol.models.ErrorHelp;
+import com.inovance.elevatorcontrol.models.ParameterSettings;
+import com.inovance.elevatorcontrol.models.RealTimeMonitor;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -97,7 +97,7 @@ public class ParseSerialsUtils {
                     JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
                     int size = jsonArray.length();
                     int index = getIntFromBytes(data);
-                    if (Integer.parseInt(settings.getType()) == 25) {
+                    if (Integer.parseInt(settings.getType()) == ApplicationConfig.FloorShowType) {
                         int modValue = index / 100;
                         int remValue = index % 100;
                         if (modValue < size && remValue < size) {
@@ -106,18 +106,6 @@ public class ParseSerialsUtils {
                             return modObject.optString("value") + "  " + remObject.optString("value");
                         }
                     }
-                    if (Integer.parseInt(settings.getType()) == 3
-                            && !settings.getName().contains("X25")
-                            && !settings.getName().contains("X26")
-                            && !settings.getName().contains("X27")) {
-                        if (index >= 32 && index < 64) {
-                            index = index - 32;
-                        }
-                        if (index >= 96 && index < 127) {
-                            index = index - 32;
-                        }
-                    }
-
                     if (index < size) {
                         JSONObject jsonObject = jsonArray.getJSONObject(index);
                         return index + ":" + jsonObject.optString("value");
@@ -141,6 +129,7 @@ public class ParseSerialsUtils {
     public static String getCalculatedCode(ParameterSettings settings) {
         String r2 = settings.getCode().substring(0, 2);
         String r4 = settings.getCode().substring(2);
+        r4 = r4.replace("-", "");
         r4 = SerialUtility.int2HexStr(new int[]{
                 Integer.parseInt(r4)
         });
@@ -322,5 +311,14 @@ public class ParseSerialsUtils {
         int exp = (int) (Math.log(bytes) / Math.log(1024));
         String pre = "KMGTPE".charAt(exp - 1) + "i";
         return String.format("%.2f %sB", bytes / Math.pow(1024, exp), pre);
+    }
+
+    public static boolean checkInFA26ToFA37(ParameterSettings settings) {
+        String name = settings.getCode().substring(0, 2);
+        String value = settings.getCode().substring(2);
+        int number = Integer.parseInt(value.replace("-", ""));
+        return name.equalsIgnoreCase("FA")
+                && number >= ApplicationConfig.FA26ToFA37[0]
+                && number <= ApplicationConfig.FA26ToFA37[1];
     }
 }

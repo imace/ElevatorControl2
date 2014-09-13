@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.activities;
+package com.inovance.elevatorcontrol.activities;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -10,9 +10,9 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import butterknife.InjectView;
 import butterknife.Views;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.models.SpecialDevice;
-import com.inovance.ElevatorControl.web.WebApi;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.models.SpecialDevice;
+import com.inovance.elevatorcontrol.web.WebApi;
 import com.mobsandgeeks.adapters.InstantAdapter;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -76,7 +76,7 @@ public class SelectDeviceTypeActivity extends Activity {
                     int size = jsonArray.length();
                     for (int i = 0; i < size; i++) {
                         JSONObject jsonObject = jsonArray.getJSONObject(i);
-                        //@TODO Select SpecialDevice
+                        // TODO Select SpecialDevice
                     }
                     InstantAdapter<SpecialDevice> adapter = new InstantAdapter<SpecialDevice>(
                             SelectDeviceTypeActivity.this,

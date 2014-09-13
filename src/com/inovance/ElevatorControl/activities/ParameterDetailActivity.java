@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.activities;
+package com.inovance.elevatorcontrol.activities;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -8,27 +8,28 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.*;
 import butterknife.InjectView;
 import butterknife.Views;
-import com.bluetoothtool.BluetoothHandler;
-import com.bluetoothtool.BluetoothTalk;
-import com.bluetoothtool.BluetoothTool;
-import com.bluetoothtool.SerialUtility;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.adapters.CheckedListViewAdapter;
-import com.inovance.ElevatorControl.adapters.DialogSwitchListViewAdapter;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.daos.ParameterGroupSettingsDao;
-import com.inovance.ElevatorControl.daos.RealTimeMonitorDao;
-import com.inovance.ElevatorControl.handlers.ParameterDetailHandler;
-import com.inovance.ElevatorControl.models.*;
-import com.inovance.ElevatorControl.utils.LogUtils;
-import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
-import com.inovance.ElevatorControl.views.dialogs.CustomDialog;
+import com.inovance.bluetoothtool.BluetoothHandler;
+import com.inovance.bluetoothtool.BluetoothTalk;
+import com.inovance.bluetoothtool.BluetoothTool;
+import com.inovance.bluetoothtool.SerialUtility;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.adapters.CheckedListViewAdapter;
+import com.inovance.elevatorcontrol.adapters.DialogSwitchListViewAdapter;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.daos.ParameterGroupSettingsDao;
+import com.inovance.elevatorcontrol.daos.RealTimeMonitorDao;
+import com.inovance.elevatorcontrol.handlers.ParameterDetailHandler;
+import com.inovance.elevatorcontrol.models.*;
+import com.inovance.elevatorcontrol.utils.LogUtils;
+import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
+import com.inovance.elevatorcontrol.views.dialogs.CustomDialog;
 import com.manuelpeinado.refreshactionitem.ProgressIndicatorType;
 import com.manuelpeinado.refreshactionitem.RefreshActionItem;
 import com.mobsandgeeks.adapters.InstantAdapter;
@@ -432,7 +433,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         });
         detailDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View view) {
                 detailDialog.dismiss();
             }
         });
@@ -492,6 +493,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
             maxValueLong = Math.round(Double.parseDouble(maxValueString)
                     / (Double.parseDouble(settings.getScale())));
             String currentValueString = settings.getFinalValue();
+            Log.v(TAG, currentValueString);
             if (settings.getFinalValue().length() < maxValueString.length()) {
                 int leadZeroCount = maxValueString.length() - currentValueString.length();
                 String leadZeroString = "";
@@ -609,6 +611,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                     @Override
                     public void onClick(View view) {
                         if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[1]) {
+                            // 输入端子类型
                             if (Integer.parseInt(settings.getType()) == ApplicationConfig.InputTerminalType) {
                                 ToggleButton toggleButton = (ToggleButton) detailDialog.findViewById(R.id.toggle_button);
                                 ListView listView = (ListView) detailDialog.findViewById(R.id.list_view);
@@ -620,6 +623,9 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                                         value = 0;
                                     }
                                     startSetNewValueCommunications(index, String.format("%04x", value));
+                                } else {
+                                    // 第一个
+                                    startSetNewValueCommunications(index, String.format("%04x", 0));
                                 }
                             } else if (Integer.parseInt(settings.getType()) == ApplicationConfig.FloorShowType) {
                                 Spinner modSpinner = (Spinner) detailDialog.findViewById(R.id.mod_value);
@@ -769,6 +775,18 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         }
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        BluetoothTool.getInstance().setHandler(null);
+    }
+
     /**
      * Start Set New Value Communications
      *
@@ -848,12 +866,6 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         }
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
-    }
-
     /**
      * Start Combination Communications
      * 组合发送指令
@@ -870,6 +882,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 communications[i] = new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
+                        Log.v(TAG, firstItem.getCode() + ":" + length);
                         this.setSendBuffer(SerialUtility.crc16("0103"
                                 + ParseSerialsUtils.getCalculatedCode(firstItem)
                                 + String.format("%04x", length)));
@@ -894,6 +907,9 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                     public Object onParse() {
                         if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
                             byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
+
+                            Log.v(TAG, SerialUtility.byte2HexStr(data));
+
                             short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
                             if (length * 2 == bytesLength) {
                                 List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
@@ -1189,7 +1205,6 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 }
             }
         }
-
     }
 
     // ================================= 取得参数数值设置范围 Handler ============================================== //
@@ -1228,14 +1243,10 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 stringList.add((String) msg.obj);
             }
         }
-
-        @Override
-        public void onTalkError(Message msg) {
-            super.onTalkError(msg);
-        }
     }
 
     // ============================= 取得当前电梯运行状态 Handler ============================ //
+
     private class GetElevatorStatusHandler extends BluetoothHandler {
 
         public int index;
@@ -1265,11 +1276,6 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 int status = ParseSerialsUtils.getElevatorStatus((RealTimeMonitor) msg.obj);
                 onGetElevatorStatus(this.index, status, this.settings);
             }
-        }
-
-        @Override
-        public void onTalkError(Message msg) {
-            super.onTalkError(msg);
         }
 
     }

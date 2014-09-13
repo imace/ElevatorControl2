@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.activities;
+package com.inovance.elevatorcontrol.activities;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -14,16 +14,16 @@ import android.widget.Toast;
 import butterknife.InjectView;
 import butterknife.OnClick;
 import butterknife.Views;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.config.ParameterUpdateTool;
-import com.inovance.ElevatorControl.daos.ParameterFactoryDao;
-import com.inovance.ElevatorControl.models.User;
-import com.inovance.ElevatorControl.utils.UpdateApplication;
-import com.inovance.ElevatorControl.utils.UpdateApplication.OnNoUpdateFoundListener;
-import com.inovance.ElevatorControl.web.WebApi;
-import com.inovance.ElevatorControl.web.WebApi.OnGetResultListener;
-import com.inovance.ElevatorControl.web.WebApi.OnRequestFailureListener;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
+import com.inovance.elevatorcontrol.daos.ParameterFactoryDao;
+import com.inovance.elevatorcontrol.models.User;
+import com.inovance.elevatorcontrol.utils.UpdateApplication;
+import com.inovance.elevatorcontrol.utils.UpdateApplication.OnNoUpdateFoundListener;
+import com.inovance.elevatorcontrol.web.WebApi;
+import com.inovance.elevatorcontrol.web.WebApi.OnGetResultListener;
+import com.inovance.elevatorcontrol.web.WebApi.OnRequestFailureListener;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -83,7 +83,6 @@ public class CheckAuthorizationActivity extends Activity implements OnGetResultL
                 initializeData();
             }
         });
-        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
     }
 
     @Override
@@ -99,7 +98,6 @@ public class CheckAuthorizationActivity extends Activity implements OnGetResultL
     protected void onPause() {
         super.onPause();
         WebApi.getInstance().removeListener();
-        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
     }
 
     @OnClick(R.id.btn_sign_up)

@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.utils;
+package com.inovance.elevatorcontrol.utils;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -17,10 +17,10 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.bluetoothtool.BluetoothTool;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.web.WebApi;
+import com.inovance.bluetoothtool.BluetoothTool;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.web.WebApi;
 import net.tsz.afinal.core.AsyncTask;
 
 import java.io.*;

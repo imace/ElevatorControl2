@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.activities;
+package com.inovance.elevatorcontrol.activities;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -6,9 +6,9 @@ import android.view.MenuItem;
 import android.widget.ListView;
 import butterknife.InjectView;
 import butterknife.Views;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.models.SystemLog;
-import com.inovance.ElevatorControl.utils.LogUtils;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.models.SystemLog;
+import com.inovance.elevatorcontrol.utils.LogUtils;
 import com.mobsandgeeks.adapters.InstantAdapter;
 
 import java.util.Collections;

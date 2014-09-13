@@ -1,7 +1,7 @@
-package com.inovance.ElevatorControl.models;
+package com.inovance.elevatorcontrol.models;
 
 import android.content.Context;
-import com.inovance.ElevatorControl.R;
+import com.inovance.elevatorcontrol.R;
 import com.mobsandgeeks.adapters.InstantText;
 
 import java.util.ArrayList;

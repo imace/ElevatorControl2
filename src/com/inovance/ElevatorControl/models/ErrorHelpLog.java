@@ -1,9 +1,9 @@
-package com.inovance.ElevatorControl.models;
+package com.inovance.elevatorcontrol.models;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.daos.ErrorHelpLogDao;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.daos.ErrorHelpLogDao;
 import com.mobsandgeeks.adapters.InstantText;
 
 import java.util.Date;
@@ -11,13 +11,14 @@ import java.util.Date;
 public class ErrorHelpLog {
 
     private int Id;
+
     private Date errorTime;
+
     private int errorHelpId;
 
     private byte[] received;
 
     public Context ctx;
-
 
     @InstantText(viewId = R.id.text_failure_history)
     public String getUIName() {

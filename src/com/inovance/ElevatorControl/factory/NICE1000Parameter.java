@@ -1,8 +1,8 @@
-package com.inovance.ElevatorControl.factory;
+package com.inovance.elevatorcontrol.factory;
 
-import com.inovance.ElevatorControl.models.ParameterSettings;
-import com.inovance.ElevatorControl.models.ParameterStatusItem;
-import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
+import com.inovance.elevatorcontrol.models.ParameterSettings;
+import com.inovance.elevatorcontrol.models.ParameterStatusItem;
+import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

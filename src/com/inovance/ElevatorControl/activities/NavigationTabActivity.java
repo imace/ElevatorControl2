@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.activities;
+package com.inovance.elevatorcontrol.activities;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -16,26 +16,26 @@ import android.view.View;
 import android.widget.*;
 import butterknife.InjectView;
 import butterknife.Views;
-import com.bluetoothtool.BluetoothHandler;
-import com.bluetoothtool.BluetoothTalk;
-import com.bluetoothtool.BluetoothTool;
-import com.bluetoothtool.SerialUtility;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.config.ParameterUpdateTool;
-import com.inovance.ElevatorControl.daos.DeviceDao;
-import com.inovance.ElevatorControl.handlers.GlobalHandler;
-import com.inovance.ElevatorControl.handlers.SearchBluetoothHandler;
-import com.inovance.ElevatorControl.models.CommunicationCode;
-import com.inovance.ElevatorControl.models.Device;
-import com.inovance.ElevatorControl.models.NormalDevice;
-import com.inovance.ElevatorControl.models.SpecialDevice;
-import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
-import com.inovance.ElevatorControl.views.customspinner.NoDefaultSpinner;
-import com.inovance.ElevatorControl.views.dialogs.CustomDialog;
-import com.inovance.ElevatorControl.web.WebApi;
-import com.inovance.ElevatorControl.web.WebApi.OnGetResultListener;
-import com.inovance.ElevatorControl.web.WebApi.OnRequestFailureListener;
+import com.inovance.bluetoothtool.BluetoothHandler;
+import com.inovance.bluetoothtool.BluetoothTalk;
+import com.inovance.bluetoothtool.BluetoothTool;
+import com.inovance.bluetoothtool.SerialUtility;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
+import com.inovance.elevatorcontrol.daos.DeviceDao;
+import com.inovance.elevatorcontrol.handlers.GlobalHandler;
+import com.inovance.elevatorcontrol.handlers.SearchBluetoothHandler;
+import com.inovance.elevatorcontrol.models.CommunicationCode;
+import com.inovance.elevatorcontrol.models.Device;
+import com.inovance.elevatorcontrol.models.NormalDevice;
+import com.inovance.elevatorcontrol.models.SpecialDevice;
+import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
+import com.inovance.elevatorcontrol.views.customspinner.NoDefaultSpinner;
+import com.inovance.elevatorcontrol.views.dialogs.CustomDialog;
+import com.inovance.elevatorcontrol.web.WebApi;
+import com.inovance.elevatorcontrol.web.WebApi.OnGetResultListener;
+import com.inovance.elevatorcontrol.web.WebApi.OnRequestFailureListener;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -394,7 +394,6 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
     protected void onPause() {
         super.onPause();
         WebApi.getInstance().removeListener();
-        overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
     }
 
     /**
@@ -794,46 +793,48 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
 
     @Override
     public void onResult(String tag, String responseString) {
-        if (tag.equalsIgnoreCase(ApplicationConfig.GetNormalDeviceList)) {
-            try {
-                JSONArray jsonArray = new JSONArray(responseString);
-                normalDeviceList.clear();
-                int size = jsonArray.length();
-                for (int i = 0; i < size; i++) {
-                    JSONObject object = jsonArray.getJSONObject(i);
-                    NormalDevice device = new NormalDevice(object);
-                    normalDeviceList.add(device);
+        if (responseString != null && responseString.length() > 0) {
+            if (tag.equalsIgnoreCase(ApplicationConfig.GetNormalDeviceList)) {
+                try {
+                    JSONArray jsonArray = new JSONArray(responseString);
+                    normalDeviceList.clear();
+                    int size = jsonArray.length();
+                    for (int i = 0; i < size; i++) {
+                        JSONObject object = jsonArray.getJSONObject(i);
+                        NormalDevice device = new NormalDevice(object);
+                        normalDeviceList.add(device);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
-        }
-        if (tag.equalsIgnoreCase(ApplicationConfig.GetSpecialDeviceList)) {
-            try {
-                JSONArray jsonArray = new JSONArray(responseString);
-                specialDeviceList.clear();
-                int size = jsonArray.length();
-                for (int i = 0; i < size; i++) {
-                    JSONObject object = jsonArray.getJSONObject(i);
-                    SpecialDevice device = new SpecialDevice(object);
-                    specialDeviceList.add(device);
+            if (tag.equalsIgnoreCase(ApplicationConfig.GetSpecialDeviceList)) {
+                try {
+                    JSONArray jsonArray = new JSONArray(responseString);
+                    specialDeviceList.clear();
+                    int size = jsonArray.length();
+                    for (int i = 0; i < size; i++) {
+                        JSONObject object = jsonArray.getJSONObject(i);
+                        SpecialDevice device = new SpecialDevice(object);
+                        specialDeviceList.add(device);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
-        }
-        if (tag.equalsIgnoreCase(ApplicationConfig.GetSpecialDeviceCodeList)) {
-            try {
-                JSONArray jsonArray = new JSONArray(responseString);
-                int size = jsonArray.length();
-                communicationCodeList = new ArrayList<CommunicationCode>();
-                for (int i = 0; i < size; i++) {
-                    JSONObject object = jsonArray.getJSONObject(i);
-                    CommunicationCode code = new CommunicationCode(object);
-                    communicationCodeList.add(code);
+            if (tag.equalsIgnoreCase(ApplicationConfig.GetSpecialDeviceCodeList)) {
+                try {
+                    JSONArray jsonArray = new JSONArray(responseString);
+                    int size = jsonArray.length();
+                    communicationCodeList = new ArrayList<CommunicationCode>();
+                    for (int i = 0; i < size; i++) {
+                        JSONObject object = jsonArray.getJSONObject(i);
+                        CommunicationCode code = new CommunicationCode(object);
+                        communicationCodeList.add(code);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
         }
     }
@@ -910,7 +911,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
                         BluetoothTool.getInstance().setHasSelectDeviceType(true);
                         // 检查专有设备功能码、状态码、故障帮助更新状态
                         ParameterUpdateTool.getInstance().selectDevice(NavigationTabActivity.this,
-                                device.getID(),
+                                device.getId(),
                                 device.getName(),
                                 Device.SpecialDevice,
                                 new ParameterUpdateTool.OnCheckResultListener() {

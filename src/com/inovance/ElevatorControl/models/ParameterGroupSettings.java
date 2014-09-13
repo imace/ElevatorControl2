@@ -1,9 +1,11 @@
-package com.inovance.ElevatorControl.models;
+package com.inovance.elevatorcontrol.models;
 
-import com.inovance.ElevatorControl.R;
+import com.inovance.elevatorcontrol.R;
 import com.mobsandgeeks.adapters.InstantText;
 import net.tsz.afinal.annotation.sqlite.Id;
 import net.tsz.afinal.annotation.sqlite.OneToMany;
+import net.tsz.afinal.annotation.sqlite.Table;
+import net.tsz.afinal.annotation.sqlite.Transient;
 import net.tsz.afinal.db.sqlite.OneToManyLazyLoader;
 import org.json.JSONObject;
 
@@ -15,6 +17,7 @@ import java.util.List;
  *
  * @author jch
  */
+@Table(name="PARAMETER_GROUP_SETTINGS")
 public class ParameterGroupSettings {
     @Id
     private int Id;
@@ -23,9 +26,11 @@ public class ParameterGroupSettings {
 
     private String groupId;//功能组Id
 
+    @Transient
     private boolean Valid;
 
-    private Date lasttime;
+    @Transient
+    private Date lastTime;
 
     private int deviceID;
 
@@ -55,7 +60,6 @@ public class ParameterGroupSettings {
         return Id;
     }
 
-
     public void setId(int id) {
         Id = id;
     }
@@ -64,29 +68,24 @@ public class ParameterGroupSettings {
         return groupId;
     }
 
-
     public void setGroupId(String groupId) {
         this.groupId = groupId;
     }
-
 
     public boolean isValid() {
         return Valid;
     }
 
-
     public void setValid(boolean valid) {
         Valid = valid;
     }
 
-
-    public Date getLasttime() {
-        return lasttime;
+    public Date getLastTime() {
+        return lastTime;
     }
 
-
-    public void setLasttime(Date lasttime) {
-        this.lasttime = lasttime;
+    public void setLastTime(Date lastTime) {
+        this.lastTime = lastTime;
     }
 
     public OneToManyLazyLoader<ParameterGroupSettings, ParameterSettings> getParametersettings() {
@@ -102,7 +101,6 @@ public class ParameterGroupSettings {
     public String getGroupText() {
         return groupText;
     }
-
 
     public void setGroupText(String groupText) {
         this.groupText = groupText;

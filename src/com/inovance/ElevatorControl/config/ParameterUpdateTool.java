@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.config;
+package com.inovance.elevatorcontrol.config;
 
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
@@ -7,14 +7,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.widget.Toast;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.daos.DeviceDao;
-import com.inovance.ElevatorControl.daos.ParameterFactoryDao;
-import com.inovance.ElevatorControl.models.Device;
-import com.inovance.ElevatorControl.models.User;
-import com.inovance.ElevatorControl.web.WebApi;
-import com.inovance.ElevatorControl.web.WebApi.OnGetResultListener;
-import com.inovance.ElevatorControl.web.WebApi.OnRequestFailureListener;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.daos.DeviceDao;
+import com.inovance.elevatorcontrol.daos.ParameterFactoryDao;
+import com.inovance.elevatorcontrol.models.Device;
+import com.inovance.elevatorcontrol.models.User;
+import com.inovance.elevatorcontrol.web.WebApi;
+import com.inovance.elevatorcontrol.web.WebApi.OnGetResultListener;
+import com.inovance.elevatorcontrol.web.WebApi.OnRequestFailureListener;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

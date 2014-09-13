@@ -19,7 +19,7 @@
             android:layout_marginBottom="6dp"
             android:layout_width="wrap_content"
             android:layout_height="42dp">
-        <com.inovance.ElevatorControl.views.TypefaceTextView
+        <com.inovance.elevatorcontrol.views.TypefaceTextView
                 android:id="@+id/current_floor"
                 android:textColor="#ffff0000"
                 kio:customTypeface="fonts/digit_font.ttf"

@@ -1,11 +1,10 @@
-package com.inovance.ElevatorControl.activities;
+package com.inovance.elevatorcontrol.activities;
 
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,10 +15,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import butterknife.InjectView;
 import butterknife.Views;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.models.ParameterGroupSettings;
-import com.inovance.ElevatorControl.models.ParameterSettings;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.models.ParameterGroupSettings;
+import com.inovance.elevatorcontrol.models.ParameterSettings;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

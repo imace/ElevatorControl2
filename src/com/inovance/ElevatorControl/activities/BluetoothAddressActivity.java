@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.activities;
+package com.inovance.elevatorcontrol.activities;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
@@ -9,8 +9,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import butterknife.InjectView;
 import butterknife.Views;
-import com.bluetoothtool.BluetoothTool;
-import com.inovance.ElevatorControl.R;
+import com.inovance.bluetoothtool.BluetoothTool;
+import com.inovance.elevatorcontrol.R;
 
 /**
  * Created by IntelliJ IDEA.

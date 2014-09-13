@@ -1,10 +1,10 @@
-package com.inovance.ElevatorControl.handlers;
+package com.inovance.elevatorcontrol.handlers;
 
 import android.app.Activity;
 import android.os.Handler;
 import android.os.Message;
 import android.widget.Toast;
-import com.inovance.ElevatorControl.R;
+import com.inovance.elevatorcontrol.R;
 
 /**
  * Created by IntelliJ IDEA.

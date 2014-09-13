@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.adapters;
+package com.inovance.elevatorcontrol.adapters;
 
 import android.app.Activity;
 import android.content.Context;
@@ -7,12 +7,12 @@ import android.util.TypedValue;
 import android.view.*;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.activities.MoveInsideActivity;
-import com.inovance.ElevatorControl.activities.MoveOutsideActivity;
-import com.inovance.ElevatorControl.views.TypefaceTextView;
-import com.inovance.ElevatorControl.views.component.ExpandGridView;
-import com.inovance.ElevatorControl.views.viewpager.PagerAdapter;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.activities.MoveInsideActivity;
+import com.inovance.elevatorcontrol.activities.MoveOutsideActivity;
+import com.inovance.elevatorcontrol.views.TypefaceTextView;
+import com.inovance.elevatorcontrol.views.component.ExpandGridView;
+import com.inovance.elevatorcontrol.views.viewpager.PagerAdapter;
 
 import java.util.ArrayList;
 import java.util.List;

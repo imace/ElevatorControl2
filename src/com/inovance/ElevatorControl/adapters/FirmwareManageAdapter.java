@@ -1,10 +1,10 @@
-package com.inovance.ElevatorControl.adapters;
+package com.inovance.elevatorcontrol.adapters;
 
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.views.fragments.FirmwareManageFragment;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.views.fragments.FirmwareManageFragment;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.views.viewpager;
+package com.inovance.elevatorcontrol.views.viewpager;
 /*
  * Copyright (C) 2011 The Android Open Source Project
  *

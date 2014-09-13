@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.activities;
+package com.inovance.elevatorcontrol.activities;
 
 import android.app.Activity;
 import android.content.pm.PackageManager;
@@ -7,7 +7,7 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import butterknife.InjectView;
 import butterknife.Views;
-import com.inovance.ElevatorControl.R;
+import com.inovance.elevatorcontrol.R;
 
 /**
  * Created by IntelliJ IDEA.

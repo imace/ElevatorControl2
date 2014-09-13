@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.views.customspinner;
+package com.inovance.elevatorcontrol.views.customspinner;
 
 /**
  * Created by IntelliJ IDEA.

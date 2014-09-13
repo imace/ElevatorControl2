@@ -1,6 +1,7 @@
-package com.inovance.ElevatorControl.models;
+package com.inovance.elevatorcontrol.models;
 
 import net.tsz.afinal.annotation.sqlite.Id;
+import net.tsz.afinal.annotation.sqlite.Table;
 
 /**
  * Created by IntelliJ IDEA.
@@ -8,6 +9,7 @@ import net.tsz.afinal.annotation.sqlite.Id;
  * Date: 14-3-31.
  * Time: 9:47.
  */
+@Table(name="SHORTCUT")
 public class Shortcut {
 
     @Id

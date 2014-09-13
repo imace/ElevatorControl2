@@ -1,10 +1,9 @@
-package com.inovance.ElevatorControl.barcode;
+package com.inovance.elevatorcontrol.barcode;
 
 import android.content.Context;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.Camera;
-import android.os.AsyncTask;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
 

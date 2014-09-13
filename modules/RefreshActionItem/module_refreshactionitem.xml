@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_refreshactionitem" default="compile.module.refreshactionitem">
+  <dirname property="module.refreshactionitem.basedir" file="${ant.file.module_refreshactionitem}"/>
+  
+  <property name="module.jdk.home.refreshactionitem" value="${jdk.home.android_api_19_platform}"/>
+  <property name="module.jdk.bin.refreshactionitem" value="${jdk.bin.android_api_19_platform}"/>
+  <property name="module.jdk.classpath.refreshactionitem" value="jdk.classpath.android_api_19_platform"/>
+  
+  <property name="compiler.args.refreshactionitem" value="-encoding UTF-8 -source 1.6 ${compiler.args}"/>
+  
+  <property name="refreshactionitem.output.dir" value="${module.refreshactionitem.basedir}/../../classes/production/RefreshActionItem"/>
+  <property name="refreshactionitem.testoutput.dir" value="${module.refreshactionitem.basedir}/../../classes/test/RefreshActionItem"/>
+  
+  <path id="refreshactionitem.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="refreshactionitem.module.production.classpath">
+    <path refid="${module.jdk.classpath.refreshactionitem}"/>
+    <path refid="library.android-support-v4.classpath"/>
+  </path>
+  
+  <path id="refreshactionitem.runtime.production.module.classpath">
+    <pathelement location="${refreshactionitem.output.dir}"/>
+    <path refid="library.android-support-v4.classpath"/>
+  </path>
+  
+  <path id="refreshactionitem.module.classpath">
+    <path refid="${module.jdk.classpath.refreshactionitem}"/>
+    <pathelement location="${refreshactionitem.output.dir}"/>
+    <path refid="library.android-support-v4.classpath"/>
+  </path>
+  
+  <path id="refreshactionitem.runtime.module.classpath">
+    <pathelement location="${refreshactionitem.testoutput.dir}"/>
+    <pathelement location="${refreshactionitem.output.dir}"/>
+    <path refid="library.android-support-v4.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.refreshactionitem">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.refreshactionitem">
+    <patternset refid="excluded.from.module.refreshactionitem"/>
+  </patternset>
+  
+  <path id="refreshactionitem.module.sourcepath">
+    <dirset dir="${module.refreshactionitem.basedir}">
+      <include name="gen"/>
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.refreshactionitem" depends="compile.module.refreshactionitem.production,compile.module.refreshactionitem.tests" description="Compile module RefreshActionItem"/>
+  
+  <target name="compile.module.refreshactionitem.production" depends="register.custom.compilers" description="Compile module RefreshActionItem; production classes">
+    <mkdir dir="${refreshactionitem.output.dir}"/>
+    <javac2 destdir="${refreshactionitem.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.refreshactionitem}/javac">
+      <compilerarg line="${compiler.args.refreshactionitem}"/>
+      <bootclasspath refid="refreshactionitem.module.bootclasspath"/>
+      <classpath refid="refreshactionitem.module.production.classpath"/>
+      <src refid="refreshactionitem.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.refreshactionitem"/>
+    </javac2>
+    
+    <copy todir="${refreshactionitem.output.dir}">
+      <fileset dir="${module.refreshactionitem.basedir}/gen">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset dir="${module.refreshactionitem.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.refreshactionitem.tests" depends="register.custom.compilers,compile.module.refreshactionitem.production" description="compile module RefreshActionItem; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.refreshactionitem" description="cleanup module">
+    <delete dir="${refreshactionitem.output.dir}"/>
+    <delete dir="${refreshactionitem.testoutput.dir}"/>
+  </target>
+</project>

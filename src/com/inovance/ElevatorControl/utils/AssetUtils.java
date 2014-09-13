@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.utils;
+package com.inovance.elevatorcontrol.utils;
 
 import android.content.Context;
 

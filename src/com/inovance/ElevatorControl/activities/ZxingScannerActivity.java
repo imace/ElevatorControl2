@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.activities;
+package com.inovance.elevatorcontrol.activities;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -11,8 +11,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.zxing.Result;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.barcode.ZXingScannerView;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.barcode.ZXingScannerView;
 import net.rdrei.android.dirchooser.DirectoryChooserFragment;
 import net.rdrei.android.dirchooser.DirectoryChooserFragment.OnFragmentInteractionListener;
 

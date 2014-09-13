@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.handlers;
+package com.inovance.elevatorcontrol.handlers;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -6,11 +6,11 @@ import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.os.Message;
 import android.widget.Toast;
-import com.bluetoothtool.BluetoothHandler;
-import com.bluetoothtool.BluetoothTool;
-import com.bluetoothtool.DevicesHolder;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.activities.NavigationTabActivity;
+import com.inovance.bluetoothtool.BluetoothHandler;
+import com.inovance.bluetoothtool.BluetoothTool;
+import com.inovance.bluetoothtool.DevicesHolder;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.activities.NavigationTabActivity;
 
 import java.util.ArrayList;
 

@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.views;
+package com.inovance.elevatorcontrol.views;
 
 /*
  The MIT License (MIT)

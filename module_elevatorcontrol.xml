@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_elevatorcontrol" default="compile.module.elevatorcontrol">
+  <dirname property="module.elevatorcontrol.basedir" file="${ant.file.module_elevatorcontrol}"/>
+  
+  <property name="module.jdk.home.elevatorcontrol" value="${jdk.home.android_api_19_platform}"/>
+  <property name="module.jdk.bin.elevatorcontrol" value="${jdk.bin.android_api_19_platform}"/>
+  <property name="module.jdk.classpath.elevatorcontrol" value="jdk.classpath.android_api_19_platform"/>
+  
+  <property name="compiler.args.elevatorcontrol" value="-encoding UTF-8 -source 1.6 ${compiler.args}"/>
+  
+  <property name="elevatorcontrol.output.dir" value="${module.elevatorcontrol.basedir}/bin/classes"/>
+  <property name="elevatorcontrol.testoutput.dir" value="${module.elevatorcontrol.basedir}/bin/classes"/>
+  
+  <path id="elevatorcontrol.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="elevatorcontrol.module.production.classpath">
+    <path refid="${module.jdk.classpath.elevatorcontrol}"/>
+    <pathelement location="${bluetoothlibrary.output.dir}"/>
+    <path refid="library.butterknife-3.0.0.classpath"/>
+    <path refid="library.disklrucache-2.0.2.classpath"/>
+    <path refid="library.commons-io-2.4.classpath"/>
+    <path refid="library.android-async-http-1.4.4.classpath"/>
+    <path refid="library.acra-4.5.0.classpath"/>
+    <pathelement location="${directorychooser.output.dir}"/>
+    <path refid="library.burn-program-1.0.0.classpath"/>
+    <pathelement location="${viewpagerindicator.output.dir}"/>
+    <path refid="library.android-support-v4.classpath"/>
+    <pathelement location="${adapterkit.output.dir}"/>
+    <pathelement location="${refreshactionitem.output.dir}"/>
+    <pathelement location="${afinal.output.dir}"/>
+    <path refid="library.zxing-core-2.2.classpath"/>
+  </path>
+  
+  <path id="elevatorcontrol.runtime.production.module.classpath">
+    <pathelement location="${elevatorcontrol.output.dir}"/>
+    <path refid="bluetoothlibrary.runtime.production.module.classpath"/>
+    <path refid="library.butterknife-3.0.0.classpath"/>
+    <path refid="library.disklrucache-2.0.2.classpath"/>
+    <path refid="library.commons-io-2.4.classpath"/>
+    <path refid="library.android-async-http-1.4.4.classpath"/>
+    <path refid="library.acra-4.5.0.classpath"/>
+    <path refid="directorychooser.runtime.production.module.classpath"/>
+    <path refid="library.burn-program-1.0.0.classpath"/>
+    <path refid="viewpagerindicator.runtime.production.module.classpath"/>
+    <path refid="library.android-support-v4.classpath"/>
+    <path refid="adapterkit.runtime.production.module.classpath"/>
+    <path refid="refreshactionitem.runtime.production.module.classpath"/>
+    <path refid="afinal.runtime.production.module.classpath"/>
+    <path refid="library.zxing-core-2.2.classpath"/>
+  </path>
+  
+  <path id="elevatorcontrol.module.classpath">
+    <path refid="${module.jdk.classpath.elevatorcontrol}"/>
+    <pathelement location="${elevatorcontrol.output.dir}"/>
+    <pathelement location="${bluetoothlibrary.testoutput.dir}"/>
+    <pathelement location="${bluetoothlibrary.output.dir}"/>
+    <path refid="library.butterknife-3.0.0.classpath"/>
+    <path refid="library.disklrucache-2.0.2.classpath"/>
+    <path refid="library.commons-io-2.4.classpath"/>
+    <path refid="library.android-async-http-1.4.4.classpath"/>
+    <path refid="library.acra-4.5.0.classpath"/>
+    <pathelement location="${directorychooser.testoutput.dir}"/>
+    <pathelement location="${directorychooser.output.dir}"/>
+    <path refid="library.burn-program-1.0.0.classpath"/>
+    <pathelement location="${viewpagerindicator.testoutput.dir}"/>
+    <pathelement location="${viewpagerindicator.output.dir}"/>
+    <path refid="library.android-support-v4.classpath"/>
+    <pathelement location="${adapterkit.testoutput.dir}"/>
+    <pathelement location="${adapterkit.output.dir}"/>
+    <pathelement location="${refreshactionitem.testoutput.dir}"/>
+    <pathelement location="${refreshactionitem.output.dir}"/>
+    <pathelement location="${afinal.testoutput.dir}"/>
+    <pathelement location="${afinal.output.dir}"/>
+    <path refid="library.zxing-core-2.2.classpath"/>
+  </path>
+  
+  <path id="elevatorcontrol.runtime.module.classpath">
+    <pathelement location="${elevatorcontrol.output.dir}"/>
+    <path refid="bluetoothlibrary.runtime.module.classpath"/>
+    <path refid="library.butterknife-3.0.0.classpath"/>
+    <path refid="library.disklrucache-2.0.2.classpath"/>
+    <path refid="library.commons-io-2.4.classpath"/>
+    <path refid="library.android-async-http-1.4.4.classpath"/>
+    <path refid="library.acra-4.5.0.classpath"/>
+    <path refid="directorychooser.runtime.module.classpath"/>
+    <path refid="library.burn-program-1.0.0.classpath"/>
+    <path refid="viewpagerindicator.runtime.module.classpath"/>
+    <path refid="library.android-support-v4.classpath"/>
+    <path refid="adapterkit.runtime.module.classpath"/>
+    <path refid="refreshactionitem.runtime.module.classpath"/>
+    <path refid="afinal.runtime.module.classpath"/>
+    <path refid="library.zxing-core-2.2.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.elevatorcontrol">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.elevatorcontrol">
+    <patternset refid="excluded.from.module.elevatorcontrol"/>
+  </patternset>
+  
+  <path id="elevatorcontrol.module.sourcepath">
+    <dirset dir="${module.elevatorcontrol.basedir}">
+      <include name="src"/>
+      <include name="gen"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.elevatorcontrol" depends="compile.module.elevatorcontrol.production,compile.module.elevatorcontrol.tests" description="Compile module ElevatorControl"/>
+  
+  <target name="compile.module.elevatorcontrol.production" depends="register.custom.compilers,compile.module.bluetoothlibrary,compile.module.directorychooser,compile.module.viewpagerindicator,compile.module.adapterkit,compile.module.refreshactionitem,compile.module.afinal" description="Compile module ElevatorControl; production classes">
+    <mkdir dir="${elevatorcontrol.output.dir}"/>
+    <javac2 destdir="${elevatorcontrol.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.elevatorcontrol}/javac">
+      <compilerarg line="${compiler.args.elevatorcontrol}"/>
+      <bootclasspath refid="elevatorcontrol.module.bootclasspath"/>
+      <classpath refid="elevatorcontrol.module.production.classpath"/>
+      <src refid="elevatorcontrol.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.elevatorcontrol"/>
+    </javac2>
+    
+    <copy todir="${elevatorcontrol.output.dir}">
+      <fileset dir="${module.elevatorcontrol.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset dir="${module.elevatorcontrol.basedir}/gen">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.elevatorcontrol.tests" depends="register.custom.compilers,compile.module.elevatorcontrol.production" description="compile module ElevatorControl; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.elevatorcontrol" description="cleanup module">
+    <delete dir="${elevatorcontrol.output.dir}"/>
+    <delete dir="${elevatorcontrol.testoutput.dir}"/>
+  </target>
+</project>

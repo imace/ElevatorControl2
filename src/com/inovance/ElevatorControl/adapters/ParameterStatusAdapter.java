@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.adapters;
+package com.inovance.elevatorcontrol.adapters;
 
 import android.app.Activity;
 import android.view.LayoutInflater;
@@ -6,8 +6,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.models.ParameterStatusItem;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.models.ParameterStatusItem;
 
 import java.util.ArrayList;
 import java.util.List;

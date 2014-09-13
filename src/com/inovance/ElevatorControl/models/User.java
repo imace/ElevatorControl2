@@ -1,7 +1,8 @@
-package com.inovance.ElevatorControl.models;
+package com.inovance.elevatorcontrol.models;
 
-import com.inovance.ElevatorControl.config.ParameterUpdateTool;
+import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
 import net.tsz.afinal.annotation.sqlite.Id;
+import net.tsz.afinal.annotation.sqlite.Table;
 import org.json.JSONObject;
 
 /**
@@ -10,6 +11,7 @@ import org.json.JSONObject;
  * Date: 14-4-10.
  * Time: 9:35.
  */
+@Table(name="USER")
 public class User {
 
     @Id

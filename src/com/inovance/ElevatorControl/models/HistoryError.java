@@ -1,4 +1,6 @@
-package com.inovance.ElevatorControl.models;
+package com.inovance.elevatorcontrol.models;
+
+import net.tsz.afinal.annotation.sqlite.Table;
 
 /**
  * Created by IntelliJ IDEA.

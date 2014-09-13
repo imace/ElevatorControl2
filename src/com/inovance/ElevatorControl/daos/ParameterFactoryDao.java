@@ -1,10 +1,10 @@
-package com.inovance.ElevatorControl.daos;
+package com.inovance.elevatorcontrol.daos;
 
 import android.content.Context;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.config.ParameterUpdateTool;
-import com.inovance.ElevatorControl.models.*;
-import com.inovance.ElevatorControl.utils.AssetUtils;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
+import com.inovance.elevatorcontrol.models.*;
+import com.inovance.elevatorcontrol.utils.AssetUtils;
 import net.tsz.afinal.FinalDb;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -129,7 +129,7 @@ public class ParameterFactoryDao {
                 settingsGroup.setGroupText(groupsJSONObject.optString("groupText".toUpperCase()));
                 settingsGroup.setGroupId(groupsJSONObject.optString("groupId".toUpperCase()));
                 settingsGroup.setValid(true);
-                settingsGroup.setLasttime(new Date());
+                settingsGroup.setLastTime(new Date());
                 settingsGroup.setDeviceID(deviceID);
                 // 保存groupEntity并且id设置为插入后的值
                 db.saveBindId(settingsGroup);

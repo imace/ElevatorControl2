@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_bluetoothlibrary" default="compile.module.bluetoothlibrary">
+  <dirname property="module.bluetoothlibrary.basedir" file="${ant.file.module_bluetoothlibrary}"/>
+  
+  <property name="module.jdk.home.bluetoothlibrary" value="${jdk.home.android_api_19_platform}"/>
+  <property name="module.jdk.bin.bluetoothlibrary" value="${jdk.bin.android_api_19_platform}"/>
+  <property name="module.jdk.classpath.bluetoothlibrary" value="jdk.classpath.android_api_19_platform"/>
+  
+  <property name="compiler.args.bluetoothlibrary" value="-encoding UTF-8 -source 1.6 ${compiler.args}"/>
+  
+  <property name="bluetoothlibrary.output.dir" value="${module.bluetoothlibrary.basedir}/../../classes/production/BluetoothLibrary"/>
+  <property name="bluetoothlibrary.testoutput.dir" value="${module.bluetoothlibrary.basedir}/../../classes/test/BluetoothLibrary"/>
+  
+  <path id="bluetoothlibrary.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="bluetoothlibrary.module.production.classpath">
+    <path refid="${module.jdk.classpath.bluetoothlibrary}"/>
+    <path refid="library.commons-io-2.4.classpath"/>
+  </path>
+  
+  <path id="bluetoothlibrary.runtime.production.module.classpath">
+    <pathelement location="${bluetoothlibrary.output.dir}"/>
+    <path refid="library.commons-io-2.4.classpath"/>
+  </path>
+  
+  <path id="bluetoothlibrary.module.classpath">
+    <path refid="${module.jdk.classpath.bluetoothlibrary}"/>
+    <pathelement location="${bluetoothlibrary.output.dir}"/>
+    <path refid="library.commons-io-2.4.classpath"/>
+  </path>
+  
+  <path id="bluetoothlibrary.runtime.module.classpath">
+    <pathelement location="${bluetoothlibrary.testoutput.dir}"/>
+    <pathelement location="${bluetoothlibrary.output.dir}"/>
+    <path refid="library.commons-io-2.4.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.bluetoothlibrary">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.bluetoothlibrary">
+    <patternset refid="excluded.from.module.bluetoothlibrary"/>
+  </patternset>
+  
+  <path id="bluetoothlibrary.module.sourcepath">
+    <dirset dir="${module.bluetoothlibrary.basedir}">
+      <include name="gen"/>
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.bluetoothlibrary" depends="compile.module.bluetoothlibrary.production,compile.module.bluetoothlibrary.tests" description="Compile module BluetoothLibrary"/>
+  
+  <target name="compile.module.bluetoothlibrary.production" depends="register.custom.compilers" description="Compile module BluetoothLibrary; production classes">
+    <mkdir dir="${bluetoothlibrary.output.dir}"/>
+    <javac2 destdir="${bluetoothlibrary.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.bluetoothlibrary}/javac">
+      <compilerarg line="${compiler.args.bluetoothlibrary}"/>
+      <bootclasspath refid="bluetoothlibrary.module.bootclasspath"/>
+      <classpath refid="bluetoothlibrary.module.production.classpath"/>
+      <src refid="bluetoothlibrary.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.bluetoothlibrary"/>
+    </javac2>
+    
+    <copy todir="${bluetoothlibrary.output.dir}">
+      <fileset dir="${module.bluetoothlibrary.basedir}/gen">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset dir="${module.bluetoothlibrary.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.bluetoothlibrary.tests" depends="register.custom.compilers,compile.module.bluetoothlibrary.production" description="compile module BluetoothLibrary; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.bluetoothlibrary" description="cleanup module">
+    <delete dir="${bluetoothlibrary.output.dir}"/>
+    <delete dir="${bluetoothlibrary.testoutput.dir}"/>
+  </target>
+</project>

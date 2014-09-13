@@ -1,11 +1,11 @@
-package com.inovance.ElevatorControl.views;
+package com.inovance.elevatorcontrol.views;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.util.AttributeSet;
 import android.widget.ImageButton;
-import com.inovance.ElevatorControl.R;
+import com.inovance.elevatorcontrol.R;
 
 /**
  * Created by IntelliJ IDEA.

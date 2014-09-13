@@ -22,7 +22,7 @@
         <RelativeLayout
                 android:layout_weight="1"
                 android:layout_width="0dp"
-                android:layout_height="@dimen/rai__action_bar_default_height">
+                android:layout_height="?android:attr/actionBarSize">
             <TextView
                     android:id="@+id/search_device_tips"
                     style="@android:style/TextAppearance"
@@ -31,7 +31,7 @@
                     android:text="@string/search_device_tips_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
-            <com.inovance.ElevatorControl.views.customspinner.NoDefaultSpinner
+            <com.inovance.elevatorcontrol.views.customspinner.NoDefaultSpinner
                     android:visibility="gone"
                     android:id="@+id/custom_spinner"
                     xmlns:android="http://schemas.android.com/apk/res/android"

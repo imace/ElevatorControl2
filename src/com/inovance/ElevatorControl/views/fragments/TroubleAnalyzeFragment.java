@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.views.fragments;
+package com.inovance.elevatorcontrol.views.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -12,9 +12,9 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.daos.ErrorHelpDao;
-import com.inovance.ElevatorControl.models.ErrorHelp;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.daos.ErrorHelpDao;
+import com.inovance.elevatorcontrol.models.ErrorHelp;
 
 public class TroubleAnalyzeFragment extends Fragment {
 

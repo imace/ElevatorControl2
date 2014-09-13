@@ -1,7 +1,7 @@
-package com.inovance.ElevatorControl.utils;
+package com.inovance.elevatorcontrol.utils;
 
-import com.inovance.ElevatorControl.models.ParameterGroupSettings;
-import com.inovance.ElevatorControl.models.ParameterSettings;
+import com.inovance.elevatorcontrol.models.ParameterGroupSettings;
+import com.inovance.elevatorcontrol.models.ParameterSettings;
 import org.json.JSONException;
 import org.json.JSONStringer;
 

@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.activities;
+package com.inovance.elevatorcontrol.activities;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -11,11 +11,11 @@ import android.view.View;
 import android.widget.*;
 import butterknife.InjectView;
 import butterknife.Views;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.models.User;
-import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
-import com.inovance.ElevatorControl.web.WebApi;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.models.User;
+import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
+import com.inovance.elevatorcontrol.web.WebApi;
 import org.json.JSONArray;
 import org.json.JSONException;
 

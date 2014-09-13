@@ -3,7 +3,7 @@
  * 
  * Created by lisah0 on 2012-02-24
  */
-package com.inovance.ElevatorControl.views.zbar;
+package com.inovance.elevatorcontrol.views.zbar;
 
 import android.content.Context;
 import android.hardware.Camera;

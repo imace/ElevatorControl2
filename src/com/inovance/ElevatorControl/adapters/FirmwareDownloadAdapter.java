@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.adapters;
+package com.inovance.elevatorcontrol.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -7,8 +7,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.models.Firmware;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.models.Firmware;
 
 import java.util.List;
 

@@ -7,7 +7,7 @@
                 android:gravity="left"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
-    <com.inovance.ElevatorControl.views.SquareLayout
+    <com.inovance.elevatorcontrol.views.SquareLayout
             android:id="@+id/receive_icon_view"
             android:orientation="vertical"
             android:gravity="center"
@@ -22,7 +22,7 @@
                 android:src="@drawable/chat_type_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
-    </com.inovance.ElevatorControl.views.SquareLayout>
+    </com.inovance.elevatorcontrol.views.SquareLayout>
 
     <LinearLayout
             android:id="@+id/receive_content_view"

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_afinal" default="compile.module.afinal">
+  <dirname property="module.afinal.basedir" file="${ant.file.module_afinal}"/>
+  
+  <property name="module.jdk.home.afinal" value="${jdk.home.android_api_19_platform}"/>
+  <property name="module.jdk.bin.afinal" value="${jdk.bin.android_api_19_platform}"/>
+  <property name="module.jdk.classpath.afinal" value="jdk.classpath.android_api_19_platform"/>
+  
+  <property name="compiler.args.afinal" value="-encoding UTF-8 -source 1.6 ${compiler.args}"/>
+  
+  <property name="afinal.output.dir" value="${module.afinal.basedir}/../../classes/production/Afinal"/>
+  <property name="afinal.testoutput.dir" value="${module.afinal.basedir}/../../classes/test/Afinal"/>
+  
+  <path id="afinal.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="afinal.module.production.classpath">
+    <path refid="${module.jdk.classpath.afinal}"/>
+  </path>
+  
+  <path id="afinal.runtime.production.module.classpath">
+    <pathelement location="${afinal.output.dir}"/>
+  </path>
+  
+  <path id="afinal.module.classpath">
+    <path refid="${module.jdk.classpath.afinal}"/>
+    <pathelement location="${afinal.output.dir}"/>
+  </path>
+  
+  <path id="afinal.runtime.module.classpath">
+    <pathelement location="${afinal.testoutput.dir}"/>
+    <pathelement location="${afinal.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.afinal">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.afinal">
+    <patternset refid="excluded.from.module.afinal"/>
+  </patternset>
+  
+  <path id="afinal.module.sourcepath">
+    <dirset dir="${module.afinal.basedir}">
+      <include name="gen"/>
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.afinal" depends="compile.module.afinal.production,compile.module.afinal.tests" description="Compile module Afinal"/>
+  
+  <target name="compile.module.afinal.production" depends="register.custom.compilers" description="Compile module Afinal; production classes">
+    <mkdir dir="${afinal.output.dir}"/>
+    <javac2 destdir="${afinal.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.afinal}/javac">
+      <compilerarg line="${compiler.args.afinal}"/>
+      <bootclasspath refid="afinal.module.bootclasspath"/>
+      <classpath refid="afinal.module.production.classpath"/>
+      <src refid="afinal.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.afinal"/>
+    </javac2>
+    
+    <copy todir="${afinal.output.dir}">
+      <fileset dir="${module.afinal.basedir}/gen">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset dir="${module.afinal.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.afinal.tests" depends="register.custom.compilers,compile.module.afinal.production" description="compile module Afinal; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.afinal" description="cleanup module">
+    <delete dir="${afinal.output.dir}"/>
+    <delete dir="${afinal.testoutput.dir}"/>
+  </target>
+</project>

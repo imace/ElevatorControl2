@@ -39,7 +39,7 @@
         </LinearLayout>
     </LinearLayout>
 
-    <com.inovance.ElevatorControl.views.SquareLayout
+    <com.inovance.elevatorcontrol.views.SquareLayout
             android:id="@+id/send_icon_view"
             android:gravity="center"
             android:background="#AF0000"
@@ -54,5 +54,5 @@
                 android:src="@drawable/chat_type_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
-    </com.inovance.ElevatorControl.views.SquareLayout>
+    </com.inovance.elevatorcontrol.views.SquareLayout>
 </RelativeLayout>

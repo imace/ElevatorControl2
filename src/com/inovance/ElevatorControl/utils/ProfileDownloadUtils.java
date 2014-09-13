@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.utils;
+package com.inovance.elevatorcontrol.utils;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -8,15 +8,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import com.bluetoothtool.BluetoothHandler;
-import com.bluetoothtool.BluetoothTalk;
-import com.bluetoothtool.BluetoothTool;
-import com.bluetoothtool.SerialUtility;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.daos.ParameterGroupSettingsDao;
-import com.inovance.ElevatorControl.models.ObjectListHolder;
-import com.inovance.ElevatorControl.models.ParameterGroupSettings;
-import com.inovance.ElevatorControl.models.ParameterSettings;
+import com.inovance.bluetoothtool.BluetoothHandler;
+import com.inovance.bluetoothtool.BluetoothTalk;
+import com.inovance.bluetoothtool.BluetoothTool;
+import com.inovance.bluetoothtool.SerialUtility;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.daos.ParameterGroupSettingsDao;
+import com.inovance.elevatorcontrol.models.ObjectListHolder;
+import com.inovance.elevatorcontrol.models.ParameterGroupSettings;
+import com.inovance.elevatorcontrol.models.ParameterSettings;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

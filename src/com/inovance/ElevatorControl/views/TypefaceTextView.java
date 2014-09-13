@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.views;
+package com.inovance.elevatorcontrol.views;
 
 /**
  * Copyright (C) 2013 Mobs and Geeks
@@ -20,8 +20,8 @@ import android.content.res.TypedArray;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.widget.TextView;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.R.styleable;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.R.styleable;
 
 import java.util.HashMap;
 import java.util.Map;

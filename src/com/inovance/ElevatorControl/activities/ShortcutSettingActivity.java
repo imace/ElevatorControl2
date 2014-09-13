@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.activities;
+package com.inovance.elevatorcontrol.activities;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -10,10 +10,10 @@ import android.view.View;
 import android.widget.*;
 import butterknife.InjectView;
 import butterknife.Views;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.adapters.ShortcutListViewAdapter;
-import com.inovance.ElevatorControl.daos.ShortcutDao;
-import com.inovance.ElevatorControl.models.Shortcut;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.adapters.ShortcutListViewAdapter;
+import com.inovance.elevatorcontrol.daos.ShortcutDao;
+import com.inovance.elevatorcontrol.models.Shortcut;
 
 import java.util.ArrayList;
 import java.util.Collections;

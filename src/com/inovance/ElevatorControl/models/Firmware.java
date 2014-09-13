@@ -1,6 +1,7 @@
-package com.inovance.ElevatorControl.models;
+package com.inovance.elevatorcontrol.models;
 
 import net.tsz.afinal.annotation.sqlite.Id;
+import net.tsz.afinal.annotation.sqlite.Table;
 import org.json.JSONObject;
 
 /**
@@ -9,10 +10,11 @@ import org.json.JSONObject;
  * Date: 14-3-12.
  * Time: 17:00.
  */
+@Table(name="FIRMWARE")
 public class Firmware {
 
     @Id
-    private int ID;
+    private int Id;
 
     private String bluetoothAddress;
 
@@ -68,7 +70,7 @@ public class Firmware {
     }
 
     public Firmware(JSONObject object) {
-        this.ID = object.optInt("ID".toUpperCase());
+        this.Id = object.optInt("ID".toUpperCase());
         this.bluetoothAddress = object.optString("BluetoothAddress".toUpperCase());
         this.deviceID = object.optString("FK_DeviceID".toUpperCase());
         this.isSpecialDevice = object.optString("IsSpecialDevice".toUpperCase()).equalsIgnoreCase("true");
@@ -83,12 +85,12 @@ public class Firmware {
         this.expireDate = object.optString("DateLimit".toUpperCase());
     }
 
-    public int getID() {
-        return ID;
+    public int getId() {
+        return Id;
     }
 
-    public void setID(int ID) {
-        this.ID = ID;
+    public void setId(int Id) {
+        this.Id = Id;
     }
 
     public String getBluetoothAddress() {

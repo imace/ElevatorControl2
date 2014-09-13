@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.barcode;
+package com.inovance.elevatorcontrol.barcode;
 
 import android.content.Context;
 import android.content.res.Configuration;

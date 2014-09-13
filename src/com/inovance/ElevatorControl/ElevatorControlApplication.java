@@ -1,15 +1,15 @@
-package com.inovance.ElevatorControl;
+package com.inovance.elevatorcontrol;
 
 import android.app.Application;
 import android.content.SharedPreferences;
-import com.bluetoothtool.BluetoothTool;
-import com.inovance.ElevatorControl.cache.LruCacheTool;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.config.ParameterUpdateTool;
-import com.inovance.ElevatorControl.daos.ShortcutDao;
-import com.inovance.ElevatorControl.models.Shortcut;
-import com.inovance.ElevatorControl.utils.LogUtils;
-import com.inovance.ElevatorControl.utils.TextLocalize;
+import com.inovance.bluetoothtool.BluetoothTool;
+import com.inovance.elevatorcontrol.cache.LruCacheTool;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
+import com.inovance.elevatorcontrol.daos.ShortcutDao;
+import com.inovance.elevatorcontrol.models.Shortcut;
+import com.inovance.elevatorcontrol.utils.LogUtils;
+import com.inovance.elevatorcontrol.utils.TextLocalize;
 import org.acra.ACRA;
 import org.acra.annotation.ReportsCrashes;
 
@@ -37,7 +37,7 @@ public class ElevatorControlApplication extends Application {
         ParameterUpdateTool.getInstance().init(getApplicationContext());
         TextLocalize.getInstance().init(getApplicationContext());
         writeDefaultShortcutData();
-        ACRA.init(this);
+        //ACRA.init(this);
     }
 
     private void writeDefaultShortcutData() {

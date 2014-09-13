@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_directorychooser" default="compile.module.directorychooser">
+  <dirname property="module.directorychooser.basedir" file="${ant.file.module_directorychooser}"/>
+  
+  <property name="module.jdk.home.directorychooser" value="${jdk.home.android_api_19_platform}"/>
+  <property name="module.jdk.bin.directorychooser" value="${jdk.bin.android_api_19_platform}"/>
+  <property name="module.jdk.classpath.directorychooser" value="jdk.classpath.android_api_19_platform"/>
+  
+  <property name="compiler.args.directorychooser" value="-encoding UTF-8 -source 1.6 ${compiler.args}"/>
+  
+  <property name="directorychooser.output.dir" value="${module.directorychooser.basedir}/../../classes/production/DirectoryChooser"/>
+  <property name="directorychooser.testoutput.dir" value="${module.directorychooser.basedir}/../../classes/test/DirectoryChooser"/>
+  
+  <path id="directorychooser.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="directorychooser.module.production.classpath">
+    <path refid="${module.jdk.classpath.directorychooser}"/>
+  </path>
+  
+  <path id="directorychooser.runtime.production.module.classpath">
+    <pathelement location="${directorychooser.output.dir}"/>
+  </path>
+  
+  <path id="directorychooser.module.classpath">
+    <path refid="${module.jdk.classpath.directorychooser}"/>
+    <pathelement location="${directorychooser.output.dir}"/>
+  </path>
+  
+  <path id="directorychooser.runtime.module.classpath">
+    <pathelement location="${directorychooser.testoutput.dir}"/>
+    <pathelement location="${directorychooser.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.directorychooser">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.directorychooser">
+    <patternset refid="excluded.from.module.directorychooser"/>
+  </patternset>
+  
+  <path id="directorychooser.module.sourcepath">
+    <dirset dir="${module.directorychooser.basedir}">
+      <include name="src"/>
+      <include name="gen"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.directorychooser" depends="compile.module.directorychooser.production,compile.module.directorychooser.tests" description="Compile module DirectoryChooser"/>
+  
+  <target name="compile.module.directorychooser.production" depends="register.custom.compilers" description="Compile module DirectoryChooser; production classes">
+    <mkdir dir="${directorychooser.output.dir}"/>
+    <javac2 destdir="${directorychooser.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.directorychooser}/javac">
+      <compilerarg line="${compiler.args.directorychooser}"/>
+      <bootclasspath refid="directorychooser.module.bootclasspath"/>
+      <classpath refid="directorychooser.module.production.classpath"/>
+      <src refid="directorychooser.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.directorychooser"/>
+    </javac2>
+    
+    <copy todir="${directorychooser.output.dir}">
+      <fileset dir="${module.directorychooser.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset dir="${module.directorychooser.basedir}/gen">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.directorychooser.tests" depends="register.custom.compilers,compile.module.directorychooser.production" description="compile module DirectoryChooser; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.directorychooser" description="cleanup module">
+    <delete dir="${directorychooser.output.dir}"/>
+    <delete dir="${directorychooser.testoutput.dir}"/>
+  </target>
+</project>

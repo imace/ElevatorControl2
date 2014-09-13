@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.cache;
+package com.inovance.elevatorcontrol.cache;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;

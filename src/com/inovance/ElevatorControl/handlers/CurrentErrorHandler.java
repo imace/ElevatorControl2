@@ -1,14 +1,14 @@
-package com.inovance.ElevatorControl.handlers;
+package com.inovance.elevatorcontrol.handlers;
 
 import android.app.Activity;
 import android.os.Message;
 import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.widget.TextView;
-import com.bluetoothtool.BluetoothHandler;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.activities.TroubleAnalyzeActivity;
-import com.inovance.ElevatorControl.models.ErrorHelp;
+import com.inovance.bluetoothtool.BluetoothHandler;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.activities.TroubleAnalyzeActivity;
+import com.inovance.elevatorcontrol.models.ErrorHelp;
 
 public class CurrentErrorHandler extends BluetoothHandler {
 

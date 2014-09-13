@@ -1,13 +1,15 @@
-package com.inovance.ElevatorControl.models;
+package com.inovance.elevatorcontrol.models;
 
 import android.annotation.SuppressLint;
-import com.bluetoothtool.SerialUtility;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
+import com.inovance.bluetoothtool.SerialUtility;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
 import com.mobsandgeeks.adapters.InstantText;
 import net.tsz.afinal.annotation.sqlite.Id;
 import net.tsz.afinal.annotation.sqlite.ManyToOne;
+import net.tsz.afinal.annotation.sqlite.Table;
+import net.tsz.afinal.annotation.sqlite.Transient;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONStringer;
@@ -19,6 +21,7 @@ import java.util.Date;
  *
  * @author jch
  */
+@Table(name="PARAMETER_SETTINGS")
 public class ParameterSettings implements Cloneable {
 
     @Id
@@ -44,6 +47,7 @@ public class ParameterSettings implements Cloneable {
 
     private String type;// 种类
 
+    @Transient
     private String tempScope; // 取得的取值范围
 
     /**
@@ -54,11 +58,13 @@ public class ParameterSettings implements Cloneable {
     /**
      * 用户设定值
      */
+    @Transient
     private String userValue;
 
     /**
      * 16进制值
      */
+    @Transient
     private String hexValueString;
 
     /**
@@ -74,19 +80,25 @@ public class ParameterSettings implements Cloneable {
      */
     private String mode;
 
+    @Transient
     private boolean Valid;
 
+    @Transient
     private Date lastTime;
 
+    @Transient
     private byte[] received;
 
+    @Transient
     private String finalValue;
 
     /**
      * 参数写入错误代码
      */
+    @Transient
     private int writeErrorCode = -1;
 
+    @Transient
     private boolean elevatorRunning = true;
 
     private int deviceID;
@@ -318,12 +330,13 @@ public class ParameterSettings implements Cloneable {
     }
 
     public Object clone() {
-        ParameterSettings o = null;
+        ParameterSettings object = null;
         try {
-            o = (ParameterSettings) super.clone();
+            object = (ParameterSettings) super.clone();
         } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
         }
-        return o;
+        return object;
     }
 
     public byte[] getReceived() {

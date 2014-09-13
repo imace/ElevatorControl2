@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.activities;
+package com.inovance.elevatorcontrol.activities;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -14,25 +14,25 @@ import android.widget.ListView;
 import android.widget.TextView;
 import butterknife.InjectView;
 import butterknife.Views;
-import com.bluetoothtool.BluetoothHandler;
-import com.bluetoothtool.BluetoothTalk;
-import com.bluetoothtool.BluetoothTool;
-import com.bluetoothtool.SerialUtility;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.adapters.ConfigurationAdapter;
-import com.inovance.ElevatorControl.adapters.ParameterStatusAdapter;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.daos.ParameterSettingsDao;
-import com.inovance.ElevatorControl.daos.RealTimeMonitorDao;
-import com.inovance.ElevatorControl.factory.ParameterFactory;
-import com.inovance.ElevatorControl.handlers.ConfigurationHandler;
-import com.inovance.ElevatorControl.models.ObjectListHolder;
-import com.inovance.ElevatorControl.models.ParameterSettings;
-import com.inovance.ElevatorControl.models.ParameterStatusItem;
-import com.inovance.ElevatorControl.models.RealTimeMonitor;
-import com.inovance.ElevatorControl.utils.LogUtils;
-import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
-import com.inovance.ElevatorControl.views.fragments.ConfigurationFragment;
+import com.inovance.bluetoothtool.BluetoothHandler;
+import com.inovance.bluetoothtool.BluetoothTalk;
+import com.inovance.bluetoothtool.BluetoothTool;
+import com.inovance.bluetoothtool.SerialUtility;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.adapters.ConfigurationAdapter;
+import com.inovance.elevatorcontrol.adapters.ParameterStatusAdapter;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.daos.ParameterSettingsDao;
+import com.inovance.elevatorcontrol.daos.RealTimeMonitorDao;
+import com.inovance.elevatorcontrol.factory.ParameterFactory;
+import com.inovance.elevatorcontrol.handlers.ConfigurationHandler;
+import com.inovance.elevatorcontrol.models.ObjectListHolder;
+import com.inovance.elevatorcontrol.models.ParameterSettings;
+import com.inovance.elevatorcontrol.models.ParameterStatusItem;
+import com.inovance.elevatorcontrol.models.RealTimeMonitor;
+import com.inovance.elevatorcontrol.utils.LogUtils;
+import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
+import com.inovance.elevatorcontrol.views.fragments.ConfigurationFragment;
 import com.viewpagerindicator.TabPageIndicator;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -252,7 +252,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
         getOutputTerminalValueHandler = new GetOutputTerminalValueHandler(this);
         getOutputTerminalStateHandler = new GetOutputTerminalStateHandler(this);
         pager.setAdapter(mConfigurationAdapter);
-        pager.setOffscreenPageLimit(3);
+        pager.setOffscreenPageLimit(4);
         indicator.setViewPager(pager);
         configurationHandler = new ConfigurationHandler(this);
         indicator.setOnPageChangeListener(new OnPageChangeListener() {
@@ -338,12 +338,20 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
         getInputTerminalStateCommunications = null;
         getOutputTerminalValueCommunications = null;
         getOutputTerminalStateCommunications = null;
-        reloadDataFromDataBase();
-        ConfigurationFragment fragment = mConfigurationAdapter.getItem(pageIndex);
-        if (fragment != null) {
-            fragment.syncMonitorViewData(showStateList);
-            fragment.reloadSettingViewData();
-        }
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ConfigurationFragment monitorFragment = mConfigurationAdapter.getItem(0);
+                if (monitorFragment != null) {
+                    reloadDataFromDataBase();
+                    monitorFragment.reloadDataSource(showStateList);
+                }
+                ConfigurationFragment groupFragment = mConfigurationAdapter.getItem(1);
+                if (groupFragment != null) {
+                    groupFragment.reloadDataSource();
+                }
+            }
+        });
         isSyncing = false;
         currentTask = GET_SYSTEM_STATUS;
     }
@@ -359,6 +367,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
         int outputStateID = ApplicationConfig.MonitorStateCode[6];
         List<RealTimeMonitor> tempInputMonitor = new ArrayList<RealTimeMonitor>();
         List<RealTimeMonitor> tempOutputMonitor = new ArrayList<RealTimeMonitor>();
+        showStateList = new ArrayList<RealTimeMonitor>();
         for (RealTimeMonitor item : talkStateList) {
             if (item.getStateID() == inputStateID) {
                 tempInputMonitor.add(item);
@@ -1049,6 +1058,9 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                         statusAdapter.setStatusList(statusList);
                     }
                 }
+                ConfigurationActivity.this.currentTask = GET_HV_INPUT_TERMINAL_VALUE;
+            } else {
+                ConfigurationActivity.this.currentTask = GET_HV_INPUT_TERMINAL_STATE;
             }
             ConfigurationActivity.this.isSyncing = false;
         }
@@ -1120,6 +1132,9 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                         statusAdapter.setStatusList(statusList);
                     }
                 }
+                ConfigurationActivity.this.currentTask = GET_INPUT_TERMINAL_VALUE;
+            } else {
+                ConfigurationActivity.this.currentTask = GET_INPUT_TERMINAL_STATE;
             }
             ConfigurationActivity.this.isSyncing = false;
         }
@@ -1207,6 +1222,9 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                         statusAdapter.setStatusList(statusList);
                     }
                 }
+                ConfigurationActivity.this.currentTask = GET_OUTPUT_TERMINAL_VALUE;
+            } else {
+                ConfigurationActivity.this.currentTask = GET_OUTPUT_TERMINAL_STATE;
             }
             ConfigurationActivity.this.isSyncing = false;
         }
@@ -1249,7 +1267,6 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
             super.onMultiTalkEnd(msg);
             if (sendCount == receiveCount && monitor != null) {
                 getHVInputTerminalStateHandler.monitor = monitor;
-                getHVInputTerminalStateHandler.statusAdapter = null;
                 ConfigurationActivity.this.currentTask = GET_HV_INPUT_TERMINAL_STATE;
             } else {
                 ConfigurationActivity.this.currentTask = GET_HV_INPUT_TERMINAL_VALUE;
@@ -1298,7 +1315,6 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                     RealTimeMonitor monitor = monitorList.get(monitorList.size() - 1);
                     monitor.setCombineBytes(ConfigurationHandler.getCombineBytes(monitorList));
                     getInputTerminalStateHandler.monitor = monitor;
-                    getInputTerminalStateHandler.statusAdapter = null;
                     ConfigurationActivity.this.currentTask = GET_INPUT_TERMINAL_STATE;
                 }
             } else {
@@ -1348,7 +1364,6 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                     RealTimeMonitor monitor = monitorList.get(monitorList.size() - 1);
                     monitor.setCombineBytes(ConfigurationHandler.getCombineBytes(monitorList));
                     getOutputTerminalStateHandler.monitor = monitor;
-                    getOutputTerminalStateHandler.statusAdapter = null;
                     ConfigurationActivity.this.currentTask = GET_OUTPUT_TERMINAL_STATE;
                 }
             } else {

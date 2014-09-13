@@ -1,7 +1,8 @@
-package com.inovance.ElevatorControl.models;
+package com.inovance.elevatorcontrol.models;
 
-import android.util.Log;
 import net.tsz.afinal.annotation.sqlite.Id;
+import net.tsz.afinal.annotation.sqlite.Table;
+import net.tsz.afinal.annotation.sqlite.Transient;
 import org.json.JSONObject;
 
 /**
@@ -10,45 +11,53 @@ import org.json.JSONObject;
  * Date 14-4-7
  * Time 下午5:29
  */
+@Table(name="CHAT_MESSAGE")
 public class ChatMessage {
 
     /**
      * 文本
      */
+    @Transient
     public static final int TYPE_TEXT = 0;
 
     /**
      * 参数
      */
+    @Transient
     public static final int TYPE_PROFILE = 1;
 
     /**
      * 图片
      */
+    @Transient
     public static final int TYPE_PICTURE = 2;
 
     /**
      * 视频
      */
+    @Transient
     public static final int TYPE_VIDEO = 3;
 
     /**
      * 音频
      */
+    @Transient
     public static final int TYPE_AUDIO = 4;
 
     /**
      * 发送的消息
      */
+    @Transient
     public static final int SEND = 1;
 
     /**
      * 接收的消息
      */
+    @Transient
     public static final int RECEIVE = 2;
 
     @Id
-    private int ID;
+    private int Id;
 
     private int remoteID;
 
@@ -129,11 +138,11 @@ public class ChatMessage {
     }
 
     public int getId() {
-        return ID;
+        return Id;
     }
 
     public void setId(int id) {
-        ID = id;
+        Id = id;
     }
 
     public String getTitle() {

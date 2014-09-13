@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.views.dialogs;
+package com.inovance.elevatorcontrol.views.dialogs;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -6,18 +6,18 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.view.View;
 import android.widget.*;
-import com.bluetoothtool.BluetoothTool;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.activities.CheckAuthorizationActivity;
-import com.inovance.ElevatorControl.adapters.CheckedListViewAdapter;
-import com.inovance.ElevatorControl.adapters.DialogSwitchListViewAdapter;
-import com.inovance.ElevatorControl.adapters.ParameterStatusAdapter;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.daos.ErrorHelpDao;
-import com.inovance.ElevatorControl.factory.ParameterFactory;
-import com.inovance.ElevatorControl.models.*;
-import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
-import com.inovance.ElevatorControl.web.WebApi;
+import com.inovance.bluetoothtool.BluetoothTool;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.activities.CheckAuthorizationActivity;
+import com.inovance.elevatorcontrol.adapters.CheckedListViewAdapter;
+import com.inovance.elevatorcontrol.adapters.DialogSwitchListViewAdapter;
+import com.inovance.elevatorcontrol.adapters.ParameterStatusAdapter;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.daos.ErrorHelpDao;
+import com.inovance.elevatorcontrol.factory.ParameterFactory;
+import com.inovance.elevatorcontrol.models.*;
+import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
+import com.inovance.elevatorcontrol.web.WebApi;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 public class CustomDialog {
+
     // ==================================== Terminal Detail Dialog ================================== //
     public static AlertDialog.Builder terminalDetailDialog(final Activity activity, final RealTimeMonitor monitor) {
         byte[] data = monitor.getReceived();
@@ -120,7 +121,6 @@ public class CustomDialog {
                 String[] statusList = new String[size];
                 String[] spinnerList = new String[size];
                 int type = Integer.parseInt(settings.getType());
-                // TODO Input type show error
                 for (int i = 0; i < size; i++) {
                     JSONObject value = jsonArray.getJSONObject(i);
                     int alwaysClose = Integer.parseInt(value.optString("id")) + 32;
@@ -198,6 +198,7 @@ public class CustomDialog {
             boolean[] booleanArray = ParseSerialsUtils
                     .getBooleanValueArray(new byte[]{settings.getReceived()[4], settings.getReceived()[5]});
             boolean isSpecial = Integer.parseInt(settings.getType()) == ApplicationConfig.InputSelectType;
+            boolean isInFA26ToFA37 = ParseSerialsUtils.checkInFA26ToFA37(settings);
             try {
                 JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
                 int size = jsonArray.length();
@@ -215,6 +216,7 @@ public class CustomDialog {
                             item.setCanEdit(!settings.isElevatorRunning());
                         }
                         item.setSpecial(isSpecial);
+                        item.setInFA26ToFA37(isInFA26ToFA37);
                         itemList.add(item);
                     }
                 }

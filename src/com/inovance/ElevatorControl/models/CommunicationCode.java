@@ -1,5 +1,6 @@
-package com.inovance.ElevatorControl.models;
+package com.inovance.elevatorcontrol.models;
 
+import net.tsz.afinal.annotation.sqlite.Table;
 import org.json.JSONObject;
 
 /**
@@ -8,6 +9,7 @@ import org.json.JSONObject;
  * Date: 14-6-26.
  * Time: 20:11.
  */
+@Table(name="COMMUNICATION_CODE")
 public class CommunicationCode {
 
     /**

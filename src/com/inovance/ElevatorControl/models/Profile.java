@@ -1,6 +1,7 @@
-package com.inovance.ElevatorControl.models;
+package com.inovance.elevatorcontrol.models;
 
 import net.tsz.afinal.annotation.sqlite.Id;
+import net.tsz.afinal.annotation.sqlite.Table;
 
 /**
  * Created by IntelliJ IDEA.
@@ -8,10 +9,11 @@ import net.tsz.afinal.annotation.sqlite.Id;
  * Date: 14-3-17.
  * Time: 16:43.
  */
+@Table(name="PROFILE")
 public class Profile {
 
     @Id
-    private int ID;
+    private int Id;
 
     /**
      * 配置文件保存日期
@@ -33,12 +35,12 @@ public class Profile {
      */
     private String vendorName;
 
-    public int getID() {
-        return ID;
+    public int getId() {
+        return Id;
     }
 
-    public void setID(int ID) {
-        this.ID = ID;
+    public void setId(int Id) {
+        this.Id = Id;
     }
 
     public String getCreateTime() {

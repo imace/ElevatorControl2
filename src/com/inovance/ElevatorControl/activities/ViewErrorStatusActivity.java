@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.activities;
+package com.inovance.elevatorcontrol.activities;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -7,17 +7,17 @@ import android.view.MenuItem;
 import android.widget.ListView;
 import butterknife.InjectView;
 import butterknife.Views;
-import com.bluetoothtool.BluetoothHandler;
-import com.bluetoothtool.BluetoothTalk;
-import com.bluetoothtool.BluetoothTool;
-import com.bluetoothtool.SerialUtility;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.config.ParameterUpdateTool;
-import com.inovance.ElevatorControl.daos.ParameterSettingsDao;
-import com.inovance.ElevatorControl.models.ObjectListHolder;
-import com.inovance.ElevatorControl.models.ParameterSettings;
-import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
+import com.inovance.bluetoothtool.BluetoothHandler;
+import com.inovance.bluetoothtool.BluetoothTalk;
+import com.inovance.bluetoothtool.BluetoothTool;
+import com.inovance.bluetoothtool.SerialUtility;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
+import com.inovance.elevatorcontrol.daos.ParameterSettingsDao;
+import com.inovance.elevatorcontrol.models.ObjectListHolder;
+import com.inovance.elevatorcontrol.models.ParameterSettings;
+import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
 import com.mobsandgeeks.adapters.InstantAdapter;
 
 import java.nio.ByteBuffer;

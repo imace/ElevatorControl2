@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.config;
+package com.inovance.elevatorcontrol.config;
 
 /**
  * Created by IntelliJ IDEA.
@@ -142,9 +142,14 @@ public class ApplicationConfig {
     public static final int RestoreFactoryStateCode = 122;
 
     /**
+     * FA-26 到 FA-37
+     */
+    public static final int[] FA26ToFA37 = new int[]{26, 37};
+
+    /**
      * 数据库名称
      */
-    public static final String DATABASE_NAME = "ElevatorControl.db";
+    public static final String DATABASE_NAME = "ELEVATOR_CONTROL.db";
 
     public static final String SYSTEM_STATUS_NAME = "系统状态";
 

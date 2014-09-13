@@ -1,9 +1,9 @@
-package com.inovance.ElevatorControl.daos;
+package com.inovance.elevatorcontrol.daos;
 
 import android.content.Context;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.config.ParameterUpdateTool;
-import com.inovance.ElevatorControl.models.ParameterGroupSettings;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
+import com.inovance.elevatorcontrol.models.ParameterGroupSettings;
 import net.tsz.afinal.FinalDb;
 
 import java.util.List;

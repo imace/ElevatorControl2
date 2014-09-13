@@ -1,13 +1,12 @@
-package com.inovance.ElevatorControl.handlers;
+package com.inovance.elevatorcontrol.handlers;
 
 import android.app.Activity;
 import android.os.Message;
-import android.util.Log;
-import com.bluetoothtool.BluetoothHandler;
-import com.inovance.ElevatorControl.activities.ConfigurationActivity;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.models.RealTimeMonitor;
-import com.inovance.ElevatorControl.views.fragments.ConfigurationFragment;
+import com.inovance.bluetoothtool.BluetoothHandler;
+import com.inovance.elevatorcontrol.activities.ConfigurationActivity;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.models.RealTimeMonitor;
+import com.inovance.elevatorcontrol.views.fragments.ConfigurationFragment;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -75,8 +74,8 @@ public class ConfigurationHandler extends BluetoothHandler {
                 monitor.setCombineBytes(ConfigurationHandler.getCombineBytes(tempOutputMonitor));
                 showMonitorList.add(monitor);
             }
-            ConfigurationFragment fragment = parentActivity.mConfigurationAdapter.getItem(parentActivity.pageIndex);
-            fragment.syncMonitorViewData(showMonitorList);
+            ConfigurationFragment fragment = parentActivity.mConfigurationAdapter.getItem(0);
+            fragment.reloadDataSource(showMonitorList);
             parentActivity.isSyncing = false;
         }
     }

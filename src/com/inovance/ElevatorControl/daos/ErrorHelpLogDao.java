@@ -1,9 +1,9 @@
-package com.inovance.ElevatorControl.daos;
+package com.inovance.elevatorcontrol.daos;
 
 import android.content.Context;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.models.ErrorHelp;
-import com.inovance.ElevatorControl.models.ErrorHelpLog;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.models.ErrorHelp;
+import com.inovance.elevatorcontrol.models.ErrorHelpLog;
 import net.tsz.afinal.FinalDb;
 
 import java.util.List;

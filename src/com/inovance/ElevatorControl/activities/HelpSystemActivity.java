@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.activities;
+package com.inovance.elevatorcontrol.activities;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -9,9 +9,9 @@ import android.widget.ListView;
 import android.widget.Toast;
 import butterknife.InjectView;
 import butterknife.Views;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.adapters.PreferenceAdapter;
-import com.inovance.ElevatorControl.utils.UpdateApplication;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.adapters.PreferenceAdapter;
+import com.inovance.elevatorcontrol.utils.UpdateApplication;
 
 /**
  * 帮助标签

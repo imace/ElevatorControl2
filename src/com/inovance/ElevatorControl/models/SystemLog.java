@@ -1,8 +1,8 @@
-package com.inovance.ElevatorControl.models;
+package com.inovance.elevatorcontrol.models;
 
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.utils.LogUtils;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.utils.LogUtils;
 import com.mobsandgeeks.adapters.InstantText;
 import net.tsz.afinal.annotation.sqlite.Id;
 
@@ -21,7 +21,7 @@ public class SystemLog {
     private static final String TAG = SystemLog.class.getSimpleName();
 
     @Id
-    private int ID;
+    private int Id;
 
     /**
      * 日志类型
@@ -98,12 +98,12 @@ public class SystemLog {
 
     public static final int BurnFailed = 2;
 
-    public int getID() {
-        return ID;
+    public int getId() {
+        return Id;
     }
 
-    public void setID(int ID) {
-        this.ID = ID;
+    public void setId(int Id) {
+        this.Id = Id;
     }
 
     public int getType() {

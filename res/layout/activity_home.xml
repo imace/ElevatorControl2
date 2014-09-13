@@ -21,7 +21,7 @@
                 android:layout_marginRight="10dp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content">
-            <com.inovance.ElevatorControl.views.DoorAnimationView
+            <com.inovance.elevatorcontrol.views.DoorAnimationView
                     android:id="@+id/door_animation_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
@@ -121,7 +121,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
                 <!-- 故障代码红色 -->
-                <com.inovance.ElevatorControl.views.BlinkTextView
+                <com.inovance.elevatorcontrol.views.BlinkTextView
                         android:id="@+id/error_status"
                         android:gravity="center"
                         android:layout_gravity="center"

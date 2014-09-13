@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.views.form;
+package com.inovance.elevatorcontrol.views.form;
 
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
@@ -11,13 +11,13 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.*;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.models.SpecialDevice;
-import com.inovance.ElevatorControl.models.Vendor;
-import com.inovance.ElevatorControl.web.WebApi;
-import com.inovance.ElevatorControl.web.WebApi.OnGetResultListener;
-import com.inovance.ElevatorControl.web.WebApi.OnRequestFailureListener;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.models.SpecialDevice;
+import com.inovance.elevatorcontrol.models.Vendor;
+import com.inovance.elevatorcontrol.web.WebApi;
+import com.inovance.elevatorcontrol.web.WebApi.OnGetResultListener;
+import com.inovance.elevatorcontrol.web.WebApi.OnRequestFailureListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -158,7 +158,7 @@ public class SpecialApplyForm extends LinearLayout implements OnGetResultListene
                     if (item.getName().equalsIgnoreCase(vendorTextView.getText().toString())) {
                         List<String> nameList = new ArrayList<String>();
                         for (SpecialDevice device : mDeviceList) {
-                            if (device.getVendorID() == item.getID()) {
+                            if (device.getVendorID() == item.getId()) {
                                 nameList.add(device.getName());
                                 mCurrentDeviceList.add(device);
                             }
@@ -211,7 +211,7 @@ public class SpecialApplyForm extends LinearLayout implements OnGetResultListene
      */
     private void submitApply() {
         String bluetoothAddress = BluetoothAdapter.getDefaultAdapter().getAddress();
-        int deviceID = mCurrentDeviceList.get(deviceListSpinner.getSelectedItemPosition()).getID();
+        int deviceID = mCurrentDeviceList.get(deviceListSpinner.getSelectedItemPosition()).getId();
         WebApi.getInstance().setOnResultListener(this);
         WebApi.getInstance().setOnFailureListener(this);
         WebApi.getInstance().applySpecialFirmware(getContext(), bluetoothAddress, deviceID, remark.getText().toString());

@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.models;
+package com.inovance.elevatorcontrol.models;
 
 import java.util.List;
 

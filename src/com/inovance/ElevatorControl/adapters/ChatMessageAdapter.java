@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.adapters;
+package com.inovance.elevatorcontrol.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -7,9 +7,9 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.models.ChatMessage;
-import com.inovance.ElevatorControl.views.SquareLayout;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.models.ChatMessage;
+import com.inovance.elevatorcontrol.views.SquareLayout;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

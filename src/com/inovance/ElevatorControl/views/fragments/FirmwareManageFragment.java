@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.views.fragments;
+package com.inovance.elevatorcontrol.views.fragments;
 
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -8,21 +8,21 @@ import android.support.v4.app.Fragment;
 import android.util.Base64;
 import android.view.*;
 import android.widget.*;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.activities.FirmwareManageActivity;
-import com.inovance.ElevatorControl.adapters.FirmwareBurnAdapter;
-import com.inovance.ElevatorControl.adapters.FirmwareDownloadAdapter;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.config.ParameterUpdateTool;
-import com.inovance.ElevatorControl.daos.FirmwareDao;
-import com.inovance.ElevatorControl.models.Firmware;
-import com.inovance.ElevatorControl.models.NormalDevice;
-import com.inovance.ElevatorControl.models.SpecialDevice;
-import com.inovance.ElevatorControl.models.Vendor;
-import com.inovance.ElevatorControl.views.component.SegmentControl;
-import com.inovance.ElevatorControl.views.form.NormalApplyForm;
-import com.inovance.ElevatorControl.views.form.SpecialApplyForm;
-import com.inovance.ElevatorControl.web.WebApi;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.activities.FirmwareManageActivity;
+import com.inovance.elevatorcontrol.adapters.FirmwareBurnAdapter;
+import com.inovance.elevatorcontrol.adapters.FirmwareDownloadAdapter;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
+import com.inovance.elevatorcontrol.daos.FirmwareDao;
+import com.inovance.elevatorcontrol.models.Firmware;
+import com.inovance.elevatorcontrol.models.NormalDevice;
+import com.inovance.elevatorcontrol.models.SpecialDevice;
+import com.inovance.elevatorcontrol.models.Vendor;
+import com.inovance.elevatorcontrol.views.component.SegmentControl;
+import com.inovance.elevatorcontrol.views.form.NormalApplyForm;
+import com.inovance.elevatorcontrol.views.form.SpecialApplyForm;
+import com.inovance.elevatorcontrol.web.WebApi;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -277,7 +277,7 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
                 FirmwareManageFragment.this.firmware = firmware;
                 WebApi.getInstance().setOnFailureListener(FirmwareManageFragment.this);
                 WebApi.getInstance().setOnResultListener(FirmwareManageFragment.this);
-                WebApi.getInstance().downloadFirmwareFromServer(getActivity(), firmware.getID());
+                WebApi.getInstance().downloadFirmwareFromServer(getActivity(), firmware.getId());
                 return false;
             }
         });
@@ -416,7 +416,7 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
                             firmware.setFileName(fileName);
                             FirmwareDao.saveItem(getActivity(), firmware);
                             // 从服务器删除已提取的程序
-                            WebApi.getInstance().deleteFileFromServer(getActivity(), firmware.getID());
+                            WebApi.getInstance().deleteFileFromServer(getActivity(), firmware.getId());
                         }
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();

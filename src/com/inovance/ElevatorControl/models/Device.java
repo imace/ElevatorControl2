@@ -1,6 +1,8 @@
-package com.inovance.ElevatorControl.models;
+package com.inovance.elevatorcontrol.models;
 
 import net.tsz.afinal.annotation.sqlite.Id;
+import net.tsz.afinal.annotation.sqlite.Table;
+import net.tsz.afinal.annotation.sqlite.Transient;
 
 /**
  * Created by IntelliJ IDEA.
@@ -8,6 +10,7 @@ import net.tsz.afinal.annotation.sqlite.Id;
  * Date: 14-6-9.
  * Time: 11:14.
  */
+@Table(name="DEVICE")
 public class Device {
 
     @Id
@@ -16,11 +19,13 @@ public class Device {
     /**
      * 标准设备
      */
+    @Transient
     public static final int NormalDevice = 1;
 
     /**
      * 专有设备
      */
+    @Transient
     public static final int SpecialDevice = 2;
 
     /**

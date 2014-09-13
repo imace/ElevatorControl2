@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.views.component;
+package com.inovance.elevatorcontrol.views.component;
 
 import android.content.Context;
 import android.util.AttributeSet;

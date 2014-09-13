@@ -1,9 +1,9 @@
-package com.inovance.ElevatorControl.factory;
+package com.inovance.elevatorcontrol.factory;
 
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.config.ParameterUpdateTool;
-import com.inovance.ElevatorControl.models.ParameterSettings;
-import com.inovance.ElevatorControl.models.ParameterStatusItem;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
+import com.inovance.elevatorcontrol.models.ParameterSettings;
+import com.inovance.elevatorcontrol.models.ParameterStatusItem;
 
 import java.util.List;
 

@@ -6,7 +6,7 @@
               android:orientation="horizontal"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
-    <com.inovance.ElevatorControl.views.customspinner.NoDefaultSpinner
+    <com.inovance.elevatorcontrol.views.customspinner.NoDefaultSpinner
             android:id="@+id/custom_spinner"
             xmlns:android="http://schemas.android.com/apk/res/android"
             android:minHeight="?android:attr/actionBarSize"

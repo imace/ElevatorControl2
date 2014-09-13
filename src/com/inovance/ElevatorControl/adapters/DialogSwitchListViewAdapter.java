@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.adapters;
+package com.inovance.elevatorcontrol.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -8,8 +8,8 @@ import android.widget.BaseAdapter;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.models.ParameterStatusItem;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.models.ParameterStatusItem;
 
 import java.util.List;
 
@@ -55,7 +55,7 @@ public class DialogSwitchListViewAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup viewGroup) {
         LayoutInflater mInflater = LayoutInflater.from(context);
-        convertView = mInflater.inflate(R.layout.parameter_switch_item, null);
+        convertView = mInflater.inflate(R.layout.parameter_switch_item, viewGroup, false);
         TextView switchName = (TextView) convertView.findViewById(R.id.switch_name);
         Switch switchView = (Switch) convertView.findViewById(R.id.status_switch);
         final ParameterStatusItem item = getItem(position);
@@ -64,6 +64,11 @@ public class DialogSwitchListViewAdapter extends BaseAdapter {
         if (item.isSpecial()) {
             switchView.setTextOn(context.getResources().getString(R.string.always_open_text));
             switchView.setTextOff(context.getResources().getString(R.string.always_close_text));
+        }
+        if (item.isInFA26ToFA37()) {
+            String[] values = context.getResources().getStringArray(R.array.status_text_array);
+            switchView.setTextOn(values[0]);
+            switchView.setTextOff(values[1]);
         }
         final int index = position;
         switchView.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {

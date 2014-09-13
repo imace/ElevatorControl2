@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.utils;
+package com.inovance.elevatorcontrol.utils;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -7,8 +7,8 @@ import android.os.Message;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import net.tsz.afinal.core.AsyncTask;
 
 import java.io.*;
@@ -245,7 +245,6 @@ public class FileTransport implements Runnable {
                 connection.connect();
                 String raw = connection.getHeaderField("Content-Disposition");
                 String contentType = connection.getContentType();
-                Log.v(TAG, contentType);
                 String fileName;
                 if (raw != null && raw.contains("=")) {
                     fileName = raw.split("=")[1];

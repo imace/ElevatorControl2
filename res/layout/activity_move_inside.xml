@@ -35,7 +35,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
         </LinearLayout>
-        <com.inovance.ElevatorControl.views.viewpager.VerticalViewPager
+        <com.inovance.elevatorcontrol.views.viewpager.VerticalViewPager
                 android:visibility="gone"
                 android:layout_centerInParent="true"
                 android:id="@+id/vertical_view_pager"
@@ -80,7 +80,7 @@
                 android:layout_weight="2"
                 android:layout_width="0dp"
                 android:layout_height="match_parent">
-            <com.inovance.ElevatorControl.views.TypefaceTextView
+            <com.inovance.elevatorcontrol.views.TypefaceTextView
                     android:id="@+id/current_floor"
                     android:textSize="65sp"
                     android:textStyle="bold"

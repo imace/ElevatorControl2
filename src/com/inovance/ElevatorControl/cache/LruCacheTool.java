@@ -1,8 +1,8 @@
-package com.inovance.ElevatorControl.cache;
+package com.inovance.elevatorcontrol.cache;
 
 import android.content.Context;
 import android.os.Environment;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
 
 import java.io.File;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.views;
+package com.inovance.elevatorcontrol.views;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -8,7 +8,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import com.inovance.ElevatorControl.R;
+import com.inovance.elevatorcontrol.R;
 
 /**
  * Created by IntelliJ IDEA.

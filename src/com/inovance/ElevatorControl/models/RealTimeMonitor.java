@@ -1,12 +1,13 @@
-package com.inovance.ElevatorControl.models;
+package com.inovance.elevatorcontrol.models;
 
 import android.annotation.SuppressLint;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
-import com.inovance.ElevatorControl.utils.TextLocalize;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
+import com.inovance.elevatorcontrol.utils.TextLocalize;
 import com.mobsandgeeks.adapters.InstantText;
 import net.tsz.afinal.annotation.sqlite.Id;
+import net.tsz.afinal.annotation.sqlite.Table;
 import net.tsz.afinal.annotation.sqlite.Transient;
 import org.json.JSONException;
 import org.json.JSONStringer;
@@ -22,6 +23,7 @@ import java.util.regex.Pattern;
  *
  * @author jch
  */
+@Table(name="REAL_TIME_MONITOR")
 public class RealTimeMonitor implements Cloneable {
 
     @Id
@@ -77,8 +79,10 @@ public class RealTimeMonitor implements Cloneable {
      */
     private int sort;
 
+    @Transient
     private byte[] HVInputTerminalBytes;
 
+    @Transient
     private byte[] combineBytes;
 
     /**
@@ -94,7 +98,10 @@ public class RealTimeMonitor implements Cloneable {
      */
     private String JSONDescription;
 
+    @Transient
     private boolean isValid;
+
+    @Transient
     private Date lastTime;
 
     /**

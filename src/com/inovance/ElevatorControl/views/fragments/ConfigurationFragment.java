@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.views.fragments;
+package com.inovance.elevatorcontrol.views.fragments;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -12,18 +12,19 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
-import com.bluetoothtool.BluetoothTool;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.activities.*;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.daos.ParameterGroupSettingsDao;
-import com.inovance.ElevatorControl.models.MoveInsideOutside;
-import com.inovance.ElevatorControl.models.ParameterDuplicate;
-import com.inovance.ElevatorControl.models.ParameterGroupSettings;
-import com.inovance.ElevatorControl.models.RealTimeMonitor;
-import com.inovance.ElevatorControl.views.dialogs.CustomDialog;
+import com.inovance.bluetoothtool.BluetoothTool;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.activities.*;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.daos.ParameterGroupSettingsDao;
+import com.inovance.elevatorcontrol.models.MoveInsideOutside;
+import com.inovance.elevatorcontrol.models.ParameterDuplicate;
+import com.inovance.elevatorcontrol.models.ParameterGroupSettings;
+import com.inovance.elevatorcontrol.models.RealTimeMonitor;
+import com.inovance.elevatorcontrol.views.dialogs.CustomDialog;
 import com.mobsandgeeks.adapters.InstantAdapter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,27 +36,27 @@ public class ConfigurationFragment extends Fragment {
 
     private static final String TAG = ConfigurationFragment.class.getSimpleName();
 
-    // 当前tabIndex
     private int tabIndex;
 
-    // 该碎片使用的布局的RId
     private int layoutId;
 
     private Context context;
 
-    public InstantAdapter<RealTimeMonitor> monitorInstantAdapter;
+    public InstantAdapter<RealTimeMonitor> monitorAdapter;
 
-    public InstantAdapter<ParameterGroupSettings> parameterGroupInstantAdapter;
+    public InstantAdapter<ParameterGroupSettings> groupAdapter;
 
     private ListView monitorListView;
 
-    private List<ParameterGroupSettings> settingsGroup;
+    private ListView groupListView;
 
-    private ListView settingGroupListView;
+    private ListView debugListView;
 
-    private boolean hasBindListListener = false;
+    private ListView duplicateListView;
 
-    private List<RealTimeMonitor> monitorList;
+    private List<RealTimeMonitor> monitorList = new ArrayList<RealTimeMonitor>();
+
+    private List<ParameterGroupSettings> groupSettingsList = new ArrayList<ParameterGroupSettings>();
 
     /**
      * 记录下当前选中的tabIndex
@@ -88,150 +89,93 @@ public class ConfigurationFragment extends Fragment {
         return configurationFragment;
     }
 
-    /**
-     * 根据tabIndex来加载
-     */
-    @Override
-    public void onResume() {
-        super.onResume();
-        switch (tabIndex) {
-            case 0:
-                loadMonitorView();
-                break;
-            case 1:
-                loadSettingView();
-                break;
-            case 2:
-                loadDebugView();
-                break;
-            case 3:
-                loadDuplicateView();
-                break;
-        }
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
-        return inflater.inflate(layoutId, container, false);
+        View view = getLayoutInflater(savedInstanceState).inflate(layoutId, container, false);
+        switch (tabIndex) {
+            case 0:
+                monitorListView = (ListView) view.findViewById(R.id.monitor_list);
+                initMonitorListView();
+                break;
+            case 1:
+                groupListView = (ListView) view.findViewById(R.id.settings_list);
+                initGroupListView();
+                break;
+            case 2:
+                debugListView = (ListView) view.findViewById(R.id.test_list);
+                initDebugListView();
+                break;
+            case 3:
+                duplicateListView = (ListView) view.findViewById(R.id.copy_list);
+                initDuplicateView();
+                break;
+        }
+        return view;
     }
 
-    /**
-     * 实时监控,加载内容
-     */
-    public void loadMonitorView() {
-        if (monitorListView == null) {
-            monitorListView = (ListView) getActivity().findViewById(R.id.monitor_list);
-        }
-        if (monitorList != null && monitorListView.getAdapter() == null) {
-            monitorInstantAdapter = new InstantAdapter<RealTimeMonitor>(
-                    getActivity().getBaseContext(),
-                    R.layout.list_configuration_monitor_item,
-                    RealTimeMonitor.class,
-                    monitorList);
-            monitorListView.setAdapter(monitorInstantAdapter);
-        }
-    }
-
-    /**
-     * Update Data
-     *
-     * @param monitorList RealTimeMonitor List
-     */
-    public void syncMonitorViewData(List<RealTimeMonitor> monitorList) {
-        if (monitorInstantAdapter != null) {
-            this.monitorList.clear();
-            this.monitorList.addAll(monitorList);
-            monitorInstantAdapter.notifyDataSetChanged();
-        }
-        if (monitorListView != null && !hasBindListListener) {
-            monitorListView.setOnItemClickListener(new OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                    RealTimeMonitor monitor = ConfigurationFragment.this.monitorList.get(position);
-                    if (monitor.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[2] ||
-                            monitor.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[3]) {
-                        AlertDialog dialog = CustomDialog.terminalDetailDialog(getActivity(), monitor).create();
-                        dialog.show();
-                    }
-                    // 高压输入端子状态
-                    if (monitor.getStateID() == ApplicationConfig.MonitorStateCode[14]) {
-                        ((ConfigurationActivity) getActivity()).viewHVInputTerminalStatus(position);
-                    }
-                    // 输入端子状态
-                    if (monitor.getStateID() == ApplicationConfig.MonitorStateCode[5]) {
-                        ((ConfigurationActivity) getActivity()).viewInputTerminalStatus(position);
-                    }
-                    // 输出端子状态
-                    if (monitor.getStateID() == ApplicationConfig.MonitorStateCode[6]) {
-                        ((ConfigurationActivity) getActivity()).viewOutputTerminalStatus(position);
-                    }
+    private void initMonitorListView() {
+        monitorAdapter = new InstantAdapter<RealTimeMonitor>(
+                getActivity().getBaseContext(),
+                R.layout.list_configuration_monitor_item,
+                RealTimeMonitor.class,
+                monitorList);
+        monitorListView.setAdapter(monitorAdapter);
+        monitorListView.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                RealTimeMonitor monitor = ConfigurationFragment.this.monitorList.get(position);
+                if (monitor.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[2] ||
+                        monitor.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[3]) {
+                    AlertDialog dialog = CustomDialog.terminalDetailDialog(getActivity(), monitor).create();
+                    dialog.show();
                 }
-            });
-            hasBindListListener = true;
-        }
-    }
-
-    public List<RealTimeMonitor> getMonitorViewData() {
-        return monitorList;
-    }
-
-    /**
-     * 重新加载详细设置数据
-     */
-    public void reloadSettingViewData() {
-        this.settingsGroup.clear();
-        this.settingsGroup.addAll(ParameterGroupSettingsDao.findAll(context));
-        parameterGroupInstantAdapter.notifyDataSetChanged();
-    }
-
-    /**
-     * 参数设置,加载内容
-     */
-    public void loadSettingView() {
-        if (settingsGroup == null && settingGroupListView == null) {
-            settingsGroup = ParameterGroupSettingsDao.findAll(context);
-            settingGroupListView = (ListView) getActivity().findViewById(R.id.settings_list);
-            parameterGroupInstantAdapter = new InstantAdapter<ParameterGroupSettings>(
-                    getActivity().getApplicationContext(),
-                    R.layout.list_configuration_setting_item,
-                    ParameterGroupSettings.class, settingsGroup);
-            settingGroupListView.setAdapter(parameterGroupInstantAdapter);
-            settingGroupListView.setOnItemClickListener(new OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view,
-                                        int position, long id) {
-                    if (BluetoothTool.getInstance().isPrepared()) {
-                        Intent intent = new Intent(
-                                ConfigurationFragment.this.getActivity(),
-                                ParameterDetailActivity.class);
-                        intent.putExtra("SelectedId", settingsGroup.get(position).getId());
-                        ConfigurationFragment.this.getActivity().startActivity(intent);
-                    }
+                // 高压输入端子状态
+                if (monitor.getStateID() == ApplicationConfig.MonitorStateCode[14]) {
+                    ((ConfigurationActivity) getActivity()).viewHVInputTerminalStatus(position);
                 }
-            });
-        }
+                // 输入端子状态
+                if (monitor.getStateID() == ApplicationConfig.MonitorStateCode[5]) {
+                    ((ConfigurationActivity) getActivity()).viewInputTerminalStatus(position);
+                }
+                // 输出端子状态
+                if (monitor.getStateID() == ApplicationConfig.MonitorStateCode[6]) {
+                    ((ConfigurationActivity) getActivity()).viewOutputTerminalStatus(position);
+                }
+            }
+        });
     }
 
-    /**
-     * 测试功能，加载内容，内召和外召。
-     */
-    public void loadDebugView() {
+    private void initGroupListView() {
+        groupSettingsList.clear();
+        groupSettingsList.addAll(ParameterGroupSettingsDao.findAll(context));
+        groupAdapter = new InstantAdapter<ParameterGroupSettings>(
+                getActivity().getApplicationContext(),
+                R.layout.list_configuration_setting_item,
+                ParameterGroupSettings.class, groupSettingsList);
+        groupListView.setAdapter(groupAdapter);
+        groupListView.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+                if (BluetoothTool.getInstance().isPrepared()) {
+                    Intent intent = new Intent(getActivity(), ParameterDetailActivity.class);
+                    intent.putExtra("SelectedId", groupSettingsList.get(position).getId());
+                    getActivity().startActivity(intent);
+                }
+            }
+        });
+    }
+
+    private void initDebugListView() {
         final List<MoveInsideOutside> insideOut = MoveInsideOutside
                 .getInsideOutLists(ConfigurationFragment.this.getActivity());
-        ListView listView = (ListView) this.getActivity().findViewById(R.id.test_list);
         InstantAdapter<MoveInsideOutside> instantAdapter = new InstantAdapter<MoveInsideOutside>(
                 getActivity().getApplicationContext(),
                 R.layout.list_configuration_debug_item, MoveInsideOutside.class, insideOut);
-        listView.setAdapter(instantAdapter);
-        listView.setOnItemClickListener(new OnItemClickListener() {
+        debugListView.setAdapter(instantAdapter);
+        debugListView.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
@@ -255,19 +199,15 @@ public class ConfigurationFragment extends Fragment {
         });
     }
 
-    /**
-     * 参数拷贝,加载内容
-     */
-    public void loadDuplicateView() {
+    private void initDuplicateView() {
         final List<ParameterDuplicate> paramDuplicate = ParameterDuplicate
                 .getParamDuplicateLists(ConfigurationFragment.this.getActivity());
-        ListView listView = (ListView) this.getActivity().findViewById(R.id.copy_list);
         InstantAdapter<ParameterDuplicate> instantAdapter = new InstantAdapter<ParameterDuplicate>(
                 getActivity().getApplicationContext(),
                 R.layout.list_configuration_duplicate_item, ParameterDuplicate.class,
                 paramDuplicate);
-        listView.setAdapter(instantAdapter);
-        listView.setOnItemClickListener(new OnItemClickListener() {
+        duplicateListView.setAdapter(instantAdapter);
+        duplicateListView.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
@@ -308,5 +248,17 @@ public class ConfigurationFragment extends Fragment {
                 }
             }
         });
+    }
+
+    public void reloadDataSource(List<RealTimeMonitor> items) {
+        monitorList.clear();
+        monitorList.addAll(items);
+        monitorAdapter.notifyDataSetChanged();
+    }
+
+    public void reloadDataSource() {
+        groupSettingsList.clear();
+        groupSettingsList.addAll(ParameterGroupSettingsDao.findAll(context));
+        groupAdapter.notifyDataSetChanged();
     }
 }

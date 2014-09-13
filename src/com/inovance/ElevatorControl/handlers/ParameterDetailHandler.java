@@ -1,12 +1,12 @@
-package com.inovance.ElevatorControl.handlers;
+package com.inovance.elevatorcontrol.handlers;
 
 import android.app.Activity;
 import android.os.Message;
-import com.bluetoothtool.BluetoothHandler;
-import com.inovance.ElevatorControl.activities.ParameterDetailActivity;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.models.ObjectListHolder;
-import com.inovance.ElevatorControl.models.ParameterSettings;
+import com.inovance.bluetoothtool.BluetoothHandler;
+import com.inovance.elevatorcontrol.activities.ParameterDetailActivity;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.models.ObjectListHolder;
+import com.inovance.elevatorcontrol.models.ParameterSettings;
 
 import java.util.ArrayList;
 import java.util.List;

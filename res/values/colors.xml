@@ -18,7 +18,8 @@
 
     <color name="image_button_highlighted_color">#60dedede</color>
 
-    <color name="viewfinder_mask">#60000000</color>
     <color name="viewfinder_laser">#ffcc0000</color>
     <color name="viewfinder_border">#ffafed44</color>
+
+    <color name="splash_background_color">#0175b2</color>
 </resources>

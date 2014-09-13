@@ -1,5 +1,6 @@
-package com.inovance.ElevatorControl.models;
+package com.inovance.elevatorcontrol.models;
 
+import net.tsz.afinal.annotation.sqlite.Table;
 import org.json.JSONObject;
 
 /**
@@ -8,9 +9,10 @@ import org.json.JSONObject;
  * Date: 14-4-10.
  * Time: 15:27.
  */
+@Table(name="SPECIAL_DEVICE")
 public class SpecialDevice {
 
-    private int ID;
+    private int Id;
 
     /**
      * 设备名称
@@ -43,7 +45,7 @@ public class SpecialDevice {
     private String description;
 
     public SpecialDevice(JSONObject object) {
-        this.ID = object.optInt("ID".toUpperCase());
+        this.Id = object.optInt("Id".toUpperCase());
         this.name = object.optString("DeviceName".toUpperCase());
         this.displayName = object.optString("DeviceDisplayName".toUpperCase());
         this.number = object.optString("DeviceNum".toUpperCase());
@@ -52,12 +54,12 @@ public class SpecialDevice {
         this.code = object.optString("Code".toUpperCase());
     }
 
-    public int getID() {
-        return ID;
+    public int getId() {
+        return Id;
     }
 
-    public void setID(int ID) {
-        this.ID = ID;
+    public void setId(int Id) {
+        this.Id = Id;
     }
 
     public String getName() {

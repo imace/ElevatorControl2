@@ -1,12 +1,15 @@
-package com.inovance.ElevatorControl.models;
+package com.inovance.elevatorcontrol.models;
 
 import android.content.Context;
-import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
+import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
 import net.tsz.afinal.annotation.sqlite.Id;
 import net.tsz.afinal.annotation.sqlite.Property;
+import net.tsz.afinal.annotation.sqlite.Table;
+import net.tsz.afinal.annotation.sqlite.Transient;
 
 import java.util.Date;
 
+@Table(name="ERROR_HELP")
 public class ErrorHelp {
 
     @Id
@@ -22,7 +25,16 @@ public class ErrorHelp {
     private String solution;//故障解决方案
     private String level;//故障级
 
+    @Transient
+    private boolean Valid;
+
+    @Transient
+    private Date lastTime;
+
     private int deviceID;
+
+    @Transient
+    private byte[] received;
 
     public int getDeviceID() {
         return deviceID;
@@ -31,12 +43,6 @@ public class ErrorHelp {
     public void setDeviceID(int deviceID) {
         this.deviceID = deviceID;
     }
-
-    private boolean Valid;
-    private Date lastTime;
-
-    private byte[] received;
-
 
     public boolean isValid() {
         return Valid;

@@ -1,4 +1,4 @@
-package com.inovance.ElevatorControl.activities;
+package com.inovance.elevatorcontrol.activities;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -7,22 +7,23 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Message;
+import android.util.Log;
 import android.view.*;
 import android.widget.*;
 import butterknife.InjectView;
 import butterknife.Views;
-import com.bluetoothtool.*;
-import com.inovance.ElevatorControl.R;
-import com.inovance.ElevatorControl.config.ApplicationConfig;
-import com.inovance.ElevatorControl.daos.ProfileDao;
-import com.inovance.ElevatorControl.daos.RealTimeMonitorDao;
-import com.inovance.ElevatorControl.models.ParameterSettings;
-import com.inovance.ElevatorControl.models.Profile;
-import com.inovance.ElevatorControl.models.RealTimeMonitor;
-import com.inovance.ElevatorControl.utils.LogUtils;
-import com.inovance.ElevatorControl.utils.ParseSerialsUtils;
-import com.inovance.ElevatorControl.utils.TextLocalize;
-import com.inovance.ElevatorControl.views.dialogs.CustomDialog;
+import com.inovance.bluetoothtool.*;
+import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.daos.ProfileDao;
+import com.inovance.elevatorcontrol.daos.RealTimeMonitorDao;
+import com.inovance.elevatorcontrol.models.ParameterSettings;
+import com.inovance.elevatorcontrol.models.Profile;
+import com.inovance.elevatorcontrol.models.RealTimeMonitor;
+import com.inovance.elevatorcontrol.utils.LogUtils;
+import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
+import com.inovance.elevatorcontrol.utils.TextLocalize;
+import com.inovance.elevatorcontrol.views.dialogs.CustomDialog;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -343,6 +344,10 @@ public class ParameterUploadActivity extends Activity {
                         BluetoothTalk talk = new BluetoothTalk() {
                             @Override
                             public void beforeSend() {
+                                Log.v(TAG, "0106"
+                                        + ParseSerialsUtils.getCalculatedCode(item)
+                                        + item.getHexValueString()
+                                        + "0001");
                                 this.setSendBuffer(SerialUtility.crc16("0106"
                                         + ParseSerialsUtils.getCalculatedCode(item)
                                         + item.getHexValueString()
