@@ -62,6 +62,8 @@ public class FirmwareBurnAdapter extends BaseAdapter {
             convertView = mInflater.inflate(R.layout.firmware_burn_item, null);
             holder = new ViewHolder();
             holder.firmwareName = (TextView) convertView.findViewById(R.id.firmware_name);
+            holder.firmwareVendor = (TextView) convertView.findViewById(R.id.firmware_vendor);
+            holder.firmwareType = (TextView) convertView.findViewById(R.id.firmware_type);
             holder.createDate = (TextView) convertView.findViewById(R.id.create_date);
             holder.expireDate = (TextView) convertView.findViewById(R.id.expire_date);
             holder.residueTime = (TextView) convertView.findViewById(R.id.residue_time);
@@ -73,6 +75,9 @@ public class FirmwareBurnAdapter extends BaseAdapter {
         final int index = position;
         final Firmware firmware = getItem(position);
         holder.firmwareName.setText(firmware.getFileURL());
+        // TODO show vendor name
+        holder.firmwareVendor.setText("");
+        holder.firmwareType.setText(firmware.isSpecialDevice() ? "专有设备" : "标准设备");
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         holder.createDate.setText(firmware.getDownloadDate());
         if (firmware.getExpireDate() == null || firmware.getExpireDate().length() == 0) {
@@ -96,6 +101,8 @@ public class FirmwareBurnAdapter extends BaseAdapter {
 
     private class ViewHolder {
         TextView firmwareName;
+        TextView firmwareVendor;
+        TextView firmwareType;
         TextView createDate;
         TextView expireDate;
         TextView residueTime;

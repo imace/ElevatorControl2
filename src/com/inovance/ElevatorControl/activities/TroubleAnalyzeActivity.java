@@ -78,6 +78,8 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
 
     public boolean isSyncing = false;
 
+    public boolean hasGetHistoryTrouble = false;
+
     /**
      * 读取当前故障历史故障
      */
@@ -124,6 +126,7 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
                         loadCurrentTroubleView();
                         break;
                     case 1:
+                        hasGetHistoryTrouble = false;
                         loadHistoryTroubleView();
                         break;
                 }
@@ -147,6 +150,7 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
     @Override
     protected void onResume() {
         super.onResume();
+        hasGetHistoryTrouble = false;
         currentCommunications = null;
         historyCommunications = null;
         if (pageIndex != pager.getCurrentItem()) {
@@ -533,7 +537,9 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
                 startGetCurrentTroubleCommunication();
                 break;
             case 1:
-                startGetCurrentHistoryCommunication();
+                if (!hasGetHistoryTrouble) {
+                    startGetCurrentHistoryCommunication();
+                }
                 break;
         }
     }

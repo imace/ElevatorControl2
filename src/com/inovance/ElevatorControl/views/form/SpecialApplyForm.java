@@ -129,7 +129,7 @@ public class SpecialApplyForm extends LinearLayout implements OnGetResultListene
         });
         submitView.setEnabled(false);
         progressView = findViewById(R.id.submit_progress);
-        submitTextView = (TextView)findViewById(R.id.submit_text);
+        submitTextView = (TextView) findViewById(R.id.submit_text);
         countDownTextView = (TextView) findViewById(R.id.count_down_text);
     }
 
@@ -146,7 +146,7 @@ public class SpecialApplyForm extends LinearLayout implements OnGetResultListene
         for (int index = 0; index < vendorListSize; index++) {
             vendorNames[index] = vendorList.get(index).getName();
         }
-        ArrayAdapter<String> vendorAdapter = new ArrayAdapter<String>(getContext(),
+        FullSuggestAdapter vendorAdapter = new FullSuggestAdapter(getContext(),
                 android.R.layout.simple_dropdown_item_1line,
                 vendorNames);
         vendorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -236,5 +236,60 @@ public class SpecialApplyForm extends LinearLayout implements OnGetResultListene
         progressView.setVisibility(View.GONE);
         submitTextView.setVisibility(View.VISIBLE);
         submitView.setEnabled(true);
+    }
+
+    private class FullSuggestAdapter extends ArrayAdapter implements Filterable {
+
+        private String[] dataSource = new String[]{};
+
+        private List<String> resultList = new ArrayList<String>();
+
+        public FullSuggestAdapter(Context context, int resource, String[] items) {
+            super(context, resource);
+            this.dataSource = items;
+        }
+
+        @Override
+        public int getCount() {
+            return resultList.size();
+        }
+
+        @Override
+        public String getItem(int position) {
+            return resultList.get(position);
+        }
+
+        @Override
+        public Filter getFilter() {
+            return new ItemFilter();
+        }
+
+        private class ItemFilter extends Filter {
+
+            @Override
+            protected FilterResults performFiltering(CharSequence charSequence) {
+                FilterResults results = new FilterResults();
+                if (charSequence != null) {
+                    int count = 0;
+                    resultList = new ArrayList<String>();
+                    for (String item : dataSource) {
+                        if (item.contains(charSequence)) {
+                            count++;
+                            resultList.add(item);
+                        }
+                    }
+                    results.count = count;
+                    results.values = resultList;
+                }
+                return results;
+            }
+
+            @Override
+            protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+                if (filterResults != null && filterResults.count > 0) {
+                    notifyDataSetChanged();
+                }
+            }
+        }
     }
 }

@@ -7,6 +7,7 @@ import com.inovance.bluetoothtool.SerialUtility;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
 import com.inovance.elevatorcontrol.daos.ErrorHelpDao;
+import com.inovance.elevatorcontrol.factory.ParameterFactory;
 import com.inovance.elevatorcontrol.models.ErrorHelp;
 import com.inovance.elevatorcontrol.models.ParameterSettings;
 import com.inovance.elevatorcontrol.models.RealTimeMonitor;
@@ -93,11 +94,11 @@ public class ParseSerialsUtils {
                 }
             }
             if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[1]) {
-                try {
-                    JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
-                    int size = jsonArray.length();
-                    int index = getIntFromBytes(data);
-                    if (Integer.parseInt(settings.getType()) == ApplicationConfig.FloorShowType) {
+                if (Integer.parseInt(settings.getType()) == ApplicationConfig.FloorShowType) {
+                    try {
+                        JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
+                        int size = jsonArray.length();
+                        int index = getIntFromBytes(data);
                         int modValue = index / 100;
                         int remValue = index % 100;
                         if (modValue < size && remValue < size) {
@@ -105,13 +106,11 @@ public class ParseSerialsUtils {
                             JSONObject remObject = jsonArray.getJSONObject(remValue);
                             return modObject.optString("value") + "  " + remObject.optString("value");
                         }
+                    } catch (JSONException e) {
+                        return "Parse value failed";
                     }
-                    if (index < size) {
-                        JSONObject jsonObject = jsonArray.getJSONObject(index);
-                        return index + ":" + jsonObject.optString("value");
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                } else {
+                    return ParameterFactory.getParameter().getDescriptionText(settings);
                 }
             }
             if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[2]) {

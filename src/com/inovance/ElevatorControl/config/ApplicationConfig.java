@@ -277,6 +277,16 @@ public class ApplicationConfig {
      */
     public static final String ProfileFolder = "Profile";
 
+    /**
+     * 发送的文件保存文件夹
+     */
+    public static final String SentFolder = "SentFile";
+
+    /**
+     * 接收的文件保存文件夹
+     */
+    public static final String ReceiveFileFolder = "ReceivedFile";
+
     // ==================================== Web API接口 =======================================
 
     /**

@@ -580,6 +580,7 @@ public class WebApi {
         String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetChatMessage;
         requestURL = requestURL.replace("{param0}", phoneNumber);
         requestURL = requestURL.replace("{param1}", String.valueOf(timestamp));
+        Log.v(TAG, requestURL);
         startGetRequest(context, requestURL, ApplicationConfig.GetChatMessage, false);
     }
 

@@ -2,7 +2,6 @@ package com.inovance.elevatorcontrol.activities;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -24,9 +23,11 @@ import com.inovance.elevatorcontrol.adapters.CheckedListViewAdapter;
 import com.inovance.elevatorcontrol.adapters.DialogSwitchListViewAdapter;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.daos.ParameterGroupSettingsDao;
-import com.inovance.elevatorcontrol.daos.RealTimeMonitorDao;
 import com.inovance.elevatorcontrol.handlers.ParameterDetailHandler;
-import com.inovance.elevatorcontrol.models.*;
+import com.inovance.elevatorcontrol.models.ObjectListHolder;
+import com.inovance.elevatorcontrol.models.ParameterGroupSettings;
+import com.inovance.elevatorcontrol.models.ParameterSettings;
+import com.inovance.elevatorcontrol.models.ParameterStatusItem;
 import com.inovance.elevatorcontrol.utils.LogUtils;
 import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
 import com.inovance.elevatorcontrol.views.dialogs.CustomDialog;
@@ -52,7 +53,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
     /**
      * 用于写入参数的 Handler
      */
-    private UpdateHandler updateHandler;
+    private WriteHandler writeHandler;
 
     /**
      * 参数 Item 详细 Dialog
@@ -155,24 +156,9 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
     public RefreshActionItem mRefreshActionItem;
 
     /**
-     * 是否读取到电梯状态
-     */
-    private boolean hasGetElevatorStatus;
-
-    /**
      * 是否读取到参数数值设置范围
      */
     private boolean hasGetValueScope;
-
-    /**
-     * 取得电梯运行状态
-     */
-    private GetElevatorStatusHandler getElevatorStatusHandler;
-
-    /**
-     * 用于取得电梯运行状态的通信内容
-     */
-    private BluetoothTalk[] getElevatorStatusCommunication;
 
     /**
      * 写入参数错误提示信息
@@ -183,11 +169,6 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
      * 取得参数数值范围
      */
     private static final int onGetValueScope = 1;
-
-    /**
-     * 取得电梯运行状态
-     */
-    private static final int onGetElevatorStatus = 2;
 
     private ExecutorService pool = Executors.newSingleThreadExecutor();
 
@@ -201,8 +182,6 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
 
     private static final int GetValueScope = 2;
 
-    private static final int GetElevatorStatus = 3;
-
     private int currentTask;
 
     @Override
@@ -215,8 +194,8 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         Views.inject(this);
         parameterDetailHandler = new ParameterDetailHandler(this);
         getValueScopeHandler = new GetValueScopeHandler(this);
-        getElevatorStatusHandler = new GetElevatorStatusHandler(this);
-        updateHandler = new UpdateHandler(this);
+        writeHandler = new WriteHandler(this);
+        BluetoothTool.getInstance().setHandler(null);
         initListViewData();
         bindListViewItemClickListener();
     }
@@ -232,9 +211,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         settingsList = parameterGroupSettings.getParametersettings().getList();
         listViewDataSource = new ArrayList<ParameterSettings>();
         for (ParameterSettings item : settingsList) {
-            if (!item.getName().contains(ApplicationConfig.RETAIN_NAME)) {
-                listViewDataSource.add(item);
-            }
+            listViewDataSource.add(item);
         }
         instantAdapter = new InstantAdapter<ParameterSettings>(this,
                 R.layout.list_parameter_group_item,
@@ -254,37 +231,13 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                     if (BluetoothTool.getInstance().isPrepared()) {
                         final ParameterSettings settings = listViewDataSource.get(position);
                         int mode = Integer.parseInt(settings.getMode());
-                        // 任意修改
-                        if (mode == ApplicationConfig.modifyType[0]) {
-                            settings.setElevatorRunning(false);
+                        // 任意修改 & 停机修改
+                        if (mode == ApplicationConfig.modifyType[0] || mode == ApplicationConfig.modifyType[1]) {
                             if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[0]) {
                                 createPickerDialog(position, settings);
                             } else {
                                 onClickListViewWithIndex(position);
                             }
-                        }
-                        // 停机修改
-                        if (mode == ApplicationConfig.modifyType[1]) {
-                            final int index = position;
-                            settings.setElevatorRunning(false);
-                            ParameterDetailActivity.this.hasGetElevatorStatus = false;
-                            // 读取电梯运行状态
-                            new CountDownTimer(2400, 800) {
-
-                                @Override
-                                public void onTick(long l) {
-                                    if (!ParameterDetailActivity.this.hasGetElevatorStatus) {
-                                        ParameterDetailActivity.this.getElevatorStatus(index, settings);
-                                    } else {
-                                        this.cancel();
-                                    }
-                                }
-
-                                @Override
-                                public void onFinish() {
-
-                                }
-                            }.start();
                         }
                         // 不可修改
                         if (mode == ApplicationConfig.modifyType[2]) {
@@ -305,70 +258,6 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 }
             }
         });
-    }
-
-    /**
-     * 取得当前电梯运行状态
-     *
-     * @param index    ListView Index
-     * @param settings Selected ParameterSettings
-     */
-    private void getElevatorStatus(final int index, final ParameterSettings settings) {
-        if (getElevatorStatusCommunication == null) {
-            final RealTimeMonitor monitor = RealTimeMonitorDao.findByStateID(this, ApplicationConfig.RunningStatusType);
-            if (monitor != null) {
-                getElevatorStatusCommunication = new BluetoothTalk[]{
-                        new BluetoothTalk() {
-                            @Override
-                            public void beforeSend() {
-                                this.setSendBuffer(SerialUtility.crc16("0103"
-                                        + monitor.getCode()
-                                        + "0001"));
-                            }
-
-                            @Override
-                            public void afterSend() {
-
-                            }
-
-                            @Override
-                            public void beforeReceive() {
-
-                            }
-
-                            @Override
-                            public void afterReceive() {
-
-                            }
-
-                            @Override
-                            public Object onParse() {
-                                if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
-                                    byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
-                                    if (data.length == 8) {
-                                        monitor.setReceived(data);
-                                        return monitor;
-                                    }
-                                }
-                                return null;
-                            }
-                        }
-                };
-            }
-        }
-        if (getElevatorStatusCommunication != null) {
-            if (BluetoothTool.getInstance().isPrepared()) {
-                if (!ParameterDetailActivity.this.hasGetElevatorStatus) {
-                    getElevatorStatusHandler.index = index;
-                    getElevatorStatusHandler.settings = settings;
-                    BluetoothTool.getInstance()
-                            .setCommunications(getElevatorStatusCommunication)
-                            .setHandler(getElevatorStatusHandler)
-                            .send();
-                }
-
-            }
-        }
     }
 
     /**
@@ -576,87 +465,68 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
      */
     private void onClickListViewWithIndex(final int index) {
         final ParameterSettings settings = listViewDataSource.get(index);
-        AlertDialog.Builder builder = CustomDialog.parameterDetailDialog(ParameterDetailActivity.this,
-                settings);
+        AlertDialog.Builder builder = CustomDialog.parameterDetailDialog(this, settings);
+        builder.setPositiveButton(R.string.dialog_btn_ok, null);
+        builder.setNegativeButton(R.string.dialog_btn_cancel, null);
+        detailDialog = builder.create();
+        detailDialog.show();
         int mode = Integer.parseInt(settings.getMode());
         if (mode != ApplicationConfig.modifyType[2]) {
-            if (!settings.isElevatorRunning()) {
-                builder.setPositiveButton(R.string.dialog_btn_ok, null);
-                builder.setNegativeButton(R.string.dialog_btn_cancel, null);
-            } else {
-                builder.setPositiveButton(R.string.dialog_btn_ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        if (detailDialog != null) {
-                            detailDialog.dismiss();
-                        }
-                    }
-                });
-            }
-        } else {
-            builder.setPositiveButton(R.string.dialog_btn_ok, new DialogInterface.OnClickListener() {
+            detailDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    if (detailDialog != null) {
+                public void onClick(View view) {
+                    if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[1]) {
+                        // 输入端子类型
+                        if (Integer.parseInt(settings.getType()) == ApplicationConfig.InputTerminalType) {
+                            ToggleButton toggleButton = (ToggleButton) detailDialog.findViewById(R.id.toggle_button);
+                            ListView listView = (ListView) detailDialog.findViewById(R.id.list_view);
+                            CheckedListViewAdapter adapter = (CheckedListViewAdapter) listView.getAdapter();
+                            int value = getTerminalStatus(adapter.getItem(adapter.getCheckedIndex()),
+                                    toggleButton.isChecked());
+                            if (value != -1) {
+                                if (adapter.getCheckedIndex() == 0) {
+                                    value = 0;
+                                }
+                                startSetNewValueCommunications(index, String.format("%04x", value));
+                            } else {
+                                // 第一个
+                                startSetNewValueCommunications(index, String.format("%04x", 0));
+                            }
+                        } else if (Integer.parseInt(settings.getType()) == ApplicationConfig.FloorShowType) {
+                            Spinner modSpinner = (Spinner) detailDialog.findViewById(R.id.mod_value);
+                            Spinner remSpinner = (Spinner) detailDialog.findViewById(R.id.rem_value);
+                            int userValue = modSpinner.getSelectedItemPosition() * 100
+                                    + remSpinner.getSelectedItemPosition();
+                            startSetNewValueCommunications(index, String.format("%04x", userValue));
+                        } else {
+                            int checkedIndex = detailDialog.getListView().getCheckedItemPosition();
+                            if (checkedIndex != ParseSerialsUtils.getIntFromBytes(settings.getReceived())) {
+                                startSetNewValueCommunications(index, String.format("%04x", checkedIndex));
+                            }
+                        }
                         detailDialog.dismiss();
+                    }
+                    if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[2]) {
+                        ListView listView = (ListView) detailDialog.findViewById(R.id.switch_list);
+                        DialogSwitchListViewAdapter adapter = (DialogSwitchListViewAdapter) listView
+                                .getAdapter();
+                        List<ParameterStatusItem> list = adapter.getItemList();
+                        String binaryString = "";
+                        int size = list.size();
+                        for (int i = size - 1; i >= 0; i--) {
+                            binaryString += list.get(i).getStatus() ? 1 : 0;
+                        }
+                        startSetNewValueCommunications(index,
+                                String.format("%04x", Integer.parseInt(binaryString, 2)));
                     }
                 }
             });
-        }
-        detailDialog = builder.create();
-        detailDialog.show();
-        if (mode != ApplicationConfig.modifyType[2]) {
-            if (!settings.isElevatorRunning()) {
-                detailDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[1]) {
-                            // 输入端子类型
-                            if (Integer.parseInt(settings.getType()) == ApplicationConfig.InputTerminalType) {
-                                ToggleButton toggleButton = (ToggleButton) detailDialog.findViewById(R.id.toggle_button);
-                                ListView listView = (ListView) detailDialog.findViewById(R.id.list_view);
-                                CheckedListViewAdapter adapter = (CheckedListViewAdapter) listView.getAdapter();
-                                int value = getTerminalStatus(adapter.getItem(adapter.getCheckedIndex()),
-                                        toggleButton.isChecked());
-                                if (value != -1) {
-                                    if (adapter.getCheckedIndex() == 0) {
-                                        value = 0;
-                                    }
-                                    startSetNewValueCommunications(index, String.format("%04x", value));
-                                } else {
-                                    // 第一个
-                                    startSetNewValueCommunications(index, String.format("%04x", 0));
-                                }
-                            } else if (Integer.parseInt(settings.getType()) == ApplicationConfig.FloorShowType) {
-                                Spinner modSpinner = (Spinner) detailDialog.findViewById(R.id.mod_value);
-                                Spinner remSpinner = (Spinner) detailDialog.findViewById(R.id.rem_value);
-                                int userValue = modSpinner.getSelectedItemPosition() * 100
-                                        + remSpinner.getSelectedItemPosition();
-                                startSetNewValueCommunications(index, String.format("%04x", userValue));
-                            } else {
-                                int checkedIndex = detailDialog.getListView().getCheckedItemPosition();
-                                if (checkedIndex != ParseSerialsUtils.getIntFromBytes(settings.getReceived())) {
-                                    startSetNewValueCommunications(index, String.format("%04x", checkedIndex));
-                                }
-                            }
-                            detailDialog.dismiss();
-                        }
-                        if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[2]) {
-                            ListView listView = (ListView) detailDialog.findViewById(R.id.switch_list);
-                            DialogSwitchListViewAdapter adapter = (DialogSwitchListViewAdapter) listView
-                                    .getAdapter();
-                            List<ParameterStatusItem> list = adapter.getItemList();
-                            String binaryString = "";
-                            int size = list.size();
-                            for (int i = size - 1; i >= 0; i--) {
-                                binaryString += list.get(i).getStatus() ? 1 : 0;
-                            }
-                            startSetNewValueCommunications(index,
-                                    String.format("%04x", Integer.parseInt(binaryString, 2)));
-                        }
-                    }
-                });
-            }
+            detailDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    detailDialog.dismiss();
+                }
+            });
         }
         detailDialog.setCancelable(false);
         detailDialog.setCanceledOnTouchOutside(false);
@@ -766,16 +636,6 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        if (BluetoothTool.getInstance().isPrepared()) {
-            ParameterDetailActivity.this.syncingParameter = true;
-            currentTask = GetParameterDetail;
-            pool.execute(this);
-        }
-    }
-
-    @Override
     protected void onPause() {
         super.onPause();
         overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
@@ -832,17 +692,17 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         };
         if (BluetoothTool.getInstance().isPrepared()) {
             ParameterDetailActivity.this.isWriteSuccessful = false;
-            updateHandler.index = position;
-            updateHandler.writeCode = userValue;
-            updateHandler.startValue = settings.getUserValue();
+            writeHandler.index = position;
+            writeHandler.writeCode = userValue;
+            writeHandler.startValue = settings.getUserValue();
             new CountDownTimer(3200, 800) {
                 public void onTick(long millisUntilFinished) {
                     if (!ParameterDetailActivity.this.isWriteSuccessful) {
-                        updateHandler.index = position;
-                        updateHandler.writeCode = userValue;
-                        updateHandler.startValue = settings.getUserValue();
+                        writeHandler.index = position;
+                        writeHandler.writeCode = userValue;
+                        writeHandler.startValue = settings.getUserValue();
                         BluetoothTool.getInstance()
-                                .setHandler(updateHandler)
+                                .setHandler(writeHandler)
                                 .setCommunications(communications)
                                 .send();
                     } else {
@@ -882,7 +742,6 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 communications[i] = new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        Log.v(TAG, firstItem.getCode() + ":" + length);
                         this.setSendBuffer(SerialUtility.crc16("0103"
                                 + ParseSerialsUtils.getCalculatedCode(firstItem)
                                 + String.format("%04x", length)));
@@ -907,9 +766,6 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                     public Object onParse() {
                         if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
                             byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
-
-                            Log.v(TAG, SerialUtility.byte2HexStr(data));
-
                             short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
                             if (length * 2 == bytesLength) {
                                 List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
@@ -958,35 +814,6 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 Toast.LENGTH_SHORT).show();
         // 刷新当前数据
         refreshParameterData();
-    }
-
-    /**
-     * 已经取得电梯状态
-     *
-     * @param index    ListView Index
-     * @param status   Elevator status
-     * @param settings ParameterSettings
-     */
-    private void onGetElevatorStatus(final int index, int status, final ParameterSettings settings) {
-        settings.setElevatorRunning(status != 3);
-        if (settings.isElevatorRunning()) {
-            if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[2]) {
-                onClickListViewWithIndex(index);
-            }
-            Toast.makeText(ParameterDetailActivity.this,
-                    R.string.elevator_running_message,
-                    Toast.LENGTH_SHORT).show();
-        } else {
-            new Timer().schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    Message message = new Message();
-                    message.what = onGetElevatorStatus;
-                    message.obj = settings;
-                    onGetValueHandler.sendMessage(message);
-                }
-            }, 350);
-        }
     }
 
     /**
@@ -1048,11 +875,14 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         mRefreshActionItem = (RefreshActionItem) item.getActionView();
         assert mRefreshActionItem != null;
         mRefreshActionItem.setMenuItem(item);
-        if (BluetoothTool.getInstance().isPrepared()) {
-            mRefreshActionItem.showProgress(true);
-        }
         mRefreshActionItem.setProgressIndicatorType(ProgressIndicatorType.INDETERMINATE);
         mRefreshActionItem.setRefreshActionListener(ParameterDetailActivity.this);
+        if (BluetoothTool.getInstance().isPrepared()) {
+            mRefreshActionItem.showProgress(true);
+            ParameterDetailActivity.this.syncingParameter = true;
+            currentTask = GetParameterDetail;
+            pool.execute(this);
+        }
         return true;
     }
 
@@ -1087,9 +917,6 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
     @Override
     public void run() {
         switch (currentTask) {
-            // 读取电梯运行状态
-            case GetElevatorStatus:
-                break;
             // 读取取值范围
             case GetValueScope:
                 break;
@@ -1105,18 +932,6 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case onGetElevatorStatus: {
-                    if (msg.obj != null && msg.obj instanceof ParameterSettings) {
-                        ParameterSettings settings = (ParameterSettings) msg.obj;
-                        int index = listViewDataSource.indexOf(settings);
-                        if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[0]) {
-                            createPickerDialog(index, settings);
-                        } else {
-                            onClickListViewWithIndex(index);
-                        }
-                    }
-                }
-                break;
                 case onGetValueScope: {
                     if (msg.obj != null && msg.obj instanceof ParameterSettings) {
                         createNumberPickerAndBindListener((ParameterSettings) msg.obj);
@@ -1132,7 +947,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
     /**
      * Update Handler
      */
-    private class UpdateHandler extends BluetoothHandler {
+    private class WriteHandler extends BluetoothHandler {
 
         public int index;
 
@@ -1140,9 +955,9 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
 
         public String startValue;
 
-        public UpdateHandler(android.app.Activity activity) {
+        public WriteHandler(android.app.Activity activity) {
             super(activity);
-            TAG = UpdateHandler.class.getSimpleName();
+            TAG = WriteHandler.class.getSimpleName();
         }
 
         @Override
@@ -1243,41 +1058,6 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 stringList.add((String) msg.obj);
             }
         }
-    }
-
-    // ============================= 取得当前电梯运行状态 Handler ============================ //
-
-    private class GetElevatorStatusHandler extends BluetoothHandler {
-
-        public int index;
-
-        public ParameterSettings settings;
-
-        public GetElevatorStatusHandler(Activity activity) {
-            super(activity);
-            TAG = GetElevatorStatusHandler.class.getSimpleName();
-        }
-
-        @Override
-        public void onMultiTalkBegin(Message msg) {
-            super.onMultiTalkBegin(msg);
-        }
-
-        @Override
-        public void onMultiTalkEnd(Message msg) {
-            super.onMultiTalkBegin(msg);
-        }
-
-        @Override
-        public void onTalkReceive(Message msg) {
-            super.onTalkReceive(msg);
-            if (msg.obj != null && msg.obj instanceof RealTimeMonitor) {
-                ParameterDetailActivity.this.hasGetElevatorStatus = true;
-                int status = ParseSerialsUtils.getElevatorStatus((RealTimeMonitor) msg.obj);
-                onGetElevatorStatus(this.index, status, this.settings);
-            }
-        }
-
     }
 
 }

@@ -53,20 +53,13 @@ public class ParameterDetailHandler extends BluetoothHandler {
         if (msg.obj instanceof ObjectListHolder) {
             ObjectListHolder holder = (ObjectListHolder) msg.obj;
             for (ParameterSettings item : holder.getParameterSettingsList()) {
-                if (!item.getName().contains(ApplicationConfig.RETAIN_NAME)) {
-                    if (tempList == null) {
-                        tempList = new ArrayList<ParameterSettings>();
-                    }
-                    tempList.add(item);
+                if (tempList == null) {
+                    tempList = new ArrayList<ParameterSettings>();
                 }
+                tempList.add(item);
             }
             receiveCount++;
         }
-    }
-
-    @Override
-    public void onTalkError(Message msg) {
-        super.onTalkError(msg);
     }
 
 }

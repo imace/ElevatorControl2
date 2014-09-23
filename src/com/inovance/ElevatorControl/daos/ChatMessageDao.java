@@ -38,4 +38,9 @@ public class ChatMessageDao {
         }
     }
 
+    public static void update(Context context, ChatMessage message) {
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
+        db.update(message);
+    }
+
 }

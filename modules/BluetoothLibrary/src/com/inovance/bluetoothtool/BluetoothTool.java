@@ -96,7 +96,7 @@ public class BluetoothTool implements Runnable {
     /**
      * 读取超时时间
      */
-    private static final int ReadTimeout = 15;
+    private static final int ReadTimeout = 30;
 
     /**
      * 设置当前的实例 Activity Context
@@ -188,6 +188,7 @@ public class BluetoothTool implements Runnable {
      */
     private void talk(final BluetoothTalk communication) {
         if (!abortTalking) {
+            Log.v(TAG, "StartBluetoothTalk");
             Message msgError = new Message();
             msgError.what = BluetoothState.onTalkError;
             try {
@@ -229,10 +230,14 @@ public class BluetoothTool implements Runnable {
                         break;
                     }
                     timeout++;
+                    Log.v(TAG, "timeout" + ":" + timeout);
                     if (timeout == ReadTimeout) {
                         // 蓝牙连接异常
                         if (currentState != BluetoothState.Exception) {
                             currentState = BluetoothState.Exception;
+                            if (searchHandler != null) {
+                                searchHandler.sendEmptyMessage(BluetoothState.onBluetoothConnectException);
+                            }
                             if (handler != null) {
                                 handler.sendEmptyMessage(BluetoothState.onBluetoothConnectException);
                             }
@@ -530,6 +535,7 @@ public class BluetoothTool implements Runnable {
                         talk(content);
                     }
                 }
+                this.abortTalking = true;
                 if (null != handler) {
                     handler.sendEmptyMessage(BluetoothState.onMultiTalkEnd);
                 }
@@ -554,6 +560,7 @@ public class BluetoothTool implements Runnable {
      * @return boolean
      */
     public boolean isPrepared() {
+        Log.v(TAG, "CurrentState : " + currentState + "");
         Log.v(TAG, hasSelectDeviceType ? "HasSelectDeviceType" : "NOSelectDeviceType");
         Log.v(TAG, currentState == BluetoothState.CONNECTED ? "CONNECTED" : "NotCONNECTED");
         return currentState == BluetoothState.CONNECTED && hasSelectDeviceType;

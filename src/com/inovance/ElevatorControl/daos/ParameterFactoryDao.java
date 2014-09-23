@@ -38,7 +38,7 @@ public class ParameterFactoryDao {
     }
 
     /**
-     * 就是恢复出厂设置
+     * 恢复出厂设置
      */
     public static void dbInit(Context context) {
         Device device = new Device();

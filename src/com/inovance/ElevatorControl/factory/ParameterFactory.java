@@ -1,9 +1,11 @@
 package com.inovance.elevatorcontrol.factory;
 
+import android.content.Context;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
 import com.inovance.elevatorcontrol.models.ParameterSettings;
 import com.inovance.elevatorcontrol.models.ParameterStatusItem;
+import com.inovance.elevatorcontrol.models.TroubleGroup;
 
 import java.util.List;
 
@@ -37,5 +39,8 @@ public class ParameterFactory {
 
         public int[] getIndexStatus(ParameterSettings settings);
 
+        public String getDescriptionText(ParameterSettings settings);
+
+        public List<TroubleGroup> getTroubleGroupList(Context context, List<ParameterSettings> settingsList);
     }
 }

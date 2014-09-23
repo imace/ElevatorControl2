@@ -9,6 +9,7 @@ import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -400,7 +401,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
             communications[0] = new BluetoothTalk() {
                 @Override
                 public void beforeSend() {
-                    this.setSendBuffer(SerialUtility.crc16("0103"
+                    this.setSendBuffer(SerialUtility.crc16("0106"
                             + monitor.getCode()
                             + "0001"));
                 }
@@ -934,6 +935,9 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                     public void onClick(DialogInterface dialogInterface, int i) {
                         isSyncing = false;
                         currentTask = GET_SYSTEM_STATUS;
+                        getHVInputTerminalStateHandler.statusAdapter = null;
+                        getInputTerminalStateHandler.statusAdapter = null;
+                        getOutputTerminalStateHandler.statusAdapter = null;
                     }
                 });
         // 端子状态信息 Dialog
@@ -1001,7 +1005,6 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
             super(activity);
         }
 
-
         @Override
         public void onMultiTalkBegin(Message msg) {
             super.onMultiTalkBegin(msg);
@@ -1048,6 +1051,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                             }
                         }
                     }
+                    Log.v(TAG, "GetValueEnded");
                     // 更新 AlertDialog ListView
                     if (statusAdapter == null) {
                         statusAdapter = new ParameterStatusAdapter(ConfigurationActivity.this, statusList);

@@ -81,6 +81,13 @@ public class UpdateApplication {
      */
     private String lastVersionName;
 
+    private AlertDialog noNetworkDialog;
+
+    /**
+     * Is no network dialog showing
+     */
+    private boolean isDialogShowing = false;
+
     private LinearLayout progressView;
 
     public static UpdateApplication getInstance() {
@@ -129,12 +136,35 @@ public class UpdateApplication {
     public void checkUpdate() {
         if (activity != null) {
             if (isNetworkAvailable()) {
+                if (noNetworkDialog != null && isDialogShowing) {
+                    noNetworkDialog.dismiss();
+                }
                 WebApi.getInstance().setOnResultListener(new WebApi.OnGetResultListener() {
                     @Override
                     public void onResult(String tag, String responseString) {
-                        if (responseString != null
-                                && responseString.length() > 0
-                                && !currentVersionName.equalsIgnoreCase(responseString)) {
+                        boolean needUpdate = false;
+                        if (responseString != null && responseString.length() > 0) {
+                            String[] lastVersion = responseString.split(".");
+                            String[] currentVersion = currentVersionName.split(".");
+                            if (lastVersion.length == 3 && currentVersion.length == 3) {
+                                int lastMainVersion = Integer.parseInt(lastVersion[0]);
+                                int lastSecondVersion = Integer.parseInt(lastVersion[1]);
+                                int lastBuildVersion = Integer.parseInt(lastVersion[2]);
+                                int currentMainVersion = Integer.parseInt(currentVersion[0]);
+                                int currentSecondVersion = Integer.parseInt(currentVersion[1]);
+                                int currentBuildVersion = Integer.parseInt(currentVersion[2]);
+                                if (currentMainVersion > lastMainVersion) {
+                                    needUpdate = true;
+                                }
+                                if (currentSecondVersion > lastSecondVersion) {
+                                    needUpdate = true;
+                                }
+                                if (currentBuildVersion > lastBuildVersion) {
+                                    needUpdate = true;
+                                }
+                            }
+                        }
+                        if (needUpdate) {
                             lastVersionName = responseString;
                             confirmUpdateApplication();
                         } else {
@@ -152,28 +182,48 @@ public class UpdateApplication {
                 });
                 WebApi.getInstance().getLastSoftwareVersion(activity);
             } else {
-                AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
-                        .setTitle(R.string.no_network_title)
-                        .setMessage(R.string.setting_network_message)
-                        .setNegativeButton(R.string.exit_application_text, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                WebApi.getInstance().removeListener();
-                                BluetoothTool.getInstance().kill();
-                                activity.finish();
-                            }
-                        })
-                        .setPositiveButton(R.string.setting_network_text, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                Intent intent = new Intent(Settings.ACTION_SETTINGS);
-                                activity.startActivity(intent);
-                            }
-                        });
-                AlertDialog dialog = builder.create();
-                dialog.setCancelable(false);
-                dialog.setCanceledOnTouchOutside(false);
-                dialog.show();
+                if (noNetworkDialog == null) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
+                            .setTitle(R.string.no_network_title)
+                            .setMessage(R.string.setting_network_message)
+                            .setNegativeButton(R.string.exit_application_text, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    WebApi.getInstance().removeListener();
+                                    BluetoothTool.getInstance().kill();
+                                    activity.finish();
+                                }
+                            })
+                            .setPositiveButton(R.string.setting_network_text, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    Intent intent = new Intent(Settings.ACTION_SETTINGS);
+                                    activity.startActivity(intent);
+                                }
+                            });
+                    noNetworkDialog = builder.create();
+                    noNetworkDialog.setCancelable(false);
+                    noNetworkDialog.setCanceledOnTouchOutside(false);
+                    noNetworkDialog.show();
+                    noNetworkDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                        @Override
+                        public void onShow(DialogInterface dialogInterface) {
+                            isDialogShowing = true;
+                        }
+                    });
+                    noNetworkDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialogInterface) {
+                            isDialogShowing = false;
+                        }
+                    });
+                } else {
+                    if (noNetworkDialog != null) {
+                        if (!isDialogShowing) {
+                            noNetworkDialog.show();
+                        }
+                    }
+                }
             }
         }
     }

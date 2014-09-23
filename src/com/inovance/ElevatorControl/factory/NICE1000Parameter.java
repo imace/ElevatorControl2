@@ -1,7 +1,10 @@
 package com.inovance.elevatorcontrol.factory;
 
+import android.content.Context;
+import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.models.ParameterSettings;
 import com.inovance.elevatorcontrol.models.ParameterStatusItem;
+import com.inovance.elevatorcontrol.models.TroubleGroup;
 import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -64,5 +67,52 @@ public class NICE1000Parameter implements ParameterFactory.Parameter {
             state = 0;
         }
         return new int[]{indexValue, state};
+    }
+
+    @Override
+    public String getDescriptionText(ParameterSettings settings) {
+        int index = ParseSerialsUtils.getIntFromBytes(settings.getReceived());
+        int realIndex = index;
+        if (index > 100) {
+            index -= 100;
+        }
+        try {
+            JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
+            if (index < jsonArray.length()) {
+                JSONObject object = jsonArray.getJSONObject(index);
+                return String.valueOf(realIndex) + ":" + object.optString("value");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return "Parse value failed";
+    }
+
+    @Override
+    public List<TroubleGroup> getTroubleGroupList(Context context, List<ParameterSettings> settingsList) {
+        String[] nameArray = context.getResources().getStringArray(R.array.trouble_group_name);
+        List<TroubleGroup> groupList = new ArrayList<TroubleGroup>();
+        if (settingsList.size() == 9) {
+            for (int m = 0; m < 6; m++) {
+                if (m < 5) {
+                    TroubleGroup group = new TroubleGroup();
+                    group.setName(nameArray[m]);
+                    List<ParameterSettings> childList = new ArrayList<ParameterSettings>();
+                    childList.add(settingsList.get(m * 2));
+                    group.setTroubleChildList(childList);
+                    groupList.add(group);
+                } else {
+                    TroubleGroup group = new TroubleGroup();
+                    group.setName(nameArray[nameArray.length - 1]);
+                    List<ParameterSettings> childList = new ArrayList<ParameterSettings>();
+                    for (int n = 0; n < 4; n++) {
+                        childList.add(settingsList.get(n + 5));
+                    }
+                    group.setTroubleChildList(childList);
+                    groupList.add(group);
+                }
+            }
+        }
+        return groupList;
     }
 }

@@ -73,8 +73,8 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"/>
         </LinearLayout>
-        <!-- TABLE -->
-        <ListView
+        <!-- History listView -->
+        <ExpandableListView
                 android:layout_weight="1"
                 android:id="@+id/history_error_list"
                 android:layout_width="match_parent"
@@ -82,8 +82,9 @@
                 android:padding="@dimen/card_view_margin"
                 android:clipToPadding="false"
                 android:listSelector="@android:color/transparent"
-                android:dividerHeight="8dp"
+                android:dividerHeight="0dp"
                 android:scrollbarStyle="outsideOverlay"
+                android:childDivider="#00000000"
                 android:divider="@android:color/transparent"/>
     </LinearLayout>
     <LinearLayout

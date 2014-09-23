@@ -178,4 +178,10 @@ public class SearchBluetoothHandler extends BluetoothHandler {
         super.onDeviceChanged(message);
         isChangingDevice = true;
     }
+
+    @Override
+    public void onBluetoothConnectException(Message message) {
+        super.onBluetoothConnectException(message);
+        Toast.makeText(activity, "蓝牙连接异常", Toast.LENGTH_SHORT).show();
+    }
 }

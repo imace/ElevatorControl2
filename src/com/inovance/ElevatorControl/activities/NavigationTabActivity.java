@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -175,8 +176,6 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
      */
     private BluetoothDevice tempDevice;
 
-    private static final int REQUEST_BLUETOOTH_ENABLE = 1;
-
     /**
      * 通信次数
      */
@@ -270,6 +269,13 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
                                 currentTask = GET_SPECIAL_DEVICE_TYPE;
                                 specialDeviceCodeIndex++;
                             }
+                            Log.v(TAG, specialDeviceCodeIndex +"");
+                            Log.v(TAG, specialDeviceList.size() +"");
+                            Log.v(TAG, talkTime +"");
+                            if (specialDeviceCodeIndex == specialDeviceList.size() - 1 && talkTime >= MaxRetryTime) {
+                                isRunning = false;
+                                messageHandler.sendEmptyMessage(FailedRecogniseDevice);
+                            }
                         }
                         talkTime++;
                         pool.execute(NavigationTabActivity.this);
@@ -304,32 +310,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
         WebApi.getInstance().setOnFailureListener(this);
         WebApi.getInstance().getNormalDeviceList(this);
         WebApi.getInstance().getSpecialDeviceList(this);
-        if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
-            Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(intent, REQUEST_BLUETOOTH_ENABLE);
-        } else {
-            WebApi.getInstance().getSpecialDeviceCodeList(this,
-                    BluetoothAdapter.getDefaultAdapter().getAddress());
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_BLUETOOTH_ENABLE) {
-            if (resultCode == RESULT_OK) {
-                WebApi.getInstance().getSpecialDeviceCodeList(this,
-                        BluetoothAdapter.getDefaultAdapter().getAddress());
-            }
-            if (resultCode == RESULT_CANCELED) {
-                BluetoothTool.getInstance().kill();
-                Intent intent = new Intent(this, CheckAuthorizationActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                intent.putExtra("Exit", true);
-                startActivity(intent);
-                finish();
-            }
-        }
+        WebApi.getInstance().getSpecialDeviceCodeList(this, BluetoothAdapter.getDefaultAdapter().getAddress());
     }
 
     /**
@@ -844,7 +825,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
         Toast.makeText(this, throwable.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
     }
 
-    // ============================== Get Normal DeviceType Handler ====================== //
+    // ============================== Get Normal DeviceType Handler ================================================ //
 
     private class GetNormalDeviceTypeHandler extends BluetoothHandler {
 
@@ -873,14 +854,9 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
                 showNormalDeviceSelect((Integer) msg.obj);
             }
         }
-
-        @Override
-        public void onTalkError(Message msg) {
-            super.onTalkError(msg);
-        }
     }
 
-    // ============================== Get Special DeviceType Handler ====================== //
+    // ============================== Get Special DeviceType Handler =============================================== //
 
     private class GetSpecialDeviceTypeHandler extends BluetoothHandler {
 
@@ -943,11 +919,6 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
                     }
                 }
             }
-        }
-
-        @Override
-        public void onTalkError(Message msg) {
-            super.onTalkError(msg);
         }
     }
 

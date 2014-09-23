@@ -11,7 +11,7 @@ import org.json.JSONObject;
  * Date 14-4-7
  * Time 下午5:29
  */
-@Table(name="CHAT_MESSAGE")
+@Table(name = "CHAT_MESSAGE")
 public class ChatMessage {
 
     /**
@@ -95,6 +95,16 @@ public class ChatMessage {
      * 附件的 URL 地址
      */
     private String fileUrl;
+
+    /**
+     * 发送的文件扩展名
+     */
+    private String localFileExtension;
+
+    /**
+     * 本地缓存的接受的附件
+     */
+    private String localFileName;
 
     public ChatMessage() {
 
@@ -207,6 +217,22 @@ public class ChatMessage {
 
     public void setRemoteID(int remoteID) {
         this.remoteID = remoteID;
+    }
+
+    public String getLocalFileExtension() {
+        return localFileExtension;
+    }
+
+    public void setLocalFileExtension(String localFileExtension) {
+        this.localFileExtension = localFileExtension;
+    }
+
+    public String getLocalFileName() {
+        return localFileName;
+    }
+
+    public void setLocalFileName(String localFileName) {
+        this.localFileName = localFileName;
     }
 
 }

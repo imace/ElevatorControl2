@@ -11,6 +11,7 @@ import android.os.Message;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -41,6 +42,7 @@ import org.json.JSONObject;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -87,6 +89,8 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
     private static final int SYNC_TIME = 3000;
 
     private ChatMessage currentSelectMessage;
+
+    private long lastReadTimestamp;
 
     private Handler syncHandler = new Handler();
 
@@ -165,8 +169,13 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
         chatMessageAdapter.setOnMessageItemClickListener(new ChatMessageAdapter.OnMessageItemClickListener() {
             @Override
             public void onClick(View view, int position, ChatMessage message) {
-                if (message.getChatType() == ChatMessage.RECEIVE) {
-                    selectChatContentOperation(message);
+                switch (message.getChatType()) {
+                    case ChatMessage.SEND:
+                        // TODO open local save file
+                        break;
+                    case ChatMessage.RECEIVE:
+                        selectChatContentOperation(message);
+                        break;
                 }
             }
         });
@@ -180,6 +189,7 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
                 }
             }
         };
+        lastReadTimestamp = sharedPreferences.getLong(LastTimestampTag, 0);
     }
 
     @Override
@@ -200,6 +210,14 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
         WebApi.getInstance().removeListener();
         FileTransport.getInstance().removeListener();
         overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putLong(LastTimestampTag, lastReadTimestamp);
+        editor.commit();
     }
 
     @Override
@@ -225,12 +243,13 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
                     public void onClick(DialogInterface dialog, int position) {
                         switch (position) {
                             case 0:
-                                // TODO Cache downloaded file
-                                currentSelectMessage = message;
-                                FileTransport.getInstance().downloadFile(RemoteHelpActivity.this,
-                                        ApplicationConfig.DomainName
-                                                + ApplicationConfig.GetChatMessageFile
-                                                + message.getRemoteID());
+                                if (!openLocalCachedFile(message)) {
+                                    currentSelectMessage = message;
+                                    FileTransport.getInstance().downloadFile(RemoteHelpActivity.this,
+                                            ApplicationConfig.DomainName
+                                                    + ApplicationConfig.GetChatMessageFile
+                                                    + message.getRemoteID());
+                                }
                                 break;
                             case 1:
                                 phoneNumberEditText.setText(message.getFromNumber());
@@ -240,6 +259,30 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
                     }
                 }).setNegativeButton(R.string.dialog_btn_cancel, null);
         builder.create().show();
+    }
+
+    /**
+     * 打开本地缓存的文件
+     *
+     * @param message ChatMessage
+     * @return boolean
+     */
+    private boolean openLocalCachedFile(ChatMessage message) {
+        File filePath;
+        switch (message.getChatType()) {
+            case ChatMessage.SEND:
+                filePath = new File(getExternalCacheDir().getPath()
+                        + "/" + ApplicationConfig.SentFolder + "/"
+                        + message.getLocalFileName()
+                        + message.getLocalFileExtension());
+                return openReceivedFile(filePath);
+            case ChatMessage.RECEIVE:
+                filePath = new File(getExternalCacheDir().getPath()
+                        + "/" + ApplicationConfig.ReceiveFileFolder + "/"
+                        + message.getLocalFileName());
+                return openReceivedFile(filePath);
+        }
+        return false;
     }
 
     /**
@@ -306,16 +349,24 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
      * 发送现场视频
      */
     private void sendSceneVideo() {
-        Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-        startActivityForResult(intent, REQUEST_VIDEO_CAPTURE);
+        try {
+            Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+            startActivityForResult(intent, REQUEST_VIDEO_CAPTURE);
+        } catch (Exception e) {
+            Toast.makeText(this, R.string.not_found_video_program, Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**
      * 发送现场音频
      */
     private void sendSceneAudio() {
-        Intent intent = new Intent(MediaStore.Audio.Media.RECORD_SOUND_ACTION);
-        startActivityForResult(intent, REQUEST_AUDIO_CAPTURE);
+        try {
+            Intent intent = new Intent(MediaStore.Audio.Media.RECORD_SOUND_ACTION);
+            startActivityForResult(intent, REQUEST_AUDIO_CAPTURE);
+        } catch (Exception e) {
+            Toast.makeText(this, R.string.not_found_record_program, Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -515,6 +566,16 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
         });
     }
 
+    private Uri getSentFilePathUri() {
+        String fileName = UUID.randomUUID().toString();
+        File filePath = new File(getApplicationContext().getExternalCacheDir().getPath()
+                + "/"
+                + ApplicationConfig.SentFolder
+                + "/"
+                + fileName);
+        return Uri.fromFile(filePath);
+    }
+
     private String getPhoneNumber() {
         User user = ParameterUpdateTool.getInstance().getCurrentUser();
         if (user != null) {
@@ -531,16 +592,18 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
                 try {
                     JSONArray jsonArray = new JSONArray(responseString);
                     int size = jsonArray.length();
-                    for (int i = 0; i < size; i++) {
-                        JSONObject object = jsonArray.getJSONObject(i);
-                        ChatMessage message = new ChatMessage(object);
-                        ChatMessageDao.save(RemoteHelpActivity.this, message);
+                    if (size > 0) {
+                        long lastTime = 0;
+                        for (int i = 0; i < size; i++) {
+                            JSONObject object = jsonArray.getJSONObject(i);
+                            ChatMessage message = new ChatMessage(object);
+                            ChatMessageDao.save(RemoteHelpActivity.this, message);
+                            lastTime = Long.parseLong(message.getTimeString());
+                        }
+                        // 保存最近读取的截止时间戳
+                        lastReadTimestamp = lastTime;
+                        refreshHandler.sendEmptyMessage(0);
                     }
-                    refreshHandler.sendEmptyMessage(0);
-                    // 保存最近读取的截止时间戳
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putLong(LastTimestampTag, System.currentTimeMillis() / 1000L);
-                    editor.commit();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -577,7 +640,21 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
      * @param filePath File path
      */
     @Override
-    public void onDownloadComplete(File file, String contentType) {
+    public void onDownloadComplete(File file, String fileName, String contentType) {
+        if (currentSelectMessage != null) {
+            currentSelectMessage.setLocalFileName(fileName);
+            ChatMessageDao.update(this, currentSelectMessage);
+        }
+        openReceivedFile(file);
+    }
+
+    /**
+     * 打开文件
+     *
+     * @param file File
+     * @return boolean
+     */
+    private boolean openReceivedFile(File file) {
         MimeTypeMap mime = MimeTypeMap.getSingleton();
         int index = file.getName().lastIndexOf('.') + 1;
         String extension = file.getName().substring(index).toLowerCase();
@@ -597,15 +674,21 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
                 intent.putExtra("profileName", "Remote profile");
                 intent.putExtra("profileContent", stringBuilder.toString());
                 startActivity(intent);
+                return true;
             } catch (FileNotFoundException e) {
-                e.printStackTrace();
+                return false;
             } catch (IOException e) {
-                e.printStackTrace();
+                return false;
             }
         } else {
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setDataAndType(Uri.fromFile(file), type);
-            startActivity(intent);
+            try {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setDataAndType(Uri.fromFile(file), type);
+                startActivity(intent);
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
         }
     }
 
@@ -616,8 +699,6 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
 
     @Override
     public void run() {
-        WebApi.getInstance().getChatMessage(this,
-                getPhoneNumber(),
-                sharedPreferences.getLong(LastTimestampTag, 0));
+        WebApi.getInstance().getChatMessage(this, getPhoneNumber(), lastReadTimestamp);
     }
 }

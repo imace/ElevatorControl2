@@ -6,16 +6,17 @@ import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.ListView;
+import android.widget.BaseExpandableListAdapter;
+import android.widget.ExpandableListView;
+import android.widget.ImageView;
 import android.widget.TextView;
 import com.inovance.bluetoothtool.BluetoothHandler;
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.activities.TroubleAnalyzeActivity;
-import com.inovance.elevatorcontrol.models.HistoryError;
+import com.inovance.elevatorcontrol.factory.ParameterFactory;
 import com.inovance.elevatorcontrol.models.ObjectListHolder;
 import com.inovance.elevatorcontrol.models.ParameterSettings;
-import com.mobsandgeeks.adapters.InstantAdapter;
+import com.inovance.elevatorcontrol.models.TroubleGroup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,15 +29,15 @@ import java.util.List;
  */
 public class HistoryErrorHandler extends BluetoothHandler {
 
-    private List<HistoryError> errorList;
-
     private List<ParameterSettings> parameterSettingsList;
+
+    private List<TroubleGroup> troubleGroupList;
 
     public int sendCount;
 
     public int receiveCount;
 
-    private InstantAdapter instantAdapter;
+    private ExpandableAdapter adapter;
 
     public HistoryErrorHandler(Activity activity) {
         super(activity);
@@ -47,7 +48,7 @@ public class HistoryErrorHandler extends BluetoothHandler {
     public void onMultiTalkBegin(Message msg) {
         super.onMultiTalkBegin(msg);
         receiveCount = 0;
-        errorList = new ArrayList<HistoryError>();
+        troubleGroupList = new ArrayList<TroubleGroup>();
         parameterSettingsList = new ArrayList<ParameterSettings>();
     }
 
@@ -60,81 +61,24 @@ public class HistoryErrorHandler extends BluetoothHandler {
             View errorView = pager.findViewById(R.id.history_error_view);
             View noErrorView = pager.findViewById(R.id.history_no_error_view);
             View noDeviceView = pager.findViewById(R.id.history_no_device_view);
-            ListView listView = (ListView) pager.findViewById(R.id.history_error_list);
+            troubleGroupList = ParameterFactory.getParameter().getTroubleGroupList(activity, parameterSettingsList);
+            ExpandableListView listView = (ExpandableListView) pager.findViewById(R.id.history_error_list);
             if (loadView != null && errorView != null && noErrorView != null
                     && listView != null && noDeviceView != null) {
-                if (instantAdapter == null) {
-                    instantAdapter = new InstantAdapter<ParameterSettings>(activity,
-                            R.layout.list_parameter_group_item,
-                            ParameterSettings.class,
-                            parameterSettingsList);
-                    listView.setAdapter(instantAdapter);
+                if (adapter == null) {
+                    adapter = new ExpandableAdapter();
+                    listView.setAdapter(adapter);
                 } else {
-                    instantAdapter.notifyDataSetChanged();
+                    adapter.notifyDataSetChanged();
                 }
                 loadView.setVisibility(View.GONE);
                 noErrorView.setVisibility(View.GONE);
                 noDeviceView.setVisibility(View.GONE);
                 errorView.setVisibility(View.VISIBLE);
             }
-            /*
-            int size = parameterSettingsList.size();
-            if (size % 4 == 0) {
-                for (int index = 0; index < size / 4; index++) {
-                    byte[] data00 = parameterSettingsList.get(index * 4).getReceived();
-                    byte[] data01 = parameterSettingsList.get(index * 4 + 1).getReceived();
-                    byte[] data02 = parameterSettingsList.get(index * 4 + 2).getReceived();
-                    byte[] data03 = parameterSettingsList.get(index * 4 + 3).getReceived();
-                    byte[] errorData = new byte[]{
-                            data00[4], data00[5],
-                            data01[4], data01[5],
-                            data02[4], data02[5],
-                            data03[4], data03[5]
-                    };
-                    HistoryError historyError = new HistoryError();
-                    historyError.setData(errorData);
-                    if (!historyError.isNoError()) {
-                        errorList.add(historyError);
-                    }
-                }
-                ViewPager pager = ((TroubleAnalyzeActivity) activity).pager;
-                View loadView = pager.findViewById(R.id.history_load_view);
-                View errorView = pager.findViewById(R.id.history_error_view);
-                View noErrorView = pager.findViewById(R.id.history_no_error_view);
-                View noDeviceView = pager.findViewById(R.id.history_no_device_view);
-                ListView listView = (ListView) pager.findViewById(R.id.history_error_list);
-                if (loadView != null && errorView != null && noErrorView != null
-                        && listView != null && noDeviceView != null) {
-                    if (errorList.size() > 0) {
-                        if (listView.getOnItemClickListener() == null) {
-                            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                                @Override
-                                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                                    final HistoryError historyError = errorList.get(i);
-                                    AlertDialog.Builder builder = CustomDialog.historyErrorDialog(historyError,
-                                            HistoryErrorHandler.this.activity);
-                                    AlertDialog dialog = builder.create();
-                                    dialog.show();
-                                }
-                            });
-                        }
-                        HistoryAdapter adapter = new HistoryAdapter();
-                        listView.setAdapter(adapter);
-                        loadView.setVisibility(View.GONE);
-                        noErrorView.setVisibility(View.GONE);
-                        noDeviceView.setVisibility(View.GONE);
-                        errorView.setVisibility(View.VISIBLE);
-                    } else {
-                        loadView.setVisibility(View.GONE);
-                        noDeviceView.setVisibility(View.GONE);
-                        errorView.setVisibility(View.GONE);
-                        noErrorView.setVisibility(View.VISIBLE);
-                    }
-                }
-            }
-            */
         }
         ((TroubleAnalyzeActivity) activity).isSyncing = false;
+        ((TroubleAnalyzeActivity) activity).hasGetHistoryTrouble = true;
     }
 
     @Override
@@ -146,60 +90,110 @@ public class HistoryErrorHandler extends BluetoothHandler {
         }
     }
 
-    @Override
-    public void onTalkError(Message msg) {
-        super.onTalkError(msg);
-    }
+    // ================================ History List View Expand Adapter ========================================= //
 
-    // ================================ History List View Adapter =========================================
-
-    /**
-     * History List View Adapter
-     */
-    private class HistoryAdapter extends BaseAdapter {
+    private class ExpandableAdapter extends BaseExpandableListAdapter {
 
         @Override
-        public int getCount() {
-            return HistoryErrorHandler.this.errorList.size();
+        public int getGroupCount() {
+            return troubleGroupList.size();
         }
 
         @Override
-        public HistoryError getItem(int i) {
-            return HistoryErrorHandler.this.errorList.get(i);
+        public int getChildrenCount(int groupID) {
+            return troubleGroupList.get(groupID).getTroubleChildList().size();
         }
 
         @Override
-        public long getItemId(int i) {
-            return 0;
+        public TroubleGroup getGroup(int groupID) {
+            return troubleGroupList.get(groupID);
         }
 
         @Override
-        public View getView(int i, View convertView, ViewGroup viewGroup) {
-            ViewHolder holder;
-            LayoutInflater mInflater = LayoutInflater.from(HistoryErrorHandler.this.activity);
+        public ParameterSettings getChild(int groupID, int childID) {
+            return getGroup(groupID).getTroubleChildList().get(childID);
+        }
+
+        @Override
+        public long getGroupId(int groupID) {
+            return groupID;
+        }
+
+        @Override
+        public long getChildId(int groupID, int childID) {
+            return childID;
+        }
+
+        @Override
+        public boolean hasStableIds() {
+            return false;
+        }
+
+        @Override
+        public View getGroupView(int groupID, boolean isExpanded, View convertView, ViewGroup viewGroup) {
+            TroubleGroup group = getGroup(groupID);
+            GroupViewHolder holder;
+            LayoutInflater mInflater = LayoutInflater.from(activity);
             if (convertView == null) {
-                convertView = mInflater.inflate(R.layout.history_error_item, null);
-                holder = new ViewHolder();
-                holder.errorCode = (TextView) convertView.findViewById(R.id.history_error_code);
-                holder.errorFloor = (TextView) convertView.findViewById(R.id.history_error_floor);
-                holder.errorDate = (TextView) convertView.findViewById(R.id.history_error_date);
+                convertView = mInflater.inflate(R.layout.history_error_group_item, viewGroup, false);
+                holder = new GroupViewHolder();
+                holder.title = (TextView) convertView.findViewById(R.id.group_title);
+                holder.indicator = (ImageView) convertView.findViewById(R.id.indicator);
                 convertView.setTag(holder);
             } else {
-                holder = (ViewHolder) convertView.getTag();
+                holder = (GroupViewHolder) convertView.getTag();
             }
-            HistoryError historyError = getItem(i);
-            holder.errorCode.setText(historyError.getErrorCode());
-            holder.errorFloor.setText(historyError.getErrorFloor());
-            holder.errorDate.setText(historyError.getErrorDateTime());
+            holder.title.setText(group.getName());
+            if (isExpanded) {
+                holder.indicator.setImageResource(R.drawable.ic_expand);
+            } else {
+                holder.indicator.setImageResource(R.drawable.ic_collapse);
+            }
             return convertView;
         }
 
-        private class ViewHolder {
-            TextView errorCode;
-            TextView errorFloor;
-            TextView errorDate;
+        @Override
+        public View getChildView(int groupID, int childID, boolean b, View convertView, ViewGroup viewGroup) {
+            ParameterSettings child = getChild(groupID, childID);
+            ChildViewHolder holder;
+            LayoutInflater mInflater = LayoutInflater.from(activity);
+            if (convertView == null) {
+                convertView = mInflater.inflate(R.layout.history_error_child_item, viewGroup, false);
+                holder = new ChildViewHolder();
+                holder.codeText = (TextView) convertView.findViewById(R.id.code_text);
+                holder.nameText = (TextView) convertView.findViewById(R.id.name_text);
+                holder.valueText = (TextView) convertView.findViewById(R.id.value_text);
+                convertView.setTag(holder);
+            } else {
+                holder = (ChildViewHolder) convertView.getTag();
+            }
+            holder.codeText.setText(child.getCodeText());
+            holder.nameText.setText(child.getName());
+            holder.valueText.setText(child.getFinalValue());
+            return convertView;
         }
 
+        @Override
+        public boolean isChildSelectable(int i, int i2) {
+            return false;
+        }
+
+        /**
+         * Group item view holder
+         */
+        private class GroupViewHolder {
+            TextView title;
+            ImageView indicator;
+        }
+
+        /**
+         * Child item view holder
+         */
+        private class ChildViewHolder {
+            TextView codeText;
+            TextView nameText;
+            TextView valueText;
+        }
     }
 
 }

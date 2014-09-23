@@ -157,6 +157,24 @@
     <string name="history_error_date">故障时间</string>
     <string name="no_history_error_text">无历史故障</string>
 
+    <!-- 历史故障组名 -->
+    <string-array name="trouble_group_name">
+        <item>第1次故障信息</item>
+        <item>第2次故障信息</item>
+        <item>第3次故障信息</item>
+        <item>第4次故障信息</item>
+        <item>第5次故障信息</item>
+        <item>第6次故障信息</item>
+        <item>第7次故障信息</item>
+        <item>第8次故障信息</item>
+        <item>第9次故障信息</item>
+        <item>第10次故障信息</item>
+        <item>最后一次故障信息</item>
+    </string-array>
+
+    <string name="not_found_record_program">未发现录音程序</string>
+    <string name="not_found_video_program">未发现录像程序</string>
+
     <!-- 故障查询 -->
     <string name="search_hint_text">输入故障码查询</string>
     <string name="no_error_code_result">未查询到结果</string>
@@ -291,6 +309,8 @@
     <string name="firmware_expired_message">程序超过使用期限</string>
 
     <string name="firmware_name_text">固件名称</string>
+    <string name="firmware_vendor">设备厂家</string>
+    <string name="device_firmware_type">固件类型</string>
     <string name="create_date_text">提取时间</string>
     <string name="expire_date_text">过期时间</string>
     <string name="residue_time_text">剩余次数</string>
@@ -350,7 +370,7 @@
 
     <!-- 更新应用程序 -->
     <string name="confirm_update_title">更新软件</string>
-    <string name="last_version_text">检测到最新版本号: </string>
+    <string name="last_version_text">检测到最新版本号:</string>
     <string name="download_application_title">下载更新包中</string>
 
     <!-- 申请权限 -->
@@ -389,6 +409,7 @@
     <string name="select_receiver_title">选择接收方</string>
     <string name="connect_server_timeout_text">连接服务器超时</string>
     <string name="chat_message_send_failed_text">消息发送失败</string>
+    <string name="local_file_not_existed">本地文件已被删除</string>
 
     <!-- 固件烧录错误信息 -->
     <string-array name="burn_error_code_array">

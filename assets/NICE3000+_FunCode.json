@@ -1,9 +1,12 @@
 [
     {
+        "ID": 0,
         "GROUPTEXT": "F0基本参数",
         "GROUPID": "100",
         "PARAMETERSETTINGS": [
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F0-00",
                 "NAME": "控制方式",
                 "PRODUCTID": "131",
@@ -17,6 +20,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F0-01",
                 "NAME": "命令源选择",
                 "PRODUCTID": "132",
@@ -30,6 +35,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F0-02",
                 "NAME": "面板运行速度",
                 "PRODUCTID": "133",
@@ -37,38 +44,44 @@
                 "CHILDID": "",
                 "SCOPE": "0.050~F0-04",
                 "DEFAULTVALUE": "0.05",
-                "SCALE": "0.0010",
+                "SCALE": "0.001",
                 "UNIT": "m/s",
                 "TYPE": "20",
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F0-03",
                 "NAME": "最大速度",
                 "PRODUCTID": "134",
                 "DESCRIPTION": "",
                 "CHILDID": "",
                 "SCOPE": "0.250~F0-04",
-                "DEFAULTVALUE": "1.60",
-                "SCALE": "0.0010",
+                "DEFAULTVALUE": "1.6",
+                "SCALE": "0.001",
                 "UNIT": "m/s",
                 "TYPE": "20",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F0-04",
                 "NAME": "电梯额定速度",
                 "PRODUCTID": "135",
                 "DESCRIPTION": "",
                 "CHILDID": "",
                 "SCOPE": "0.250~4.000",
-                "DEFAULTVALUE": "1.60",
-                "SCALE": "0.0010",
+                "DEFAULTVALUE": "1.6",
+                "SCALE": "0.001",
                 "UNIT": "m/s",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F0-05",
                 "NAME": "电梯额定载重",
                 "PRODUCTID": "437",
@@ -82,6 +95,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F0-06",
                 "NAME": "最大频率",
                 "PRODUCTID": "5541",
@@ -95,6 +110,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F0-07",
                 "NAME": "载波频率",
                 "PRODUCTID": "138",
@@ -102,7 +119,7 @@
                 "CHILDID": "",
                 "SCOPE": "0.5~16.0",
                 "DEFAULTVALUE": "6",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "kHz",
                 "TYPE": "0",
                 "MODE": "2"
@@ -110,10 +127,13 @@
         ]
     },
     {
+        "ID": 0,
         "GROUPTEXT": "F1电机参数",
         "GROUPID": "101",
         "PARAMETERSETTINGS": [
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-00",
                 "NAME": "编码器类型选择",
                 "PRODUCTID": "5542",
@@ -127,6 +147,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-01",
                 "NAME": "额定功率",
                 "PRODUCTID": "140",
@@ -134,12 +156,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.7~75.0",
                 "DEFAULTVALUE": "11",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "kw",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-02",
                 "NAME": "额定电压",
                 "PRODUCTID": "141",
@@ -153,19 +177,23 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-03",
                 "NAME": "额定电流",
                 "PRODUCTID": "142",
                 "DESCRIPTION": "",
                 "CHILDID": "",
                 "SCOPE": "0.00~655.00",
-                "DEFAULTVALUE": "21.80",
+                "DEFAULTVALUE": "21.8",
                 "SCALE": "0.01",
                 "UNIT": "A",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-04",
                 "NAME": "额定频率",
                 "PRODUCTID": "143",
@@ -179,6 +207,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-05",
                 "NAME": "额定转速",
                 "PRODUCTID": "144",
@@ -192,6 +222,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-06",
                 "NAME": "初始角度",
                 "PRODUCTID": "5264",
@@ -199,12 +231,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.0~359.9",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-07",
                 "NAME": "断电角度",
                 "PRODUCTID": "5587",
@@ -212,12 +246,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.0~359.9",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-08",
                 "NAME": "接线方式",
                 "PRODUCTID": "639",
@@ -231,6 +267,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-09",
                 "NAME": "ADC采用延迟",
                 "PRODUCTID": "5588",
@@ -238,12 +276,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.0~359.9",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-10",
                 "NAME": "DSP故障屏蔽",
                 "PRODUCTID": "5705",
@@ -257,6 +297,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-11",
                 "NAME": "调谐选择",
                 "PRODUCTID": "150",
@@ -270,6 +312,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-12",
                 "NAME": "编码器脉冲数",
                 "PRODUCTID": "635",
@@ -283,6 +327,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-13",
                 "NAME": "编码器断线检测时间",
                 "PRODUCTID": "5589",
@@ -290,12 +336,14 @@
                 "CHILDID": "",
                 "SCOPE": "0~10.0",
                 "DEFAULTVALUE": "1",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "S",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-14",
                 "NAME": "定子电阻",
                 "PRODUCTID": "145",
@@ -303,12 +351,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.000~30.000",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.0010",
+                "SCALE": "0.001",
                 "UNIT": "Ω",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-15",
                 "NAME": "转子电阻",
                 "PRODUCTID": "146",
@@ -316,12 +366,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.000~30.000",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.0010",
+                "SCALE": "0.001",
                 "UNIT": "Ω",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-16",
                 "NAME": "漏感抗",
                 "PRODUCTID": "147",
@@ -335,6 +387,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-17",
                 "NAME": "互感抗",
                 "PRODUCTID": "148",
@@ -342,12 +396,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.1~3000.0",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "mH",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-18",
                 "NAME": "空载电流",
                 "PRODUCTID": "149",
@@ -361,6 +417,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-19",
                 "NAME": "Q轴电感(转矩)",
                 "PRODUCTID": "5590",
@@ -374,6 +432,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-20",
                 "NAME": "D轴电感(励磁)",
                 "PRODUCTID": "5591",
@@ -387,6 +447,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-21",
                 "NAME": "反电动势系数",
                 "PRODUCTID": "155",
@@ -400,6 +462,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-22",
                 "NAME": "驱动程序选择1",
                 "PRODUCTID": "474",
@@ -413,6 +477,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-23",
                 "NAME": "驱动程序选择2",
                 "PRODUCTID": "475",
@@ -426,6 +492,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-24",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -439,6 +507,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F1-25",
                 "NAME": "电动机类型",
                 "PRODUCTID": "156",
@@ -454,10 +524,13 @@
         ]
     },
     {
+        "ID": 0,
         "GROUPTEXT": "F2矢量控制参数",
         "GROUPID": "102",
         "PARAMETERSETTINGS": [
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-00",
                 "NAME": "速度环KP1",
                 "PRODUCTID": "157",
@@ -471,19 +544,23 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-01",
                 "NAME": "速度环TI1",
                 "PRODUCTID": "158",
                 "DESCRIPTION": "",
                 "CHILDID": "",
                 "SCOPE": "0.01~10.00",
-                "DEFAULTVALUE": "0.60",
+                "DEFAULTVALUE": "0.6",
                 "SCALE": "0.01",
                 "UNIT": "S",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-02",
                 "NAME": "切换频率1",
                 "PRODUCTID": "159",
@@ -497,6 +574,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-03",
                 "NAME": "速度环KP2",
                 "PRODUCTID": "160",
@@ -510,19 +589,23 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-04",
                 "NAME": "速度环TI2",
                 "PRODUCTID": "161",
                 "DESCRIPTION": "",
                 "CHILDID": "",
                 "SCOPE": "0.01~10.00",
-                "DEFAULTVALUE": "0.80",
+                "DEFAULTVALUE": "0.8",
                 "SCALE": "0.01",
                 "UNIT": "S",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-05",
                 "NAME": "切换频率2",
                 "PRODUCTID": "162",
@@ -536,6 +619,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-06",
                 "NAME": "电流比例增益",
                 "PRODUCTID": "5566",
@@ -549,6 +634,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-07",
                 "NAME": "电流积分增益",
                 "PRODUCTID": "5567",
@@ -562,6 +649,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-08",
                 "NAME": "转矩上限",
                 "PRODUCTID": "165",
@@ -569,12 +658,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.0~200.0",
                 "DEFAULTVALUE": "150",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "%",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-09",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -588,6 +679,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-10",
                 "NAME": "电梯运行方向",
                 "PRODUCTID": "1914",
@@ -601,6 +694,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-11",
                 "NAME": "零伺服电流系数",
                 "PRODUCTID": "5372",
@@ -608,38 +703,44 @@
                 "CHILDID": "",
                 "SCOPE": "2.0~50.0",
                 "DEFAULTVALUE": "15",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-12",
                 "NAME": "零伺服速度环KP",
                 "PRODUCTID": "169",
                 "DESCRIPTION": "",
                 "CHILDID": "",
                 "SCOPE": "0.00~2.00",
-                "DEFAULTVALUE": "0.50",
+                "DEFAULTVALUE": "0.5",
                 "SCALE": "0.01",
                 "UNIT": "",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-13",
                 "NAME": "零伺服速度环TI",
                 "PRODUCTID": "2082",
                 "DESCRIPTION": "",
                 "CHILDID": "",
                 "SCOPE": "0.00~2.00",
-                "DEFAULTVALUE": "0.60",
+                "DEFAULTVALUE": "0.6",
                 "SCALE": "0.01",
                 "UNIT": "",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-14",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -653,6 +754,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-15",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -666,6 +769,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-16",
                 "NAME": "力矩加速时间",
                 "PRODUCTID": "175",
@@ -679,6 +784,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-17",
                 "NAME": "力矩减速时间",
                 "PRODUCTID": "176",
@@ -692,6 +799,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-18",
                 "NAME": "启动加速时间",
                 "PRODUCTID": "1604",
@@ -699,12 +808,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.000~1.500",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.0010",
+                "SCALE": "0.001",
                 "UNIT": "s",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-19",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -718,6 +829,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-20",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -731,6 +844,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-21",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -744,6 +859,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-22",
                 "NAME": "查看字地址",
                 "PRODUCTID": "2154",
@@ -757,6 +874,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-23",
                 "NAME": "查看字数据",
                 "PRODUCTID": "2155",
@@ -770,6 +889,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-24",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -783,6 +904,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-25",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -796,6 +919,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-26",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -809,6 +934,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-27",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -822,6 +949,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-28",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -835,6 +964,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-29",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -848,6 +979,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-30",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -861,6 +994,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-31",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -874,6 +1009,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-32",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -887,6 +1024,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-33",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -900,6 +1039,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-34",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -913,6 +1054,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-35",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -926,6 +1069,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-36",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -939,6 +1084,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-37",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -952,6 +1099,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-38",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -965,6 +1114,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-39",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -978,6 +1129,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F2-40",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -993,10 +1146,13 @@
         ]
     },
     {
+        "ID": 0,
         "GROUPTEXT": "F3运行控制参数",
         "GROUPID": "103",
         "PARAMETERSETTINGS": [
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F3-00",
                 "NAME": "启动速度",
                 "PRODUCTID": "178",
@@ -1004,12 +1160,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.000~0.030",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.0010",
+                "SCALE": "0.001",
                 "UNIT": "m/s",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F3-01",
                 "NAME": "启动保持时间",
                 "PRODUCTID": "5592",
@@ -1017,103 +1175,119 @@
                 "CHILDID": "",
                 "SCOPE": "0.000~0.500",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.0010",
+                "SCALE": "0.001",
                 "UNIT": "s",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F3-02",
                 "NAME": "加速度",
                 "PRODUCTID": "180",
                 "DESCRIPTION": "",
                 "CHILDID": "",
                 "SCOPE": "0.200~2.000",
-                "DEFAULTVALUE": "0.60",
-                "SCALE": "0.0010",
+                "DEFAULTVALUE": "0.6",
+                "SCALE": "0.001",
                 "UNIT": "m/s2",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F3-03",
                 "NAME": "加速开始段",
                 "PRODUCTID": "181",
                 "DESCRIPTION": "",
                 "CHILDID": "",
                 "SCOPE": "0.300~4.000",
-                "DEFAULTVALUE": "2.50",
-                "SCALE": "0.0010",
+                "DEFAULTVALUE": "2.5",
+                "SCALE": "0.001",
                 "UNIT": "s",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F3-04",
                 "NAME": "加速结束段",
                 "PRODUCTID": "182",
                 "DESCRIPTION": "",
                 "CHILDID": "",
                 "SCOPE": "0.300~4.000",
-                "DEFAULTVALUE": "2.50",
-                "SCALE": "0.0010",
+                "DEFAULTVALUE": "2.5",
+                "SCALE": "0.001",
                 "UNIT": "s",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F3-05",
                 "NAME": "减速度",
                 "PRODUCTID": "183",
                 "DESCRIPTION": "",
                 "CHILDID": "",
                 "SCOPE": "0.200~2.000",
-                "DEFAULTVALUE": "0.60",
-                "SCALE": "0.0010",
+                "DEFAULTVALUE": "0.6",
+                "SCALE": "0.001",
                 "UNIT": "m/s2",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F3-06",
                 "NAME": "减速开始段",
                 "PRODUCTID": "184",
                 "DESCRIPTION": "",
                 "CHILDID": "",
                 "SCOPE": "0.300~4.000",
-                "DEFAULTVALUE": "2.50",
-                "SCALE": "0.0010",
+                "DEFAULTVALUE": "2.5",
+                "SCALE": "0.001",
                 "UNIT": "s",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F3-07",
                 "NAME": "减速结束段",
                 "PRODUCTID": "185",
                 "DESCRIPTION": "",
                 "CHILDID": "",
                 "SCOPE": "0.300~4.000",
-                "DEFAULTVALUE": "2.50",
-                "SCALE": "0.0010",
+                "DEFAULTVALUE": "2.5",
+                "SCALE": "0.001",
                 "UNIT": "s",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F3-08",
                 "NAME": "特殊减速度",
                 "PRODUCTID": "186",
                 "DESCRIPTION": "",
                 "CHILDID": "",
                 "SCOPE": "0.500~2.000",
-                "DEFAULTVALUE": "0.90",
-                "SCALE": "0.0010",
+                "DEFAULTVALUE": "0.9",
+                "SCALE": "0.001",
                 "UNIT": "m/s2",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F3-09",
                 "NAME": "停车距离裕量",
                 "PRODUCTID": "187",
@@ -1121,12 +1295,14 @@
                 "CHILDID": "",
                 "SCOPE": "0~90.0",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "mm",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F3-10",
                 "NAME": "再平层速度",
                 "PRODUCTID": "188",
@@ -1134,12 +1310,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.020~0.080",
                 "DEFAULTVALUE": "0.04",
-                "SCALE": "0.0010",
+                "SCALE": "0.001",
                 "UNIT": "m/s",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F3-11",
                 "NAME": "检修运行速度",
                 "PRODUCTID": "5706",
@@ -1147,12 +1325,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.100~0.630",
                 "DEFAULTVALUE": "0.25",
-                "SCALE": "0.0010",
+                "SCALE": "0.001",
                 "UNIT": "m/s",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F3-12",
                 "NAME": "上1级强迫减速开关位置",
                 "PRODUCTID": "5593",
@@ -1166,6 +1346,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F3-13",
                 "NAME": "下1级强迫减速开关位置",
                 "PRODUCTID": "5594",
@@ -1179,6 +1361,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F3-14",
                 "NAME": "上2级强迫减速开关位置",
                 "PRODUCTID": "5595",
@@ -1192,6 +1376,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F3-15",
                 "NAME": "下2级强迫减速开关位置",
                 "PRODUCTID": "5596",
@@ -1205,6 +1391,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F3-16",
                 "NAME": "上3级强迫减速开关位置",
                 "PRODUCTID": "5597",
@@ -1218,6 +1406,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F3-17",
                 "NAME": "下3级强迫减速开关位置",
                 "PRODUCTID": "5598",
@@ -1231,71 +1421,83 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F3-18",
                 "NAME": "开始零速输出时间",
                 "PRODUCTID": "5599",
                 "DESCRIPTION": "",
                 "CHILDID": "",
                 "SCOPE": "0.000~1.000",
-                "DEFAULTVALUE": "0.20",
-                "SCALE": "0.0010",
+                "DEFAULTVALUE": "0.2",
+                "SCALE": "0.001",
                 "UNIT": "s",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F3-19",
                 "NAME": "曲线运行延迟时间",
                 "PRODUCTID": "5600",
                 "DESCRIPTION": "",
                 "CHILDID": "",
                 "SCOPE": "0.000~1.000",
-                "DEFAULTVALUE": "0.60",
-                "SCALE": "0.0010",
+                "DEFAULTVALUE": "0.6",
+                "SCALE": "0.001",
                 "UNIT": "s",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F3-20",
                 "NAME": "结束运行延迟时间",
                 "PRODUCTID": "5601",
                 "DESCRIPTION": "",
                 "CHILDID": "",
                 "SCOPE": "0.000~1.000",
-                "DEFAULTVALUE": "0.30",
-                "SCALE": "0.0010",
+                "DEFAULTVALUE": "0.3",
+                "SCALE": "0.001",
                 "UNIT": "s",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F3-21",
                 "NAME": "低速返平层速度",
                 "PRODUCTID": "5602",
                 "DESCRIPTION": "",
                 "CHILDID": "",
                 "SCOPE": "0.080~F3-11",
-                "DEFAULTVALUE": "0.10",
-                "SCALE": "0.0010",
+                "DEFAULTVALUE": "0.1",
+                "SCALE": "0.001",
                 "UNIT": "m/s",
                 "TYPE": "20",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F3-22",
                 "NAME": "救援加速度",
                 "PRODUCTID": "194",
                 "DESCRIPTION": "",
                 "CHILDID": "",
                 "SCOPE": "0.100~1.300",
-                "DEFAULTVALUE": "0.30",
-                "SCALE": "0.0010",
+                "DEFAULTVALUE": "0.3",
+                "SCALE": "0.001",
                 "UNIT": "m/s2",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F3-23",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -1309,6 +1511,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F3-24",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -1324,10 +1528,13 @@
         ]
     },
     {
+        "ID": 0,
         "GROUPTEXT": "F4楼层参数",
         "GROUPID": "104",
         "PARAMETERSETTINGS": [
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-00",
                 "NAME": "平层调整",
                 "PRODUCTID": "200",
@@ -1341,6 +1548,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-01",
                 "NAME": "当前楼层",
                 "PRODUCTID": "201",
@@ -1354,6 +1563,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-02",
                 "NAME": "当前位置高位",
                 "PRODUCTID": "202",
@@ -1367,6 +1578,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-03",
                 "NAME": "当前位置低位",
                 "PRODUCTID": "203",
@@ -1380,6 +1593,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-04",
                 "NAME": "插板长度1",
                 "PRODUCTID": "204",
@@ -1393,6 +1608,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-05",
                 "NAME": "插板长度2",
                 "PRODUCTID": "205",
@@ -1406,6 +1623,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-06",
                 "NAME": "层高1高位",
                 "PRODUCTID": "210",
@@ -1419,6 +1638,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-07",
                 "NAME": "层高1低位",
                 "PRODUCTID": "211",
@@ -1432,6 +1653,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-08",
                 "NAME": "层高2高位",
                 "PRODUCTID": "212",
@@ -1445,6 +1668,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-09",
                 "NAME": "层高2低位",
                 "PRODUCTID": "213",
@@ -1458,6 +1683,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-10",
                 "NAME": "层高3高位",
                 "PRODUCTID": "214",
@@ -1471,6 +1698,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-100",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -1484,6 +1713,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-101",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -1497,6 +1728,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-11",
                 "NAME": "层高3低位",
                 "PRODUCTID": "215",
@@ -1510,6 +1743,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-12",
                 "NAME": "层高4高位",
                 "PRODUCTID": "216",
@@ -1523,6 +1758,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-13",
                 "NAME": "层高4低位",
                 "PRODUCTID": "217",
@@ -1536,6 +1773,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-14",
                 "NAME": "层高5高位",
                 "PRODUCTID": "218",
@@ -1549,6 +1788,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-15",
                 "NAME": "层高5低位",
                 "PRODUCTID": "219",
@@ -1562,6 +1803,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-16",
                 "NAME": "层高6高位",
                 "PRODUCTID": "220",
@@ -1575,6 +1818,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-17",
                 "NAME": "层高6低位",
                 "PRODUCTID": "221",
@@ -1588,6 +1833,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-18",
                 "NAME": "层高7高位",
                 "PRODUCTID": "222",
@@ -1601,6 +1848,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-19",
                 "NAME": "层高7低位",
                 "PRODUCTID": "223",
@@ -1614,6 +1863,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-20",
                 "NAME": "层高8高位",
                 "PRODUCTID": "224",
@@ -1627,6 +1878,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-21",
                 "NAME": "层高8低位",
                 "PRODUCTID": "225",
@@ -1640,6 +1893,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-22",
                 "NAME": "层高9高位",
                 "PRODUCTID": "226",
@@ -1653,6 +1908,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-23",
                 "NAME": "层高9低位",
                 "PRODUCTID": "227",
@@ -1666,6 +1923,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-24",
                 "NAME": "层高10高位",
                 "PRODUCTID": "228",
@@ -1679,6 +1938,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-25",
                 "NAME": "层高10低位",
                 "PRODUCTID": "229",
@@ -1692,6 +1953,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-26",
                 "NAME": "层高11高位",
                 "PRODUCTID": "230",
@@ -1705,6 +1968,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-27",
                 "NAME": "层高11低位",
                 "PRODUCTID": "231",
@@ -1718,6 +1983,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-28",
                 "NAME": "层高12高位",
                 "PRODUCTID": "232",
@@ -1731,6 +1998,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-29",
                 "NAME": "层高12低位",
                 "PRODUCTID": "233",
@@ -1744,6 +2013,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-30",
                 "NAME": "层高13高位",
                 "PRODUCTID": "234",
@@ -1757,6 +2028,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-31",
                 "NAME": "层高13低位",
                 "PRODUCTID": "235",
@@ -1770,6 +2043,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-32",
                 "NAME": "层高14高位",
                 "PRODUCTID": "236",
@@ -1783,6 +2058,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-33",
                 "NAME": "层高14低位",
                 "PRODUCTID": "237",
@@ -1796,6 +2073,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-34",
                 "NAME": "层高15高位",
                 "PRODUCTID": "238",
@@ -1809,6 +2088,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-35",
                 "NAME": "层高15低位",
                 "PRODUCTID": "239",
@@ -1822,6 +2103,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-36",
                 "NAME": "层高16高位",
                 "PRODUCTID": "240",
@@ -1835,6 +2118,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-37",
                 "NAME": "层高16低位",
                 "PRODUCTID": "241",
@@ -1848,6 +2133,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-38",
                 "NAME": "层高17高位",
                 "PRODUCTID": "242",
@@ -1861,6 +2148,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-39",
                 "NAME": "层高17低位",
                 "PRODUCTID": "243",
@@ -1874,6 +2163,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-40",
                 "NAME": "层高18高位",
                 "PRODUCTID": "244",
@@ -1887,6 +2178,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-41",
                 "NAME": "层高18低位",
                 "PRODUCTID": "245",
@@ -1900,6 +2193,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-42",
                 "NAME": "层高19高位",
                 "PRODUCTID": "246",
@@ -1913,6 +2208,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-43",
                 "NAME": "层高19低位",
                 "PRODUCTID": "247",
@@ -1926,6 +2223,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-44",
                 "NAME": "层高20高位",
                 "PRODUCTID": "248",
@@ -1939,6 +2238,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-45",
                 "NAME": "层高20低位",
                 "PRODUCTID": "249",
@@ -1952,6 +2253,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-46",
                 "NAME": "层高21高位",
                 "PRODUCTID": "250",
@@ -1965,6 +2268,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-47",
                 "NAME": "层高21低位",
                 "PRODUCTID": "251",
@@ -1978,6 +2283,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-48",
                 "NAME": "层高22高位",
                 "PRODUCTID": "252",
@@ -1991,6 +2298,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-49",
                 "NAME": "层高22低位",
                 "PRODUCTID": "253",
@@ -2004,6 +2313,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-50",
                 "NAME": "层高23低位",
                 "PRODUCTID": "255",
@@ -2017,6 +2328,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-51",
                 "NAME": "层高23低位",
                 "PRODUCTID": "255",
@@ -2030,6 +2343,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-52",
                 "NAME": "层高24高位",
                 "PRODUCTID": "256",
@@ -2043,6 +2358,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-53",
                 "NAME": "层高24低位",
                 "PRODUCTID": "257",
@@ -2056,6 +2373,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-54",
                 "NAME": "层高25高位",
                 "PRODUCTID": "258",
@@ -2069,6 +2388,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-55",
                 "NAME": "层高25低位",
                 "PRODUCTID": "259",
@@ -2082,6 +2403,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-56",
                 "NAME": "层高26高位",
                 "PRODUCTID": "260",
@@ -2095,6 +2418,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-57",
                 "NAME": "层高26低位",
                 "PRODUCTID": "261",
@@ -2108,6 +2433,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-58",
                 "NAME": "层高27高位",
                 "PRODUCTID": "262",
@@ -2121,6 +2448,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-59",
                 "NAME": "层高27低位",
                 "PRODUCTID": "263",
@@ -2134,6 +2463,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-60",
                 "NAME": "层高28高位",
                 "PRODUCTID": "264",
@@ -2147,6 +2478,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-61",
                 "NAME": "层高28低位",
                 "PRODUCTID": "265",
@@ -2160,6 +2493,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-62",
                 "NAME": "层高29高位",
                 "PRODUCTID": "266",
@@ -2173,6 +2508,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-63",
                 "NAME": "层高29低位",
                 "PRODUCTID": "267",
@@ -2186,6 +2523,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-64",
                 "NAME": "层高30高位",
                 "PRODUCTID": "268",
@@ -2199,6 +2538,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-65",
                 "NAME": "层高30低位",
                 "PRODUCTID": "269",
@@ -2212,6 +2553,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-66",
                 "NAME": "层高31高位",
                 "PRODUCTID": "270",
@@ -2225,6 +2568,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-67",
                 "NAME": "层高31低位",
                 "PRODUCTID": "271",
@@ -2238,6 +2583,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-68",
                 "NAME": "层高32高位",
                 "PRODUCTID": "272",
@@ -2251,6 +2598,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-69",
                 "NAME": "层高32低位",
                 "PRODUCTID": "273",
@@ -2264,6 +2613,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-70",
                 "NAME": "层高33低位",
                 "PRODUCTID": "275",
@@ -2277,6 +2628,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-71",
                 "NAME": "层高33低位",
                 "PRODUCTID": "275",
@@ -2290,6 +2643,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-72",
                 "NAME": "层高34高位",
                 "PRODUCTID": "276",
@@ -2303,6 +2658,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-73",
                 "NAME": "层高34低位",
                 "PRODUCTID": "277",
@@ -2316,6 +2673,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-74",
                 "NAME": "层高35高位",
                 "PRODUCTID": "278",
@@ -2329,6 +2688,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-75",
                 "NAME": "层高35低位",
                 "PRODUCTID": "279",
@@ -2342,6 +2703,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-76",
                 "NAME": "层高36高位",
                 "PRODUCTID": "280",
@@ -2355,6 +2718,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-77",
                 "NAME": "层高36低位",
                 "PRODUCTID": "281",
@@ -2368,6 +2733,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-78",
                 "NAME": "层高37高位",
                 "PRODUCTID": "282",
@@ -2381,6 +2748,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-79",
                 "NAME": "层高37低位",
                 "PRODUCTID": "283",
@@ -2394,6 +2763,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-80",
                 "NAME": "层高38低位",
                 "PRODUCTID": "285",
@@ -2407,6 +2778,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-81",
                 "NAME": "层高38低位",
                 "PRODUCTID": "285",
@@ -2420,6 +2793,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-82",
                 "NAME": "层高39高位",
                 "PRODUCTID": "286",
@@ -2433,6 +2808,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-83",
                 "NAME": "层高39低位",
                 "PRODUCTID": "287",
@@ -2446,6 +2823,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-84",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -2459,6 +2838,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-85",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -2472,6 +2853,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-86",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -2485,6 +2868,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-87",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -2498,6 +2883,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-88",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -2511,6 +2898,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-89",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -2524,6 +2913,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-90",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -2537,6 +2928,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-91",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -2550,6 +2943,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-92",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -2563,6 +2958,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-93",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -2576,6 +2973,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-94",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -2589,6 +2988,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-95",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -2602,6 +3003,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-96",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -2615,6 +3018,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-97",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -2628,6 +3033,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-98",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -2641,6 +3048,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F4-99",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -2656,10 +3065,13 @@
         ]
     },
     {
+        "ID": 0,
         "GROUPTEXT": "F5端子功能参数",
         "GROUPID": "105",
         "PARAMETERSETTINGS": [
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-00",
                 "NAME": "司机自动转换时间",
                 "PRODUCTID": "5552",
@@ -2673,6 +3085,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-01",
                 "NAME": "X1功能选择",
                 "PRODUCTID": "321",
@@ -2686,6 +3100,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-02",
                 "NAME": "X2功能选择",
                 "PRODUCTID": "322",
@@ -2699,6 +3115,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-03",
                 "NAME": "X3功能选择",
                 "PRODUCTID": "323",
@@ -2712,6 +3130,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-04",
                 "NAME": "X4功能选择",
                 "PRODUCTID": "324",
@@ -2725,6 +3145,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-05",
                 "NAME": "X5功能选择",
                 "PRODUCTID": "325",
@@ -2738,6 +3160,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-06",
                 "NAME": "X6功能选择",
                 "PRODUCTID": "326",
@@ -2751,6 +3175,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-07",
                 "NAME": "X7功能选择",
                 "PRODUCTID": "327",
@@ -2764,6 +3190,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-08",
                 "NAME": "X8功能选择",
                 "PRODUCTID": "328",
@@ -2777,6 +3205,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-09",
                 "NAME": "X9功能选择",
                 "PRODUCTID": "329",
@@ -2790,6 +3220,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-10",
                 "NAME": "X10功能选择",
                 "PRODUCTID": "330",
@@ -2803,6 +3235,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-11",
                 "NAME": "X11功能选择",
                 "PRODUCTID": "331",
@@ -2816,6 +3250,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-12",
                 "NAME": "X12功能选择",
                 "PRODUCTID": "332",
@@ -2829,6 +3265,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-13",
                 "NAME": "X13功能选择",
                 "PRODUCTID": "333",
@@ -2842,6 +3280,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-14",
                 "NAME": "X14功能选择",
                 "PRODUCTID": "334",
@@ -2855,6 +3295,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-15",
                 "NAME": "X15功能选择",
                 "PRODUCTID": "335",
@@ -2868,6 +3310,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-16",
                 "NAME": "X16功能选择",
                 "PRODUCTID": "336",
@@ -2881,6 +3325,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-17",
                 "NAME": "X17功能选择",
                 "PRODUCTID": "337",
@@ -2894,6 +3340,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-18",
                 "NAME": "X18功能选择",
                 "PRODUCTID": "338",
@@ -2907,6 +3355,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-19",
                 "NAME": "X19功能选择",
                 "PRODUCTID": "339",
@@ -2920,6 +3370,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-20",
                 "NAME": "X20功能选择",
                 "PRODUCTID": "340",
@@ -2933,6 +3385,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-21",
                 "NAME": "X21功能选择",
                 "PRODUCTID": "341",
@@ -2946,6 +3400,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-22",
                 "NAME": "X22功能选择",
                 "PRODUCTID": "342",
@@ -2959,6 +3415,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-23",
                 "NAME": "X23功能选择",
                 "PRODUCTID": "343",
@@ -2972,6 +3430,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-24",
                 "NAME": "X24功能选择",
                 "PRODUCTID": "344",
@@ -2985,6 +3445,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-25",
                 "NAME": "轿内输入类型选择",
                 "PRODUCTID": "5611",
@@ -2998,6 +3460,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-26",
                 "NAME": "Y1功能选择",
                 "PRODUCTID": "352",
@@ -3011,6 +3475,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-27",
                 "NAME": "Y2功能选择",
                 "PRODUCTID": "353",
@@ -3024,6 +3490,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-28",
                 "NAME": "Y3功能选择",
                 "PRODUCTID": "354",
@@ -3037,6 +3505,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-29",
                 "NAME": "Y4功能选择",
                 "PRODUCTID": "355",
@@ -3050,6 +3520,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-30",
                 "NAME": "Y5功能选择",
                 "PRODUCTID": "356",
@@ -3063,6 +3535,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-31",
                 "NAME": "Y6功能选择",
                 "PRODUCTID": "357",
@@ -3076,6 +3550,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-32",
                 "NAME": "通讯状态",
                 "PRODUCTID": "5621",
@@ -3089,6 +3565,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-33",
                 "NAME": "程序控制选择",
                 "PRODUCTID": "2063",
@@ -3102,6 +3580,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-34",
                 "NAME": "端子状态显示",
                 "PRODUCTID": "2064",
@@ -3115,6 +3595,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-35",
                 "NAME": "端子状态显示",
                 "PRODUCTID": "2064",
@@ -3128,6 +3610,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-36",
                 "NAME": "称重输入选择",
                 "PRODUCTID": "320",
@@ -3141,6 +3625,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-37",
                 "NAME": "X25功能选择",
                 "PRODUCTID": "345",
@@ -3154,6 +3640,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-38",
                 "NAME": "X26功能选择",
                 "PRODUCTID": "346",
@@ -3167,6 +3655,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-39",
                 "NAME": "X27功能选择",
                 "PRODUCTID": "347",
@@ -3180,6 +3670,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-40",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -3193,6 +3685,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F5-41",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -3208,10 +3702,13 @@
         ]
     },
     {
+        "ID": 0,
         "GROUPTEXT": "F6电梯逻辑参数",
         "GROUPID": "106",
         "PARAMETERSETTINGS": [
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-00",
                 "NAME": "最高层",
                 "PRODUCTID": "361",
@@ -3225,6 +3722,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-01",
                 "NAME": "最低层",
                 "PRODUCTID": "362",
@@ -3238,6 +3737,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-02",
                 "NAME": "泊梯基站",
                 "PRODUCTID": "363",
@@ -3251,6 +3752,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-03",
                 "NAME": "消防基站",
                 "PRODUCTID": "364",
@@ -3264,6 +3767,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-04",
                 "NAME": "锁梯基站",
                 "PRODUCTID": "365",
@@ -3277,6 +3782,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-05",
                 "NAME": "服务层1",
                 "PRODUCTID": "366",
@@ -3290,6 +3797,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-06",
                 "NAME": "服务层2",
                 "PRODUCTID": "367",
@@ -3303,6 +3812,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-07",
                 "NAME": "群控数量",
                 "PRODUCTID": "550",
@@ -3316,6 +3827,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-08",
                 "NAME": "电梯编号",
                 "PRODUCTID": "551",
@@ -3329,6 +3842,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-09",
                 "NAME": "程序选择",
                 "PRODUCTID": "5707",
@@ -3342,6 +3857,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-10",
                 "NAME": "平层感应器延时",
                 "PRODUCTID": "2067",
@@ -3355,6 +3872,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-11",
                 "NAME": "电梯功能选择",
                 "PRODUCTID": "5395",
@@ -3368,6 +3887,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-12",
                 "NAME": "VIP层",
                 "PRODUCTID": "2068",
@@ -3381,6 +3902,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-13",
                 "NAME": "保安层",
                 "PRODUCTID": "2069",
@@ -3394,6 +3917,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-14",
                 "NAME": "下集选1开始时间",
                 "PRODUCTID": "2070",
@@ -3407,6 +3932,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-15",
                 "NAME": "下集选1结束时间",
                 "PRODUCTID": "2071",
@@ -3420,6 +3947,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-16",
                 "NAME": "下集选2开始时间",
                 "PRODUCTID": "2072",
@@ -3433,6 +3962,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-17",
                 "NAME": "下集选2结束时间",
                 "PRODUCTID": "2073",
@@ -3446,6 +3977,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-18",
                 "NAME": "分时服务1开始",
                 "PRODUCTID": "392",
@@ -3459,6 +3992,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-19",
                 "NAME": "分时服务1结束",
                 "PRODUCTID": "393",
@@ -3472,6 +4007,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-20",
                 "NAME": "分时1服务层1",
                 "PRODUCTID": "5638",
@@ -3485,6 +4022,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-21",
                 "NAME": "分时1服务层2",
                 "PRODUCTID": "5639",
@@ -3498,6 +4037,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-22",
                 "NAME": "分时服务2开始",
                 "PRODUCTID": "398",
@@ -3511,6 +4052,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-23",
                 "NAME": "分时服务2结束",
                 "PRODUCTID": "399",
@@ -3524,6 +4067,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-24",
                 "NAME": "分时2服务层1",
                 "PRODUCTID": "5640",
@@ -3537,6 +4082,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-25",
                 "NAME": "分时2服务层2",
                 "PRODUCTID": "5641",
@@ -3550,6 +4097,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-26",
                 "NAME": "并联(群控)高峰1开始",
                 "PRODUCTID": "5642",
@@ -3563,6 +4112,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-27",
                 "NAME": "并联(群控)高峰1结束",
                 "PRODUCTID": "5643",
@@ -3576,6 +4127,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-28",
                 "NAME": "高峰1楼层",
                 "PRODUCTID": "2076",
@@ -3589,6 +4142,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-29",
                 "NAME": "并联(群控)高峰2开始",
                 "PRODUCTID": "5644",
@@ -3602,6 +4157,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-30",
                 "NAME": "并联(群控)高峰2结束",
                 "PRODUCTID": "5645",
@@ -3615,6 +4172,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-31",
                 "NAME": "高峰2楼层",
                 "PRODUCTID": "2079",
@@ -3628,6 +4187,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-32",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -3641,6 +4202,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-33",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -3654,6 +4217,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-34",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -3667,6 +4232,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-35",
                 "NAME": "服务层3",
                 "PRODUCTID": "368",
@@ -3680,6 +4247,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-36",
                 "NAME": "分时1服务层3",
                 "PRODUCTID": "5646",
@@ -3693,6 +4262,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-37",
                 "NAME": "分时2服务层3",
                 "PRODUCTID": "5647",
@@ -3706,6 +4277,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-38",
                 "NAME": "锁梯开始时间",
                 "PRODUCTID": "381",
@@ -3719,6 +4292,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-39",
                 "NAME": "锁梯结束时间",
                 "PRODUCTID": "382",
@@ -3732,6 +4307,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-40",
                 "NAME": "程序控制选择1",
                 "PRODUCTID": "5648",
@@ -3745,6 +4322,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-41",
                 "NAME": "程序控制选择2",
                 "PRODUCTID": "5655",
@@ -3758,6 +4337,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-42",
                 "NAME": "程序控制选择3",
                 "PRODUCTID": "476",
@@ -3771,6 +4352,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-43",
                 "NAME": "司机功能选择",
                 "PRODUCTID": "383",
@@ -3784,6 +4367,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-44",
                 "NAME": "消防功能选择",
                 "PRODUCTID": "2084",
@@ -3797,6 +4382,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-45",
                 "NAME": "救援功能选择",
                 "PRODUCTID": "5663",
@@ -3810,6 +4397,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-46",
                 "NAME": "VIP功能选择",
                 "PRODUCTID": "5665",
@@ -3817,12 +4406,14 @@
                 "CHILDID": "Bit0:5666#Bit1:5667#Bit2:1#Bit3:1#Bit4:1#Bit5:1#Bit6:1#Bit7:1#Bit8:1909#",
                 "SCOPE": "0~65535",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "",
                 "TYPE": "2",
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-47",
                 "NAME": "闪烁提前时间",
                 "PRODUCTID": "373",
@@ -3830,12 +4421,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.0~15.0",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "s",
                 "TYPE": "0",
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-48",
                 "NAME": "应急切换速度",
                 "PRODUCTID": "2150",
@@ -3843,12 +4436,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.010~0.630",
                 "DEFAULTVALUE": "0.01",
-                "SCALE": "0.0010",
+                "SCALE": "0.001",
                 "UNIT": "",
                 "TYPE": "0",
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-49",
                 "NAME": "救援停靠基站",
                 "PRODUCTID": "2165",
@@ -3862,6 +4457,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-50",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -3875,6 +4472,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-51",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -3888,6 +4487,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-52",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -3901,6 +4502,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-53",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -3914,6 +4517,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-54",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -3927,6 +4532,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-55",
                 "NAME": "功能参数选择",
                 "PRODUCTID": "5668",
@@ -3940,6 +4547,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-56",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -3953,6 +4562,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F6-57",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -3968,10 +4579,13 @@
         ]
     },
     {
+        "ID": 0,
         "GROUPTEXT": "F7测试功能参数",
         "GROUPID": "2247",
         "PARAMETERSETTINGS": [
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F7-00",
                 "NAME": "内召唤登记",
                 "PRODUCTID": "410",
@@ -3985,6 +4599,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F7-01",
                 "NAME": "上召唤登记",
                 "PRODUCTID": "411",
@@ -3998,6 +4614,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F7-02",
                 "NAME": "下召唤登记",
                 "PRODUCTID": "412",
@@ -4011,6 +4629,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F7-03",
                 "NAME": "测试次数",
                 "PRODUCTID": "5669",
@@ -4024,6 +4644,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F7-04",
                 "NAME": "外召使能",
                 "PRODUCTID": "414",
@@ -4037,6 +4659,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F7-05",
                 "NAME": "开门使能",
                 "PRODUCTID": "415",
@@ -4050,6 +4674,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F7-06",
                 "NAME": "超载使能",
                 "PRODUCTID": "5553",
@@ -4063,6 +4689,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F7-07",
                 "NAME": "限位使能",
                 "PRODUCTID": "417",
@@ -4076,6 +4704,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F7-08",
                 "NAME": "随机运行间隔",
                 "PRODUCTID": "418",
@@ -4089,6 +4719,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F7-09",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4102,6 +4734,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F7-10",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4115,6 +4749,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F7-11",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4128,6 +4764,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F7-12",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4143,10 +4781,13 @@
         ]
     },
     {
+        "ID": 0,
         "GROUPTEXT": "F8增强功能参数",
         "GROUPID": "2248",
         "PARAMETERSETTINGS": [
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-00",
                 "NAME": "称重自学习设定",
                 "PRODUCTID": "428",
@@ -4160,6 +4801,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-01",
                 "NAME": "预转矩选择",
                 "PRODUCTID": "429",
@@ -4173,6 +4816,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-02",
                 "NAME": "预转矩偏移",
                 "PRODUCTID": "430",
@@ -4180,38 +4825,44 @@
                 "CHILDID": "",
                 "SCOPE": "0.0~100.0",
                 "DEFAULTVALUE": "50",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "%",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-03",
                 "NAME": "驱动侧增益",
                 "PRODUCTID": "431",
                 "DESCRIPTION": "",
                 "CHILDID": "",
                 "SCOPE": "0.00~2.00",
-                "DEFAULTVALUE": "0.60",
+                "DEFAULTVALUE": "0.6",
                 "SCALE": "0.01",
                 "UNIT": "",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-04",
                 "NAME": "制动侧增益",
                 "PRODUCTID": "432",
                 "DESCRIPTION": "",
                 "CHILDID": "",
                 "SCOPE": "0.00~2.00",
-                "DEFAULTVALUE": "0.60",
+                "DEFAULTVALUE": "0.6",
                 "SCALE": "0.01",
                 "UNIT": "",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-05",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4225,6 +4876,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-06",
                 "NAME": "称重空载设置",
                 "PRODUCTID": "434",
@@ -4238,6 +4891,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-07",
                 "NAME": "称重满载设置",
                 "PRODUCTID": "435",
@@ -4251,6 +4906,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-08",
                 "NAME": "防捣乱功能",
                 "PRODUCTID": "2174",
@@ -4264,6 +4921,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-09",
                 "NAME": "停电应急援救速度",
                 "PRODUCTID": "5674",
@@ -4271,12 +4930,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.000~0.100",
                 "DEFAULTVALUE": "0.05",
-                "SCALE": "0.0010",
+                "SCALE": "0.001",
                 "UNIT": "m/s",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-10",
                 "NAME": "停电应急援救选择",
                 "PRODUCTID": "2083",
@@ -4290,19 +4951,23 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-11",
                 "NAME": "停车力矩输出延时",
                 "PRODUCTID": "5585",
                 "DESCRIPTION": "",
                 "CHILDID": "",
                 "SCOPE": "0.200~1.500",
-                "DEFAULTVALUE": "0.60",
-                "SCALE": "0.0010",
+                "DEFAULTVALUE": "0.6",
+                "SCALE": "0.001",
                 "UNIT": "s",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-12",
                 "NAME": "消防基站2",
                 "PRODUCTID": "377",
@@ -4316,6 +4981,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-13",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4329,6 +4996,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-14",
                 "NAME": "外招通讯设置",
                 "PRODUCTID": "5675",
@@ -4342,6 +5011,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-15",
                 "NAME": "轿内通讯设置",
                 "PRODUCTID": "5676",
@@ -4355,6 +5026,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-16",
                 "NAME": "外招辅指令开始地址",
                 "PRODUCTID": "5677",
@@ -4368,6 +5041,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-17",
                 "NAME": "外招地址校验",
                 "PRODUCTID": "1329",
@@ -4381,6 +5056,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-18",
                 "NAME": "通讯初始化",
                 "PRODUCTID": "2085",
@@ -4394,6 +5071,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-19",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4407,6 +5086,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-20",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4420,6 +5101,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-21",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4433,6 +5116,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-22",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4446,6 +5131,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-23",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4459,6 +5146,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-24",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4472,6 +5161,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F8-25",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4487,10 +5178,13 @@
         ]
     },
     {
+        "ID": 0,
         "GROUPTEXT": "F9时间保护参数",
         "GROUPID": "109",
         "PARAMETERSETTINGS": [
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-00",
                 "NAME": "空闲返基站时间",
                 "PRODUCTID": "5396",
@@ -4504,6 +5198,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-01",
                 "NAME": "风扇(照明)关闭时间",
                 "PRODUCTID": "5678",
@@ -4517,6 +5213,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-02",
                 "NAME": "最大楼层运行间隔时间",
                 "PRODUCTID": "5558",
@@ -4530,6 +5228,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-03",
                 "NAME": "年",
                 "PRODUCTID": "459",
@@ -4543,6 +5243,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-04",
                 "NAME": "月",
                 "PRODUCTID": "2094",
@@ -4556,6 +5258,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-05",
                 "NAME": "日",
                 "PRODUCTID": "2095",
@@ -4569,6 +5273,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-06",
                 "NAME": "小时",
                 "PRODUCTID": "2096",
@@ -4582,6 +5288,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-07",
                 "NAME": "分钟",
                 "PRODUCTID": "2097",
@@ -4595,6 +5303,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-08",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4608,6 +5318,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-09",
                 "NAME": "累积运行小时",
                 "PRODUCTID": "5679",
@@ -4621,6 +5333,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-10",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4634,6 +5348,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-11",
                 "NAME": "运行次数高位",
                 "PRODUCTID": "457",
@@ -4647,6 +5363,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-12",
                 "NAME": "运行次数低位",
                 "PRODUCTID": "458",
@@ -4660,6 +5378,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-13",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4673,6 +5393,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-14",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4686,6 +5408,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-15",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4699,6 +5423,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-16",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4712,6 +5438,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-17",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4725,6 +5453,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-18",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4738,6 +5468,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-19",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4751,6 +5483,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-20",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4764,6 +5498,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-21",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4777,6 +5513,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-22",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4790,6 +5528,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-23",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4803,6 +5543,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-24",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4816,6 +5558,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-25",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4829,6 +5573,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-26",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4842,6 +5588,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-27",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4855,6 +5603,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-28",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4868,6 +5618,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-29",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4881,6 +5633,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-30",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4894,6 +5648,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-31",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4907,6 +5663,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-32",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4920,6 +5678,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-33",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4933,6 +5693,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-34",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4946,6 +5708,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "F9-35",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -4961,10 +5725,13 @@
         ]
     },
     {
+        "ID": 0,
         "GROUPTEXT": "FA键盘设定",
         "GROUPID": "2249",
         "PARAMETERSETTINGS": [
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-00",
                 "NAME": "小键盘显示选择",
                 "PRODUCTID": "2099",
@@ -4978,6 +5745,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-01",
                 "NAME": "运行显示",
                 "PRODUCTID": "463",
@@ -4991,6 +5760,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-02",
                 "NAME": "停机显示",
                 "PRODUCTID": "464",
@@ -5004,6 +5775,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-03",
                 "NAME": "码盘当前角度",
                 "PRODUCTID": "5560",
@@ -5011,12 +5784,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.0~359.9",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "",
                 "TYPE": "0",
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-04",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -5030,6 +5805,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-05",
                 "NAME": "软件版本2",
                 "PRODUCTID": "467",
@@ -5043,6 +5820,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-06",
                 "NAME": "软件版本3",
                 "PRODUCTID": "468",
@@ -5056,6 +5835,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-07",
                 "NAME": "散热器温度",
                 "PRODUCTID": "469",
@@ -5069,6 +5850,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-08",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -5082,6 +5865,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-09",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -5095,6 +5880,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-10",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -5108,6 +5895,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-11",
                 "NAME": "预转矩电流",
                 "PRODUCTID": "718",
@@ -5115,12 +5904,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.0~200.0",
                 "DEFAULTVALUE": "1",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "%",
                 "TYPE": "0",
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-12",
                 "NAME": "逻辑信息",
                 "PRODUCTID": "719",
@@ -5134,6 +5925,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-13",
                 "NAME": "曲线信息",
                 "PRODUCTID": "720",
@@ -5147,6 +5940,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-14",
                 "NAME": "设定速度",
                 "PRODUCTID": "721",
@@ -5154,12 +5949,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.000~4.000",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.0010",
+                "SCALE": "0.001",
                 "UNIT": "m/s",
                 "TYPE": "0",
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-15",
                 "NAME": "反馈速度",
                 "PRODUCTID": "722",
@@ -5167,12 +5964,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.000~4.000",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.0010",
+                "SCALE": "0.001",
                 "UNIT": "m/s",
                 "TYPE": "0",
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-16",
                 "NAME": "母线电压",
                 "PRODUCTID": "723",
@@ -5180,12 +5979,14 @@
                 "CHILDID": "",
                 "SCOPE": "0~999.9",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "V",
                 "TYPE": "0",
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-17",
                 "NAME": "当前位置",
                 "PRODUCTID": "730",
@@ -5193,12 +5994,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.0~300.0",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "m",
                 "TYPE": "0",
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-18",
                 "NAME": "输出电流",
                 "PRODUCTID": "725",
@@ -5206,12 +6009,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.0~999.9",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "A",
                 "TYPE": "0",
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-19",
                 "NAME": "输出频率",
                 "PRODUCTID": "726",
@@ -5225,6 +6030,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-20",
                 "NAME": "转矩电流",
                 "PRODUCTID": "728",
@@ -5232,12 +6039,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.0~999.9",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "A",
                 "TYPE": "0",
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-21",
                 "NAME": "输出电压",
                 "PRODUCTID": "724",
@@ -5245,12 +6054,14 @@
                 "CHILDID": "",
                 "SCOPE": "0~999.9",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "V",
                 "TYPE": "0",
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-22",
                 "NAME": "输出转矩",
                 "PRODUCTID": "727",
@@ -5258,12 +6069,14 @@
                 "CHILDID": "",
                 "SCOPE": "0~200.0",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "%",
                 "TYPE": "0",
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-23",
                 "NAME": "输出功率",
                 "PRODUCTID": "729",
@@ -5277,6 +6090,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-24",
                 "NAME": "通讯干扰",
                 "PRODUCTID": "731",
@@ -5290,6 +6105,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-25",
                 "NAME": "编码器干扰",
                 "PRODUCTID": "732",
@@ -5303,6 +6120,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-26",
                 "NAME": "输入状态1",
                 "PRODUCTID": "733",
@@ -5316,6 +6135,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-27",
                 "NAME": "输入状态2",
                 "PRODUCTID": "734",
@@ -5329,6 +6150,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-28",
                 "NAME": "输入状态3",
                 "PRODUCTID": "735",
@@ -5342,6 +6165,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-29",
                 "NAME": "输入状态4",
                 "PRODUCTID": "736",
@@ -5355,6 +6180,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-30",
                 "NAME": "输入状态5",
                 "PRODUCTID": "737",
@@ -5368,6 +6195,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-31",
                 "NAME": "输出状态1",
                 "PRODUCTID": "738",
@@ -5381,6 +6210,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-32",
                 "NAME": "输出状态2",
                 "PRODUCTID": "739",
@@ -5394,6 +6225,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-33",
                 "NAME": "轿厢输入状态",
                 "PRODUCTID": "740",
@@ -5407,6 +6240,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-34",
                 "NAME": "轿厢输出状态",
                 "PRODUCTID": "742",
@@ -5420,6 +6255,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-35",
                 "NAME": "厅外状态",
                 "PRODUCTID": "743",
@@ -5433,6 +6270,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-36",
                 "NAME": "系统状态1",
                 "PRODUCTID": "744",
@@ -5446,6 +6285,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-37",
                 "NAME": "系统状态2",
                 "PRODUCTID": "745",
@@ -5459,6 +6300,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-38",
                 "NAME": "最大楼层运行间隔时间",
                 "PRODUCTID": "5558",
@@ -5472,6 +6315,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-39",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -5485,6 +6330,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-40",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -5498,6 +6345,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-41",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -5511,6 +6360,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-42",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -5524,6 +6375,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-43",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -5537,6 +6390,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-44",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -5550,6 +6405,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-45",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -5563,6 +6420,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-46",
                 "NAME": "外招通讯状态1",
                 "PRODUCTID": "2103",
@@ -5576,6 +6435,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-47",
                 "NAME": "外招通讯状态2",
                 "PRODUCTID": "2104",
@@ -5589,6 +6450,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FA-48",
                 "NAME": "外招通讯状态3",
                 "PRODUCTID": "2105",
@@ -5604,10 +6467,13 @@
         ]
     },
     {
+        "ID": 0,
         "GROUPTEXT": "FB门功能参数",
         "GROUPID": "111",
         "PARAMETERSETTINGS": [
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-00",
                 "NAME": "门机数量",
                 "PRODUCTID": "478",
@@ -5621,6 +6487,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-01",
                 "NAME": "轿顶板软件版本",
                 "PRODUCTID": "2244",
@@ -5634,6 +6502,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-02",
                 "NAME": "门机1服务层1",
                 "PRODUCTID": "480",
@@ -5647,6 +6517,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-03",
                 "NAME": "门机1服务层2",
                 "PRODUCTID": "481",
@@ -5660,6 +6532,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-04",
                 "NAME": "门机2服务层1",
                 "PRODUCTID": "484",
@@ -5673,6 +6547,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-05",
                 "NAME": "门机2服务层2",
                 "PRODUCTID": "485",
@@ -5686,6 +6562,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-06",
                 "NAME": "开门时间保护",
                 "PRODUCTID": "488",
@@ -5699,6 +6577,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-07",
                 "NAME": "到站钟输出延时",
                 "PRODUCTID": "2293",
@@ -5712,6 +6592,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-08",
                 "NAME": "关门时间保护",
                 "PRODUCTID": "490",
@@ -5725,6 +6607,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-09",
                 "NAME": "关门/开门次数",
                 "PRODUCTID": "5561",
@@ -5738,6 +6622,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-10",
                 "NAME": "待机门状态",
                 "PRODUCTID": "492",
@@ -5751,6 +6637,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-11",
                 "NAME": "外招开门保持时间",
                 "PRODUCTID": "5579",
@@ -5764,6 +6652,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-12",
                 "NAME": "内招开门保持时间",
                 "PRODUCTID": "5580",
@@ -5777,6 +6667,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-13",
                 "NAME": "基站开门保持时间",
                 "PRODUCTID": "5581",
@@ -5790,6 +6682,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-14",
                 "NAME": "开门保持延时时间",
                 "PRODUCTID": "5683",
@@ -5803,6 +6697,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-15",
                 "NAME": "特殊开门保持",
                 "PRODUCTID": "497",
@@ -5816,6 +6712,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-16",
                 "NAME": "手动保持时间",
                 "PRODUCTID": "498",
@@ -5829,6 +6727,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-17",
                 "NAME": "强迫关门时间",
                 "PRODUCTID": "489",
@@ -5842,6 +6742,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-18",
                 "NAME": "门机1服务层3",
                 "PRODUCTID": "482",
@@ -5855,6 +6757,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-19",
                 "NAME": "门机2服务层3",
                 "PRODUCTID": "486",
@@ -5868,6 +6772,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-20",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -5881,6 +6787,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-21",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -5894,6 +6802,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-22",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -5907,6 +6817,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-23",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -5920,6 +6832,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-24",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -5933,6 +6847,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FB-25",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -5948,10 +6864,13 @@
         ]
     },
     {
+        "ID": 0,
         "GROUPTEXT": "FC保护功能参数",
         "GROUPID": "112",
         "PARAMETERSETTINGS": [
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-00",
                 "NAME": "程序控制选择",
                 "PRODUCTID": "2063",
@@ -5965,6 +6884,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-01",
                 "NAME": "过载保护选择",
                 "PRODUCTID": "2113",
@@ -5978,6 +6899,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-02",
                 "NAME": "过载保护系数",
                 "PRODUCTID": "472",
@@ -5991,6 +6914,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-03",
                 "NAME": "过载预警系数",
                 "PRODUCTID": "473",
@@ -6004,6 +6929,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-04",
                 "NAME": "贯通门功能选择",
                 "PRODUCTID": "5687",
@@ -6017,6 +6944,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-05",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -6030,6 +6959,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-06",
                 "NAME": "指定故障设置",
                 "PRODUCTID": "5688",
@@ -6043,6 +6974,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-07",
                 "NAME": "指定故障",
                 "PRODUCTID": "2116",
@@ -6056,6 +6989,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-08",
                 "NAME": "指定故障子码",
                 "PRODUCTID": "2117",
@@ -6069,6 +7004,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-09",
                 "NAME": "指定故障月日",
                 "PRODUCTID": "2118",
@@ -6082,6 +7019,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-10",
                 "NAME": "指定故障时间",
                 "PRODUCTID": "2119",
@@ -6095,6 +7034,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-11",
                 "NAME": "指定故障逻辑信息",
                 "PRODUCTID": "2120",
@@ -6108,6 +7049,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-12",
                 "NAME": "指定故障曲线信息",
                 "PRODUCTID": "2121",
@@ -6121,6 +7064,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-13",
                 "NAME": "指定故障设定速度",
                 "PRODUCTID": "2122",
@@ -6128,12 +7073,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.000~4.000",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.0010",
+                "SCALE": "0.001",
                 "UNIT": "m/s",
                 "TYPE": "0",
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-14",
                 "NAME": "指定故障反馈速度",
                 "PRODUCTID": "2123",
@@ -6141,12 +7088,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.000~4.000",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.0010",
+                "SCALE": "0.001",
                 "UNIT": "m/s",
                 "TYPE": "0",
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-15",
                 "NAME": "指定故障母线电压",
                 "PRODUCTID": "2124",
@@ -6154,12 +7103,14 @@
                 "CHILDID": "",
                 "SCOPE": "0~999.9",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "v",
                 "TYPE": "0",
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-16",
                 "NAME": "指定故障当前位置",
                 "PRODUCTID": "2125",
@@ -6167,12 +7118,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.0~300.0",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "m",
                 "TYPE": "0",
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-17",
                 "NAME": "指定故障输出电流",
                 "PRODUCTID": "2126",
@@ -6180,12 +7133,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.0~999.9",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "A",
                 "TYPE": "0",
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-18",
                 "NAME": "指定故障输出频率",
                 "PRODUCTID": "2127",
@@ -6199,6 +7154,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-19",
                 "NAME": "指定故障转矩电流",
                 "PRODUCTID": "2128",
@@ -6206,12 +7163,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.0~999.9",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "A",
                 "TYPE": "0",
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-20",
                 "NAME": "第1次故障信息",
                 "PRODUCTID": "121",
@@ -6225,6 +7184,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-21",
                 "NAME": "第1次故障子码",
                 "PRODUCTID": "783",
@@ -6238,6 +7199,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-22",
                 "NAME": "第1次故障月日",
                 "PRODUCTID": "784",
@@ -6251,6 +7214,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-23",
                 "NAME": "第1次故障时间",
                 "PRODUCTID": "785",
@@ -6264,6 +7229,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-24",
                 "NAME": "第2次故障信息",
                 "PRODUCTID": "122",
@@ -6277,6 +7244,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-25",
                 "NAME": "第2次故障子码",
                 "PRODUCTID": "815",
@@ -6290,6 +7259,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-26",
                 "NAME": "第2次故障月日",
                 "PRODUCTID": "816",
@@ -6303,6 +7274,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-27",
                 "NAME": "第2次故障时间",
                 "PRODUCTID": "817",
@@ -6316,6 +7289,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-28",
                 "NAME": "第3次故障信息",
                 "PRODUCTID": "123",
@@ -6329,6 +7304,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-29",
                 "NAME": "第3次故障子码",
                 "PRODUCTID": "847",
@@ -6342,6 +7319,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-30",
                 "NAME": "第3次故障月日",
                 "PRODUCTID": "848",
@@ -6355,6 +7334,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-31",
                 "NAME": "第3次故障时间",
                 "PRODUCTID": "849",
@@ -6368,6 +7349,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-32",
                 "NAME": "第4次故障信息",
                 "PRODUCTID": "124",
@@ -6381,6 +7364,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-33",
                 "NAME": "第4次故障子码",
                 "PRODUCTID": "879",
@@ -6394,6 +7379,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-34",
                 "NAME": "第4次故障月日",
                 "PRODUCTID": "880",
@@ -6407,6 +7394,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-35",
                 "NAME": "第4次故障时间",
                 "PRODUCTID": "881",
@@ -6420,6 +7409,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-36",
                 "NAME": "第5次故障信息",
                 "PRODUCTID": "125",
@@ -6433,6 +7424,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-37",
                 "NAME": "第5次故障子码",
                 "PRODUCTID": "911",
@@ -6446,6 +7439,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-38",
                 "NAME": "第5次故障月日",
                 "PRODUCTID": "912",
@@ -6459,6 +7454,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-39",
                 "NAME": "第5次故障时间",
                 "PRODUCTID": "913",
@@ -6472,6 +7469,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-40",
                 "NAME": "第6次故障信息",
                 "PRODUCTID": "126",
@@ -6485,6 +7484,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-41",
                 "NAME": "第6次故障子码",
                 "PRODUCTID": "943",
@@ -6498,6 +7499,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-42",
                 "NAME": "第6次故障月日",
                 "PRODUCTID": "944",
@@ -6511,6 +7514,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-43",
                 "NAME": "第6次故障时间",
                 "PRODUCTID": "945",
@@ -6524,6 +7529,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-44",
                 "NAME": "第7次故障信息",
                 "PRODUCTID": "127",
@@ -6537,6 +7544,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-45",
                 "NAME": "第7次故障子码",
                 "PRODUCTID": "975",
@@ -6550,6 +7559,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-46",
                 "NAME": "第7次故障月日",
                 "PRODUCTID": "976",
@@ -6563,6 +7574,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-47",
                 "NAME": "第7次故障时间",
                 "PRODUCTID": "977",
@@ -6576,6 +7589,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-48",
                 "NAME": "第8次故障信息",
                 "PRODUCTID": "128",
@@ -6589,6 +7604,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-49",
                 "NAME": "第8次故障子码",
                 "PRODUCTID": "1007",
@@ -6602,6 +7619,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-50",
                 "NAME": "第8次故障月日",
                 "PRODUCTID": "1008",
@@ -6615,6 +7634,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-51",
                 "NAME": "第8次故障时间",
                 "PRODUCTID": "1009",
@@ -6628,6 +7649,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-52",
                 "NAME": "第9次故障信息",
                 "PRODUCTID": "129",
@@ -6641,6 +7664,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-53",
                 "NAME": "第9次故障子码",
                 "PRODUCTID": "1039",
@@ -6654,6 +7679,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-54",
                 "NAME": "第9次故障月日",
                 "PRODUCTID": "1040",
@@ -6667,6 +7694,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-55",
                 "NAME": "第9次故障时间",
                 "PRODUCTID": "1041",
@@ -6680,6 +7709,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-56",
                 "NAME": "第10次故障信息",
                 "PRODUCTID": "130",
@@ -6693,6 +7724,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-57",
                 "NAME": "第10次故障子码",
                 "PRODUCTID": "1071",
@@ -6706,6 +7739,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-58",
                 "NAME": "第10次故障月日",
                 "PRODUCTID": "1072",
@@ -6719,6 +7754,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-59",
                 "NAME": "第10次故障时间",
                 "PRODUCTID": "1073",
@@ -6732,6 +7769,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-60",
                 "NAME": "最后一次故障",
                 "PRODUCTID": "2129",
@@ -6745,6 +7784,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-61",
                 "NAME": "最后一次子码",
                 "PRODUCTID": "2130",
@@ -6758,6 +7799,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-62",
                 "NAME": "最后一次月日",
                 "PRODUCTID": "2131",
@@ -6771,6 +7814,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-63",
                 "NAME": "最后一次时间",
                 "PRODUCTID": "2132",
@@ -6784,6 +7829,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-64",
                 "NAME": "最后一次逻辑信息",
                 "PRODUCTID": "2133",
@@ -6797,6 +7844,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-65",
                 "NAME": "最后一次曲线信息",
                 "PRODUCTID": "2134",
@@ -6810,6 +7859,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-66",
                 "NAME": "最后一次设定速度",
                 "PRODUCTID": "2135",
@@ -6817,12 +7868,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.000~4.000",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.0010",
+                "SCALE": "0.001",
                 "UNIT": "m/s",
                 "TYPE": "0",
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-67",
                 "NAME": "最后一次反馈速度",
                 "PRODUCTID": "2136",
@@ -6830,12 +7883,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.000~4.000",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.0010",
+                "SCALE": "0.001",
                 "UNIT": "m/s",
                 "TYPE": "0",
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-68",
                 "NAME": "最后一次母线电压",
                 "PRODUCTID": "2137",
@@ -6843,12 +7898,14 @@
                 "CHILDID": "",
                 "SCOPE": "0~999.9",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "v",
                 "TYPE": "0",
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-69",
                 "NAME": "最后一次当前位置",
                 "PRODUCTID": "2138",
@@ -6856,12 +7913,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.0~300.0",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "m",
                 "TYPE": "0",
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-70",
                 "NAME": "最后一次输出电流",
                 "PRODUCTID": "2139",
@@ -6869,12 +7928,14 @@
                 "CHILDID": "",
                 "SCOPE": "0.0~999.9",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "A",
                 "TYPE": "0",
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-71",
                 "NAME": "最后一次输出频率",
                 "PRODUCTID": "2140",
@@ -6888,6 +7949,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FC-72",
                 "NAME": "最后一次转矩电流",
                 "PRODUCTID": "2141",
@@ -6895,7 +7958,7 @@
                 "CHILDID": "",
                 "SCOPE": "0.0~999.9",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "A",
                 "TYPE": "0",
                 "MODE": "3"
@@ -6903,10 +7966,13 @@
         ]
     },
     {
+        "ID": 0,
         "GROUPTEXT": "FD通讯参数",
         "GROUPID": "2250",
         "PARAMETERSETTINGS": [
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-00",
                 "NAME": "波特率设定",
                 "PRODUCTID": "1396",
@@ -6920,6 +7986,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-01",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -6933,6 +8001,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-02",
                 "NAME": "本机地址",
                 "PRODUCTID": "441",
@@ -6946,6 +8016,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-03",
                 "NAME": "应答延时",
                 "PRODUCTID": "2142",
@@ -6959,6 +8031,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-04",
                 "NAME": "通讯超时时间",
                 "PRODUCTID": "2143",
@@ -6966,12 +8040,14 @@
                 "CHILDID": "",
                 "SCOPE": "0~60.0",
                 "DEFAULTVALUE": "0",
-                "SCALE": "0.10",
+                "SCALE": "0.1",
                 "UNIT": "s",
                 "TYPE": "0",
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-05",
                 "NAME": "返平层停车延时",
                 "PRODUCTID": "2144",
@@ -6985,6 +8061,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-06",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -6998,6 +8076,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-07",
                 "NAME": "HCB-JP1输入",
                 "PRODUCTID": "699",
@@ -7011,6 +8091,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-08",
                 "NAME": "HCB-JP2输入",
                 "PRODUCTID": "700",
@@ -7024,6 +8106,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-09",
                 "NAME": "HCB-JP1输出",
                 "PRODUCTID": "701",
@@ -7037,6 +8121,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-10",
                 "NAME": "HCB-JP2输出",
                 "PRODUCTID": "702",
@@ -7050,6 +8136,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-11",
                 "NAME": "HCB-B-JP1输入",
                 "PRODUCTID": "683",
@@ -7063,6 +8151,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-12",
                 "NAME": "HCB-B-JP2输入",
                 "PRODUCTID": "684",
@@ -7076,6 +8166,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-13",
                 "NAME": "HCB-B-JP3输入",
                 "PRODUCTID": "685",
@@ -7089,6 +8181,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-14",
                 "NAME": "HCB-B-JP4输入",
                 "PRODUCTID": "686",
@@ -7102,6 +8196,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-15",
                 "NAME": "HCB-B-JP5输入",
                 "PRODUCTID": "687",
@@ -7115,6 +8211,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-16",
                 "NAME": "HCB-B-JP6输入",
                 "PRODUCTID": "688",
@@ -7128,6 +8226,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-17",
                 "NAME": "HCB-B-A1输出",
                 "PRODUCTID": "689",
@@ -7141,6 +8241,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-18",
                 "NAME": "HCB-B-A2输出",
                 "PRODUCTID": "690",
@@ -7154,6 +8256,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-19",
                 "NAME": "HCB-B-B1输出",
                 "PRODUCTID": "691",
@@ -7167,6 +8271,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-20",
                 "NAME": "HCB-B-B2输出",
                 "PRODUCTID": "692",
@@ -7180,6 +8286,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-21",
                 "NAME": "HCB-B-C1输出",
                 "PRODUCTID": "693",
@@ -7193,6 +8301,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-22",
                 "NAME": "HCB-B-C2输出",
                 "PRODUCTID": "694",
@@ -7206,6 +8316,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-23",
                 "NAME": "HCB-B-C3输出",
                 "PRODUCTID": "695",
@@ -7219,6 +8331,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-24",
                 "NAME": "HCB-B-C4输出",
                 "PRODUCTID": "696",
@@ -7232,6 +8346,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-25",
                 "NAME": "HCB-B-C5输出",
                 "PRODUCTID": "697",
@@ -7245,6 +8361,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FD-26",
                 "NAME": "HCB-B-C6输出",
                 "PRODUCTID": "698",
@@ -7260,10 +8378,13 @@
         ]
     },
     {
+        "ID": 0,
         "GROUPTEXT": "FE显示设置",
         "GROUPID": "114",
         "PARAMETERSETTINGS": [
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-00",
                 "NAME": "集选方式",
                 "PRODUCTID": "554",
@@ -7277,6 +8398,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-01",
                 "NAME": "楼层1显示",
                 "PRODUCTID": "572",
@@ -7290,6 +8413,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-02",
                 "NAME": "楼层2显示",
                 "PRODUCTID": "573",
@@ -7303,6 +8428,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-03",
                 "NAME": "楼层3显示",
                 "PRODUCTID": "574",
@@ -7316,6 +8443,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-04",
                 "NAME": "楼层4显示",
                 "PRODUCTID": "575",
@@ -7329,6 +8458,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-05",
                 "NAME": "楼层5显示",
                 "PRODUCTID": "576",
@@ -7342,6 +8473,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-06",
                 "NAME": "楼层6显示",
                 "PRODUCTID": "577",
@@ -7355,6 +8488,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-07",
                 "NAME": "楼层7显示",
                 "PRODUCTID": "578",
@@ -7368,6 +8503,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-08",
                 "NAME": "楼层8显示",
                 "PRODUCTID": "579",
@@ -7381,6 +8518,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-09",
                 "NAME": "楼层9显示",
                 "PRODUCTID": "580",
@@ -7394,6 +8533,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-10",
                 "NAME": "楼层10显示",
                 "PRODUCTID": "581",
@@ -7407,6 +8548,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-11",
                 "NAME": "楼层11显示",
                 "PRODUCTID": "582",
@@ -7420,6 +8563,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-12",
                 "NAME": "楼层12显示",
                 "PRODUCTID": "583",
@@ -7433,6 +8578,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-13",
                 "NAME": "楼层13显示",
                 "PRODUCTID": "584",
@@ -7446,6 +8593,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-14",
                 "NAME": "楼层14显示",
                 "PRODUCTID": "585",
@@ -7459,6 +8608,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-15",
                 "NAME": "楼层15显示",
                 "PRODUCTID": "586",
@@ -7472,6 +8623,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-16",
                 "NAME": "楼层16显示",
                 "PRODUCTID": "587",
@@ -7485,6 +8638,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-17",
                 "NAME": "楼层17显示",
                 "PRODUCTID": "588",
@@ -7498,6 +8653,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-18",
                 "NAME": "楼层18显示",
                 "PRODUCTID": "589",
@@ -7511,6 +8668,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-19",
                 "NAME": "楼层19显示",
                 "PRODUCTID": "590",
@@ -7524,6 +8683,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-20",
                 "NAME": "楼层20显示",
                 "PRODUCTID": "591",
@@ -7537,6 +8698,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-21",
                 "NAME": "楼层21显示",
                 "PRODUCTID": "592",
@@ -7550,6 +8713,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-22",
                 "NAME": "楼层22显示",
                 "PRODUCTID": "593",
@@ -7563,6 +8728,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-23",
                 "NAME": "楼层23显示",
                 "PRODUCTID": "594",
@@ -7576,6 +8743,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-24",
                 "NAME": "楼层24显示",
                 "PRODUCTID": "595",
@@ -7589,6 +8758,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-25",
                 "NAME": "楼层25显示",
                 "PRODUCTID": "596",
@@ -7602,6 +8773,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-26",
                 "NAME": "楼层26显示",
                 "PRODUCTID": "597",
@@ -7615,6 +8788,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-27",
                 "NAME": "楼层27显示",
                 "PRODUCTID": "598",
@@ -7628,6 +8803,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-28",
                 "NAME": "楼层28显示",
                 "PRODUCTID": "599",
@@ -7641,6 +8818,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-29",
                 "NAME": "楼层29显示",
                 "PRODUCTID": "600",
@@ -7654,6 +8833,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-30",
                 "NAME": "楼层30显示",
                 "PRODUCTID": "601",
@@ -7667,6 +8848,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-31",
                 "NAME": "楼层31显示",
                 "PRODUCTID": "602",
@@ -7680,6 +8863,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-32",
                 "NAME": "电梯功能选择",
                 "PRODUCTID": "5395",
@@ -7693,6 +8878,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-33",
                 "NAME": "厂方功能设定选择1",
                 "PRODUCTID": "5694",
@@ -7706,6 +8893,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-34",
                 "NAME": "厂家合同号",
                 "PRODUCTID": "2147",
@@ -7719,6 +8908,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-35",
                 "NAME": "楼层32显示",
                 "PRODUCTID": "603",
@@ -7732,6 +8923,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-36",
                 "NAME": "楼层33显示",
                 "PRODUCTID": "604",
@@ -7745,6 +8938,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-37",
                 "NAME": "楼层34显示",
                 "PRODUCTID": "605",
@@ -7758,6 +8953,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-38",
                 "NAME": "楼层35显示",
                 "PRODUCTID": "606",
@@ -7771,6 +8968,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-39",
                 "NAME": "楼层36显示",
                 "PRODUCTID": "607",
@@ -7784,6 +8983,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-40",
                 "NAME": "楼层37显示",
                 "PRODUCTID": "608",
@@ -7797,6 +8998,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-41",
                 "NAME": "楼层38显示",
                 "PRODUCTID": "609",
@@ -7810,6 +9013,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-42",
                 "NAME": "楼层39显示",
                 "PRODUCTID": "610",
@@ -7823,6 +9028,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-43",
                 "NAME": "楼层40显示",
                 "PRODUCTID": "611",
@@ -7836,6 +9043,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-44",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -7849,6 +9058,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-45",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -7862,6 +9073,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-46",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -7875,6 +9088,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-47",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -7888,6 +9103,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-48",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -7901,6 +9118,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-49",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -7914,6 +9133,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-50",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -7927,6 +9148,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-51",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -7940,6 +9163,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-52",
                 "NAME": "最高位选择1",
                 "PRODUCTID": "628",
@@ -7953,6 +9178,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-53",
                 "NAME": "最高位选择2",
                 "PRODUCTID": "629",
@@ -7966,6 +9193,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-54",
                 "NAME": "最高位选择3",
                 "PRODUCTID": "630",
@@ -7979,6 +9208,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-55",
                 "NAME": "最高位选择4",
                 "PRODUCTID": "631",
@@ -7992,6 +9223,8 @@
                 "MODE": "1"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FE-56",
                 "NAME": "最高位选择5",
                 "PRODUCTID": "632",
@@ -8007,10 +9240,13 @@
         ]
     },
     {
+        "ID": 0,
         "GROUPTEXT": "FR平层调整参数",
         "GROUPID": "2305",
         "PARAMETERSETTINGS": [
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-00",
                 "NAME": "平层调整模式",
                 "PRODUCTID": "2306",
@@ -8024,6 +9260,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-01",
                 "NAME": "平层调整记录1",
                 "PRODUCTID": "2307",
@@ -8037,6 +9275,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-02",
                 "NAME": "平层调整记录2",
                 "PRODUCTID": "2308",
@@ -8050,6 +9290,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-03",
                 "NAME": "平层调整记录3",
                 "PRODUCTID": "2309",
@@ -8063,6 +9305,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-04",
                 "NAME": "平层调整记录4",
                 "PRODUCTID": "2310",
@@ -8076,6 +9320,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-05",
                 "NAME": "平层调整记录5",
                 "PRODUCTID": "2311",
@@ -8089,6 +9335,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-06",
                 "NAME": "平层调整记录6",
                 "PRODUCTID": "2312",
@@ -8102,6 +9350,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-07",
                 "NAME": "平层调整记录7",
                 "PRODUCTID": "2313",
@@ -8115,6 +9365,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-08",
                 "NAME": "平层调整记录8",
                 "PRODUCTID": "2314",
@@ -8128,6 +9380,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-09",
                 "NAME": "平层调整记录9",
                 "PRODUCTID": "2315",
@@ -8141,6 +9395,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-10",
                 "NAME": "平层调整记录10",
                 "PRODUCTID": "2316",
@@ -8154,6 +9410,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-11",
                 "NAME": "平层调整记录11",
                 "PRODUCTID": "2317",
@@ -8167,6 +9425,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-12",
                 "NAME": "平层调整记录12",
                 "PRODUCTID": "2318",
@@ -8180,6 +9440,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-13",
                 "NAME": "平层调整记录13",
                 "PRODUCTID": "2319",
@@ -8193,6 +9455,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-14",
                 "NAME": "平层调整记录14",
                 "PRODUCTID": "2320",
@@ -8206,6 +9470,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-15",
                 "NAME": "平层调整记录15",
                 "PRODUCTID": "2321",
@@ -8219,6 +9485,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-16",
                 "NAME": "平层调整记录16",
                 "PRODUCTID": "2322",
@@ -8232,6 +9500,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-17",
                 "NAME": "平层调整记录17",
                 "PRODUCTID": "2323",
@@ -8245,6 +9515,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-18",
                 "NAME": "平层调整记录18",
                 "PRODUCTID": "2324",
@@ -8258,6 +9530,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-19",
                 "NAME": "平层调整记录19",
                 "PRODUCTID": "2325",
@@ -8271,6 +9545,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-20",
                 "NAME": "平层调整记录20",
                 "PRODUCTID": "2326",
@@ -8284,6 +9560,8 @@
                 "MODE": "2"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-21",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -8297,6 +9575,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-22",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -8310,6 +9590,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-23",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -8323,6 +9605,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-24",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -8336,6 +9620,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-25",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -8349,6 +9635,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-26",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -8362,6 +9650,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-27",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -8375,6 +9665,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-28",
                 "NAME": "保留",
                 "PRODUCTID": "1",
@@ -8388,6 +9680,8 @@
                 "MODE": "3"
             },
             {
+                "ID": 0,
+                "FK_HEAD": 0,
                 "CODE": "FR-29",
                 "NAME": "保留",
                 "PRODUCTID": "1",

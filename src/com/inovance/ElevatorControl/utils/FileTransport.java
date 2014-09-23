@@ -2,9 +2,9 @@ package com.inovance.elevatorcontrol.utils;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 import com.inovance.elevatorcontrol.R;
@@ -25,8 +25,6 @@ import java.util.List;
 public class FileTransport implements Runnable {
 
     private static final String TAG = FileTransport.class.getSimpleName();
-
-    private static final String ReceiveFileFolder = "ReceivedFile";
 
     private static FileTransport instance = new FileTransport();
 
@@ -49,6 +47,8 @@ public class FileTransport implements Runnable {
     private static final int TransportFailed = 3;
 
     private static final int ConnectTimeOut = 4;
+
+    private boolean isCanceled = false;
 
     private Handler transportHandler = new Handler() {
         @Override
@@ -84,7 +84,7 @@ public class FileTransport implements Runnable {
     }
 
     public interface OnFileDownloadComplete {
-        void onDownloadComplete(File file, String contentType);
+        void onDownloadComplete(File file, String fileName, String contentType);
     }
 
     public void setOnFileUploadComplete(OnFileUploadComplete listener) {
@@ -114,9 +114,9 @@ public class FileTransport implements Runnable {
      * @param url     URL
      */
     public void downloadFile(Context context, String url) {
-        Log.v(TAG, url);
         this.context = context;
         showTransportDialog();
+        isCanceled = false;
         new AsyncDownloadTask().execute(url);
     }
 
@@ -126,9 +126,19 @@ public class FileTransport implements Runnable {
         transportDialog.setMax(100);
         transportDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         transportDialog.setProgress(0);
+        transportDialog.setButton(DialogInterface.BUTTON_NEGATIVE,
+                "取消",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        isCanceled = true;
+                        dialog.dismiss();
+                    }
+                });
         transportDialog.show();
         transportDialog.setCancelable(false);
         transportDialog.setCanceledOnTouchOutside(false);
+
     }
 
     /**
@@ -156,6 +166,7 @@ public class FileTransport implements Runnable {
         uploadInputStream = inputStream;
         this.context = context;
         showTransportDialog();
+        isCanceled = false;
         new Thread(this).start();
     }
 
@@ -195,9 +206,12 @@ public class FileTransport implements Runnable {
             byte[] buffer = new byte[bufferSize];
             int uploaded = 0;
             int length = -1;
-
             while ((length = uploadInputStream.read(buffer)) != -1) {
-                Log.v(TAG, length + "");
+                if (isCanceled) {
+                    dataOutputStream.flush();
+                    dataOutputStream.close();
+                    break;
+                }
                 dataOutputStream.write(buffer, 0, length);
                 uploaded += length;
                 Message message = new Message();
@@ -205,18 +219,20 @@ public class FileTransport implements Runnable {
                 message.obj = (uploaded * 100) / totalLength;
                 transportHandler.sendMessage(message);
             }
-            dataOutputStream.writeBytes(end);
-            dataOutputStream.writeBytes(twoHyphens + boundary + twoHyphens + end);
-            uploadInputStream.close();
-            dataOutputStream.flush();
-            dataOutputStream.close();
-            if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                transportHandler.sendEmptyMessage(TransportComplete);
-                if (mUploadListener != null) {
-                    mUploadListener.onUploadComplete();
+            if (!isCanceled) {
+                dataOutputStream.writeBytes(end);
+                dataOutputStream.writeBytes(twoHyphens + boundary + twoHyphens + end);
+                uploadInputStream.close();
+                dataOutputStream.flush();
+                dataOutputStream.close();
+                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    transportHandler.sendEmptyMessage(TransportComplete);
+                    if (mUploadListener != null) {
+                        mUploadListener.onUploadComplete();
+                    }
+                } else {
+                    transportHandler.sendEmptyMessage(TransportFailed);
                 }
-            } else {
-                transportHandler.sendEmptyMessage(TransportFailed);
             }
         } catch (MalformedURLException e) {
             e.printStackTrace();
@@ -256,11 +272,14 @@ public class FileTransport implements Runnable {
                 InputStream inputStream = new BufferedInputStream(url.openStream());
                 File directory = new File(context.getExternalCacheDir().getPath()
                         + "/"
-                        + ReceiveFileFolder);
+                        + ApplicationConfig.ReceiveFileFolder);
                 if (!directory.exists()) {
                     directory.mkdir();
                 }
-                File filePath = new File(context.getExternalCacheDir().getPath() + "/" + ReceiveFileFolder + "/" + fileName);
+                File filePath = new File(context.getExternalCacheDir().getPath()
+                        + "/"
+                        + ApplicationConfig.ReceiveFileFolder
+                        + "/" + fileName);
                 if (!filePath.exists()) {
                     filePath.createNewFile();
                 }
@@ -268,17 +287,24 @@ public class FileTransport implements Runnable {
                 byte data[] = new byte[1024];
                 long total = 0;
                 while ((count = inputStream.read(data)) != -1) {
+                    if (isCanceled) {
+                        output.flush();
+                        output.close();
+                        break;
+                    }
                     total += count;
                     int progress = (int) (total * 100) / contentLength;
                     publishProgress(progress);
                     output.write(data, 0, count);
                 }
-                publishProgress(100);
-                output.flush();
-                output.close();
-                inputStream.close();
-                transportHandler.sendEmptyMessage(TransportComplete);
-                return new String[]{filePath.getAbsolutePath(), contentType};
+                if (!isCanceled) {
+                    publishProgress(100);
+                    output.flush();
+                    output.close();
+                    inputStream.close();
+                    transportHandler.sendEmptyMessage(TransportComplete);
+                }
+                return new String[]{filePath.getAbsolutePath(), fileName, contentType};
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -296,7 +322,7 @@ public class FileTransport implements Runnable {
         protected void onPostExecute(String[] result) {
             if (result != null) {
                 if (mDownloadListener != null) {
-                    mDownloadListener.onDownloadComplete(new File(result[0]), result[1]);
+                    mDownloadListener.onDownloadComplete(new File(result[0]), result[1], result[2]);
                 }
             }
         }

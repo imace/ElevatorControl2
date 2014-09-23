@@ -21,7 +21,7 @@ import java.util.Date;
  *
  * @author jch
  */
-@Table(name="PARAMETER_SETTINGS")
+@Table(name = "PARAMETER_SETTINGS")
 public class ParameterSettings implements Cloneable {
 
     @Id
@@ -127,7 +127,7 @@ public class ParameterSettings implements Cloneable {
     public static int ParseDescriptionToType(String description) {
         if (description != null) {
             if (description.length() > 0 && !description.contains("null")) {
-                if (description.contains("Bit") || description.contains("bit")) {
+                if (description.toUpperCase().contains("BIT")) {
                     return ApplicationConfig.DESCRIPTION_TYPE[2];
                 } else {
                     return ApplicationConfig.DESCRIPTION_TYPE[1];

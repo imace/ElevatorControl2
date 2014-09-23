@@ -14,6 +14,7 @@ import android.widget.Toast;
 import butterknife.InjectView;
 import butterknife.OnClick;
 import butterknife.Views;
+import com.inovance.bluetoothtool.BluetoothTool;
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
@@ -64,6 +65,8 @@ public class CheckAuthorizationActivity extends Activity implements OnGetResultL
 
     private boolean hasGetSpecialDeviceCodeList = false;
 
+    private static final int REQUEST_BLUETOOTH_ENABLE = 1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,6 +84,7 @@ public class CheckAuthorizationActivity extends Activity implements OnGetResultL
             @Override
             public void onNoUpdate() {
                 initializeData();
+                UpdateApplication.getInstance().setOnNoUpdateFoundListener(null);
             }
         });
     }
@@ -90,14 +94,37 @@ public class CheckAuthorizationActivity extends Activity implements OnGetResultL
         super.onResume();
         WebApi.getInstance().setOnResultListener(this);
         WebApi.getInstance().setOnFailureListener(this);
-        // 检查软件更新
-        UpdateApplication.getInstance().checkUpdate();
+        if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+            btnSignUp.setEnabled(false);
+            btnLogin.setEnabled(false);
+            Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(intent, REQUEST_BLUETOOTH_ENABLE);
+        } else {
+            // 检查软件更新
+            UpdateApplication.getInstance().checkUpdate();
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         WebApi.getInstance().removeListener();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_BLUETOOTH_ENABLE) {
+            if (resultCode == RESULT_OK) {
+                btnSignUp.setEnabled(true);
+                btnLogin.setEnabled(true);
+                UpdateApplication.getInstance().checkUpdate();
+            }
+            if (resultCode == RESULT_CANCELED) {
+                BluetoothTool.getInstance().kill();
+                finish();
+            }
+        }
     }
 
     @OnClick(R.id.btn_sign_up)
@@ -111,8 +138,6 @@ public class CheckAuthorizationActivity extends Activity implements OnGetResultL
 
     @OnClick(R.id.btn_login)
     public void btnLoginClick(View v) {
-        //this.startActivity(new Intent(CheckAuthorizationActivity.this, NavigationTabActivity.class));
-        // 验证用户登录
         WebApi.getInstance().setOnResultListener(this);
         WebApi.getInstance().setOnFailureListener(this);
         verifyCurrentUser();
