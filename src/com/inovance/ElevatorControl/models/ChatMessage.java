@@ -97,11 +97,6 @@ public class ChatMessage {
     private String fileUrl;
 
     /**
-     * 发送的文件扩展名
-     */
-    private String localFileExtension;
-
-    /**
      * 本地缓存的接受的附件
      */
     private String localFileName;
@@ -217,14 +212,6 @@ public class ChatMessage {
 
     public void setRemoteID(int remoteID) {
         this.remoteID = remoteID;
-    }
-
-    public String getLocalFileExtension() {
-        return localFileExtension;
-    }
-
-    public void setLocalFileExtension(String localFileExtension) {
-        this.localFileExtension = localFileExtension;
     }
 
     public String getLocalFileName() {

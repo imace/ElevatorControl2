@@ -121,9 +121,15 @@ public class CustomDialog {
                 String[] statusList = new String[size];
                 String[] spinnerList = new String[size];
                 int type = Integer.parseInt(settings.getType());
+                // Fix list view checked index
+                int[] indexStatus = ParameterFactory.getParameter().getIndexStatus(settings);
                 for (int i = 0; i < size; i++) {
                     JSONObject value = jsonArray.getJSONObject(i);
                     int alwaysClose = Integer.parseInt(value.optString("id")) + 32;
+                    if (indexStatus[0] == value.optInt("id")){
+                        int temp = indexStatus[1];
+                        indexStatus = new int[]{i, temp};
+                    }
                     if (type == ApplicationConfig.InputTerminalType || type == ApplicationConfig.FloorShowType) {
                         if (i == 0) {
                             statusList[i] = value.optString("id") + ":" + value.optString("value");
@@ -144,7 +150,6 @@ public class CustomDialog {
                     final ToggleButton toggleButton = (ToggleButton) dialogView.findViewById(R.id.toggle_button);
                     defaultValue.setText("出厂值: " + settings.getDefaultValue());
                     // Get real index and toggle button state
-                    int[] indexStatus = ParameterFactory.getParameter().getIndexStatus(settings);
                     toggleButton.setChecked(indexStatus[1] == 1);
                     final CheckedListViewAdapter adapter = new CheckedListViewAdapter(activity, statusList, indexStatus[0]);
                     listView.setAdapter(adapter);

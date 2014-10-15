@@ -320,4 +320,15 @@ public class ParseSerialsUtils {
                 && number >= ApplicationConfig.FA26ToFA37[0]
                 && number <= ApplicationConfig.FA26ToFA37[1];
     }
+
+    public static String isWriteSuccess(String receive) {
+        int index = 0;
+        for (String errorCode : ApplicationConfig.ERROR_CODE_ARRAY) {
+            if (receive.contains(errorCode)) {
+                return ApplicationConfig.ERROR_NAME_ARRAY[index];
+            }
+            index++;
+        }
+        return null;
+    }
 }

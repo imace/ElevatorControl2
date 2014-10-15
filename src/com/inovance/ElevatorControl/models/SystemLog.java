@@ -5,6 +5,7 @@ import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.utils.LogUtils;
 import com.mobsandgeeks.adapters.InstantText;
 import net.tsz.afinal.annotation.sqlite.Id;
+import net.tsz.afinal.annotation.sqlite.Table;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -16,6 +17,7 @@ import java.util.Date;
  * Date: 14-5-30.
  * Time: 10:19.
  */
+@Table(name = "SYSTEM_LOG")
 public class SystemLog {
 
     private static final String TAG = SystemLog.class.getSimpleName();

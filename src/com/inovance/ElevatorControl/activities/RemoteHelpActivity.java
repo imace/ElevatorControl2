@@ -11,7 +11,6 @@ import android.os.Message;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -42,7 +41,6 @@ import org.json.JSONObject;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -91,6 +89,8 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
     private ChatMessage currentSelectMessage;
 
     private long lastReadTimestamp;
+
+    private InputStream tempInputStream;
 
     private Handler syncHandler = new Handler();
 
@@ -171,7 +171,8 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
             public void onClick(View view, int position, ChatMessage message) {
                 switch (message.getChatType()) {
                     case ChatMessage.SEND:
-                        // TODO open local save file
+                        // Open local saved file
+                        openLocalSendFile(message);
                         break;
                     case ChatMessage.RECEIVE:
                         selectChatContentOperation(message);
@@ -246,7 +247,7 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
                                 if (!openLocalCachedFile(message)) {
                                     currentSelectMessage = message;
                                     FileTransport.getInstance().downloadFile(RemoteHelpActivity.this,
-                                            ApplicationConfig.DomainName
+                                            ApplicationConfig.APIUri
                                                     + ApplicationConfig.GetChatMessageFile
                                                     + message.getRemoteID());
                                 }
@@ -270,19 +271,38 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
     private boolean openLocalCachedFile(ChatMessage message) {
         File filePath;
         switch (message.getChatType()) {
-            case ChatMessage.SEND:
-                filePath = new File(getExternalCacheDir().getPath()
-                        + "/" + ApplicationConfig.SentFolder + "/"
-                        + message.getLocalFileName()
-                        + message.getLocalFileExtension());
-                return openReceivedFile(filePath);
             case ChatMessage.RECEIVE:
                 filePath = new File(getExternalCacheDir().getPath()
                         + "/" + ApplicationConfig.ReceiveFileFolder + "/"
                         + message.getLocalFileName());
-                return openReceivedFile(filePath);
+                return openFileWithDefaultIntent(filePath);
         }
         return false;
+    }
+
+    /**
+     * Open local saved file
+     *
+     * @param message Message
+     */
+    private void openLocalSendFile(ChatMessage message) {
+        String fileName = message.getFromNumber()
+                + "-" + message.getToNumber()
+                + "-" + message.getContentType()
+                + "-" + message.getTitle();
+        File directory = new File(getApplicationContext().getExternalCacheDir().getPath()
+                + "/"
+                + ApplicationConfig.SentFolder);
+        if (directory.exists()) {
+            File[] files = directory.listFiles();
+            for (File file : files) {
+                int index = file.getName().lastIndexOf('.');
+                String name = file.getName().substring(0, index);
+                if (name.equalsIgnoreCase(fileName)) {
+                    openFileWithDefaultIntent(file);
+                }
+            }
+        }
     }
 
     /**
@@ -380,7 +400,7 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
             imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
             InputStream inputStream = new ByteArrayInputStream(stream.toByteArray());
             // 上传图片
-            showSendChatContentDialog(ChatMessage.TYPE_PICTURE, "jpeg", inputStream);
+            showSendChatContentDialog(ChatMessage.TYPE_PICTURE, "jpg", inputStream);
         }
         // 录制视频
         if (requestCode == REQUEST_VIDEO_CAPTURE && resultCode == RESULT_OK) {
@@ -484,6 +504,7 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
             public void onClick(View view) {
                 try {
                     InputStream inputStream = IOUtils.toInputStream(messageInput.getText().toString().trim(), "UTF-8");
+                    InputStream uploadStream = copyStream(inputStream);
                     FileTransport.getInstance().uploadFile(RemoteHelpActivity.this,
                             getPhoneNumber(),
                             phoneNumberEditText.getText().toString().trim(),
@@ -491,7 +512,7 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
                             titleInput.getText().toString(),
                             "txt",
                             titleInput.getText().toString(),
-                            inputStream);
+                            uploadStream);
                     dialog.dismiss();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -522,6 +543,7 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
         final Button cancelButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
         final Button confirmButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
         confirmButton.setEnabled(false);
+
         fileNameInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
@@ -553,27 +575,29 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
             public void onClick(View view) {
                 InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 inputMethodManager.hideSoftInputFromWindow(fileNameInput.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-                FileTransport.getInstance().uploadFile(RemoteHelpActivity.this,
-                        getPhoneNumber(),
-                        phoneNumberEditText.getText().toString().trim(),
-                        type,
-                        fileNameInput.getText().toString(),
-                        extension,
-                        fileNameInput.getText().toString(),
-                        inputStream);
-                dialog.dismiss();
+                try {
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                    byte[] buffer = new byte[1024];
+                    int len;
+                    while ((len = inputStream.read(buffer)) > -1) {
+                        byteArrayOutputStream.write(buffer, 0, len);
+                    }
+                    byteArrayOutputStream.flush();
+                    InputStream uploadStream = copyStream(inputStream);
+                    FileTransport.getInstance().uploadFile(RemoteHelpActivity.this,
+                            getPhoneNumber(),
+                            phoneNumberEditText.getText().toString().trim(),
+                            type,
+                            fileNameInput.getText().toString(),
+                            extension,
+                            fileNameInput.getText().toString(),
+                            uploadStream);
+                    dialog.dismiss();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
-    }
-
-    private Uri getSentFilePathUri() {
-        String fileName = UUID.randomUUID().toString();
-        File filePath = new File(getApplicationContext().getExternalCacheDir().getPath()
-                + "/"
-                + ApplicationConfig.SentFolder
-                + "/"
-                + fileName);
-        return Uri.fromFile(filePath);
     }
 
     private String getPhoneNumber() {
@@ -631,7 +655,24 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
 
     @Override
     public void onFailure(int statusCode, Throwable throwable) {
-        Toast.makeText(this, throwable.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.server_error_text, Toast.LENGTH_SHORT).show();
+    }
+
+    private InputStream copyStream(InputStream inputStream) {
+        try {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = inputStream.read(buffer)) > -1) {
+                byteArrayOutputStream.write(buffer, 0, len);
+            }
+            byteArrayOutputStream.flush();
+            tempInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+            return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**
@@ -645,7 +686,7 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
             currentSelectMessage.setLocalFileName(fileName);
             ChatMessageDao.update(this, currentSelectMessage);
         }
-        openReceivedFile(file);
+        openFileWithDefaultIntent(file);
     }
 
     /**
@@ -654,7 +695,7 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
      * @param file File
      * @return boolean
      */
-    private boolean openReceivedFile(File file) {
+    private boolean openFileWithDefaultIntent(File file) {
         MimeTypeMap mime = MimeTypeMap.getSingleton();
         int index = file.getName().lastIndexOf('.') + 1;
         String extension = file.getName().substring(index).toLowerCase();
@@ -693,8 +734,44 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
     }
 
     @Override
-    public void onUploadComplete() {
-
+    public void onUploadComplete(String fileName) {
+        File directory = new File(getApplicationContext().getExternalCacheDir().getPath()
+                + "/"
+                + ApplicationConfig.SentFolder);
+        if (!directory.exists()) {
+            directory.mkdir();
+        }
+        File filePath = new File(getApplicationContext().getExternalCacheDir().getPath()
+                + "/"
+                + ApplicationConfig.SentFolder
+                + "/"
+                + fileName);
+        if (!filePath.exists()) {
+            try {
+                filePath.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        try {
+            FileOutputStream outputStream = new FileOutputStream(filePath);
+            if (tempInputStream != null) {
+                int bufferSize = 1024;
+                byte[] buffer = new byte[bufferSize];
+                int length = -1;
+                while ((length = tempInputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, length);
+                }
+                if (tempInputStream != null) {
+                    tempInputStream.close();
+                    tempInputStream = null;
+                }
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

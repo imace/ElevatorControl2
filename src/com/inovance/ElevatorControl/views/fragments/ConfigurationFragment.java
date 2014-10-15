@@ -21,7 +21,6 @@ import com.inovance.elevatorcontrol.models.MoveInsideOutside;
 import com.inovance.elevatorcontrol.models.ParameterDuplicate;
 import com.inovance.elevatorcontrol.models.ParameterGroupSettings;
 import com.inovance.elevatorcontrol.models.RealTimeMonitor;
-import com.inovance.elevatorcontrol.views.dialogs.CustomDialog;
 import com.mobsandgeeks.adapters.InstantAdapter;
 
 import java.util.ArrayList;
@@ -125,23 +124,39 @@ public class ConfigurationFragment extends Fragment {
         monitorListView.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                RealTimeMonitor monitor = ConfigurationFragment.this.monitorList.get(position);
-                if (monitor.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[2] ||
-                        monitor.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[3]) {
-                    AlertDialog dialog = CustomDialog.terminalDetailDialog(getActivity(), monitor).create();
-                    dialog.show();
-                }
-                // 高压输入端子状态
-                if (monitor.getStateID() == ApplicationConfig.MonitorStateCode[14]) {
-                    ((ConfigurationActivity) getActivity()).viewHVInputTerminalStatus(position);
-                }
-                // 输入端子状态
-                if (monitor.getStateID() == ApplicationConfig.MonitorStateCode[5]) {
-                    ((ConfigurationActivity) getActivity()).viewInputTerminalStatus(position);
-                }
-                // 输出端子状态
-                if (monitor.getStateID() == ApplicationConfig.MonitorStateCode[6]) {
-                    ((ConfigurationActivity) getActivity()).viewOutputTerminalStatus(position);
+                if (BluetoothTool.getInstance().isPrepared()) {
+                    RealTimeMonitor monitor = ConfigurationFragment.this.monitorList.get(position);
+                    /*
+                    if (monitor.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[2] ||
+                            monitor.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[3]) {
+                        AlertDialog dialog = CustomDialog.terminalDetailDialog(getActivity(), monitor).create();
+                        dialog.show();
+                    }
+                    */
+                    // 系统状态
+                    if (monitor.getStateID() == ApplicationConfig.MonitorStateCode[12]) {
+                        ((ConfigurationActivity) getActivity()).viewSystemTerminalStatus(position);
+                    }
+                    // 轿顶板输入状态
+                    if (monitor.getStateID() == ApplicationConfig.MonitorStateCode[10]) {
+                        ((ConfigurationActivity) getActivity()).viewCeilingInputStatus(position);
+                    }
+                    // 轿顶板输出状态
+                    if (monitor.getStateID() == ApplicationConfig.MonitorStateCode[11]) {
+                        ((ConfigurationActivity) getActivity()).viewCeilingOutputStatus(position);
+                    }
+                    // 高压输入端子状态
+                    if (monitor.getStateID() == ApplicationConfig.MonitorStateCode[14]) {
+                        ((ConfigurationActivity) getActivity()).viewHVInputTerminalStatus(position);
+                    }
+                    // 输入端子状态
+                    if (monitor.getStateID() == ApplicationConfig.MonitorStateCode[5]) {
+                        ((ConfigurationActivity) getActivity()).viewInputTerminalStatus(position);
+                    }
+                    // 输出端子状态
+                    if (monitor.getStateID() == ApplicationConfig.MonitorStateCode[6]) {
+                        ((ConfigurationActivity) getActivity()).viewOutputTerminalStatus(position);
+                    }
                 }
             }
         });

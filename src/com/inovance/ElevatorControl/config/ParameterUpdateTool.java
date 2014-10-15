@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
+import android.util.Log;
 import android.widget.Toast;
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.daos.DeviceDao;
@@ -118,7 +119,11 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
         this.context = context;
         this.currentDevice = DeviceDao.findByName(context, DefaultDeviceName, Device.NormalDevice);
         // Register network state change broadcast receiver
-        context.registerReceiver(broadcastReceiver(), intentFilter());
+        try {
+            context.registerReceiver(broadcastReceiver(), intentFilter());
+        } catch (Exception e) {
+            Log.v(TAG, "Register broadcast failed");
+        }
     }
 
     public String getDeviceName() {

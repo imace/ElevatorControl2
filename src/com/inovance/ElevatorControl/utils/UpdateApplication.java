@@ -2,9 +2,7 @@ package com.inovance.elevatorcontrol.utils;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
+import android.content.*;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -37,9 +35,13 @@ import java.net.URLConnection;
  */
 public class UpdateApplication {
 
+    private static final String TAG = UpdateApplication.class.getSimpleName();
+
     private static UpdateApplication instance = new UpdateApplication();
 
-    private Activity activity;
+    private Context mContext;
+
+    private Activity mActivity;
 
     public static interface OnNoUpdateFoundListener {
         void onNoUpdate();
@@ -98,13 +100,20 @@ public class UpdateApplication {
 
     }
 
-    public void init(Activity activity) {
-        this.activity = activity;
+    public void init(Context context) {
+        this.mContext = context;
+        mContext.registerReceiver(getBroadcastReceiver(), getIntentFilter());
         try {
-            currentVersionName = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0).versionName;
+            currentVersionName = mContext.getPackageManager()
+                    .getPackageInfo(mContext.getPackageName(), 0)
+                    .versionName;
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    public void setCurrentActivity(Activity activity) {
+        this.mActivity = activity;
     }
 
     /**
@@ -114,7 +123,8 @@ public class UpdateApplication {
      * @return Available Status
      */
     public boolean isNetworkAvailable() {
-        ConnectivityManager connectivity = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager connectivity = (ConnectivityManager) mContext
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
         if (connectivity == null) {
             return false;
         } else {
@@ -134,95 +144,102 @@ public class UpdateApplication {
      * 检查是否有新版本
      */
     public void checkUpdate() {
-        if (activity != null) {
+        if (mActivity != null) {
             if (isNetworkAvailable()) {
-                if (noNetworkDialog != null && isDialogShowing) {
-                    noNetworkDialog.dismiss();
-                }
-                WebApi.getInstance().setOnResultListener(new WebApi.OnGetResultListener() {
-                    @Override
-                    public void onResult(String tag, String responseString) {
-                        boolean needUpdate = false;
-                        if (responseString != null && responseString.length() > 0) {
-                            String[] lastVersion = responseString.split(".");
-                            String[] currentVersion = currentVersionName.split(".");
-                            if (lastVersion.length == 3 && currentVersion.length == 3) {
-                                int lastMainVersion = Integer.parseInt(lastVersion[0]);
-                                int lastSecondVersion = Integer.parseInt(lastVersion[1]);
-                                int lastBuildVersion = Integer.parseInt(lastVersion[2]);
-                                int currentMainVersion = Integer.parseInt(currentVersion[0]);
-                                int currentSecondVersion = Integer.parseInt(currentVersion[1]);
-                                int currentBuildVersion = Integer.parseInt(currentVersion[2]);
-                                if (currentMainVersion > lastMainVersion) {
-                                    needUpdate = true;
-                                }
-                                if (currentSecondVersion > lastSecondVersion) {
-                                    needUpdate = true;
-                                }
-                                if (currentBuildVersion > lastBuildVersion) {
-                                    needUpdate = true;
-                                }
-                            }
-                        }
-                        if (needUpdate) {
-                            lastVersionName = responseString;
-                            confirmUpdateApplication();
-                        } else {
-                            if (mListener != null) {
-                                mListener.onNoUpdate();
-                            }
-                        }
-                    }
-                });
-                WebApi.getInstance().setOnFailureListener(new WebApi.OnRequestFailureListener() {
-                    @Override
-                    public void onFailure(int statusCode, Throwable throwable) {
-                        Toast.makeText(activity, throwable.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-                WebApi.getInstance().getLastSoftwareVersion(activity);
+                startCheckRemoteLastVersion();
             } else {
-                if (noNetworkDialog == null) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
-                            .setTitle(R.string.no_network_title)
-                            .setMessage(R.string.setting_network_message)
-                            .setNegativeButton(R.string.exit_application_text, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    WebApi.getInstance().removeListener();
-                                    BluetoothTool.getInstance().kill();
-                                    activity.finish();
-                                }
-                            })
-                            .setPositiveButton(R.string.setting_network_text, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    Intent intent = new Intent(Settings.ACTION_SETTINGS);
-                                    activity.startActivity(intent);
-                                }
-                            });
-                    noNetworkDialog = builder.create();
-                    noNetworkDialog.setCancelable(false);
-                    noNetworkDialog.setCanceledOnTouchOutside(false);
-                    noNetworkDialog.show();
-                    noNetworkDialog.setOnShowListener(new DialogInterface.OnShowListener() {
-                        @Override
-                        public void onShow(DialogInterface dialogInterface) {
-                            isDialogShowing = true;
+                showNoNetworkDialog();
+            }
+        }
+    }
+
+    private void startCheckRemoteLastVersion() {
+        WebApi.getInstance().setOnResultListener(new WebApi.OnGetResultListener() {
+            @Override
+            public void onResult(String tag, String responseString) {
+                boolean needUpdate = false;
+                if (responseString != null && responseString.length() > 0) {
+                    String[] lastVersion = responseString.split(".");
+                    String[] currentVersion = currentVersionName.split(".");
+                    if (lastVersion.length == 3 && currentVersion.length == 3) {
+                        int lastMainVersion = Integer.parseInt(lastVersion[0]);
+                        int lastSecondVersion = Integer.parseInt(lastVersion[1]);
+                        int lastBuildVersion = Integer.parseInt(lastVersion[2]);
+                        int currentMainVersion = Integer.parseInt(currentVersion[0]);
+                        int currentSecondVersion = Integer.parseInt(currentVersion[1]);
+                        int currentBuildVersion = Integer.parseInt(currentVersion[2]);
+                        if (currentMainVersion > lastMainVersion) {
+                            needUpdate = true;
                         }
-                    });
-                    noNetworkDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                        @Override
-                        public void onDismiss(DialogInterface dialogInterface) {
-                            isDialogShowing = false;
+                        if (currentSecondVersion > lastSecondVersion) {
+                            needUpdate = true;
                         }
-                    });
-                } else {
-                    if (noNetworkDialog != null) {
-                        if (!isDialogShowing) {
-                            noNetworkDialog.show();
+                        if (currentBuildVersion > lastBuildVersion) {
+                            needUpdate = true;
                         }
                     }
+                }
+                if (needUpdate) {
+                    lastVersionName = responseString;
+                    confirmUpdateApplication();
+                } else {
+                    if (mListener != null) {
+                        mListener.onNoUpdate();
+                    }
+                }
+            }
+        });
+        WebApi.getInstance().setOnFailureListener(new WebApi.OnRequestFailureListener() {
+            @Override
+            public void onFailure(int statusCode, Throwable throwable) {
+                Toast.makeText(mActivity, R.string.server_error_text, Toast.LENGTH_SHORT).show();
+            }
+        });
+        WebApi.getInstance().getLastSoftwareVersion(mActivity);
+    }
+
+    private void showNoNetworkDialog() {
+        if (noNetworkDialog == null) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(mActivity, R.style.CustomDialogStyle)
+                    .setTitle(R.string.no_network_title)
+                    .setMessage(R.string.setting_network_message)
+                    .setNegativeButton(R.string.exit_application_text, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            WebApi.getInstance().removeListener();
+                            BluetoothTool.getInstance().kill();
+                            if (mActivity != null) {
+                                mActivity.finish();
+                            }
+                        }
+                    })
+                    .setPositiveButton(R.string.setting_network_text, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            Intent intent = new Intent(Settings.ACTION_SETTINGS);
+                            mActivity.startActivity(intent);
+                        }
+                    });
+            noNetworkDialog = builder.create();
+            noNetworkDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                @Override
+                public void onShow(DialogInterface dialogInterface) {
+                    isDialogShowing = true;
+                }
+            });
+            noNetworkDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialogInterface) {
+                    isDialogShowing = false;
+                }
+            });
+            noNetworkDialog.show();
+            noNetworkDialog.setCancelable(false);
+            noNetworkDialog.setCanceledOnTouchOutside(false);
+        } else {
+            if (noNetworkDialog != null) {
+                if (!isDialogShowing) {
+                    noNetworkDialog.show();
                 }
             }
         }
@@ -232,15 +249,15 @@ public class UpdateApplication {
      * 弹出确认框确认更新
      */
     public void confirmUpdateApplication() {
-        if (activity != null) {
-            View dialogView = activity.getLayoutInflater().inflate(R.layout.update_application_dialog, null);
+        if (mActivity != null) {
+            View dialogView = mActivity.getLayoutInflater().inflate(R.layout.update_application_dialog, null);
             confirmTextView = (TextView) dialogView.findViewById(R.id.confirm_text);
-            confirmTextView.setText(activity.getResources().getString(R.string.last_version_text) + lastVersionName);
+            confirmTextView.setText(mActivity.getResources().getString(R.string.last_version_text) + lastVersionName);
             progressView = (LinearLayout) dialogView.findViewById(R.id.progress_view);
             downloadProgressBar = (ProgressBar) dialogView.findViewById(R.id.download_progress);
             currentLengthTextView = (TextView) dialogView.findViewById(R.id.current_length);
             totalLengthTextView = (TextView) dialogView.findViewById(R.id.total_length);
-            AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
+            AlertDialog.Builder builder = new AlertDialog.Builder(mActivity, R.style.CustomDialogStyle)
                     .setView(dialogView)
                     .setTitle(R.string.confirm_update_title)
                     .setNegativeButton(R.string.exit_application_text, null)
@@ -254,7 +271,9 @@ public class UpdateApplication {
                 public void onClick(View view) {
                     WebApi.getInstance().removeListener();
                     BluetoothTool.getInstance().kill();
-                    activity.finish();
+                    if (mActivity != null) {
+                        mActivity.finish();
+                    }
                 }
             });
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
@@ -262,7 +281,7 @@ public class UpdateApplication {
                 public void onClick(View view) {
                     confirmTextView.setVisibility(View.GONE);
                     progressView.setVisibility(View.VISIBLE);
-                    new DownloadTask().execute(ApplicationConfig.DomainName + ApplicationConfig.DownloadApplicationFile);
+                    new DownloadTask().execute(ApplicationConfig.APIUri + ApplicationConfig.DownloadApplicationFile);
                 }
             });
         }
@@ -306,7 +325,7 @@ public class UpdateApplication {
                 message.obj = contentLength;
                 handler.sendMessage(message);
                 InputStream inputStream = new BufferedInputStream(url.openStream());
-                File fileName = new File(activity.getExternalCacheDir().getPath() + "/update.apk");
+                File fileName = new File(mActivity.getExternalCacheDir().getPath() + "/update.apk");
                 if (!fileName.exists()) {
                     fileName.createNewFile();
                 }
@@ -344,11 +363,38 @@ public class UpdateApplication {
         protected void onPostExecute(Boolean result) {
             if (result) {
                 Intent intent = new Intent(Intent.ACTION_VIEW);
-                File file = new File(activity.getExternalCacheDir().getPath() + "/update.apk");
+                File file = new File(mActivity.getExternalCacheDir().getPath() + "/update.apk");
                 intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                activity.startActivity(intent);
+                mActivity.startActivity(intent);
             }
         }
+    }
+
+    /**
+     * Network state change BroadcastReceiver
+     *
+     * @return BroadcastReceiver
+     */
+    private BroadcastReceiver getBroadcastReceiver() {
+        return new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (isNetworkAvailable()) {
+                    if (noNetworkDialog != null && isDialogShowing) {
+                        noNetworkDialog.dismiss();
+                        checkUpdate();
+                    }
+                } else {
+                    if (noNetworkDialog != null && !isDialogShowing) {
+                        noNetworkDialog.show();
+                    }
+                }
+            }
+        };
+    }
+
+    private IntentFilter getIntentFilter() {
+        return new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
     }
 }

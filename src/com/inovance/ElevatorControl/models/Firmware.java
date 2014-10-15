@@ -10,7 +10,7 @@ import org.json.JSONObject;
  * Date: 14-3-12.
  * Time: 17:00.
  */
-@Table(name="FIRMWARE")
+@Table(name = "FIRMWARE")
 public class Firmware {
 
     @Id
@@ -45,6 +45,8 @@ public class Firmware {
 
     private String fileName;
 
+    private String vendorName;
+
     /**
      * 提取日期
      */
@@ -73,7 +75,7 @@ public class Firmware {
         this.Id = object.optInt("ID".toUpperCase());
         this.bluetoothAddress = object.optString("BluetoothAddress".toUpperCase());
         this.deviceID = object.optString("FK_DeviceID".toUpperCase());
-        this.isSpecialDevice = object.optString("IsSpecialDevice".toUpperCase()).equalsIgnoreCase("true");
+        this.isSpecialDevice = object.optInt("IsSpecialDevice".toUpperCase()) == 1;
         this.remark = object.optString("Remark".toUpperCase());
         this.isApproved = object.optString("ApproveState".toUpperCase()).equalsIgnoreCase("已审批");
         this.createDate = object.optString("CreateDate".toUpperCase());
@@ -82,6 +84,7 @@ public class Firmware {
         this.fileURL = object.optString("FileUrl".toUpperCase());
         this.downloadDate = object.optString("GetFileDate".toUpperCase());
         this.totalBurnTimes = object.optInt("UseTimes".toUpperCase());
+        this.vendorName = object.optString("VendorName".toUpperCase());
         this.expireDate = object.optString("DateLimit".toUpperCase());
     }
 
@@ -205,16 +208,22 @@ public class Firmware {
         this.expireDate = expireDate;
     }
 
+    public String getVendorName() {
+        return vendorName;
+    }
+
+    public void setVendorName(String vendorName) {
+        this.vendorName = vendorName;
+    }
+
     /**
      * 是否超过使用期限
      *
      * @return boolean
      */
     public boolean isExpired() {
-        if (getExpireDate() == null || getExpireDate().length() == 0) {
-            return false;
-        }
-        return System.currentTimeMillis() > Long.parseLong(getExpireDate()) * 1000;
+        return !(getExpireDate() == null || getExpireDate().length() == 0)
+                && System.currentTimeMillis() > Long.parseLong(getExpireDate()) * 1000;
     }
 
 }

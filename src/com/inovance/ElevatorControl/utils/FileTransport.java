@@ -80,7 +80,7 @@ public class FileTransport implements Runnable {
     };
 
     public interface OnFileUploadComplete {
-        void onUploadComplete();
+        void onUploadComplete(String fileName);
     }
 
     public interface OnFileDownloadComplete {
@@ -216,7 +216,12 @@ public class FileTransport implements Runnable {
                 uploaded += length;
                 Message message = new Message();
                 message.what = UpdateProgressMessage;
-                message.obj = (uploaded * 100) / totalLength;
+                int percent = (uploaded * 100) / totalLength;
+                // Wait server process file
+                if (percent == 100) {
+                    percent = 99;
+                }
+                message.obj = percent;
                 transportHandler.sendMessage(message);
             }
             if (!isCanceled) {
@@ -226,10 +231,19 @@ public class FileTransport implements Runnable {
                 dataOutputStream.flush();
                 dataOutputStream.close();
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                    transportHandler.sendEmptyMessage(TransportComplete);
+                    Message message = new Message();
+                    message.what = UpdateProgressMessage;
+                    message.obj = 100;
+                    transportHandler.sendMessage(message);
                     if (mUploadListener != null) {
-                        mUploadListener.onUploadComplete();
+                        String fileName = chatContent.get(0)
+                                + "-" + chatContent.get(1)
+                                + "-" + chatContent.get(2)
+                                + "-" + chatContent.get(3)
+                                + "." + chatContent.get(4);
+                        mUploadListener.onUploadComplete(fileName);
                     }
+                    transportHandler.sendEmptyMessage(TransportComplete);
                 } else {
                     transportHandler.sendEmptyMessage(TransportFailed);
                 }
@@ -304,7 +318,11 @@ public class FileTransport implements Runnable {
                     inputStream.close();
                     transportHandler.sendEmptyMessage(TransportComplete);
                 }
-                return new String[]{filePath.getAbsolutePath(), fileName, contentType};
+                if (isCanceled) {
+                    return null;
+                } else {
+                    return new String[]{filePath.getAbsolutePath(), fileName, contentType};
+                }
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {

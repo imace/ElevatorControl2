@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 import butterknife.InjectView;
 import butterknife.Views;
 import com.inovance.bluetoothtool.BluetoothHandler;
@@ -40,12 +41,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Pattern;
 
 /**
  * 标签卡 电梯调试
@@ -112,6 +111,11 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
     private BluetoothTalk[] getInputTerminalStateCommunications;
 
     /**
+     * 恢复出厂参数设置 Handler
+     */
+    private RestoreFactoryHandler restoreFactoryHandler;
+
+    /**
      * 获取输出端子值 Handler
      */
     private GetOutputTerminalValueHandler getOutputTerminalValueHandler;
@@ -130,6 +134,36 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
      * 获取输出端子状态通信内容
      */
     private BluetoothTalk[] getOutputTerminalStateCommunications;
+
+    /**
+     * 获取系统状态 Handler
+     */
+    private GetSystemStateHandler getSystemStateHandler;
+
+    /**
+     * 获取系统状态通信内容
+     */
+    private BluetoothTalk[] getSystemStateCommunications;
+
+    /**
+     * 获取轿顶板输入状态
+     */
+    private GetCeilingInputStateHandler getCeilingInputStateHandler;
+
+    /**
+     * 获取轿顶板输入状态通信内容
+     */
+    private BluetoothTalk[] getCeilingInputStateCommunications;
+
+    /**
+     * 获取轿顶板输出状态
+     */
+    private GetCeilingOutputStateHandler getCeilingOutputStateHandler;
+
+    /**
+     * 获取轿顶板输出状态通信内容
+     */
+    private BluetoothTalk[] getCeilingOutputStateCommunications;
 
     /**
      * 读取等待信息
@@ -169,7 +203,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
     /**
      * 读取实时状态
      */
-    private static final int GET_SYSTEM_STATUS = 1;
+    private static final int GET_MONITOR_STATE = 1;
 
     /**
      * 读取高压输入端子值
@@ -200,6 +234,21 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
      * 读取输出端子状态
      */
     private static final int GET_OUTPUT_TERMINAL_STATE = 7;
+
+    /**
+     * 读取系统状态
+     */
+    private static final int GET_SYSTEM_STATE = 8;
+
+    /**
+     * 读取轿顶板输入状态
+     */
+    private static final int GET_CEILING_OUTPUT_STATE = 9;
+
+    /**
+     * 读取轿顶板输出状态
+     */
+    private static final int GET_CEILING_INPUT_STATE = 10;
 
     /**
      * 当前执行的任务
@@ -252,6 +301,14 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
         // 同步输出端子状态
         getOutputTerminalValueHandler = new GetOutputTerminalValueHandler(this);
         getOutputTerminalStateHandler = new GetOutputTerminalStateHandler(this);
+        // 同步系统状态
+        getSystemStateHandler = new GetSystemStateHandler(this);
+        // 同步轿顶板输入状态
+        getCeilingInputStateHandler = new GetCeilingInputStateHandler(this);
+        // 同步轿顶板输出状态
+        getCeilingOutputStateHandler = new GetCeilingOutputStateHandler(this);
+        // 恢复出厂设置
+        restoreFactoryHandler = new RestoreFactoryHandler(this);
         pager.setAdapter(mConfigurationAdapter);
         pager.setOffscreenPageLimit(4);
         indicator.setViewPager(pager);
@@ -309,7 +366,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
         if (BluetoothTool.getInstance().isPrepared()) {
             isRunning = true;
             isSyncing = false;
-            currentTask = GET_SYSTEM_STATUS;
+            currentTask = GET_MONITOR_STATE;
             syncHandler.postDelayed(syncTask, SYNC_TIME);
         }
     }
@@ -339,6 +396,9 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
         getInputTerminalStateCommunications = null;
         getOutputTerminalValueCommunications = null;
         getOutputTerminalStateCommunications = null;
+        getSystemStateCommunications = null;
+        getCeilingInputStateCommunications = null;
+        getCeilingOutputStateCommunications = null;
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -354,7 +414,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
             }
         });
         isSyncing = false;
-        currentTask = GET_SYSTEM_STATUS;
+        currentTask = GET_MONITOR_STATE;
     }
 
     /**
@@ -424,18 +484,20 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                 @Override
                 public Object onParse() {
                     if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
-                        byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
+                        byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
                         // 写入恢复出厂设置日志
                         LogUtils.getInstance().write(ApplicationConfig.LogRestoreFactory,
                                 SerialUtility.byte2HexStr(getSendBuffer()),
-                                SerialUtility.byte2HexStr(data));
+                                SerialUtility.byte2HexStr(received));
+                        monitor.setReceived(received);
+                        return monitor;
                     }
                     return null;
                 }
             };
             if (BluetoothTool.getInstance().isPrepared()) {
                 BluetoothTool.getInstance()
-                        .setHandler(null)
+                        .setHandler(restoreFactoryHandler)
                         .setCommunications(communications)
                         .send();
             }
@@ -920,6 +982,195 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
     }
 
     /**
+     * 获取系统状态
+     */
+    private void getSystemState() {
+        if (getSystemStateCommunications == null) {
+            final RealTimeMonitor monitor = RealTimeMonitorDao.findByStateID(this, ApplicationConfig.MonitorStateCode[12]);
+            if (monitor != null) {
+                getSystemStateCommunications = new BluetoothTalk[]{new BluetoothTalk() {
+                    @Override
+                    public void beforeSend() {
+                        this.setSendBuffer(SerialUtility.crc16("0103"
+                                + monitor.getCode()
+                                + "0001"));
+                    }
+
+                    @Override
+                    public void afterSend() {
+
+                    }
+
+                    @Override
+                    public void beforeReceive() {
+
+                    }
+
+                    @Override
+                    public void afterReceive() {
+
+                    }
+
+                    @Override
+                    public Object onParse() {
+                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                            byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
+                            monitor.setReceived(received);
+                            return monitor;
+                        }
+                        return null;
+                    }
+                }};
+            }
+        }
+        if (BluetoothTool.getInstance().isPrepared()) {
+            isSyncing = true;
+            getSystemStateHandler.sendCount = getSystemStateCommunications.length;
+            BluetoothTool.getInstance()
+                    .setHandler(getSystemStateHandler)
+                    .setCommunications(getSystemStateCommunications)
+                    .send();
+        }
+    }
+
+    /**
+     * 查看系统状态
+     *
+     * @param index RealTimeMonitor index
+     */
+    public void viewSystemTerminalStatus(int index) {
+        showTerminalStatusDialog(showStateList.get(index));
+        isSyncing = false;
+        currentTask = GET_SYSTEM_STATE;
+    }
+
+    /**
+     * 获取轿顶板输入状态
+     */
+    private void getCeilingInputState() {
+        if (getCeilingInputStateCommunications == null) {
+            final RealTimeMonitor monitor = RealTimeMonitorDao.findByStateID(this, ApplicationConfig.MonitorStateCode[10]);
+            if (monitor != null) {
+                getCeilingInputStateCommunications = new BluetoothTalk[]{new BluetoothTalk() {
+                    @Override
+                    public void beforeSend() {
+                        this.setSendBuffer(SerialUtility.crc16("0103"
+                                + monitor.getCode()
+                                + "0001"));
+                    }
+
+                    @Override
+                    public void afterSend() {
+
+                    }
+
+                    @Override
+                    public void beforeReceive() {
+
+                    }
+
+                    @Override
+                    public void afterReceive() {
+
+                    }
+
+                    @Override
+                    public Object onParse() {
+                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                            byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
+                            monitor.setReceived(received);
+                            return monitor;
+                        }
+                        return null;
+                    }
+                }};
+            }
+        }
+        if (BluetoothTool.getInstance().isPrepared()) {
+            isSyncing = true;
+            getCeilingInputStateHandler.sendCount = getCeilingInputStateCommunications.length;
+            BluetoothTool.getInstance()
+                    .setHandler(getCeilingInputStateHandler)
+                    .setCommunications(getCeilingInputStateCommunications)
+                    .send();
+        }
+    }
+
+    /**
+     * 查看轿顶板输入状态
+     *
+     * @param index RealTimeMonitor index
+     */
+    public void viewCeilingInputStatus(int index) {
+        showTerminalStatusDialog(showStateList.get(index));
+        isSyncing = false;
+        currentTask = GET_CEILING_INPUT_STATE;
+    }
+
+    /**
+     * 获取轿顶板输出状态
+     */
+    private void getCeilingOutputState() {
+        if (getCeilingOutputStateCommunications == null) {
+            final RealTimeMonitor monitor = RealTimeMonitorDao.findByStateID(this, ApplicationConfig.MonitorStateCode[11]);
+            if (monitor != null) {
+                getCeilingOutputStateCommunications = new BluetoothTalk[]{new BluetoothTalk() {
+                    @Override
+                    public void beforeSend() {
+                        this.setSendBuffer(SerialUtility.crc16("0103"
+                                + monitor.getCode()
+                                + "0001"));
+                    }
+
+                    @Override
+                    public void afterSend() {
+
+                    }
+
+                    @Override
+                    public void beforeReceive() {
+
+                    }
+
+                    @Override
+                    public void afterReceive() {
+
+                    }
+
+                    @Override
+                    public Object onParse() {
+                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                            byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
+                            monitor.setReceived(received);
+                            return monitor;
+                        }
+                        return null;
+                    }
+                }};
+            }
+        }
+        if (BluetoothTool.getInstance().isPrepared()) {
+            isSyncing = true;
+            getCeilingOutputStateHandler.sendCount = getCeilingOutputStateCommunications.length;
+            BluetoothTool.getInstance()
+                    .setHandler(getCeilingOutputStateHandler)
+                    .setCommunications(getCeilingOutputStateCommunications)
+                    .send();
+        }
+    }
+
+    /**
+     * 查看轿顶板输出状态
+     *
+     * @param index RealTimeMonitor index
+     */
+    public void viewCeilingOutputStatus(int index) {
+        showTerminalStatusDialog(showStateList.get(index));
+        isSyncing = false;
+        currentTask = GET_CEILING_OUTPUT_STATE;
+    }
+
+    /**
      * 显示端子状态对话框
      */
     private void showTerminalStatusDialog(RealTimeMonitor monitor) {
@@ -934,10 +1185,13 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         isSyncing = false;
-                        currentTask = GET_SYSTEM_STATUS;
+                        currentTask = GET_MONITOR_STATE;
                         getHVInputTerminalStateHandler.statusAdapter = null;
                         getInputTerminalStateHandler.statusAdapter = null;
                         getOutputTerminalStateHandler.statusAdapter = null;
+                        getSystemStateHandler.statusAdapter = null;
+                        getCeilingInputStateHandler.statusAdapter = null;
+                        getCeilingOutputStateHandler.statusAdapter = null;
                     }
                 });
         // 端子状态信息 Dialog
@@ -951,7 +1205,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
     public void run() {
         switch (currentTask) {
             // 读取实时状态值
-            case GET_SYSTEM_STATUS:
+            case GET_MONITOR_STATE:
                 getRealTimeMonitorState();
                 break;
             // 读取高压输入端子值
@@ -977,6 +1231,18 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
             // 读取输出端子状态
             case GET_OUTPUT_TERMINAL_STATE:
                 getOutputTerminalState();
+                break;
+            // 读取系统状态
+            case GET_SYSTEM_STATE:
+                getSystemState();
+                break;
+            // 读取轿顶板输入状态
+            case GET_CEILING_INPUT_STATE:
+                getCeilingInputState();
+                break;
+            // 读取轿顶板输出状态
+            case GET_CEILING_OUTPUT_STATE:
+                getCeilingOutputState();
                 break;
         }
     }
@@ -1383,6 +1649,275 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                 monitorList.add((RealTimeMonitor) msg.obj);
                 receiveCount++;
             }
+        }
+    }
+
+    // ============================================= Restore factory handler ===================================== //
+
+    private class RestoreFactoryHandler extends BluetoothHandler {
+
+        public RestoreFactoryHandler(Activity activity) {
+            super(activity);
+        }
+
+        @Override
+        public void onTalkReceive(Message msg) {
+            super.onTalkReceive(msg);
+            if (msg.obj != null && msg.obj instanceof RealTimeMonitor) {
+                RealTimeMonitor monitor = (RealTimeMonitor) msg.obj;
+                String result = SerialUtility.byte2HexStr(monitor.getReceived());
+                boolean writeSuccessful = true;
+                for (String item : ApplicationConfig.ERROR_CODE_ARRAY) {
+                    if (result.contains(item)) {
+                        writeSuccessful = false;
+                        break;
+                    }
+                }
+                String tips;
+                if (writeSuccessful) {
+                    tips = getResources().getString(R.string.restore_factory_successful);
+                } else {
+                    tips = getResources().getString(R.string.restore_factory_failed);
+                }
+                Toast.makeText(ConfigurationActivity.this, tips, Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    // ====================================== Get system state handler ========================================= //
+
+    private class GetSystemStateHandler extends BluetoothHandler {
+
+        public int sendCount;
+
+        private int receiveCount;
+
+        private RealTimeMonitor monitor;
+
+        public ParameterStatusAdapter statusAdapter;
+
+        public GetSystemStateHandler(Activity activity) {
+            super(activity);
+        }
+
+        @Override
+        public void onMultiTalkBegin(Message msg) {
+            super.onMultiTalkBegin(msg);
+            receiveCount = 0;
+        }
+
+        @Override
+        public void onTalkReceive(Message msg) {
+            super.onTalkReceive(msg);
+            if (msg.obj != null && msg.obj instanceof RealTimeMonitor) {
+                receiveCount = 1;
+                monitor = (RealTimeMonitor) msg.obj;
+            }
+        }
+
+        @Override
+        public void onMultiTalkEnd(Message msg) {
+            super.onMultiTalkEnd(msg);
+            if (sendCount == receiveCount && monitor != null) {
+                byte[] data = monitor.getReceived();
+                List<ParameterStatusItem> statusList = new ArrayList<ParameterStatusItem>();
+                try {
+                    JSONArray valuesArray = new JSONArray(monitor.getJSONDescription());
+                    int size = valuesArray.length();
+                    Pattern pattern = Pattern.compile("^\\d*\\-\\d*:.*", Pattern.CASE_INSENSITIVE);
+                    for (int i = 0; i < size; i++) {
+                        JSONObject value = valuesArray.getJSONObject(i);
+                        ParameterStatusItem status = new ParameterStatusItem();
+                        for (Iterator iterator = value.keys(); iterator.hasNext(); ) {
+                            String name = (String) iterator.next();
+                            if (name.equalsIgnoreCase("value")) {
+                                if (!value.optString("value").contains(ApplicationConfig.RETAIN_NAME)) {
+                                    status.setName(value.optString("value"));
+                                }
+                            }
+                            if (name.equalsIgnoreCase("id")) {
+                                status.setStatus(ParseSerialsUtils
+                                        .getIntValueFromBytesInSection(new byte[]{data[4], data[5]},
+                                                new int[]{Integer.parseInt(value.optString("id"))}) == 1);
+                            }
+                            if (pattern.matcher(name).matches()) {
+                                String[] intStringArray = name.split(":")[0].split("-");
+                                status.setName(name.replaceAll("\\d*\\-\\d*:", ""));
+                                JSONArray subArray = value.optJSONArray(name);
+                                int intValue = ParseSerialsUtils
+                                        .getIntValueFromBytesInSection(new byte[]{data[4], data[5]}, new int[]{
+                                                Integer.parseInt(intStringArray[0]),
+                                                Integer.parseInt(intStringArray[1])
+                                        });
+                                int subArraySize = subArray.length();
+                                for (int j = 0; j < subArraySize; j++) {
+                                    int index = Integer.parseInt(subArray.getJSONObject(j).optString("id"));
+                                    if (index == intValue) {
+                                        status.setStatusString(subArray.getJSONObject(j).optString("value"));
+                                    }
+                                }
+                            }
+                        }
+                        if (status.getName() != null) {
+                            statusList.add(status);
+                        }
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                if (statusAdapter == null) {
+                    statusAdapter = new ParameterStatusAdapter(ConfigurationActivity.this, statusList);
+                    ConfigurationActivity.this.terminalListView.setAdapter(statusAdapter);
+                    ConfigurationActivity.this.waitTextView.setVisibility(View.GONE);
+                    ConfigurationActivity.this.terminalListView.setVisibility(View.VISIBLE);
+                } else {
+                    statusAdapter.setStatusList(statusList);
+                }
+            }
+            ConfigurationActivity.this.currentTask = GET_SYSTEM_STATE;
+            ConfigurationActivity.this.isSyncing = false;
+        }
+    }
+
+
+    // =================================== Get ceiling input state handler ===================================== //
+
+    private class GetCeilingInputStateHandler extends BluetoothHandler {
+
+        public int sendCount;
+
+        private int receiveCount;
+
+        private RealTimeMonitor monitor;
+
+        public ParameterStatusAdapter statusAdapter;
+
+        public GetCeilingInputStateHandler(Activity activity) {
+            super(activity);
+        }
+
+        @Override
+        public void onMultiTalkBegin(Message msg) {
+            super.onMultiTalkBegin(msg);
+            receiveCount = 0;
+        }
+
+        @Override
+        public void onTalkReceive(Message msg) {
+            super.onTalkReceive(msg);
+            if (msg.obj != null && msg.obj instanceof RealTimeMonitor) {
+                receiveCount = 1;
+                monitor = (RealTimeMonitor) msg.obj;
+            }
+        }
+
+
+        @Override
+        public void onMultiTalkEnd(Message msg) {
+            super.onMultiTalkEnd(msg);
+            if (sendCount == receiveCount && monitor != null) {
+                byte[] data = monitor.getReceived();
+                List<ParameterStatusItem> statusList = new ArrayList<ParameterStatusItem>();
+                boolean[] booleanArray = ParseSerialsUtils.getBooleanValueArray(new byte[]{data[4], data[5]});
+                int bitsSize = booleanArray.length;
+                try {
+                    JSONArray valuesArray = new JSONArray(monitor.getJSONDescription());
+                    int size = valuesArray.length();
+                    for (int i = 0; i < size; i++) {
+                        JSONObject value = valuesArray.getJSONObject(i);
+                        if (i < bitsSize) {
+                            if (!value.optString("value").contains(ApplicationConfig.RETAIN_NAME)) {
+                                ParameterStatusItem status = new ParameterStatusItem();
+                                status.setName(value.optString("value"));
+                                status.setStatus(booleanArray[Integer.parseInt(value.optString("id"))]);
+                                statusList.add(status);
+                            }
+                        }
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                if (statusAdapter == null) {
+                    statusAdapter = new ParameterStatusAdapter(ConfigurationActivity.this, statusList);
+                    ConfigurationActivity.this.terminalListView.setAdapter(statusAdapter);
+                    ConfigurationActivity.this.waitTextView.setVisibility(View.GONE);
+                    ConfigurationActivity.this.terminalListView.setVisibility(View.VISIBLE);
+                } else {
+                    statusAdapter.setStatusList(statusList);
+                }
+            }
+            ConfigurationActivity.this.currentTask = GET_CEILING_INPUT_STATE;
+            ConfigurationActivity.this.isSyncing = false;
+        }
+    }
+
+    // =================================== Get ceiling output state handler ==================================== //
+
+    private class GetCeilingOutputStateHandler extends BluetoothHandler {
+
+        public int sendCount;
+
+        private int receiveCount;
+
+        private RealTimeMonitor monitor;
+
+        public ParameterStatusAdapter statusAdapter;
+
+        public GetCeilingOutputStateHandler(Activity activity) {
+            super(activity);
+        }
+
+        @Override
+        public void onMultiTalkBegin(Message msg) {
+            super.onMultiTalkBegin(msg);
+            receiveCount = 0;
+        }
+
+        @Override
+        public void onTalkReceive(Message msg) {
+            super.onTalkReceive(msg);
+            if (msg.obj != null && msg.obj instanceof RealTimeMonitor) {
+                receiveCount = 1;
+                monitor = (RealTimeMonitor) msg.obj;
+            }
+        }
+
+        @Override
+        public void onMultiTalkEnd(Message msg) {
+            super.onMultiTalkEnd(msg);
+            if (sendCount == receiveCount && monitor != null) {
+                byte[] data = monitor.getReceived();
+                List<ParameterStatusItem> statusList = new ArrayList<ParameterStatusItem>();
+                boolean[] booleanArray = ParseSerialsUtils.getBooleanValueArray(new byte[]{data[4], data[5]});
+                int bitsSize = booleanArray.length;
+                try {
+                    JSONArray valuesArray = new JSONArray(monitor.getJSONDescription());
+                    int size = valuesArray.length();
+                    for (int i = 0; i < size; i++) {
+                        JSONObject value = valuesArray.getJSONObject(i);
+                        if (i < bitsSize) {
+                            if (!value.optString("value").contains(ApplicationConfig.RETAIN_NAME)) {
+                                ParameterStatusItem status = new ParameterStatusItem();
+                                status.setName(value.optString("value"));
+                                status.setStatus(booleanArray[Integer.parseInt(value.optString("id"))]);
+                                statusList.add(status);
+                            }
+                        }
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                if (statusAdapter == null) {
+                    statusAdapter = new ParameterStatusAdapter(ConfigurationActivity.this, statusList);
+                    ConfigurationActivity.this.terminalListView.setAdapter(statusAdapter);
+                    ConfigurationActivity.this.waitTextView.setVisibility(View.GONE);
+                    ConfigurationActivity.this.terminalListView.setVisibility(View.VISIBLE);
+                } else {
+                    statusAdapter.setStatusList(statusList);
+                }
+            }
+            ConfigurationActivity.this.currentTask = GET_CEILING_OUTPUT_STATE;
+            ConfigurationActivity.this.isSyncing = false;
         }
     }
 }

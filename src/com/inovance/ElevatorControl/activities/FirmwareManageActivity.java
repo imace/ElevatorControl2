@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -214,6 +215,12 @@ public class FirmwareManageActivity extends FragmentActivity {
                     .setMessage(R.string.firmware_expired_message)
                     .setPositiveButton(R.string.dialog_btn_ok, null);
             builder.create().show();
+        } else if (tempFirmWare.getTotalBurnTimes() == 0) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                    .setTitle(R.string.firmware_has_no_burn_time_title)
+                    .setMessage(R.string.firmware_has_no_burn_time_message)
+                    .setPositiveButton(R.string.dialog_btn_ok, null);
+            builder.create().show();
         } else {
             AlertDialog.Builder builder = new AlertDialog.Builder(FirmwareManageActivity.this);
             LayoutInflater inflater = FirmwareManageActivity.this.getLayoutInflater();
@@ -258,7 +265,7 @@ public class FirmwareManageActivity extends FragmentActivity {
             confirmButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if (BluetoothTool.getInstance().isPrepared()) {
+                    if (BluetoothTool.getInstance().isConnected()) {
                         burnDialog.setTitle(R.string.burning_firmware_text);
                         confirmButton.setEnabled(false);
                         cancelButton.setEnabled(false);

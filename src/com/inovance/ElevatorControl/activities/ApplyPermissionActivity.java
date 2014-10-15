@@ -274,10 +274,10 @@ public class ApplyPermissionActivity extends Activity implements OnGetResultList
 
     @Override
     public void onFailure(int statusCode, Throwable throwable) {
+        Toast.makeText(this, R.string.server_error_text, Toast.LENGTH_SHORT).show();
         submitTextView.setVisibility(View.VISIBLE);
         submitProgressView.setVisibility(View.GONE);
         submitView.setEnabled(true);
-        Toast.makeText(this, throwable.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
     }
 
     private class FullSuggestAdapter extends ArrayAdapter implements Filterable {

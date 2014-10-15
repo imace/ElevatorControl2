@@ -96,6 +96,13 @@ public class MoveSidePagerAdapter extends PagerAdapter {
         }
     }
 
+    /**
+     * Clear selected floor
+     */
+    public void clearSelectIndex() {
+        selectIndex = -1;
+    }
+
     @Override
     public boolean isViewFromObject(View view, Object object) {
         return view == object;

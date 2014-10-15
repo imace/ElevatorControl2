@@ -99,9 +99,9 @@ public class BluetoothTool implements Runnable {
     private static final int ReadTimeout = 30;
 
     /**
-     * 设置当前的实例 Activity Context
+     * Init with ApplicationContext
      *
-     * @param activity context
+     * @param Context context
      */
     public void init(Context Context) {
         instance.context = Context;

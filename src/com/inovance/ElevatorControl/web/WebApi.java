@@ -92,7 +92,7 @@ public class WebApi {
      */
     public void registerUser(Context context, User user) {
         if (isNetworkAvailable(context)) {
-            String postURL = ApplicationConfig.DomainName + ApplicationConfig.RegisterUser;
+            String postURL = ApplicationConfig.APIUri + ApplicationConfig.RegisterUser;
             String params = "username={param0}&company={param1}&mobilephone" +
                     "={param2}&contacttel={param3}&email={param4}&blue={param5}";
             try {
@@ -140,7 +140,7 @@ public class WebApi {
                                      String cellphone, String department, String email,
                                      String remark, String bluetoothAddress) {
         if (isNetworkAvailable(context)) {
-            String postURL = ApplicationConfig.DomainName + ApplicationConfig.RegisterInternalUser;
+            String postURL = ApplicationConfig.APIUri + ApplicationConfig.RegisterInternalUser;
             String params = "UserName={param0}&WorkNo={param1}&MobilePhone" +
                     "={param2}&Area=&Department={param3}&Email={param4}&Remark={param5}&Blue={param6}";
             try {
@@ -180,8 +180,13 @@ public class WebApi {
      * @param bluetoothAddress Bluetooth Address
      */
     public void verifyUser(Context context, String bluetoothAddress) {
-        String requestURL = ApplicationConfig.DomainName + ApplicationConfig.VerifyUser + bluetoothAddress;
-        startGetRequest(context, requestURL, ApplicationConfig.VerifyUser, false);
+        if (ApplicationConfig.IsInternalVersion) {
+            String requestURL = ApplicationConfig.APIUri + ApplicationConfig.VerifyInternalUser + bluetoothAddress;
+            startGetRequest(context, requestURL, ApplicationConfig.VerifyInternalUser, false);
+        } else {
+            String requestURL = ApplicationConfig.APIUri + ApplicationConfig.VerifyUser + bluetoothAddress;
+            startGetRequest(context, requestURL, ApplicationConfig.VerifyUser, false);
+        }
     }
 
     /**
@@ -191,7 +196,7 @@ public class WebApi {
      * @param deviceType 设备类型
      */
     public void getFunctionCode(Context context, int deviceID, int deviceType) {
-        String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetFunctionCode;
+        String requestURL = ApplicationConfig.APIUri + ApplicationConfig.GetFunctionCode;
         requestURL = requestURL.replace("{param0}", String.valueOf(deviceID));
         switch (deviceType) {
             case Device.NormalDevice:
@@ -211,7 +216,7 @@ public class WebApi {
      * @param deviceType 设备类型
      */
     public void getErrorHelpList(Context context, int deviceID, int deviceType) {
-        String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetErrorHelp;
+        String requestURL = ApplicationConfig.APIUri + ApplicationConfig.GetErrorHelp;
         requestURL = requestURL.replace("{param0}", String.valueOf(deviceID));
         switch (deviceType) {
             case Device.NormalDevice:
@@ -231,7 +236,7 @@ public class WebApi {
      * @param deviceType 设备类型
      */
     public void getStateCode(Context context, int deviceID, int deviceType) {
-        String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetStateCode;
+        String requestURL = ApplicationConfig.APIUri + ApplicationConfig.GetStateCode;
         requestURL = requestURL.replace("{param0}", String.valueOf(deviceID));
         switch (deviceType) {
             case Device.NormalDevice:
@@ -251,7 +256,7 @@ public class WebApi {
      * @param deviceType 设备类型
      */
     public void getDeviceCodeUpdateTime(Context context, int deviceID, int deviceType) {
-        String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetParameterListUpdateTime;
+        String requestURL = ApplicationConfig.APIUri + ApplicationConfig.GetParameterListUpdateTime;
         requestURL = requestURL.replace("{param0}", String.valueOf(deviceID));
         switch (deviceType) {
             case Device.NormalDevice:
@@ -270,7 +275,7 @@ public class WebApi {
      * @param bluetoothAddress 用户的蓝牙地址
      */
     public void getSpecialDeviceCodeList(Context context, String bluetoothAddress) {
-        String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetSpecialDeviceCodeList + bluetoothAddress;
+        String requestURL = ApplicationConfig.APIUri + ApplicationConfig.GetSpecialDeviceCodeList + bluetoothAddress;
         Log.v(TAG, requestURL);
         startGetRequest(context, requestURL, ApplicationConfig.GetSpecialDeviceCodeList, true);
     }
@@ -279,7 +284,7 @@ public class WebApi {
      * 取得所有设备列表
      */
     public void getNormalDeviceList(Context context) {
-        String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetNormalDeviceList;
+        String requestURL = ApplicationConfig.APIUri + ApplicationConfig.GetNormalDeviceList;
         startGetRequest(context, requestURL, ApplicationConfig.GetNormalDeviceList, true);
     }
 
@@ -287,7 +292,7 @@ public class WebApi {
      * 获取所有厂商的列表
      */
     public void getVendorList(Context context) {
-        String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetVendorList;
+        String requestURL = ApplicationConfig.APIUri + ApplicationConfig.GetVendorList;
         startGetRequest(context, requestURL, ApplicationConfig.GetVendorList, true);
     }
 
@@ -297,7 +302,7 @@ public class WebApi {
      * @param vendorID 厂商ID
      */
     public void getDeviceListByVendorID(Context context, String vendorID) {
-        String requestURL = ApplicationConfig.DomainName
+        String requestURL = ApplicationConfig.APIUri
                 + ApplicationConfig.GetDeviceListByVendorID
                 + vendorID;
         startGetRequest(context, requestURL, ApplicationConfig.GetDeviceListByVendorID, true);
@@ -307,7 +312,7 @@ public class WebApi {
      * 返回所有非标设备
      */
     public void getSpecialDeviceList(Context context) {
-        String requestURL = ApplicationConfig.DomainName
+        String requestURL = ApplicationConfig.APIUri
                 + ApplicationConfig.GetSpecialDeviceList;
         startGetRequest(context, requestURL, ApplicationConfig.GetSpecialDeviceList, true);
     }
@@ -322,7 +327,7 @@ public class WebApi {
      */
     public void applyFirmware(Context context, String bluetoothAddress, int deviceID, String remark) {
         if (isNetworkAvailable(context)) {
-            String postURL = ApplicationConfig.DomainName + ApplicationConfig.ApplyFirmwareApplication;
+            String postURL = ApplicationConfig.APIUri + ApplicationConfig.ApplyFirmwareApplication;
             String params = "blue={param0}&deviceID={param1}&remark={param2}";
             params = params.replace("{param0}", bluetoothAddress);
             params = params.replace("{param1}", String.valueOf(deviceID));
@@ -365,7 +370,7 @@ public class WebApi {
                                              String name, String company, String position, String phone,
                                              String email) {
         if (isNetworkAvailable(context)) {
-            String postURL = ApplicationConfig.DomainName + ApplicationConfig.ApplySpecialDevicePermission;
+            String postURL = ApplicationConfig.APIUri + ApplicationConfig.ApplySpecialDevicePermission;
             String params = "Deviceid={param0}&Blue={param1}&TrueName={param2}" +
                     "&CompanyName={param3}&Position={param4}&Tel={param5}&Email={param6}";
             params = params.replace("{param0}", String.valueOf(deviceID));
@@ -408,7 +413,7 @@ public class WebApi {
      */
     public void applySpecialFirmware(Context context, String bluetoothAddress, int deviceID, String remark) {
         if (isNetworkAvailable(context)) {
-            String postURL = ApplicationConfig.DomainName + ApplicationConfig.ApplySpecialFirmwareApplication;
+            String postURL = ApplicationConfig.APIUri + ApplicationConfig.ApplySpecialFirmwareApplication;
             String params = "blue={param0}&deviceID={param1}&remark={param2}";
             params = params.replace("{param0}", bluetoothAddress);
             params = params.replace("{param1}", String.valueOf(deviceID));
@@ -442,7 +447,7 @@ public class WebApi {
      * @param bluetoothAddress 手机蓝牙地址
      */
     public void getAllFirmwareNotDownload(Context context, String bluetoothAddress) {
-        String requestURL = ApplicationConfig.DomainName
+        String requestURL = ApplicationConfig.APIUri
                 + ApplicationConfig.GetAllFirmwareNotDownload
                 + bluetoothAddress;
         startGetRequest(context, requestURL, ApplicationConfig.GetAllFirmwareNotDownload, false);
@@ -454,7 +459,7 @@ public class WebApi {
      * @param approveID 审批记录的ID
      */
     public void deleteFileFromServer(Context context, int approveID) {
-        String requestURL = ApplicationConfig.DomainName
+        String requestURL = ApplicationConfig.APIUri
                 + ApplicationConfig.DeleteFile
                 + approveID;
         startGetRequest(context, requestURL, ApplicationConfig.DeleteFile, false);
@@ -466,7 +471,7 @@ public class WebApi {
      * @param context Context
      */
     public void getLastSoftwareVersion(Context context) {
-        String requestURL = ApplicationConfig.DomainName
+        String requestURL = ApplicationConfig.APIUri
                 + ApplicationConfig.GetLastSoftwareVersion;
         startGetRequest(context, requestURL, ApplicationConfig.GetLastSoftwareVersion, false);
     }
@@ -478,7 +483,7 @@ public class WebApi {
      */
     public void downloadFirmwareFromServer(Context context, int approveID) {
         if (isNetworkAvailable(context)) {
-            String requestURL = ApplicationConfig.DomainName
+            String requestURL = ApplicationConfig.APIUri
                     + ApplicationConfig.DownloadFirmware
                     + approveID;
             client.get(requestURL, new ResponseHandler() {
@@ -509,7 +514,7 @@ public class WebApi {
      */
     public void sendChatMessage(Context context, String from, String to, String fileStream, String fileName, int type, String title) {
         if (isNetworkAvailable(context)) {
-            String postURL = ApplicationConfig.DomainName + ApplicationConfig.SendChatMessage;
+            String postURL = ApplicationConfig.APIUri + ApplicationConfig.SendChatMessage;
             String params = "FromNum={param0}&ToNum={param1}&fs={param2}&FileName={param3}&Type={param4}&title={param5}";
             params = params.replace("{param0}", from);
             params = params.replace("{param1}", to);
@@ -548,7 +553,7 @@ public class WebApi {
      * @param phoneNumber 手机号码
      */
     public void getSendChatMessage(Context context, String phoneNumber) {
-        String requestURL = ApplicationConfig.DomainName
+        String requestURL = ApplicationConfig.APIUri
                 + ApplicationConfig.GetSendChatMessage
                 + phoneNumber;
         startGetRequest(context, requestURL, ApplicationConfig.GetSendChatMessage, false);
@@ -562,7 +567,7 @@ public class WebApi {
      * @param phoneNumber 手机号码
      */
     public void getReceiveChatMessage(Context context, String phoneNumber) {
-        String requestURL = ApplicationConfig.DomainName
+        String requestURL = ApplicationConfig.APIUri
                 + ApplicationConfig.GetReceiveChatMessage
                 + phoneNumber;
         startGetRequest(context, requestURL, ApplicationConfig.GetReceiveChatMessage, false);
@@ -577,7 +582,7 @@ public class WebApi {
      * @param timestamp   起始时间戳
      */
     public void getChatMessage(Context context, String phoneNumber, long timestamp) {
-        String requestURL = ApplicationConfig.DomainName + ApplicationConfig.GetChatMessage;
+        String requestURL = ApplicationConfig.APIUri + ApplicationConfig.GetChatMessage;
         requestURL = requestURL.replace("{param0}", phoneNumber);
         requestURL = requestURL.replace("{param1}", String.valueOf(timestamp));
         Log.v(TAG, requestURL);
@@ -585,7 +590,7 @@ public class WebApi {
     }
 
     public void getRegistUserList(Context context) {
-        String requestURL = ApplicationConfig.DomainName
+        String requestURL = ApplicationConfig.APIUri
                 + ApplicationConfig.GetRegistUserList;
         startGetRequest(context, requestURL, ApplicationConfig.GetRegistUserList, true);
     }

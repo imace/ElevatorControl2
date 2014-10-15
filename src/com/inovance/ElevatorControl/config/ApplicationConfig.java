@@ -5,14 +5,13 @@ package com.inovance.elevatorcontrol.config;
  * User: keith.
  * Date: 14-3-19.
  * Time: 10:48.
- * 参数名称Name对应
  */
 public class ApplicationConfig {
 
     /**
      * 是否是内部用户版本
      */
-    public static final boolean isInternalVersion = false;
+    public static final boolean IsInternalVersion = false;
 
     public static final String PREFERENCE_FILE_NAME = "ApplicationPreference";
 
@@ -260,7 +259,7 @@ public class ApplicationConfig {
      */
     public static final int LogRestoreFactory = 8;
 
-    // ================================= 存储文件夹 ===========================================
+    // ==================================================== 存储文件夹 ============================================= //
 
     /**
      * 下载的固件存储文件夹
@@ -287,7 +286,7 @@ public class ApplicationConfig {
      */
     public static final String ReceiveFileFolder = "ReceivedFile";
 
-    // ==================================== Web API接口 =======================================
+    // ==================================================== Web API接口 =========================================== //
 
     /**
      * 功能码类型
@@ -304,13 +303,20 @@ public class ApplicationConfig {
      */
     public static final int ErrorHelpType = 3;
 
-    public static final String DomainName = "http://58.60.228.147:8007/HuiChuanAPI.asmx/";
-    //public static final String DomainName = "http://222.92.112.36:6954/HuiChuanAPI.asmx/";
+    //public static final String RootDomain = "http://android.iotdataserver.cn:8007";
+    public static final String RootDomain = "http://58.60.228.147:8007";/*测试版本签名不加密*/
+
+    public static final String APIUri = RootDomain + "/HuiChuanAPI.asmx/";
 
     // 验证是否注册用户
     // 参数：blueAddress 设备蓝牙地址
     // 返回值：成功返回True失败返回False
     public static final String VerifyUser = "VerifyRegister?blueAddress=";
+
+    // 验证是否内部注册用户
+    // 参数：blueAddress 蓝牙设备地址
+    // 返回值
+    public static final String VerifyInternalUser = "VerifyRegisterInternal?blueAddress=";
 
     // 注册用户
     // 参数：username 用户名
@@ -465,8 +471,8 @@ public class ApplicationConfig {
     public static final String RegisterInternalUser = "SendRegisterInternal";
 
     // Crash report collect API
-    public static final String ReportsCrashesAPI = "http://58.60.228.147:8007/error.aspx";
+    public static final String ReportsCrashesAPI = RootDomain + "/error.aspx";
 
     // Upload message attachments API
-    public static final String UploadMessageAttachments = "http://58.60.228.147:8007/Assistance.aspx";
+    public static final String UploadMessageAttachments = RootDomain + "/Assistance.aspx";
 }

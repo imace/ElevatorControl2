@@ -822,7 +822,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
 
     @Override
     public void onFailure(int statusCode, Throwable throwable) {
-        Toast.makeText(this, throwable.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.server_error_text, Toast.LENGTH_SHORT).show();
     }
 
     // ============================== Get Normal DeviceType Handler ================================================ //

@@ -77,7 +77,6 @@ public class CheckAuthorizationActivity extends Activity implements OnGetResultL
         }
         setTitle(R.string.title_activity_login);
         Views.inject(this);
-        UpdateApplication.getInstance().init(this);
         btnSignUp.setEnabled(false);
         btnLogin.setEnabled(false);
         UpdateApplication.getInstance().setOnNoUpdateFoundListener(new OnNoUpdateFoundListener() {
@@ -87,6 +86,7 @@ public class CheckAuthorizationActivity extends Activity implements OnGetResultL
                 UpdateApplication.getInstance().setOnNoUpdateFoundListener(null);
             }
         });
+
     }
 
     @Override
@@ -94,13 +94,13 @@ public class CheckAuthorizationActivity extends Activity implements OnGetResultL
         super.onResume();
         WebApi.getInstance().setOnResultListener(this);
         WebApi.getInstance().setOnFailureListener(this);
+        UpdateApplication.getInstance().setCurrentActivity(this);
         if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
             btnSignUp.setEnabled(false);
             btnLogin.setEnabled(false);
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(intent, REQUEST_BLUETOOTH_ENABLE);
         } else {
-            // 检查软件更新
             UpdateApplication.getInstance().checkUpdate();
         }
     }
@@ -129,7 +129,7 @@ public class CheckAuthorizationActivity extends Activity implements OnGetResultL
 
     @OnClick(R.id.btn_sign_up)
     public void buttonSignUpClick(View view) {
-        if (ApplicationConfig.isInternalVersion) {
+        if (ApplicationConfig.IsInternalVersion) {
             this.startActivity(new Intent(CheckAuthorizationActivity.this, InternalRegisterActivity.class));
         } else {
             this.startActivity(new Intent(CheckAuthorizationActivity.this, RegisterUserActivity.class));
@@ -204,14 +204,17 @@ public class CheckAuthorizationActivity extends Activity implements OnGetResultL
 
     @Override
     public void onResult(String tag, String responseString) {
-        if (tag.equalsIgnoreCase(ApplicationConfig.VerifyUser)) {
+        final String verifyUserTag = ApplicationConfig.IsInternalVersion
+                ? ApplicationConfig.VerifyInternalUser
+                : ApplicationConfig.VerifyUser;
+        if (tag.equalsIgnoreCase(verifyUserTag)) {
             if (responseString.equalsIgnoreCase("false")) {
                 progressView.setVisibility(View.INVISIBLE);
                 btnSignUp.setEnabled(true);
                 btnLogin.setEnabled(true);
                 Toast.makeText(CheckAuthorizationActivity.this,
                         R.string.unauthorized_message,
-                        android.widget.Toast.LENGTH_SHORT).show();
+                        Toast.LENGTH_SHORT).show();
             } else {
                 try {
                     JSONArray jsonArray = new JSONArray(responseString);
@@ -247,7 +250,7 @@ public class CheckAuthorizationActivity extends Activity implements OnGetResultL
 
     @Override
     public void onFailure(int statusCode, Throwable throwable) {
-        Toast.makeText(this, throwable.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.server_error_text, Toast.LENGTH_SHORT).show();
         CheckAuthorizationActivity.this.progressView.setVisibility(View.INVISIBLE);
         CheckAuthorizationActivity.this.btnSignUp.setEnabled(true);
         CheckAuthorizationActivity.this.btnLogin.setEnabled(true);

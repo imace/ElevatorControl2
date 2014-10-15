@@ -10,6 +10,7 @@ import com.inovance.elevatorcontrol.daos.ShortcutDao;
 import com.inovance.elevatorcontrol.models.Shortcut;
 import com.inovance.elevatorcontrol.utils.LogUtils;
 import com.inovance.elevatorcontrol.utils.TextLocalize;
+import com.inovance.elevatorcontrol.utils.UpdateApplication;
 import org.acra.ACRA;
 import org.acra.annotation.ReportsCrashes;
 
@@ -31,15 +32,18 @@ public class ElevatorControlApplication extends Application {
     public void onCreate() {
         super.onCreate();
         BluetoothTool.getInstance().init(getApplicationContext());
-        // 初始化缓存组件
+        UpdateApplication.getInstance().init(getApplicationContext());
         LruCacheTool.getInstance().initCache(getApplicationContext());
         LogUtils.getInstance().init(getApplicationContext());
         ParameterUpdateTool.getInstance().init(getApplicationContext());
         TextLocalize.getInstance().init(getApplicationContext());
         writeDefaultShortcutData();
-        //ACRA.init(this);
+        ACRA.init(this);
     }
 
+    /**
+     * Write default shortcut data
+     */
     private void writeDefaultShortcutData() {
         SharedPreferences settings = getSharedPreferences(ApplicationConfig.PREFERENCE_FILE_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();

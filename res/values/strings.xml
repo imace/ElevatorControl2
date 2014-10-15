@@ -66,6 +66,12 @@
         <item>无效</item>
     </string-array>
 
+    <string name="restore_factory_successful">恢复出厂参数成功</string>
+    <string name="restore_factory_failed">恢复出厂参数失败</string>
+
+    <string name="move_inside_failed_text">内召楼层失败</string>
+    <string name="move_outside_failed_text">外召楼层失败</string>
+
     <string name="company_name_text">汇川技术股份有限公司</string>
     <string name="company_description_text">高效产业 · 清洁能源 · 美好生活</string>
     <string name="company_copyright_text">Copyright ©2004</string>
@@ -307,6 +313,8 @@
     <string name="delete_firmware_message">确定要删除该程序吗？</string>
     <string name="firmware_expired_title">程序过期</string>
     <string name="firmware_expired_message">程序超过使用期限</string>
+    <string name="firmware_has_no_burn_time_title">烧录次数为零</string>
+    <string name="firmware_has_no_burn_time_message">程序烧录次数为零，不了烧录。</string>
 
     <string name="firmware_name_text">固件名称</string>
     <string name="firmware_vendor">设备厂家</string>
@@ -479,4 +487,6 @@
         <item>程序烧录</item>
     </string-array>
     <!-- //////////////////////////////////// 标签选项卡 END ////////////////////////////////// -->
+
+    <string name="server_error_text">请求服务器出错</string>
 </resources>

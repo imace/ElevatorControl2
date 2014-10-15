@@ -1,6 +1,7 @@
 package com.inovance.elevatorcontrol.factory;
 
 import android.content.Context;
+import android.util.Log;
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.models.ParameterSettings;
 import com.inovance.elevatorcontrol.models.ParameterStatusItem;
@@ -92,9 +93,12 @@ public class NICE3000PlusParameter implements ParameterFactory.Parameter {
         }
         try {
             JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
-            if (index < jsonArray.length()) {
-                JSONObject object = jsonArray.getJSONObject(index);
-                return String.valueOf(realIndex) + ":" + object.optString("value");
+            int length = jsonArray.length();
+            for (int m = 0; m < length; m++) {
+                JSONObject object = jsonArray.getJSONObject(m);
+                if (index == object.optInt("id")) {
+                    return String.valueOf(realIndex) + ":" + object.optString("value");
+                }
             }
         } catch (JSONException e) {
             e.printStackTrace();

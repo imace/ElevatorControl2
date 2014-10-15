@@ -56,7 +56,7 @@ public class FirmwareBurnAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup viewGroup) {
-        ViewHolder holder = null;
+        ViewHolder holder;
         LayoutInflater mInflater = LayoutInflater.from(baseActivity);
         if (convertView == null) {
             convertView = mInflater.inflate(R.layout.firmware_burn_item, null);
@@ -75,8 +75,7 @@ public class FirmwareBurnAdapter extends BaseAdapter {
         final int index = position;
         final Firmware firmware = getItem(position);
         holder.firmwareName.setText(firmware.getFileURL());
-        // TODO show vendor name
-        holder.firmwareVendor.setText("");
+        holder.firmwareVendor.setText(firmware.getVendorName());
         holder.firmwareType.setText(firmware.isSpecialDevice() ? "专有设备" : "标准设备");
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         holder.createDate.setText(firmware.getDownloadDate());

@@ -441,7 +441,7 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
 
     @Override
     public void onFailure(int statusCode, Throwable throwable) {
-        Toast.makeText(getActivity(), throwable.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(getActivity(), R.string.server_error_text, Toast.LENGTH_SHORT).show();
     }
 
 }
