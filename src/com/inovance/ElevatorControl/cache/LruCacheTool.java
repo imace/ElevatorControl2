@@ -42,8 +42,8 @@ public class LruCacheTool {
      */
     public void initCache(Context context) {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            if (context.getExternalCacheDir() != null) {
-                File path = new File(context.getExternalCacheDir().getPath() + "/" + ApplicationConfig.CacheFolder);
+            if (context.getFilesDir() != null) {
+                File path = new File(context.getFilesDir().getPath() + "/" + ApplicationConfig.CacheFolder);
                 if (path.exists()) {
                     if (path.isDirectory()) {
                         String[] children = path.list();

@@ -9,7 +9,7 @@ import org.json.JSONObject;
  * Date: 14-4-23.
  * Time: 10:33.
  */
-@Table(name="VENDOR")
+@Table(name = "VENDOR")
 public class Vendor {
 
     private int Id;

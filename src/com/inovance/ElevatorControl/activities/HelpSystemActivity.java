@@ -11,6 +11,7 @@ import butterknife.InjectView;
 import butterknife.Views;
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.adapters.PreferenceAdapter;
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.utils.UpdateApplication;
 
 /**
@@ -27,42 +28,78 @@ public class HelpSystemActivity extends Activity {
         overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
         setContentView(R.layout.activity_help_system);
         Views.inject(this);
-        String[] preferenceArray = getResources().getStringArray(R.array.preference_array);
-        PreferenceAdapter adapter = new PreferenceAdapter(this);
-        adapter.setItems(preferenceArray);
-        adapter.setSectionIndex(new int[]{0, 3, 8});
-        preferenceListView.setAdapter(adapter);
-        preferenceListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                switch (position) {
-                    case 1:
-                        startActivity(new Intent(HelpSystemActivity.this, ShortcutSettingActivity.class));
-                        break;
-                    case 2:
-                        checkApplicationUpdate();
-                        break;
-                    case 4:
-                        startActivity(new Intent(HelpSystemActivity.this, ApplyPermissionActivity.class));
-                        break;
-                    case 5:
-                        startActivity(new Intent(HelpSystemActivity.this, ZxingScannerActivity.class));
-                        break;
-                    case 6:
-                        startActivity(new Intent(HelpSystemActivity.this, RemoteHelpActivity.class));
-                        break;
-                    case 7:
-                        startActivity(new Intent(HelpSystemActivity.this, BluetoothAddressActivity.class));
-                        break;
-                    case 9:
-                        startActivity(new Intent(HelpSystemActivity.this, SystemLogActivity.class));
-                        break;
-                    case 10:
-                        startActivity(new Intent(HelpSystemActivity.this, AboutActivity.class));
-                        break;
+        if (ApplicationConfig.IsInternalVersion) {
+            String[] preferenceArray = getResources().getStringArray(R.array.preference_internal_array);
+            PreferenceAdapter adapter = new PreferenceAdapter(this);
+            adapter.setItems(preferenceArray);
+            adapter.setSectionIndex(new int[]{0, 3, 7});
+            preferenceListView.setAdapter(adapter);
+            preferenceListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    switch (position) {
+                        case 1:
+                            startActivity(new Intent(HelpSystemActivity.this, ShortcutSettingActivity.class));
+                            break;
+                        case 2:
+                            checkApplicationUpdate();
+                            break;
+                        case 4:
+                            startActivity(new Intent(HelpSystemActivity.this, ZxingScannerActivity.class));
+                            break;
+                        case 5:
+                            startActivity(new Intent(HelpSystemActivity.this, RemoteHelpActivity.class));
+                            break;
+                        case 6:
+                            startActivity(new Intent(HelpSystemActivity.this, BluetoothAddressActivity.class));
+                            break;
+                        case 8:
+                            startActivity(new Intent(HelpSystemActivity.this, SystemLogActivity.class));
+                            break;
+                        case 9:
+                            startActivity(new Intent(HelpSystemActivity.this, AboutActivity.class));
+                            break;
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            String[] preferenceArray = getResources().getStringArray(R.array.preference_array);
+            PreferenceAdapter adapter = new PreferenceAdapter(this);
+            adapter.setItems(preferenceArray);
+            adapter.setSectionIndex(new int[]{0, 3, 8});
+            preferenceListView.setAdapter(adapter);
+            preferenceListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    switch (position) {
+                        case 1:
+                            startActivity(new Intent(HelpSystemActivity.this, ShortcutSettingActivity.class));
+                            break;
+                        case 2:
+                            checkApplicationUpdate();
+                            break;
+                        case 4:
+                            startActivity(new Intent(HelpSystemActivity.this, ApplyPermissionActivity.class));
+                            break;
+                        case 5:
+                            startActivity(new Intent(HelpSystemActivity.this, ZxingScannerActivity.class));
+                            break;
+                        case 6:
+                            startActivity(new Intent(HelpSystemActivity.this, RemoteHelpActivity.class));
+                            break;
+                        case 7:
+                            startActivity(new Intent(HelpSystemActivity.this, BluetoothAddressActivity.class));
+                            break;
+                        case 9:
+                            startActivity(new Intent(HelpSystemActivity.this, SystemLogActivity.class));
+                            break;
+                        case 10:
+                            startActivity(new Intent(HelpSystemActivity.this, AboutActivity.class));
+                            break;
+                    }
+                }
+            });
+        }
     }
 
     @Override
@@ -80,9 +117,14 @@ public class HelpSystemActivity extends Activity {
         UpdateApplication.getInstance().setOnNoUpdateFoundListener(new UpdateApplication.OnNoUpdateFoundListener() {
             @Override
             public void onNoUpdate() {
-                Toast.makeText(getApplicationContext(),
-                        R.string.installed_last_application_text,
-                        Toast.LENGTH_SHORT).show();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(),
+                                R.string.installed_last_application_text,
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
         UpdateApplication.getInstance().checkUpdate();

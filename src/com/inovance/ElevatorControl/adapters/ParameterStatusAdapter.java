@@ -72,12 +72,17 @@ public class ParameterStatusAdapter extends BaseAdapter {
             holder.status.setText(item.getStatusString());
             holder.status.setTextColor(0xff515151);
         } else {
-            String statusString = item.getStatus() ? statusTextArray[0] : statusTextArray[1];
-            holder.status.setText(statusString);
-            if (item.getStatus()) {
-                holder.status.setTextColor(0xff4dc11b);
+            if (item.isParseFailed()) {
+                holder.status.setText("--");
+                holder.status.setTextColor(0xffaf0000);
             } else {
-                holder.status.setTextColor(0xff515151);
+                String statusString = item.getStatus() ? statusTextArray[0] : statusTextArray[1];
+                holder.status.setText(statusString);
+                if (item.getStatus()) {
+                    holder.status.setTextColor(0xff4dc11b);
+                } else {
+                    holder.status.setTextColor(0xff515151);
+                }
             }
         }
         return convertView;

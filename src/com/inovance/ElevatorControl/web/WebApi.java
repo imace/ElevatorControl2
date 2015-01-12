@@ -6,6 +6,7 @@ import android.net.NetworkInfo;
 import android.util.Log;
 import android.util.Xml;
 import android.widget.Toast;
+
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.cache.LruCacheTool;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
@@ -13,6 +14,7 @@ import com.inovance.elevatorcontrol.models.Device;
 import com.inovance.elevatorcontrol.models.User;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
+
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.StringEntity;

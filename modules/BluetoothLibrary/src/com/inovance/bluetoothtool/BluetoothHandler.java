@@ -1,20 +1,15 @@
 package com.inovance.bluetoothtool;
 
 import android.app.Activity;
-import android.bluetooth.BluetoothDevice;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-
-import java.util.Map;
 
 public class BluetoothHandler extends Handler {
 
     public String TAG = BluetoothHandler.class.getSimpleName();
 
     protected Activity activity;
-
-    private boolean DEBUG = false;
 
     public BluetoothHandler(Activity activity) {
         super();
@@ -94,7 +89,7 @@ public class BluetoothHandler extends Handler {
      * @param msg message
      */
     public void onBeginDiscovering(Message msg) {
-        if (DEBUG) {
+        if (BuildConfig.DEBUG) {
             Log.v(TAG, "onBeginDiscovering");
         }
     }
@@ -106,9 +101,8 @@ public class BluetoothHandler extends Handler {
      */
     @SuppressWarnings("unchecked")
     public void onFoundDevice(Message msg) {
-        if (DEBUG) {
-            Log.v(TAG, "onFoundDevice : "
-                    + ((Map<String, BluetoothDevice>) msg.obj).keySet().toString());
+        if (BuildConfig.DEBUG) {
+            Log.v(TAG, "onFoundDevice");
         }
     }
 
@@ -118,7 +112,7 @@ public class BluetoothHandler extends Handler {
      * @param msg message
      */
     public void onChooseDevice(final Message msg) {
-        if (DEBUG) {
+        if (BuildConfig.DEBUG) {
             Log.v(TAG, "onChooseDevice");
         }
     }
@@ -129,7 +123,7 @@ public class BluetoothHandler extends Handler {
      * @param msg message
      */
     public void onResetBluetooth(Message msg) {
-        if (DEBUG) {
+        if (BuildConfig.DEBUG) {
             Log.v(TAG, "onResetBluetooth");
         }
     }
@@ -140,7 +134,7 @@ public class BluetoothHandler extends Handler {
      * @param msg message
      */
     public void onKillBluetooth(Message msg) {
-        if (DEBUG) {
+        if (BuildConfig.DEBUG) {
             Log.v(TAG, "onKillBluetooth");
         }
     }
@@ -151,7 +145,7 @@ public class BluetoothHandler extends Handler {
      * @param msg message
      */
     public void onConnected(Message msg) {
-        if (DEBUG) {
+        if (BuildConfig.DEBUG) {
             Log.v(TAG, "onConnected");
         }
     }
@@ -162,7 +156,7 @@ public class BluetoothHandler extends Handler {
      * @param msg message
      */
     public void onConnectFailed(Message msg) {
-        if (DEBUG) {
+        if (BuildConfig.DEBUG) {
             Log.v(TAG, "onConnectFailed");
         }
     }
@@ -173,7 +167,7 @@ public class BluetoothHandler extends Handler {
      * @param msg message
      */
     public void onBeforeTalkSend(Message msg) {
-        if (DEBUG) {
+        if (BuildConfig.DEBUG) {
             Log.v(TAG, "onBeforeTalkSend");
         }
     }
@@ -184,7 +178,7 @@ public class BluetoothHandler extends Handler {
      * @param msg message
      */
     public void onAfterTalkSend(Message msg) {
-        if (DEBUG) {
+        if (BuildConfig.DEBUG) {
             Log.v(TAG, "onAfterTalkSend");
         }
     }
@@ -195,7 +189,7 @@ public class BluetoothHandler extends Handler {
      * @param msg message
      */
     public void onTalkReceive(Message msg) {
-        if (DEBUG) {
+        if (BuildConfig.DEBUG) {
             Log.v(TAG, "onTalkReceive : " + msg.obj.toString());
         }
     }
@@ -206,10 +200,8 @@ public class BluetoothHandler extends Handler {
      * @param msg message
      */
     public void onTalkError(Message msg) {
-        if (DEBUG) {
-            Log.v(TAG,
-                    "onTalkError : "
-                            + ((msg.obj == null) ? "..." : msg.obj.toString()));
+        if (BuildConfig.DEBUG) {
+            Log.v(TAG, "onTalkError" + ((msg.obj == null) ? "..." : msg.obj.toString()));
         }
     }
 
@@ -219,7 +211,7 @@ public class BluetoothHandler extends Handler {
      * @param msg message
      */
     public void onHandlerChanged(Message msg) { //the origin handler
-        if (DEBUG) {
+        if (BuildConfig.DEBUG) {
             Log.v(TAG, "onHandlerChanged"
                     + ((msg.obj == null) ? "UnKnownHHandler"
                     : ((BluetoothHandler) msg.obj).TAG));
@@ -233,7 +225,7 @@ public class BluetoothHandler extends Handler {
      * @param msg message
      */
     public void onMultiTalkBegin(Message msg) {
-        if (DEBUG) {
+        if (BuildConfig.DEBUG) {
             Log.v(TAG, "onMultiTalkBegin");
         }
     }
@@ -244,7 +236,7 @@ public class BluetoothHandler extends Handler {
      * @param msg message
      */
     public void onMultiTalkEnd(Message msg) {
-        if (DEBUG) {
+        if (BuildConfig.DEBUG) {
             Log.v(TAG, "onMultiTalkEnd");
         }
     }
@@ -255,7 +247,7 @@ public class BluetoothHandler extends Handler {
      * @param message message
      */
     public void onDiscoveryFinished(Message message) {
-        if (DEBUG) {
+        if (BuildConfig.DEBUG) {
             Log.v(TAG, "onDiscoveryFinished");
         }
     }
@@ -266,7 +258,7 @@ public class BluetoothHandler extends Handler {
      * @param message message
      */
     public void onDisconnected(Message message) {
-        if (DEBUG) {
+        if (BuildConfig.DEBUG) {
             Log.v(TAG, "onDisconnected");
         }
     }
@@ -277,7 +269,7 @@ public class BluetoothHandler extends Handler {
      * @param message message
      */
     public void onWillConnect(Message message) {
-        if (DEBUG) {
+        if (BuildConfig.DEBUG) {
             Log.v(TAG, "onWillConnect");
         }
     }
@@ -288,7 +280,7 @@ public class BluetoothHandler extends Handler {
      * @param message message
      */
     public void onDeviceChanged(Message message) {
-        if (DEBUG) {
+        if (BuildConfig.DEBUG) {
             Log.v(TAG, "onWillConnect");
         }
     }
@@ -299,7 +291,7 @@ public class BluetoothHandler extends Handler {
      * @param message message
      */
     public void onBluetoothConnectException(Message message) {
-        if (DEBUG) {
+        if (BuildConfig.DEBUG) {
             Log.v(TAG, "onBluetoothConnectException");
         }
     }

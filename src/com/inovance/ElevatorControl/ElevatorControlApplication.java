@@ -11,7 +11,6 @@ import com.inovance.elevatorcontrol.models.Shortcut;
 import com.inovance.elevatorcontrol.utils.LogUtils;
 import com.inovance.elevatorcontrol.utils.TextLocalize;
 import com.inovance.elevatorcontrol.utils.UpdateApplication;
-import org.acra.ACRA;
 import org.acra.annotation.ReportsCrashes;
 
 /**
@@ -38,7 +37,7 @@ public class ElevatorControlApplication extends Application {
         ParameterUpdateTool.getInstance().init(getApplicationContext());
         TextLocalize.getInstance().init(getApplicationContext());
         writeDefaultShortcutData();
-        ACRA.init(this);
+        //ACRA.init(this);
     }
 
     /**

@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
  *
  * @author jch
  */
-@Table(name="REAL_TIME_MONITOR")
+@Table(name = "REAL_TIME_MONITOR")
 public class RealTimeMonitor implements Cloneable {
 
     @Id

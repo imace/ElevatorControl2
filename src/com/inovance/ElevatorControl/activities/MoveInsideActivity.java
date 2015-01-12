@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
@@ -226,8 +227,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
                     public void beforeSend() {
                         this.setSendBuffer(SerialUtility.crc16("0103"
                                 + firstItem.getCode()
-                                + String.format("%04x", length)
-                                + "0001"));
+                                + String.format("%04x", length)));
                     }
 
                     @Override
@@ -641,6 +641,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
                         MoveInsideActivity.this.currentFloorTextView
                                 .setText(String.valueOf(ParseSerialsUtils.getIntFromBytes(monitor.getReceived())));
                     } else {
+                        Log.v("SyncCallStatus", monitor.getName() + SerialUtility.byte2HexStr(monitor.getReceived()));
                         boolean[] booleanArray = ParseSerialsUtils.getBooleanValueArray(new byte[]{
                                 monitor.getReceived()[5]
                         });

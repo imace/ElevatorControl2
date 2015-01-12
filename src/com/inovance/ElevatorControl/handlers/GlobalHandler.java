@@ -102,7 +102,7 @@ public class GlobalHandler {
         }
     }
 
-    private void onParseCodeError(){
+    private void onParseCodeError() {
         if (activity != null) {
             Toast.makeText(activity,
                     R.string.code_parse_error_tips,

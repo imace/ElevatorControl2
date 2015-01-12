@@ -37,9 +37,26 @@ public class ParameterFactory {
         public List<ParameterStatusItem> getInputTerminalStateList(boolean[] bitValues,
                                                                    List<ParameterSettings> settingsList);
 
+        public List<ParameterStatusItem> getOutputTerminalStateList(boolean[] bitValues,
+                                                                    List<ParameterSettings> settingsList);
+
         public int[] getIndexStatus(ParameterSettings settings);
 
+        public int getWriteInputTerminalValue(int value1, int value2, boolean alwaysOn);
+
         public String getDescriptionText(ParameterSettings settings);
+
+        // 1000 F6-11 ~ F6-36 | 1000+ F6-11 ~ F6-60 只针对 1000/1000+
+        public int getSelectedIndex(ParameterSettings settings);
+
+        // 1000 F6-11 ~ F6-36 | 1000+ F6-11 ~ F6-60 只针对 1000/1000+
+        public int getWriteValue(ParameterSettings settings, int index);
+
+        // 输入端子状态列表 常开/常闭
+        // public String[] getInputTerminalStatusList(ParameterSettings settings);
+
+        // 输入端子常闭值
+        public int getAlwaysCloseValue(int value);
 
         public List<TroubleGroup> getTroubleGroupList(Context context, List<ParameterSettings> settingsList);
     }

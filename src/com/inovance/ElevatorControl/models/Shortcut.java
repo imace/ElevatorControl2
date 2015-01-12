@@ -9,7 +9,7 @@ import net.tsz.afinal.annotation.sqlite.Table;
  * Date: 14-3-31.
  * Time: 9:47.
  */
-@Table(name="SHORTCUT")
+@Table(name = "SHORTCUT")
 public class Shortcut {
 
     @Id

@@ -35,6 +35,8 @@ public class ParameterStatusItem {
      */
     private boolean isInFA26ToFA37 = false;
 
+    private boolean isParseFailed = false;
+
     /**
      * 是否可以写入
      */
@@ -62,6 +64,14 @@ public class ParameterStatusItem {
 
     public void setStatus(boolean status) {
         this.status = status;
+    }
+
+    public boolean isParseFailed() {
+        return isParseFailed;
+    }
+
+    public void setParseFailed(boolean isParseFailed) {
+        this.isParseFailed = isParseFailed;
     }
 
     public String getStatusString() {

@@ -467,9 +467,6 @@ public class MoveOutsideActivity extends Activity implements Runnable, MoveSideP
                                 this.setSendBuffer(SerialUtility.crc16("0106"
                                         + callCode
                                         + "0001"));
-                                Log.v(TAG, "CallSend:" + "0106"
-                                        + callCode
-                                        + "0001");
                             }
 
                             @Override

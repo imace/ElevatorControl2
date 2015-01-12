@@ -9,7 +9,7 @@ import net.tsz.afinal.annotation.sqlite.Table;
  * Date: 14-3-17.
  * Time: 16:43.
  */
-@Table(name="PROFILE")
+@Table(name = "PROFILE")
 public class Profile {
 
     @Id

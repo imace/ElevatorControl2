@@ -12,11 +12,17 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.*;
-import butterknife.InjectView;
-import butterknife.OnClick;
-import butterknife.Views;
-import com.inovance.bluetoothtool.*;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.inovance.bluetoothtool.BluetoothHandler;
+import com.inovance.bluetoothtool.BluetoothState;
+import com.inovance.bluetoothtool.BluetoothTalk;
+import com.inovance.bluetoothtool.BluetoothTool;
+import com.inovance.bluetoothtool.SerialUtility;
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
@@ -39,6 +45,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import butterknife.InjectView;
+import butterknife.OnClick;
+import butterknife.Views;
 
 /**
  * Created by IntelliJ IDEA.
@@ -220,7 +230,7 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             inputMethodManager.hideSoftInputFromWindow(fileNameEditText.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-            File directory = new File(getApplicationContext().getExternalCacheDir().getPath()
+            File directory = new File(getApplicationContext().getFilesDir().getPath()
                     + "/"
                     + ApplicationConfig.ProfileFolder);
             if (!directory.exists()) {
@@ -387,7 +397,7 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
                         ParameterDownloadActivity.this.downloadDialog.dismiss();
                     }
                     String fileName = fileNameEditText.getText().toString();
-                    File filePath = new File(getApplicationContext().getExternalCacheDir().getPath()
+                    File filePath = new File(getApplicationContext().getFilesDir().getPath()
                             + "/"
                             + ApplicationConfig.ProfileFolder
                             + "/"

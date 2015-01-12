@@ -59,6 +59,37 @@ public class NICE1000PlusParameter implements ParameterFactory.Parameter {
     }
 
     @Override
+    public List<ParameterStatusItem> getOutputTerminalStateList(boolean[] bitValues, List<ParameterSettings> settingsList) {
+        int length = bitValues.length;
+        List<ParameterStatusItem> statusList = new ArrayList<ParameterStatusItem>();
+        for (ParameterSettings settings : settingsList) {
+            int indexValue = ParseSerialsUtils.getIntFromBytes(settings.getReceived());
+            if (indexValue >= 0 && indexValue < length) {
+                try {
+                    JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
+                    int size = jsonArray.length();
+                    String[] valueStringArray = new String[size];
+                    for (int i = 0; i < size; i++) {
+                        JSONObject value = jsonArray.getJSONObject(i);
+                        valueStringArray[i] = value.optString("id") + ":" + value.optString("value");
+                    }
+                    if (indexValue < valueStringArray.length) {
+                        ParameterStatusItem item = new ParameterStatusItem();
+                        item.setName(settings.getName().replace("功能选择", "端子   ")
+                                + valueStringArray[indexValue]);
+                        item.setStatus(bitValues[indexValue]);
+                        item.setName(item.getName().replace("常开/常闭", ""));
+                        statusList.add(item);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return statusList;
+    }
+
+    @Override
     public int[] getIndexStatus(ParameterSettings settings) {
         int state = 1;
         int indexValue = ParseSerialsUtils.getIntFromBytes(settings.getReceived());
@@ -70,25 +101,100 @@ public class NICE1000PlusParameter implements ParameterFactory.Parameter {
     }
 
     @Override
+    public int getWriteInputTerminalValue(int value1, int value2, boolean alwaysOn) {
+        if (!alwaysOn) {
+            return value1 + 100;
+        }
+        return value1;
+    }
+
+    @Override
     public String getDescriptionText(ParameterSettings settings) {
         int index = ParseSerialsUtils.getIntFromBytes(settings.getReceived());
-        int realIndex = index;
-        if (index > 100) {
-            index -= 100;
-        }
-        try {
-            JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
-            int length = jsonArray.length();
-            for (int m = 0; m < length; m++) {
-                JSONObject object = jsonArray.getJSONObject(m);
-                if (index == object.optInt("id")) {
-                    return String.valueOf(realIndex) + ":" + object.optString("value");
+        // F6-11 ~ F6-60
+        if (settings.getCode().contains("F6")) {
+            int value = Integer.parseInt(settings.getCode().substring(2));
+            if (value >= 11 && value <= 60) {
+                try {
+                    JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
+                    int length = jsonArray.length();
+                    for (int m = 0; m < length; m++) {
+                        JSONObject object = jsonArray.getJSONObject(m);
+                        int itemIndex = object.optInt("id");
+                        if (itemIndex == index) {
+                            return itemIndex + ":" + object.optString("value");
+                        }
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
+        } else {
+            int realIndex = index;
+            if (index > 100) {
+                index -= 100;
+            }
+            try {
+                JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
+                int length = jsonArray.length();
+                for (int m = 0; m < length; m++) {
+                    JSONObject object = jsonArray.getJSONObject(m);
+                    if (index == object.optInt("id")) {
+                        return String.valueOf(realIndex) + ":" + object.optString("value");
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
         return "Parse value failed";
+    }
+
+    @Override
+    public int getSelectedIndex(ParameterSettings settings) {
+        int index = ParseSerialsUtils.getIntFromBytes(settings.getReceived());
+        if (settings.getCode().contains("F6")) {
+            int value = Integer.parseInt(settings.getCode().substring(2));
+            if (value >= 11 && value <= 60) {
+                try {
+                    JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
+                    int length = jsonArray.length();
+                    for (int m = 0; m < length; m++) {
+                        JSONObject object = jsonArray.getJSONObject(m);
+                        if (index == object.optInt("id")) {
+                            return m;
+                        }
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int getWriteValue(ParameterSettings settings, int index) {
+        if (settings.getCode().contains("F6")) {
+            int value = Integer.parseInt(settings.getCode().substring(2));
+            if (value >= 11 && value <= 60) {
+                try {
+                    JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
+                    if (index < jsonArray.length()) {
+                        JSONObject object = jsonArray.getJSONObject(index);
+                        return object.optInt("id");
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int getAlwaysCloseValue(int value) {
+        return value + 100;
     }
 
     @Override

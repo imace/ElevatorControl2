@@ -76,7 +76,6 @@ public class SelectDeviceTypeActivity extends Activity {
                     int size = jsonArray.length();
                     for (int i = 0; i < size; i++) {
                         JSONObject jsonObject = jsonArray.getJSONObject(i);
-                        // TODO Select SpecialDevice
                     }
                     InstantAdapter<SpecialDevice> adapter = new InstantAdapter<SpecialDevice>(
                             SelectDeviceTypeActivity.this,

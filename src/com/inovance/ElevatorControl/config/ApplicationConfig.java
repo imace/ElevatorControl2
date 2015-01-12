@@ -11,7 +11,12 @@ public class ApplicationConfig {
     /**
      * 是否是内部用户版本
      */
-    public static final boolean IsInternalVersion = false;
+    public static final boolean IsInternalVersion = true;
+
+    /**
+     * 是否生产环境
+     */
+    public static final boolean IsProductionMode = false;
 
     public static final String PREFERENCE_FILE_NAME = "ApplicationPreference";
 
@@ -139,6 +144,16 @@ public class ApplicationConfig {
      * 恢复出厂参数设置
      */
     public static final int RestoreFactoryStateCode = 122;
+
+    /**
+     * NICE 3000 / NICE 1000 异步
+     */
+    public static final int AsyncType = 41;
+
+    /**
+     * NICE 3000 / NICE 1000 同步
+     */
+    public static final int SyncType = 42;
 
     /**
      * FA-26 到 FA-37
@@ -303,8 +318,12 @@ public class ApplicationConfig {
      */
     public static final int ErrorHelpType = 3;
 
-    //public static final String RootDomain = "http://android.iotdataserver.cn:8007";
-    public static final String RootDomain = "http://58.60.228.147:8007";/*测试版本签名不加密*/
+    /**
+     * 测试版本签名不加密
+     */
+    public static final String RootDomain = IsProductionMode
+            ? "http://android.iotdataserver.cn:8007"
+            : "http://58.60.228.147:8007";
 
     public static final String APIUri = RootDomain + "/HuiChuanAPI.asmx/";
 
@@ -379,7 +398,9 @@ public class ApplicationConfig {
     // 获取所有已审批但未提取的信息列表（用于查看是否有已经审批通过，但还没有提取的固件）
     // 参数：blue 手机蓝牙地址
     // 返回值：如果有返回dt，没有则返回null,其中FileUrl是文件的相对路径，UseTimes是最大使用烧录次数
-    public static final String GetAllFirmwareNotDownload = "ApplicationRemind?blue=";
+    public static final String GetAllFirmwareNotDownload = IsInternalVersion
+            ? "ApplicationRemind_Internal?blue="
+            : "ApplicationRemind?blue=";
 
     // 记录用户提取文件的日期，并删除服务器上的文件
     // 参数：approveID 审批记录的ID(从上面的方法中获得的ID)
@@ -415,12 +436,16 @@ public class ApplicationConfig {
     // 取得软件最新版本
     // 参数：无
     // 返回值：返回JSON格式的软件版本信息
-    public static final String GetLastSoftwareVersion = "GetSoftwareVersion";
+    public static final String GetLastSoftwareVersion = IsInternalVersion
+            ? "GetSoftwareVersionInside"
+            : "GetSoftwareVersion";
 
     // 下载最新软件安装包
     // 参数：无
     // 返回值：APK 安装包
-    public static final String DownloadApplicationFile = "UploadSoftwareFile";
+    public static final String DownloadApplicationFile = IsInternalVersion
+            ? "DownloadSoftwareFileInside"
+            : "UploadSoftwareFile";
 
     // 发送远程协助文件
     // 参数：FromNum：发送者电话号码

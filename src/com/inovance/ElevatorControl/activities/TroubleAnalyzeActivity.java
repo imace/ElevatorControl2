@@ -390,11 +390,9 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
                 historyCommunications[i] = new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-
                         this.setSendBuffer(SerialUtility.crc16("0103"
                                 + ParseSerialsUtils.getCalculatedCode(firstItem)
-                                + (length > 1 ? String.format("%04x", length) : "")
-                                + "0001"));
+                                + (length > 1 ? String.format("%04x", length) : "")));
                     }
 
                     @Override

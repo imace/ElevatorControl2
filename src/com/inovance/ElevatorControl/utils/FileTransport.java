@@ -284,13 +284,13 @@ public class FileTransport implements Runnable {
                 }
                 int contentLength = connection.getContentLength();
                 InputStream inputStream = new BufferedInputStream(url.openStream());
-                File directory = new File(context.getExternalCacheDir().getPath()
+                File directory = new File(context.getFilesDir().getPath()
                         + "/"
                         + ApplicationConfig.ReceiveFileFolder);
                 if (!directory.exists()) {
                     directory.mkdir();
                 }
-                File filePath = new File(context.getExternalCacheDir().getPath()
+                File filePath = new File(context.getFilesDir().getPath()
                         + "/"
                         + ApplicationConfig.ReceiveFileFolder
                         + "/" + fileName);

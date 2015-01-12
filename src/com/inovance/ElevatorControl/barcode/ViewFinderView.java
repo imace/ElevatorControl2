@@ -19,13 +19,13 @@ public class ViewFinderView extends View {
     private static final int MIN_FRAME_WIDTH = 240;
     private static final int MIN_FRAME_HEIGHT = 240;
 
-    private static final float LANDSCAPE_WIDTH_RATIO = 5f/8;
-    private static final float LANDSCAPE_HEIGHT_RATIO = 5f/8;
+    private static final float LANDSCAPE_WIDTH_RATIO = 5f / 8;
+    private static final float LANDSCAPE_HEIGHT_RATIO = 5f / 8;
     private static final int LANDSCAPE_MAX_FRAME_WIDTH = (int) (1920 * LANDSCAPE_WIDTH_RATIO); // = 5/8 * 1920
     private static final int LANDSCAPE_MAX_FRAME_HEIGHT = (int) (1080 * LANDSCAPE_HEIGHT_RATIO); // = 5/8 * 1080
 
-    private static final float PORTRAIT_WIDTH_RATIO = 7f/8;
-    private static final float PORTRAIT_HEIGHT_RATIO = 3f/8;
+    private static final float PORTRAIT_WIDTH_RATIO = 7f / 8;
+    private static final float PORTRAIT_HEIGHT_RATIO = 3f / 8;
     private static final int PORTRAIT_MAX_FRAME_WIDTH = (int) (1080 * PORTRAIT_WIDTH_RATIO); // = 7/8 * 1080
     private static final int PORTRAIT_MAX_FRAME_HEIGHT = (int) (1920 * PORTRAIT_HEIGHT_RATIO); // = 3/8 * 1920
 
@@ -53,7 +53,7 @@ public class ViewFinderView extends View {
 
     @Override
     public void onDraw(Canvas canvas) {
-        if(mFramingRect == null) {
+        if (mFramingRect == null) {
             return;
         }
 
@@ -124,7 +124,7 @@ public class ViewFinderView extends View {
         int height;
         int orientation = DisplayUtils.getScreenOrientation(getContext());
 
-        if(orientation != Configuration.ORIENTATION_PORTRAIT) {
+        if (orientation != Configuration.ORIENTATION_PORTRAIT) {
             width = findDesiredDimensionInRange(LANDSCAPE_WIDTH_RATIO, screenResolution.x, MIN_FRAME_WIDTH, LANDSCAPE_MAX_FRAME_WIDTH);
             height = findDesiredDimensionInRange(LANDSCAPE_HEIGHT_RATIO, screenResolution.y, MIN_FRAME_HEIGHT, LANDSCAPE_MAX_FRAME_HEIGHT);
         } else {

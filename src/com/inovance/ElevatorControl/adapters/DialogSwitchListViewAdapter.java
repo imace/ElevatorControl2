@@ -57,6 +57,7 @@ public class DialogSwitchListViewAdapter extends BaseAdapter {
         LayoutInflater mInflater = LayoutInflater.from(context);
         convertView = mInflater.inflate(R.layout.parameter_switch_item, viewGroup, false);
         TextView switchName = (TextView) convertView.findViewById(R.id.switch_name);
+        switchName.setSelected(true);
         Switch switchView = (Switch) convertView.findViewById(R.id.status_switch);
         final ParameterStatusItem item = getItem(position);
         switchName.setText(item.getName());

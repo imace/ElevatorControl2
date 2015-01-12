@@ -33,14 +33,49 @@ public class NICE3000Parameter implements ParameterFactory.Parameter {
             if (indexValue > 31) {
                 indexValue -= 32;
             }
-            if (indexValue < length && indexValue >= 0) {
+            if (indexValue >= 0 && indexValue < bitValues.length) {
+                try {
+                    JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
+                    int size = jsonArray.length();
+                    for (int i = 0; i < size; i++) {
+                        JSONObject object = jsonArray.getJSONObject(i);
+                        int idValue = object.optInt("id");
+                        if (idValue == indexValue) {
+                            String valueString = tempIndex + ":" + object.optString("value");
+                            ParameterStatusItem item = new ParameterStatusItem();
+                            item.setName(settings.getName().replace("功能选择", "端子   ")
+                                    + valueString);
+                            if (indexValue >= 0 && indexValue < bitValues.length) {
+                                item.setStatus(bitValues[indexValue]);
+                            } else {
+                                item.setParseFailed(true);
+                            }
+                            item.setName(item.getName().replace("常开/常闭", ""));
+                            statusList.add(item);
+                        }
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return statusList;
+    }
+
+    @Override
+    public List<ParameterStatusItem> getOutputTerminalStateList(boolean[] bitValues, List<ParameterSettings> settingsList) {
+        int length = bitValues.length;
+        List<ParameterStatusItem> statusList = new ArrayList<ParameterStatusItem>();
+        for (ParameterSettings settings : settingsList) {
+            int indexValue = ParseSerialsUtils.getIntFromBytes(settings.getReceived());
+            if (indexValue >= 0 && indexValue < length) {
                 try {
                     JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
                     int size = jsonArray.length();
                     String[] valueStringArray = new String[size];
                     for (int i = 0; i < size; i++) {
                         JSONObject value = jsonArray.getJSONObject(i);
-                        valueStringArray[i] = tempIndex + ":" + value.optString("value");
+                        valueStringArray[i] = value.optString("id") + ":" + value.optString("value");
                     }
                     if (indexValue < valueStringArray.length) {
                         ParameterStatusItem item = new ParameterStatusItem();
@@ -50,7 +85,7 @@ public class NICE3000Parameter implements ParameterFactory.Parameter {
                         item.setName(item.getName().replace("常开/常闭", ""));
                         statusList.add(item);
                     }
-                } catch (JSONException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -67,6 +102,26 @@ public class NICE3000Parameter implements ParameterFactory.Parameter {
             state = 0;
         }
         return new int[]{indexValue, state};
+    }
+
+    @Override
+    public int getWriteInputTerminalValue(int value1, int value2, boolean alwaysOn) {
+        return alwaysOn ? value1 : value2;
+    }
+
+    @Override
+    public int getSelectedIndex(ParameterSettings settings) {
+        return ParseSerialsUtils.getIntFromBytes(settings.getReceived());
+    }
+
+    @Override
+    public int getWriteValue(ParameterSettings settings, int index) {
+        return index;
+    }
+
+    @Override
+    public int getAlwaysCloseValue(int value) {
+        return value + 32;
     }
 
     @Override

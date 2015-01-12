@@ -9,7 +9,7 @@ import org.json.JSONObject;
  * Date: 14-6-26.
  * Time: 20:11.
  */
-@Table(name="COMMUNICATION_CODE")
+@Table(name = "COMMUNICATION_CODE")
 public class CommunicationCode {
 
     /**
@@ -24,7 +24,11 @@ public class CommunicationCode {
 
     public CommunicationCode(JSONObject object) {
         this.code = object.optString("Code".toUpperCase());
-        this.expirationTime = object.optLong("Ldate".toUpperCase());
+        this.expirationTime = object.optLong("Ldate");
+    }
+
+    public CommunicationCode() {
+
     }
 
     public String getCode() {
@@ -33,6 +37,10 @@ public class CommunicationCode {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public void setExpirationTime(long time){
+        this.expirationTime = time;
     }
 
     /**

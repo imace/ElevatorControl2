@@ -33,7 +33,7 @@ public class ParseSerialsUtils {
             }
             int value = getIntFromBytes(data);
             if (monitor.getUnit() == null || monitor.getUnit().length() <= 0) {
-                if (monitor.getCode().equalsIgnoreCase("8000")) {
+                if (monitor.getStateID() == ApplicationConfig.MonitorStateCode[15]) {
                     return String.format("E%02d", value);
                 }
                 return String.format("%d", value);
@@ -278,6 +278,20 @@ public class ParseSerialsUtils {
                 bits[count - i - 1] = true;
         }
         return bits;
+    }
+
+    public static boolean[] byteToBoolArray(byte x) {
+        boolean[] boolArr = new boolean[8];
+        boolArr[0] = ((x & 0x01) != 0);
+        boolArr[1] = ((x & 0x02) != 0);
+        boolArr[2] = ((x & 0x04) != 0);
+        boolArr[3] = ((x & 0x08) != 0);
+
+        boolArr[4] = ((x & 0x10) != 0);
+        boolArr[5] = ((x & 0x20) != 0);
+        boolArr[6] = ((x & 0x40) != 0);
+        boolArr[7] = ((x & 0x80) != 0);
+        return boolArr;
     }
 
     /**

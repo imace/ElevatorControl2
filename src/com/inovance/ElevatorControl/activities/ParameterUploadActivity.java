@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Message;
-import android.util.Log;
 import android.view.*;
 import android.widget.*;
 import butterknife.InjectView;
@@ -239,7 +238,7 @@ public class ParameterUploadActivity extends Activity {
             // 电梯停机状态
             Profile profile = profileList.get(position);
             if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-                File directory = new File(getApplicationContext().getExternalCacheDir().getPath()
+                File directory = new File(getApplicationContext().getFilesDir().getPath()
                         + "/"
                         + DIRECTORY_NAME);
                 File file = new File(directory, profile.getFileName());
@@ -344,14 +343,9 @@ public class ParameterUploadActivity extends Activity {
                         BluetoothTalk talk = new BluetoothTalk() {
                             @Override
                             public void beforeSend() {
-                                Log.v(TAG, "0106"
-                                        + ParseSerialsUtils.getCalculatedCode(item)
-                                        + item.getHexValueString()
-                                        + "0001");
                                 this.setSendBuffer(SerialUtility.crc16("0106"
                                         + ParseSerialsUtils.getCalculatedCode(item)
-                                        + item.getHexValueString()
-                                        + "0001"));
+                                        + item.getHexValueString()));
                             }
 
                             @Override

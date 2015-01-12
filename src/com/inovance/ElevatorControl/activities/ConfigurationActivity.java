@@ -9,7 +9,6 @@ import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
-import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -111,9 +110,24 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
     private BluetoothTalk[] getInputTerminalStateCommunications;
 
     /**
+     * 读取电梯状态 Handler
+     */
+    private ElevatorStatusHandler getElevatorStatusHandler;
+
+    /**
+     * 读取电梯运行状态通信内容
+     */
+    private BluetoothTalk[] getElevatorStateCommunications;
+
+    /**
      * 恢复出厂参数设置 Handler
      */
     private RestoreFactoryHandler restoreFactoryHandler;
+
+    /**
+     * 恢复电梯状态通信内容
+     */
+    private BluetoothTalk[] restoreElevatorCommunications;
 
     /**
      * 获取输出端子值 Handler
@@ -200,6 +214,8 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
      */
     public boolean isSyncing = false;
 
+    private static final int NO_TASK = -1;
+
     /**
      * 读取实时状态
      */
@@ -249,6 +265,16 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
      * 读取轿顶板输出状态
      */
     private static final int GET_CEILING_INPUT_STATE = 10;
+
+    /**
+     * 读取电梯运行状态
+     */
+    private static final int GET_ELEVATOR_STATE = 11;
+
+    /**
+     * 恢复电梯出厂状态
+     */
+    private static final int RESTORE_ELEVATOR_FACTORY = 12;
 
     /**
      * 当前执行的任务
@@ -307,6 +333,8 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
         getCeilingInputStateHandler = new GetCeilingInputStateHandler(this);
         // 同步轿顶板输出状态
         getCeilingOutputStateHandler = new GetCeilingOutputStateHandler(this);
+        // 读取电梯状态
+        getElevatorStatusHandler = new ElevatorStatusHandler(this);
         // 恢复出厂设置
         restoreFactoryHandler = new RestoreFactoryHandler(this);
         pager.setAdapter(mConfigurationAdapter);
@@ -350,9 +378,9 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
         @Override
         public int compare(RealTimeMonitor object1, RealTimeMonitor object2) {
             if (object1.getSort() < object2.getSort()) {
-                return 1;
-            } else if (object1.getSort() > object2.getSort()) {
                 return -1;
+            } else if (object1.getSort() > object2.getSort()) {
+                return 1;
             } else {
                 return 0;
             }
@@ -399,6 +427,8 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
         getSystemStateCommunications = null;
         getCeilingInputStateCommunications = null;
         getCeilingOutputStateCommunications = null;
+        getElevatorStateCommunications = null;
+        restoreElevatorCommunications = null;
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -454,51 +484,140 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
      * 恢复出厂设置
      */
     public void restoreFactory() {
-        final RealTimeMonitor monitor = RealTimeMonitorDao
-                .findByStateID(this, ApplicationConfig.RestoreFactoryStateCode);
-        if (monitor != null) {
-            BluetoothTalk[] communications = new BluetoothTalk[1];
-            communications[0] = new BluetoothTalk() {
-                @Override
-                public void beforeSend() {
-                    this.setSendBuffer(SerialUtility.crc16("0106"
-                            + monitor.getCode()
-                            + "0001"));
-                }
+        isSyncing = false;
+        currentTask = GET_ELEVATOR_STATE;
+    }
 
-                @Override
-                public void afterSend() {
+    /**
+     * 读取电梯状态
+     */
+    private void getElevatorState() {
+        if (getElevatorStateCommunications == null) {
+            final RealTimeMonitor monitor = RealTimeMonitorDao.findByStateID(this, ApplicationConfig.RunningStatusType);
+            if (monitor != null) {
+                getElevatorStateCommunications = new BluetoothTalk[]{
+                        new BluetoothTalk() {
+                            @Override
+                            public void beforeSend() {
+                                this.setSendBuffer(SerialUtility.crc16("0103"
+                                        + monitor.getCode()
+                                        + "0001"));
+                            }
 
-                }
+                            @Override
+                            public void afterSend() {
 
-                @Override
-                public void beforeReceive() {
+                            }
 
-                }
+                            @Override
+                            public void beforeReceive() {
 
-                @Override
-                public void afterReceive() {
+                            }
 
-                }
+                            @Override
+                            public void afterReceive() {
 
-                @Override
-                public Object onParse() {
-                    if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
-                        byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
-                        // 写入恢复出厂设置日志
-                        LogUtils.getInstance().write(ApplicationConfig.LogRestoreFactory,
-                                SerialUtility.byte2HexStr(getSendBuffer()),
-                                SerialUtility.byte2HexStr(received));
-                        monitor.setReceived(received);
-                        return monitor;
-                    }
-                    return null;
-                }
-            };
+                            }
+
+                            @Override
+                            public Object onParse() {
+                                if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                                    byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
+                                    if (data.length == 8) {
+                                        monitor.setReceived(data);
+                                        return monitor;
+                                    }
+                                }
+                                return null;
+                            }
+                        }
+                };
+            }
+        }
+        if (getElevatorStateCommunications != null) {
             if (BluetoothTool.getInstance().isPrepared()) {
                 BluetoothTool.getInstance()
+                        .setCommunications(getElevatorStateCommunications)
+                        .setHandler(getElevatorStatusHandler)
+                        .send();
+            }
+        }
+    }
+
+    /**
+     * 已经读取到电梯运行状态
+     *
+     * @param monitor RealTimeMonitor
+     */
+    private void onGetElevatorState(RealTimeMonitor monitor) {
+        int state = ParseSerialsUtils.getElevatorStatus(monitor);
+        // 电梯停机状态
+        if (state == 3) {
+            isSyncing = false;
+            currentTask = RESTORE_ELEVATOR_FACTORY;
+        } else {
+            isSyncing = false;
+            currentTask = NO_TASK;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(), R.string.cannot_restore_elevator_factory, Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    /**
+     * 写入恢复出厂参数
+     */
+    private void startRestoreElevatorFactory() {
+        if (restoreElevatorCommunications == null) {
+            final RealTimeMonitor monitor = RealTimeMonitorDao.findByStateID(this, ApplicationConfig.RestoreFactoryStateCode);
+            if (monitor != null) {
+                restoreElevatorCommunications = new BluetoothTalk[]{
+                        new BluetoothTalk() {
+                            @Override
+                            public void beforeSend() {
+
+                            }
+
+                            @Override
+                            public void afterSend() {
+
+                            }
+
+                            @Override
+                            public void beforeReceive() {
+
+                            }
+
+                            @Override
+                            public void afterReceive() {
+
+                            }
+
+                            @Override
+                            public Object onParse() {
+                                if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                                    byte[] received = SerialUtility.trimEnd(getReceivedBuffer());
+                                    // 写入恢复出厂设置日志
+                                    LogUtils.getInstance().write(ApplicationConfig.LogRestoreFactory,
+                                            SerialUtility.byte2HexStr(getSendBuffer()),
+                                            SerialUtility.byte2HexStr(received));
+                                    monitor.setReceived(received);
+                                    return monitor;
+                                }
+                                return null;
+                            }
+                        }
+                };
+            }
+        }
+        if (restoreElevatorCommunications != null) {
+            if (BluetoothTool.getInstance().isPrepared()) {
+                BluetoothTool.getInstance()
+                        .setCommunications(restoreElevatorCommunications)
                         .setHandler(restoreFactoryHandler)
-                        .setCommunications(communications)
                         .send();
             }
         }
@@ -1244,6 +1363,14 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
             case GET_CEILING_OUTPUT_STATE:
                 getCeilingOutputState();
                 break;
+            // 读取电梯运行状态
+            case GET_ELEVATOR_STATE:
+                getElevatorState();
+                break;
+            // 恢复出厂设置
+            case RESTORE_ELEVATOR_FACTORY:
+                startRestoreElevatorFactory();
+                break;
         }
     }
 
@@ -1317,7 +1444,6 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                             }
                         }
                     }
-                    Log.v(TAG, "GetValueEnded");
                     // 更新 AlertDialog ListView
                     if (statusAdapter == null) {
                         statusAdapter = new ParameterStatusAdapter(ConfigurationActivity.this, statusList);
@@ -1383,12 +1509,19 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
             if (sendCount == receiveCount) {
                 if (ConfigurationActivity.this.waitTextView != null
                         && ConfigurationActivity.this.terminalListView != null) {
+
                     List<ParameterSettings> settingsList = new ArrayList<ParameterSettings>();
                     for (ObjectListHolder holder : holderList) {
                         settingsList.addAll(holder.getParameterSettingsList());
                     }
-                    boolean[] bitValues = ParseSerialsUtils.getBooleanValueArray(monitor.getCombineBytes());
-                    // 工厂类解析端子状态值
+                    boolean[] bitValues = new boolean[monitor.getCombineBytes().length * 8];
+                    int dataIndex = 0;
+                    for (byte data : monitor.getCombineBytes()) {
+                        boolean[] valueArray = ParseSerialsUtils.byteToBoolArray(data);
+                        System.arraycopy(valueArray, 0, bitValues, dataIndex * 8, valueArray.length);
+                        dataIndex++;
+                    }
+                    // 解析端子状态值
                     List<ParameterStatusItem> statusList = ParameterFactory
                             .getParameter()
                             .getInputTerminalStateList(bitValues, settingsList);
@@ -1455,33 +1588,16 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                 }
                 if (ConfigurationActivity.this.waitTextView != null
                         && ConfigurationActivity.this.terminalListView != null) {
-                    boolean[] bitValues = ParseSerialsUtils.getBooleanValueArray(monitor.getCombineBytes());
-                    int length = bitValues.length;
-                    List<ParameterStatusItem> statusList = new ArrayList<ParameterStatusItem>();
-                    for (ParameterSettings settings : settingsList) {
-                        int indexValue = ParseSerialsUtils.getIntFromBytes(settings.getReceived());
-                        if (indexValue >= 0 && indexValue < length) {
-                            try {
-                                JSONArray jsonArray = new JSONArray(settings.getJSONDescription());
-                                int size = jsonArray.length();
-                                String[] valueStringArray = new String[size];
-                                for (int i = 0; i < size; i++) {
-                                    JSONObject value = jsonArray.getJSONObject(i);
-                                    valueStringArray[i] = value.optString("id") + ":" + value.optString("value");
-                                }
-                                if (indexValue < valueStringArray.length) {
-                                    ParameterStatusItem item = new ParameterStatusItem();
-                                    item.setName(settings.getName().replace("功能选择", "端子   ")
-                                            + valueStringArray[indexValue]);
-                                    item.setStatus(bitValues[indexValue]);
-                                    item.setName(item.getName().replace("常开/常闭", ""));
-                                    statusList.add(item);
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
+                    boolean[] bitValues = new boolean[monitor.getCombineBytes().length * 8];
+                    int dataIndex = 0;
+                    for (byte data : monitor.getCombineBytes()) {
+                        boolean[] valueArray = ParseSerialsUtils.byteToBoolArray(data);
+                        System.arraycopy(valueArray, 0, bitValues, dataIndex * 8, valueArray.length);
+                        dataIndex++;
                     }
+                    List<ParameterStatusItem> statusList = ParameterFactory
+                            .getParameter()
+                            .getOutputTerminalStateList(bitValues, settingsList);
                     // 更新 AlertDialog ListView
                     if (statusAdapter == null) {
                         statusAdapter = new ParameterStatusAdapter(ConfigurationActivity.this, statusList);
@@ -1652,6 +1768,38 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
         }
     }
 
+    // ============================================ Get elevator state handler =================================== //
+
+    private class ElevatorStatusHandler extends BluetoothHandler {
+
+        private RealTimeMonitor monitor;
+
+        public ElevatorStatusHandler(Activity activity) {
+            super(activity);
+        }
+
+        @Override
+        public void onMultiTalkBegin(Message msg) {
+            super.onMultiTalkBegin(msg);
+            monitor = null;
+        }
+
+        @Override
+        public void onTalkReceive(Message msg) {
+            super.onTalkReceive(msg);
+            if (msg.obj != null && msg.obj instanceof RealTimeMonitor) {
+                monitor = (RealTimeMonitor) msg.obj;
+                // 读取到电梯运行状态
+                ConfigurationActivity.this.onGetElevatorState(monitor);
+            }
+        }
+
+        @Override
+        public void onMultiTalkEnd(Message msg) {
+            super.onMultiTalkEnd(msg);
+        }
+    }
+
     // ============================================= Restore factory handler ===================================== //
 
     private class RestoreFactoryHandler extends BluetoothHandler {
@@ -1673,13 +1821,20 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                         break;
                     }
                 }
-                String tips;
+                final String tips;
                 if (writeSuccessful) {
                     tips = getResources().getString(R.string.restore_factory_successful);
                 } else {
                     tips = getResources().getString(R.string.restore_factory_failed);
                 }
-                Toast.makeText(ConfigurationActivity.this, tips, Toast.LENGTH_SHORT).show();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(ConfigurationActivity.this, tips, Toast.LENGTH_SHORT).show();
+                    }
+                });
+                isSyncing = false;
+                currentTask = NO_TASK;
             }
         }
     }

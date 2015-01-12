@@ -17,7 +17,7 @@ import java.util.List;
  *
  * @author jch
  */
-@Table(name="PARAMETER_GROUP_SETTINGS")
+@Table(name = "PARAMETER_GROUP_SETTINGS")
 public class ParameterGroupSettings {
     @Id
     private int Id;

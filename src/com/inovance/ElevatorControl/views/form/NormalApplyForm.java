@@ -114,7 +114,7 @@ public class NormalApplyForm extends LinearLayout implements OnGetResultListener
         });
         submitView.setEnabled(false);
         progressView = findViewById(R.id.submit_progress);
-        submitTextView = (TextView)findViewById(R.id.submit_text);
+        submitTextView = (TextView) findViewById(R.id.submit_text);
         countDownTextView = (TextView) findViewById(R.id.count_down_text);
     }
 

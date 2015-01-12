@@ -44,6 +44,13 @@
     <string name="recognise_device_wait_text">正在识别设备，请稍后。</string>
     <string name="recognise_device_failed_text">未能识别设备，请尝试其他设备。</string>
     <string name="code_parse_error_tips">内部数据出错，请联系管理员。</string>
+    <string name="cannot_restore_elevator_factory">电梯处于运行状态，无法恢复出厂设置。</string>
+
+    <string name="choice_device_sync_or_async_title">选择同步或者异步</string>
+    <string-array name="choice_device_sync_or_async_option_array">
+        <item>同步</item>
+        <item>异步</item>
+    </string-array>
 
     <string name="exit_whole_application">退出</string>
     <string name="bluetooth_connect_exception_title">蓝牙设备异常</string>
@@ -201,6 +208,23 @@
         <item>日志</item>
         <item>关于</item>
     </string-array>
+
+    <!-- 帮助内部用户 -->
+    <string-array name="preference_internal_array">
+        <item>程序设置</item>
+        <item>快捷菜单设置</item>
+        <item>软件更新</item>
+
+        <item>工具</item>
+        <item>扫描条形码</item>
+        <item>远程协助</item>
+        <item>蓝牙地址</item>
+
+        <item>其他</item>
+        <item>日志</item>
+        <item>关于</item>
+    </string-array>
+
     <string name="check_application_update_text">正在检查更新</string>
     <string name="bluetooth_address_text">蓝牙地址</string>
     <string name="current_connected_device_name_text">当前连接设备名称</string>

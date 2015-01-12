@@ -6,7 +6,6 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -240,7 +239,7 @@ public class FirmwareManageActivity extends FragmentActivity {
             burnDialog.setCanceledOnTouchOutside(false);
             burnDialog.show();
             try {
-                File file = new File(getExternalCacheDir().getPath()
+                File file = new File(getFilesDir().getPath()
                         + "/" + ApplicationConfig.FIRMWARE_FOLDER
                         + "/" + tempFirmWare.getFileName() + ".bin");
                 FileInputStream fileInputStream = new FileInputStream(file);
@@ -293,7 +292,7 @@ public class FirmwareManageActivity extends FragmentActivity {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 // 删除固件
-                File file = new File(getExternalCacheDir().getPath()
+                File file = new File(getFilesDir().getPath()
                         + "/" + ApplicationConfig.FIRMWARE_FOLDER
                         + "/" + tempFirmWare.getFileName() + ".bin");
                 file.delete();
@@ -365,7 +364,7 @@ public class FirmwareManageActivity extends FragmentActivity {
                         int burnTime = tempFirmWare.getBurnTimes() + 1;
                         if (burnTime == tempFirmWare.getTotalBurnTimes()) {
                             // 删除固件
-                            File file = new File(getExternalCacheDir().getPath()
+                            File file = new File(getFilesDir().getPath()
                                     + "/" + ApplicationConfig.FIRMWARE_FOLDER
                                     + "/" + tempFirmWare.getFileName() + ".bin");
                             file.delete();

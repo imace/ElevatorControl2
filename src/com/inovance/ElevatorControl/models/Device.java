@@ -10,7 +10,7 @@ import net.tsz.afinal.annotation.sqlite.Transient;
  * Date: 14-6-9.
  * Time: 11:14.
  */
-@Table(name="DEVICE")
+@Table(name = "DEVICE")
 public class Device {
 
     @Id

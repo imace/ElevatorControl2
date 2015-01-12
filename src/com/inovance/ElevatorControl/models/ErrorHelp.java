@@ -9,7 +9,7 @@ import net.tsz.afinal.annotation.sqlite.Transient;
 
 import java.util.Date;
 
-@Table(name="ERROR_HELP")
+@Table(name = "ERROR_HELP")
 public class ErrorHelp {
 
     @Id

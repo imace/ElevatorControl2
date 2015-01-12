@@ -112,8 +112,8 @@ public class ConfigurationHandler extends BluetoothHandler {
     public static byte[] getCombineBytes(List<RealTimeMonitor> monitorList) {
         List<Byte> byteList = new ArrayList<Byte>();
         for (RealTimeMonitor monitor : monitorList) {
-            byteList.add(monitor.getReceived()[4]);
             byteList.add(monitor.getReceived()[5]);
+            byteList.add(monitor.getReceived()[4]);
         }
         byte[] combineBytes = new byte[byteList.size()];
         for (int i = 0; i < byteList.size(); i++) {

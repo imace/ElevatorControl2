@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.os.Message;
 import com.inovance.bluetoothtool.BluetoothHandler;
 import com.inovance.elevatorcontrol.activities.ParameterDetailActivity;
-import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.models.ObjectListHolder;
 import com.inovance.elevatorcontrol.models.ParameterSettings;
 

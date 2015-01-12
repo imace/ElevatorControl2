@@ -204,7 +204,7 @@ public class ParameterFactoryDao {
                 errorHelp.setName(jsonObject.optString("name".toUpperCase()));
                 errorHelp.setChildIda(jsonObject.optString("childIda".toUpperCase()));
                 errorHelp.setChildIdb(jsonObject.optString("childIdb".toUpperCase()));
-                errorHelp.setLevel(jsonObject.optString("level".toUpperCase()));
+                errorHelp.setLevel(jsonObject.optString("LEVEL_H".toUpperCase()));
                 errorHelp.setProductId(String.valueOf(jsonObject.optInt("productId".toUpperCase())));
                 errorHelp.setReason(jsonObject.optString("reason".toUpperCase()));
                 errorHelp.setSolution(jsonObject.optString("solution".toUpperCase()));

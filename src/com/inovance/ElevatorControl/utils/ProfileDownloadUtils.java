@@ -131,9 +131,9 @@ public class ProfileDownloadUtils implements Runnable {
                 @Override
                 public void beforeSend() {
                     this.setSendBuffer(SerialUtility.crc16("0103"
-                                    + ParseSerialsUtils.getCalculatedCode(firstItem)
-                                    + String.format("%04x", length)
-                                    + "0001"));
+                            + ParseSerialsUtils.getCalculatedCode(firstItem)
+                            + String.format("%04x", length)
+                            + "0001"));
                 }
 
                 @Override

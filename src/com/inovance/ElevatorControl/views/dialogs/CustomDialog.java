@@ -11,11 +11,13 @@ import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.activities.CheckAuthorizationActivity;
 import com.inovance.elevatorcontrol.adapters.CheckedListViewAdapter;
 import com.inovance.elevatorcontrol.adapters.DialogSwitchListViewAdapter;
-import com.inovance.elevatorcontrol.adapters.ParameterStatusAdapter;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.daos.ErrorHelpDao;
 import com.inovance.elevatorcontrol.factory.ParameterFactory;
-import com.inovance.elevatorcontrol.models.*;
+import com.inovance.elevatorcontrol.models.ErrorHelp;
+import com.inovance.elevatorcontrol.models.HistoryError;
+import com.inovance.elevatorcontrol.models.ParameterSettings;
+import com.inovance.elevatorcontrol.models.ParameterStatusItem;
 import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
 import com.inovance.elevatorcontrol.web.WebApi;
 import org.json.JSONArray;
@@ -23,94 +25,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.regex.Pattern;
 
 public class CustomDialog {
 
-    // ==================================== Terminal Detail Dialog ================================== //
-    public static AlertDialog.Builder terminalDetailDialog(final Activity activity, final RealTimeMonitor monitor) {
-        byte[] data = monitor.getReceived();
-        View dialogView = activity.getLayoutInflater().inflate(R.layout.terminal_detail_dialog, null);
-        ListView listView = (ListView) dialogView.findViewById(R.id.status_list);
-        List<ParameterStatusItem> statusList = new ArrayList<ParameterStatusItem>();
-        if (monitor.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[2]) {
-            boolean[] booleanArray = ParseSerialsUtils.getBooleanValueArray(new byte[]{data[4], data[5]});
-            int bitsSize = booleanArray.length;
-            try {
-                JSONArray valuesArray = new JSONArray(monitor.getJSONDescription());
-                int size = valuesArray.length();
-                for (int i = 0; i < size; i++) {
-                    JSONObject value = valuesArray.getJSONObject(i);
-                    if (i < bitsSize) {
-                        if (!value.optString("value").contains(ApplicationConfig.RETAIN_NAME)) {
-                            ParameterStatusItem status = new ParameterStatusItem();
-                            status.setName(value.optString("value"));
-                            status.setStatus(booleanArray[Integer.parseInt(value.optString("id"))]);
-                            statusList.add(status);
-                        }
-                    }
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-        if (monitor.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[3]) {
-            try {
-                JSONArray valuesArray = new JSONArray(monitor.getJSONDescription());
-                int size = valuesArray.length();
-                Pattern pattern = Pattern.compile("^\\d*\\-\\d*:.*", Pattern.CASE_INSENSITIVE);
-                for (int i = 0; i < size; i++) {
-                    JSONObject value = valuesArray.getJSONObject(i);
-                    ParameterStatusItem status = new ParameterStatusItem();
-                    for (Iterator iterator = value.keys(); iterator.hasNext(); ) {
-                        String name = (String) iterator.next();
-                        if (name.equalsIgnoreCase("value")) {
-                            if (!value.optString("value").contains(ApplicationConfig.RETAIN_NAME)) {
-                                status.setName(value.optString("value"));
-                            }
-                        }
-                        if (name.equalsIgnoreCase("id")) {
-                            status.setStatus(ParseSerialsUtils
-                                    .getIntValueFromBytesInSection(new byte[]{data[4], data[5]},
-                                            new int[]{Integer.parseInt(value.optString("id"))}) == 1);
-                        }
-                        if (pattern.matcher(name).matches()) {
-                            String[] intStringArray = name.split(":")[0].split("-");
-                            status.setName(name.replaceAll("\\d*\\-\\d*:", ""));
-                            JSONArray subArray = value.optJSONArray(name);
-                            int intValue = ParseSerialsUtils
-                                    .getIntValueFromBytesInSection(new byte[]{data[4], data[5]}, new int[]{
-                                            Integer.parseInt(intStringArray[0]),
-                                            Integer.parseInt(intStringArray[1])
-                                    });
-                            int subArraySize = subArray.length();
-                            for (int j = 0; j < subArraySize; j++) {
-                                int index = Integer.parseInt(subArray.getJSONObject(j).optString("id"));
-                                if (index == intValue) {
-                                    status.setStatusString(subArray.getJSONObject(j).optString("value"));
-                                }
-                            }
-                        }
-                    }
-                    if (status.getName() != null) {
-                        statusList.add(status);
-                    }
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-        ParameterStatusAdapter adapter = new ParameterStatusAdapter(activity, statusList);
-        listView.setAdapter(adapter);
-        return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
-                .setView(dialogView)
-                .setTitle(monitor.getCodeText() + " " + monitor.getName())
-                .setNeutralButton(R.string.dialog_btn_ok, null);
-    }
-
     // ================================== Parameter Detail Dialog =========================================== //
+
     public static AlertDialog.Builder parameterDetailDialog(final Activity activity,
                                                             final ParameterSettings settings) {
         // 单选弹出框
@@ -125,8 +45,9 @@ public class CustomDialog {
                 int[] indexStatus = ParameterFactory.getParameter().getIndexStatus(settings);
                 for (int i = 0; i < size; i++) {
                     JSONObject value = jsonArray.getJSONObject(i);
-                    int alwaysClose = Integer.parseInt(value.optString("id")) + 32;
-                    if (indexStatus[0] == value.optInt("id")){
+                    int idValue = Integer.parseInt(value.optString("id"));
+                    int alwaysClose = ParameterFactory.getParameter().getAlwaysCloseValue(idValue);
+                    if (indexStatus[0] == value.optInt("id")) {
                         int temp = indexStatus[1];
                         indexStatus = new int[]{i, temp};
                     }
@@ -187,7 +108,7 @@ public class CustomDialog {
                 } else {
                     return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
                             .setSingleChoiceItems(statusList,
-                                    ParseSerialsUtils.getIntFromBytes(settings.getReceived()),
+                                    ParameterFactory.getParameter().getSelectedIndex(settings),
                                     null)
                             .setTitle(settings.getCodeText() + " " + settings.getName());
                 }
@@ -240,6 +161,7 @@ public class CustomDialog {
     }
 
     // =========================================== Exit dialog =============================================== //
+
     public static AlertDialog.Builder exitDialog(final Activity activity) {
         return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
                 .setMessage(activity.getResources().getString(R.string.are_you_sure_exit))

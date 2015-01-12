@@ -124,7 +124,7 @@ public class ParameterViewerActivity extends Activity {
     private void readFileAndParseJSONString(final String fileName) {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             try {
-                File directory = new File(getApplicationContext().getExternalCacheDir().getPath()
+                File directory = new File(getApplicationContext().getFilesDir().getPath()
                         + "/"
                         + ApplicationConfig.ProfileFolder);
                 File file = new File(directory, fileName);

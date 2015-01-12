@@ -1,5 +1,6 @@
 package com.inovance.elevatorcontrol.models;
 
+import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
 import net.tsz.afinal.annotation.sqlite.Id;
 import net.tsz.afinal.annotation.sqlite.Table;
@@ -11,7 +12,7 @@ import org.json.JSONObject;
  * Date: 14-4-10.
  * Time: 9:35.
  */
-@Table(name="USER")
+@Table(name = "USER")
 public class User {
 
     @Id
@@ -71,7 +72,6 @@ public class User {
                 this.permission = ParameterUpdateTool.Special;
                 break;
         }
-
     }
 
     public int getId() {
@@ -131,7 +131,7 @@ public class User {
     }
 
     public int getPermission() {
-        return permission;
+        return ApplicationConfig.IsInternalVersion ? ParameterUpdateTool.Special : permission;
     }
 
     public void setPermission(int permission) {

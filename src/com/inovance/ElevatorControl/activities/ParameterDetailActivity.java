@@ -7,13 +7,19 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.*;
-import butterknife.InjectView;
-import butterknife.Views;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.NumberPicker;
+import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.ToggleButton;
+
 import com.inovance.bluetoothtool.BluetoothHandler;
 import com.inovance.bluetoothtool.BluetoothTalk;
 import com.inovance.bluetoothtool.BluetoothTool;
@@ -22,7 +28,9 @@ import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.adapters.CheckedListViewAdapter;
 import com.inovance.elevatorcontrol.adapters.DialogSwitchListViewAdapter;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
 import com.inovance.elevatorcontrol.daos.ParameterGroupSettingsDao;
+import com.inovance.elevatorcontrol.factory.ParameterFactory;
 import com.inovance.elevatorcontrol.handlers.ParameterDetailHandler;
 import com.inovance.elevatorcontrol.models.ObjectListHolder;
 import com.inovance.elevatorcontrol.models.ParameterGroupSettings;
@@ -42,6 +50,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import butterknife.InjectView;
+import butterknife.Views;
 
 /**
  * 参数详细
@@ -205,10 +216,36 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
      */
     private void initListViewData() {
         int SelectedId = this.getIntent().getIntExtra("SelectedId", 0);
-        ParameterGroupSettings parameterGroupSettings = ParameterGroupSettingsDao.findById(
-                this, SelectedId);
+        ParameterGroupSettings parameterGroupSettings = ParameterGroupSettingsDao.findById(this, SelectedId);
         this.setTitle(parameterGroupSettings.getGroupText());
         settingsList = parameterGroupSettings.getParametersettings().getList();
+        // NICE 1000 / NICE 3000 设备提示用户选择同步异步
+        String deviceName = ParameterUpdateTool.getInstance().getDeviceName();
+        if (deviceName.equals(ApplicationConfig.NormalDeviceType[0]) ||
+                deviceName.equals(ApplicationConfig.NormalDeviceType[2])) {
+            List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
+            if (ParameterUpdateTool.getInstance().isSync()) {
+                // 同步
+                for (ParameterSettings settings : settingsList) {
+                    int type = Integer.parseInt(settings.getType());
+                    if (type != ApplicationConfig.AsyncType) {
+                        tempList.add(settings);
+                    }
+                }
+                settingsList.clear();
+                settingsList.addAll(tempList);
+            } else {
+                // 异步
+                for (ParameterSettings settings : settingsList) {
+                    int type = Integer.parseInt(settings.getType());
+                    if (type != ApplicationConfig.SyncType) {
+                        tempList.add(settings);
+                    }
+                }
+                settingsList.clear();
+                settingsList.addAll(tempList);
+            }
+        }
         listViewDataSource = new ArrayList<ParameterSettings>();
         for (ParameterSettings item : settingsList) {
             listViewDataSource.add(item);
@@ -382,7 +419,6 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
             maxValueLong = Math.round(Double.parseDouble(maxValueString)
                     / (Double.parseDouble(settings.getScale())));
             String currentValueString = settings.getFinalValue();
-            Log.v(TAG, currentValueString);
             if (settings.getFinalValue().length() < maxValueString.length()) {
                 int leadZeroCount = maxValueString.length() - currentValueString.length();
                 String leadZeroString = "";
@@ -500,9 +536,8 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                             startSetNewValueCommunications(index, String.format("%04x", userValue));
                         } else {
                             int checkedIndex = detailDialog.getListView().getCheckedItemPosition();
-                            if (checkedIndex != ParseSerialsUtils.getIntFromBytes(settings.getReceived())) {
-                                startSetNewValueCommunications(index, String.format("%04x", checkedIndex));
-                            }
+                            int writeValue = ParameterFactory.getParameter().getWriteValue(settings, checkedIndex);
+                            startSetNewValueCommunications(index, String.format("%04x", writeValue));
                         }
                         detailDialog.dismiss();
                     }
@@ -544,7 +579,9 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         if (parts.length == 2) {
             String[] items = parts[0].split("/");
             if (items.length == 2) {
-                return isAlwaysOpen ? Integer.parseInt(items[0]) : Integer.parseInt(items[1]);
+                return ParameterFactory.getParameter().getWriteInputTerminalValue(Integer.parseInt(items[0]),
+                        Integer.parseInt(items[1]),
+                        isAlwaysOpen);
             }
         }
         return -1;
@@ -661,8 +698,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                     public void beforeSend() {
                         this.setSendBuffer(SerialUtility.crc16("0106"
                                 + ParseSerialsUtils.getCalculatedCode(settings)
-                                + userValue
-                                + "0001"));
+                                + userValue));
                     }
 
                     @Override

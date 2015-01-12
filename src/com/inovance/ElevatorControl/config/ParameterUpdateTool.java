@@ -8,14 +8,18 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.util.Log;
 import android.widget.Toast;
+
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.daos.DeviceDao;
 import com.inovance.elevatorcontrol.daos.ParameterFactoryDao;
 import com.inovance.elevatorcontrol.models.Device;
+import com.inovance.elevatorcontrol.models.NormalDevice;
+import com.inovance.elevatorcontrol.models.SpecialDevice;
 import com.inovance.elevatorcontrol.models.User;
 import com.inovance.elevatorcontrol.web.WebApi;
 import com.inovance.elevatorcontrol.web.WebApi.OnGetResultListener;
 import com.inovance.elevatorcontrol.web.WebApi.OnRequestFailureListener;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,7 +34,7 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
 
     private static final String TAG = ParameterUpdateTool.class.getSimpleName();
 
-    private static ParameterUpdateTool ourInstance = new ParameterUpdateTool();
+    private static ParameterUpdateTool instance = new ParameterUpdateTool();
 
     private Context context;
 
@@ -71,11 +75,22 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
      */
     private Device currentDevice;
 
+    private NormalDevice normalDevice;
+
+    private SpecialDevice specialDevice;
+
     private boolean updateFunctionCodeComplete;
 
     private boolean updateStateCodeComplete;
 
     private boolean updateErrorHelpComplete;
+
+    private boolean broadcastRegistered;
+
+    /**
+     * 是否同步状态，只针对 NICE 1000 / NICE 3000 设备
+     */
+    private boolean sync;
 
     /**
      * 更新对话框
@@ -96,14 +111,21 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
                 if (noConnectivity && mListener != null) {
                     mListener.onFailed(null);
                     // Unregister network state change broadcast receiver
-                    context.unregisterReceiver(broadcastReceiver());
+                    if (broadcastRegistered) {
+                        try {
+                            context.unregisterReceiver(broadcastReceiver());
+                            broadcastRegistered = false;
+                        } catch (Exception e) {
+                            Log.v(TAG, "Unregister broadcast failed");
+                        }
+                    }
                 }
             }
         };
     }
 
     public static ParameterUpdateTool getInstance() {
-        return ourInstance;
+        return instance;
     }
 
     private ParameterUpdateTool() {
@@ -119,11 +141,30 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
         this.context = context;
         this.currentDevice = DeviceDao.findByName(context, DefaultDeviceName, Device.NormalDevice);
         // Register network state change broadcast receiver
-        try {
-            context.registerReceiver(broadcastReceiver(), intentFilter());
-        } catch (Exception e) {
-            Log.v(TAG, "Register broadcast failed");
+        if (!broadcastRegistered) {
+            try {
+                context.registerReceiver(broadcastReceiver(), intentFilter());
+                broadcastRegistered = true;
+            } catch (Exception e) {
+                Log.v(TAG, "Register broadcast failed");
+            }
         }
+    }
+
+    public void setNormalDevice(NormalDevice normalDevice) {
+        this.normalDevice = normalDevice;
+    }
+
+    public NormalDevice getNormalDevice() {
+        return normalDevice;
+    }
+
+    public void setSpecialDevice(SpecialDevice specialDevice) {
+        this.specialDevice = specialDevice;
+    }
+
+    public SpecialDevice getSpecialDevice() {
+        return specialDevice;
     }
 
     public String getDeviceName() {
@@ -157,6 +198,14 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
     public void setCurrentUser(User currentUser) {
         this.currentUser = currentUser;
         this.permission = this.currentUser.getPermission();
+    }
+
+    public boolean isSync() {
+        return sync;
+    }
+
+    public void setSync(boolean sync) {
+        this.sync = sync;
     }
 
     /**
@@ -344,6 +393,9 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
     @Override
     public void onFailure(int statusCode, Throwable throwable) {
         // Timeout or network not reliable
+        if (updateDialog != null && updateDialog.isShowing()) {
+            updateDialog.dismiss();
+        }
         if (mListener != null) {
             mListener.onFailed(throwable);
         }

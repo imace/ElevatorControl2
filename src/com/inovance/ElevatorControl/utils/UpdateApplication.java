@@ -25,6 +25,7 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.regex.Pattern;
 
 /**
  * Created by IntelliJ IDEA.
@@ -159,22 +160,24 @@ public class UpdateApplication {
             public void onResult(String tag, String responseString) {
                 boolean needUpdate = false;
                 if (responseString != null && responseString.length() > 0) {
-                    String[] lastVersion = responseString.split(".");
-                    String[] currentVersion = currentVersionName.split(".");
+                    String[] lastVersion = responseString.split(Pattern.quote("."));
+                    String[] currentVersion = currentVersionName.split(Pattern.quote("."));
                     if (lastVersion.length == 3 && currentVersion.length == 3) {
                         int lastMainVersion = Integer.parseInt(lastVersion[0]);
                         int lastSecondVersion = Integer.parseInt(lastVersion[1]);
                         int lastBuildVersion = Integer.parseInt(lastVersion[2]);
+
                         int currentMainVersion = Integer.parseInt(currentVersion[0]);
                         int currentSecondVersion = Integer.parseInt(currentVersion[1]);
                         int currentBuildVersion = Integer.parseInt(currentVersion[2]);
-                        if (currentMainVersion > lastMainVersion) {
+
+                        if (lastMainVersion > currentMainVersion) {
                             needUpdate = true;
                         }
-                        if (currentSecondVersion > lastSecondVersion) {
+                        if (lastSecondVersion > currentSecondVersion) {
                             needUpdate = true;
                         }
-                        if (currentBuildVersion > lastBuildVersion) {
+                        if (lastBuildVersion > currentBuildVersion) {
                             needUpdate = true;
                         }
                     }
@@ -325,7 +328,7 @@ public class UpdateApplication {
                 message.obj = contentLength;
                 handler.sendMessage(message);
                 InputStream inputStream = new BufferedInputStream(url.openStream());
-                File fileName = new File(mActivity.getExternalCacheDir().getPath() + "/update.apk");
+                File fileName = new File(mActivity.getFilesDir().getPath() + "/update.apk");
                 if (!fileName.exists()) {
                     fileName.createNewFile();
                 }
@@ -363,7 +366,7 @@ public class UpdateApplication {
         protected void onPostExecute(Boolean result) {
             if (result) {
                 Intent intent = new Intent(Intent.ACTION_VIEW);
-                File file = new File(mActivity.getExternalCacheDir().getPath() + "/update.apk");
+                File file = new File(mActivity.getFilesDir().getPath() + "/update.apk");
                 intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 mActivity.startActivity(intent);
