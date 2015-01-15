@@ -423,7 +423,7 @@ public class MoveOutsideActivity extends Activity implements Runnable, MoveSideP
             BluetoothTool.getInstance()
                     .setHandler(floorInformationHandler)
                     .setCommunications(getFloorsCommunications)
-                    .send();
+                    .startTask();
         }
     }
 
@@ -438,7 +438,7 @@ public class MoveOutsideActivity extends Activity implements Runnable, MoveSideP
             BluetoothTool.getInstance()
                     .setHandler(getCurrentFloorAndCallStateHandler)
                     .setCommunications(getCurrentFloorAndCallStateCommunications)
-                    .send();
+                    .startTask();
         }
     }
 
@@ -502,7 +502,7 @@ public class MoveOutsideActivity extends Activity implements Runnable, MoveSideP
                     BluetoothTool.getInstance()
                             .setHandler(callCurrentFloorHandler)
                             .setCommunications(communications)
-                            .send();
+                            .startTask();
                 }
                 break;
             }

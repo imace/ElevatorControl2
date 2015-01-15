@@ -252,7 +252,7 @@ public class HomeActivity extends Activity implements Runnable {
             BluetoothTool.getInstance()
                     .setHandler(mSyncStatusHandler)
                     .setCommunications(communications)
-                    .send();
+                    .startTask();
         }
     }
 

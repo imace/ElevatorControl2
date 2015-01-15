@@ -220,7 +220,7 @@ public class ParameterUploadActivity extends Activity {
                     BluetoothTool.getInstance()
                             .setCommunications(getElevatorStatusCommunication)
                             .setHandler(elevatorStatusHandler)
-                            .send();
+                            .startTask();
                 }
 
             }
@@ -395,7 +395,7 @@ public class ParameterUploadActivity extends Activity {
                 BluetoothTool.getInstance()
                         .setHandler(uploadParameterHandler)
                         .setCommunications(communicationsList.get(position))
-                        .send();
+                        .startTask();
             }
         }
     }

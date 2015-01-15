@@ -189,7 +189,7 @@ public class ProfileDownloadUtils implements Runnable {
                 BluetoothTool.getInstance()
                         .setHandler(downloadHandler)
                         .setCommunications(communicationsList.get(position))
-                        .send();
+                        .startTask();
             }
         }
     }

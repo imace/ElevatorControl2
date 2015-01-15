@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +26,7 @@ import android.widget.Toast;
 import com.inovance.bluetoothtool.BluetoothHandler;
 import com.inovance.bluetoothtool.BluetoothTalk;
 import com.inovance.bluetoothtool.BluetoothTool;
+import com.inovance.bluetoothtool.BuildConfig;
 import com.inovance.bluetoothtool.SerialUtility;
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
@@ -663,7 +665,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
             BluetoothTool.getInstance()
                     .setHandler(getNormalDeviceTypeHandler)
                     .setCommunications(getNormalDeviceTypeTalk)
-                    .send();
+                    .startTask();
         }
     }
 
@@ -715,7 +717,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
                     BluetoothTool.getInstance()
                             .setHandler(getSpecialDeviceTypeHandler)
                             .setCommunications(talks)
-                            .send();
+                            .startTask();
                 }
             } else {
                 talkTime = 0;
@@ -730,6 +732,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
      * @param type 1000/3000
      */
     private void showNormalDeviceSelect(int type) {
+        Log.v(TAG, "Show select normal device dialog");
         // 3000/3000+ 返回3000
         // 1000/1000+ 返回1000
         // ErrorCode && Other
@@ -760,6 +763,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
                 ParameterUpdateTool.getInstance().setNormalDevice(device);
                 String deviceName = ParameterUpdateTool.getInstance().getDeviceName();
                 // NICE 1000 / NICE 3000 设备提示用户选择同步异步
+                Log.v(TAG, deviceName);
                 if (deviceName.equals(ApplicationConfig.NormalDeviceType[0]) ||
                         deviceName.equals(ApplicationConfig.NormalDeviceType[2])) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(NavigationTabActivity.this);
@@ -976,10 +980,16 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
         @Override
         public void onTalkReceive(Message msg) {
             super.onTalkReceive(msg);
+            if (BuildConfig.DEBUG) {
+                Log.v(TAG, "Receive command");
+            }
             if (msg.obj != null && msg.obj instanceof Integer) {
                 isRunning = false;
                 hasGetDeviceType = true;
                 BluetoothTool.getInstance().crcValue = BluetoothTool.CRCValueNone;
+                if (BuildConfig.DEBUG) {
+                    Log.v(TAG, "Start select device");
+                }
                 showNormalDeviceSelect((Integer) msg.obj);
             }
         }

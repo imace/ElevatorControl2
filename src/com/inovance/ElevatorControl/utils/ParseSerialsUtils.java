@@ -27,7 +27,7 @@ public class ParseSerialsUtils {
      */
     public static String getValueTextFromRealTimeMonitor(RealTimeMonitor monitor) {
         byte[] data = monitor.getReceived();
-        if (data.length == 8) {
+        if (data != null && data.length == 8) {
             if (monitor.getDescription() != null && monitor.getDescription().length() > 0) {
                 return TextLocalize.getInstance().getViewDetailText();
             }

@@ -165,6 +165,7 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
             if (specialApplyView == null) {
                 specialApplyView = new SpecialApplyForm(getActivity());
             }
+            Log.v(TAG, "________");
             container.addView(specialApplyView);
             WebApi.getInstance().setOnFailureListener(this);
             WebApi.getInstance().setOnResultListener(this);
@@ -252,7 +253,9 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
             burnFirmwareList.addAll(FirmwareDao.findAll(context));
             firmwareBurnAdapter.setFirmwareList(burnFirmwareList);
         }
-        Log.v("refreshFirmwareBurnView", "Refresh");
+        WebApi.getInstance().setOnResultListener(this);
+        WebApi.getInstance().setOnFailureListener(this);
+        WebApi.getInstance().getVendorList(getActivity());
         NormalDevice normalDevice = ParameterUpdateTool.getInstance().getNormalDevice();
         SpecialDevice specialDevice = ParameterUpdateTool.getInstance().getSpecialDevice();
         if (normalDevice != null) {
@@ -260,9 +263,10 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
             vendorName.setText("标准设备");
         }
         if (specialDevice != null) {
-            Log.v("refreshFirmwareBurnView", ":::::");
             deviceType.setText(specialDevice.getName());
+            Log.v(TAG, specialDevice.getVendorID() + "");
             for (Vendor vendor : vendorList) {
+                Log.v(TAG, vendor.getName());
                 if (specialDevice.getVendorID() == vendor.getId()) {
                     vendorName.setText(vendor.getName());
                 }
@@ -332,6 +336,23 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
     // ============================================= Web APi Listener ================================= //
     @Override
     public void onResult(String tag, String responseString) {
+        if (tag.equalsIgnoreCase(ApplicationConfig.GetVendorList)) {
+            if (responseString != null && responseString.length() > 0) {
+                try {
+                    vendorList = new ArrayList<Vendor>();
+                    JSONArray jsonArray = new JSONArray(responseString);
+                    int size = jsonArray.length();
+                    for (int i = 0; i < size; i++) {
+                        JSONObject object = jsonArray.getJSONObject(i);
+                        Vendor vendor = new Vendor(object);
+                        vendorList.add(vendor);
+                    }
+                    specialApplyView.setVendorList(vendorList);
+                } catch (JSONException e) {
+                    Toast.makeText(getActivity(), R.string.read_data_error, Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
         int currentPager = ((FirmwareManageActivity) getActivity()).pager.getCurrentItem();
         if (currentPager == 0) {
             if (tag.equalsIgnoreCase(ApplicationConfig.GetNormalDeviceList)) {
@@ -346,23 +367,6 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
                             deviceList.add(device);
                         }
                         normalApplyView.setSpinnerDataSource(deviceList);
-                    } catch (JSONException e) {
-                        Toast.makeText(getActivity(), R.string.read_data_error, Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-            if (tag.equalsIgnoreCase(ApplicationConfig.GetVendorList)) {
-                if (responseString != null && responseString.length() > 0) {
-                    try {
-                        vendorList = new ArrayList<Vendor>();
-                        JSONArray jsonArray = new JSONArray(responseString);
-                        int size = jsonArray.length();
-                        for (int i = 0; i < size; i++) {
-                            JSONObject object = jsonArray.getJSONObject(i);
-                            Vendor vendor = new Vendor(object);
-                            vendorList.add(vendor);
-                        }
-                        specialApplyView.setVendorList(vendorList);
                     } catch (JSONException e) {
                         Toast.makeText(getActivity(), R.string.read_data_error, Toast.LENGTH_SHORT).show();
                     }

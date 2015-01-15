@@ -335,7 +335,7 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
                 BluetoothTool.getInstance()
                         .setHandler(downloadParameterHandler)
                         .setCommunications(communicationsList.get(position))
-                        .send();
+                        .startTask();
             }
         }
     }

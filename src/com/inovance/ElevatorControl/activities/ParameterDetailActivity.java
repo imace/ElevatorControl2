@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -666,7 +667,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                     BluetoothTool.getInstance()
                             .setCommunications(communications)
                             .setHandler(getValueScopeHandler)
-                            .send();
+                            .startTask();
                 }
             }
         }
@@ -740,7 +741,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                         BluetoothTool.getInstance()
                                 .setHandler(writeHandler)
                                 .setCommunications(communications)
-                                .send();
+                                .startTask();
                     } else {
                         this.cancel();
                     }
@@ -802,6 +803,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                     public Object onParse() {
                         if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
                             byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
+                            Log.v("ParameterDetailHandler", SerialUtility.byte2HexStr(data));
                             short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
                             if (length * 2 == bytesLength) {
                                 List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
@@ -829,7 +831,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
             BluetoothTool.getInstance()
                     .setHandler(parameterDetailHandler)
                     .setCommunications(communications)
-                    .send();
+                    .startTask();
         }
     }
 

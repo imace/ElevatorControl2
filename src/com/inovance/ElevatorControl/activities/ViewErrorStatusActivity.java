@@ -173,7 +173,7 @@ public class ViewErrorStatusActivity extends Activity {
                 BluetoothTool.getInstance()
                         .setHandler(errorStatusHandler)
                         .setCommunications(communications)
-                        .send();
+                        .startTask();
             }
         }
     }

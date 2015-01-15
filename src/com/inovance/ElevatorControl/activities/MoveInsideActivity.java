@@ -319,7 +319,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
             BluetoothTool.getInstance()
                     .setHandler(mSyncMoveInsideInfoHandler)
                     .setCommunications(getMoveInsideInfoCommunications)
-                    .send();
+                    .startTask();
         }
     }
 
@@ -448,7 +448,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
                     BluetoothTool.getInstance()
                             .setHandler(callFloorHandler)
                             .setCommunications(communications)
-                            .send();
+                            .startTask();
                 }
                 break;
             }
@@ -466,7 +466,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
             BluetoothTool.getInstance()
                     .setHandler(mMoveInsideHandler)
                     .setCommunications(getFloorsCommunications)
-                    .send();
+                    .startTask();
         }
     }
 

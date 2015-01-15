@@ -247,7 +247,7 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
                                 BluetoothTool.getInstance()
                                         .setHandler(restoreErrorHandler)
                                         .setCommunications(talks)
-                                        .send();
+                                        .startTask();
                             }
                         } else {
                             this.cancel();
@@ -342,7 +342,7 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
                 BluetoothTool.getInstance()
                         .setHandler(currentErrorHandler)
                         .setCommunications(currentCommunications)
-                        .send();
+                        .startTask();
             }
         }
     }
@@ -455,7 +455,7 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
                 BluetoothTool.getInstance()
                         .setHandler(historyTroubleHandler)
                         .setCommunications(historyCommunications)
-                        .send();
+                        .startTask();
             }
         }
     }

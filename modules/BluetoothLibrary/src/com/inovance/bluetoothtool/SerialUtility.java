@@ -2,6 +2,8 @@ package com.inovance.bluetoothtool;
 
 import android.annotation.SuppressLint;
 
+import java.util.List;
+
 /**
  * 16进制值与String/Byte之间的转换
  */
@@ -357,5 +359,32 @@ public class SerialUtility {
             dst[j++] = (byte) ((x >>> 24) & 0xff);
         }
         return dst;
+    }
+
+    @SuppressLint("GetIntFromBytes")
+    public static int getIntFromBytes(byte[] data) {
+        if (data.length == 7) {
+            data = concatenateByteArrays(data, new byte[]{0});
+        }
+        if (data.length == 8) {
+            return data[4] << 8 & 0xFF00 | data[5] & 0xFF;
+        } else {
+            return -1;
+        }
+    }
+
+    private static byte[] concatenateByteArrays(byte[] a, byte[] b) {
+        byte[] result = new byte[a.length + b.length];
+        System.arraycopy(a, 0, result, 0, a.length);
+        System.arraycopy(b, 0, result, a.length, b.length);
+        return result;
+    }
+
+    public static byte[] getByteArray(List<Byte> byteList){
+        byte[] byteArray = new byte[byteList.size()];
+        for (int index = 0; index < byteList.size(); index++) {
+            byteArray[index] = byteList.get(index);
+        }
+        return byteArray;
     }
 }

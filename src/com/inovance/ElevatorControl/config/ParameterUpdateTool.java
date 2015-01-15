@@ -158,7 +158,10 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
     }
 
     public void setNormalDevice(NormalDevice normalDevice) {
+        this.currentDevice.setDeviceName(normalDevice.getName());
+        this.currentDevice.setDeviceType(Device.NormalDevice);
         this.normalDevice = normalDevice;
+        this.specialDevice = null;
     }
 
     public NormalDevice getNormalDevice() {
@@ -166,7 +169,10 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
     }
 
     public void setSpecialDevice(SpecialDevice specialDevice) {
+        this.currentDevice.setDeviceName(specialDevice.getName());
+        this.currentDevice.setDeviceType(Device.SpecialDevice);
         this.specialDevice = specialDevice;
+        this.normalDevice = null;
     }
 
     public SpecialDevice getSpecialDevice() {

@@ -539,7 +539,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                 BluetoothTool.getInstance()
                         .setCommunications(getElevatorStateCommunications)
                         .setHandler(getElevatorStatusHandler)
-                        .send();
+                        .startTask();
             }
         }
     }
@@ -618,7 +618,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
                 BluetoothTool.getInstance()
                         .setCommunications(restoreElevatorCommunications)
                         .setHandler(restoreFactoryHandler)
-                        .send();
+                        .startTask();
             }
         }
     }
@@ -674,7 +674,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
             BluetoothTool.getInstance()
                     .setHandler(configurationHandler)
                     .setCommunications(getRealTimeStateCommunications)
-                    .send();
+                    .startTask();
         }
     }
 
@@ -739,7 +739,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
             BluetoothTool.getInstance()
                     .setHandler(getHVInputTerminalValueHandler)
                     .setCommunications(getHVInputTerminalValueCommunications)
-                    .send();
+                    .startTask();
         }
     }
 
@@ -811,7 +811,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
             BluetoothTool.getInstance()
                     .setHandler(getHVInputTerminalStateHandler)
                     .setCommunications(getHVInputTerminalStateCommunications)
-                    .send();
+                    .startTask();
         }
     }
 
@@ -881,7 +881,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
             BluetoothTool.getInstance()
                     .setHandler(getInputTerminalValueHandler)
                     .setCommunications(getInputTerminalValueCommunications)
-                    .send();
+                    .startTask();
         }
     }
 
@@ -954,7 +954,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
             BluetoothTool.getInstance()
                     .setHandler(getInputTerminalStateHandler)
                     .setCommunications(getInputTerminalStateCommunications)
-                    .send();
+                    .startTask();
         }
     }
 
@@ -1024,7 +1024,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
             BluetoothTool.getInstance()
                     .setHandler(getOutputTerminalValueHandler)
                     .setCommunications(getOutputTerminalValueCommunications)
-                    .send();
+                    .startTask();
         }
     }
 
@@ -1096,7 +1096,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
             BluetoothTool.getInstance()
                     .setHandler(getOutputTerminalStateHandler)
                     .setCommunications(getOutputTerminalStateCommunications)
-                    .send();
+                    .startTask();
         }
     }
 
@@ -1148,7 +1148,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
             BluetoothTool.getInstance()
                     .setHandler(getSystemStateHandler)
                     .setCommunications(getSystemStateCommunications)
-                    .send();
+                    .startTask();
         }
     }
 
@@ -1211,7 +1211,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
             BluetoothTool.getInstance()
                     .setHandler(getCeilingInputStateHandler)
                     .setCommunications(getCeilingInputStateCommunications)
-                    .send();
+                    .startTask();
         }
     }
 
@@ -1274,7 +1274,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
             BluetoothTool.getInstance()
                     .setHandler(getCeilingOutputStateHandler)
                     .setCommunications(getCeilingOutputStateCommunications)
-                    .send();
+                    .startTask();
         }
     }
 
