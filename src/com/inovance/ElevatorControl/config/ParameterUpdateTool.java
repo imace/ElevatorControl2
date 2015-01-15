@@ -87,6 +87,12 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
 
     private boolean broadcastRegistered;
 
+    private String functionCodeUpdateTimeString;
+
+    private String stateCodeUpdateTimeString;
+
+    private String errorHelpUpdateTimeString;
+
     /**
      * 是否同步状态，只针对 NICE 1000 / NICE 3000 设备
      */
@@ -287,16 +293,16 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
                 for (int i = 0; i < size; i++) {
                     JSONObject object = jsonArray.getJSONObject(i);
                     String type = object.optString("codeType");
-                    String updateTime = object.optString("updateTime");
-                    if (!updateTime.equalsIgnoreCase("null")) {
+                    String updateTimeString = object.optString("updateTime");
+                    if (!updateTimeString.equalsIgnoreCase("null")) {
                         if (type.equalsIgnoreCase("funcode")) {
                             if (currentDevice.getFunctionCodeUpdateTime() == null
-                                    || !currentDevice.getFunctionCodeUpdateTime().equalsIgnoreCase(updateTime)) {
+                                    || !currentDevice.getFunctionCodeUpdateTime().equalsIgnoreCase(updateTimeString)) {
+                                functionCodeUpdateTimeString = updateTimeString;
                                 ParameterFactoryDao.emptyRecordByDeviceID(context,
                                         getDeviceSQLID(),
                                         ApplicationConfig.FunctionCodeType);
                                 updateFunctionCodeComplete = false;
-                                currentDevice.setFunctionCodeUpdateTime(updateTime);
                                 showUpdateDialog();
                                 WebApi.getInstance().getFunctionCode(context,
                                         currentDevice.getRemoteID(),
@@ -307,11 +313,11 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
                         }
                         if (type.equalsIgnoreCase("state")) {
                             if (currentDevice.getStateCodeUpdateTime() == null
-                                    || !currentDevice.getStateCodeUpdateTime().equalsIgnoreCase(updateTime)) {
+                                    || !currentDevice.getStateCodeUpdateTime().equalsIgnoreCase(updateTimeString)) {
+                                stateCodeUpdateTimeString = updateTimeString;
                                 ParameterFactoryDao.emptyRecordByDeviceID(context,
                                         getDeviceSQLID(),
                                         ApplicationConfig.StateCodeType);
-                                currentDevice.setStateCodeUpdateTime(updateTime);
                                 updateStateCodeComplete = false;
                                 showUpdateDialog();
                                 WebApi.getInstance().getStateCode(context,
@@ -323,8 +329,8 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
                         }
                         if (type.equalsIgnoreCase("help")) {
                             if (currentDevice.getErrorHelpUpdateTime() == null
-                                    || !currentDevice.getErrorHelpUpdateTime().equalsIgnoreCase(updateTime)) {
-                                currentDevice.setErrorHelpUpdateTime(updateTime);
+                                    || !currentDevice.getErrorHelpUpdateTime().equalsIgnoreCase(updateTimeString)) {
+                                errorHelpUpdateTimeString = updateTimeString;
                                 updateErrorHelpComplete = false;
                                 showUpdateDialog();
                                 WebApi.getInstance().getErrorHelpList(context,
@@ -351,6 +357,7 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
                             getDeviceSQLID(),
                             ApplicationConfig.FunctionCodeType);
                     ParameterFactoryDao.saveFunctionCode(data, context, getDeviceSQLID());
+                    currentDevice.setFunctionCodeUpdateTime(functionCodeUpdateTimeString);
                     DeviceDao.update(context, currentDevice);
                     updateFunctionCodeComplete = true;
                     checkUpdateParameterDataComplete();
@@ -366,6 +373,7 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
                     ParameterFactoryDao.emptyRecordByDeviceID(context, getDeviceSQLID(),
                             ApplicationConfig.StateCodeType);
                     ParameterFactoryDao.saveStateCode(data, context, getDeviceSQLID());
+                    currentDevice.setStateCodeUpdateTime(stateCodeUpdateTimeString);
                     DeviceDao.update(context, currentDevice);
                     updateStateCodeComplete = true;
                     checkUpdateParameterDataComplete();
@@ -382,6 +390,7 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
                             getDeviceSQLID(),
                             ApplicationConfig.ErrorHelpType);
                     ParameterFactoryDao.saveErrorHelp(data, context, getDeviceSQLID());
+                    currentDevice.setErrorHelpUpdateTime(errorHelpUpdateTimeString);
                     DeviceDao.update(context, currentDevice);
                     updateErrorHelpComplete = true;
                     checkUpdateParameterDataComplete();

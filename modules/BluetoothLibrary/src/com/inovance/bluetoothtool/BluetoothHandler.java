@@ -190,7 +190,7 @@ public class BluetoothHandler extends Handler {
      */
     public void onTalkReceive(Message msg) {
         if (BuildConfig.DEBUG) {
-            Log.v(TAG, "onTalkReceive : " + msg.obj.toString());
+            Log.v(TAG, "onTalkReceive");
         }
     }
 
@@ -201,7 +201,7 @@ public class BluetoothHandler extends Handler {
      */
     public void onTalkError(Message msg) {
         if (BuildConfig.DEBUG) {
-            Log.v(TAG, "onTalkError" + ((msg.obj == null) ? "..." : msg.obj.toString()));
+            Log.v(TAG, "onTalkError");
         }
     }
 
@@ -212,9 +212,7 @@ public class BluetoothHandler extends Handler {
      */
     public void onHandlerChanged(Message msg) { //the origin handler
         if (BuildConfig.DEBUG) {
-            Log.v(TAG, "onHandlerChanged"
-                    + ((msg.obj == null) ? "UnKnownHHandler"
-                    : ((BluetoothHandler) msg.obj).TAG));
+            Log.v(TAG, "onHandlerChanged");
         }
     }
 
