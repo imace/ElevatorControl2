@@ -72,7 +72,7 @@ public class ChooseDeviceActivity extends Activity {
     private void researchDevices() {
         if (!BluetoothTool.getInstance().isConnected()) {
             BluetoothTool.getInstance()
-                    .setSearchHandler(searchHandler)
+                    .setEventHandler(searchHandler)
                     .search();
         }
     }

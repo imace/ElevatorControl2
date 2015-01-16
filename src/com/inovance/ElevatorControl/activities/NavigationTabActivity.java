@@ -855,7 +855,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
         switch (currentTask) {
             case SEARCH_DEVICE:
                 BluetoothTool.getInstance()
-                        .setSearchHandler(searchBluetoothHandler)
+                        .setEventHandler(searchBluetoothHandler)
                         .search();
                 break;
             case CONNECT_DEVICE:

@@ -411,8 +411,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
                             @Override
                             public void beforeSend() {
                                 this.setSendBuffer(SerialUtility.crc16("0106"
-                                        + callCode
-                                        + "0001"));
+                                        + callCode));
                             }
 
                             @Override

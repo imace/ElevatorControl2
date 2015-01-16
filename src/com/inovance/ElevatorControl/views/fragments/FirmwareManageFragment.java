@@ -7,7 +7,6 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Base64;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -165,7 +164,6 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
             if (specialApplyView == null) {
                 specialApplyView = new SpecialApplyForm(getActivity());
             }
-            Log.v(TAG, "________");
             container.addView(specialApplyView);
             WebApi.getInstance().setOnFailureListener(this);
             WebApi.getInstance().setOnResultListener(this);
@@ -259,16 +257,18 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
         NormalDevice normalDevice = ParameterUpdateTool.getInstance().getNormalDevice();
         SpecialDevice specialDevice = ParameterUpdateTool.getInstance().getSpecialDevice();
         if (normalDevice != null) {
-            deviceType.setText(normalDevice.getName());
-            vendorName.setText("标准设备");
+            if (deviceType != null && vendorName != null && normalDevice.getName() != null) {
+                deviceType.setText(normalDevice.getName());
+                vendorName.setText("标准设备");
+            }
         }
         if (specialDevice != null) {
-            deviceType.setText(specialDevice.getName());
-            Log.v(TAG, specialDevice.getVendorID() + "");
-            for (Vendor vendor : vendorList) {
-                Log.v(TAG, vendor.getName());
-                if (specialDevice.getVendorID() == vendor.getId()) {
-                    vendorName.setText(vendor.getName());
+            if (deviceType != null && vendorName != null) {
+                deviceType.setText(specialDevice.getName());
+                for (Vendor vendor : vendorList) {
+                    if (specialDevice.getVendorID() == vendor.getId()) {
+                        vendorName.setText(vendor.getName());
+                    }
                 }
             }
         }
@@ -310,7 +310,7 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
                         R.style.CustomDialogStyle)
                         .setView(dialogView)
                         .setTitle(R.string.download_firmware_dialog_title)
-                        .setNegativeButton(R.string.dialog_btn_cancel,new DialogInterface.OnClickListener() {
+                        .setNegativeButton(R.string.dialog_btn_cancel, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
 
