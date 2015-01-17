@@ -3,7 +3,6 @@ package com.inovance.elevatorcontrol.utils;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.inovance.bluetoothtool.SerialUtility;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
@@ -338,8 +337,7 @@ public class ParseSerialsUtils {
                 && number <= ApplicationConfig.FA26ToFA37[1];
     }
 
-    public static String isWriteSuccess(String receive) {
-        Log.v("ForTest+++++++++++++", receive);
+    public static String getErrorString(String receive) {
         if (receive.contains("8001")) {
             if (receive.length() >= 12) {
                 String temp = receive.substring(4, 12);
@@ -353,5 +351,21 @@ public class ParseSerialsUtils {
             }
         }
         return null;
+    }
+
+    public static int getErrorIndex(String receive) {
+        if (receive.contains("8001")) {
+            if (receive.length() >= 12) {
+                String temp = receive.substring(4, 12);
+                int index = 0;
+                for (String errorCode : ApplicationConfig.ERROR_CODE_ARRAY) {
+                    if (temp.equalsIgnoreCase(errorCode)) {
+                        return index;
+                    }
+                    index++;
+                }
+            }
+        }
+        return -1;
     }
 }

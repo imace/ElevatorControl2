@@ -7,11 +7,25 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Message;
-import android.view.*;
-import android.widget.*;
-import butterknife.InjectView;
-import butterknife.Views;
-import com.inovance.bluetoothtool.*;
+import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ListView;
+import android.widget.PopupMenu;
+import android.widget.ProgressBar;
+import android.widget.ScrollView;
+import android.widget.TextView;
+
+import com.inovance.bluetoothtool.BluetoothHandler;
+import com.inovance.bluetoothtool.BluetoothState;
+import com.inovance.bluetoothtool.BluetoothTalk;
+import com.inovance.bluetoothtool.BluetoothTool;
+import com.inovance.bluetoothtool.SerialUtility;
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.daos.ProfileDao;
@@ -23,16 +37,25 @@ import com.inovance.elevatorcontrol.utils.LogUtils;
 import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
 import com.inovance.elevatorcontrol.utils.TextLocalize;
 import com.inovance.elevatorcontrol.views.dialogs.CustomDialog;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import butterknife.InjectView;
+import butterknife.Views;
 
 /**
  * Created by IntelliJ IDEA.
@@ -646,14 +669,9 @@ public class ParameterUploadActivity extends Activity {
             if (msg.obj != null && msg.obj instanceof ParameterSettings) {
                 receiveCount++;
                 ParameterSettings settings = (ParameterSettings) msg.obj;
-                String hexString = SerialUtility.byte2HexStr(settings.getReceived());
-                int index = 0;
-                for (String errorCode : ApplicationConfig.ERROR_CODE_ARRAY) {
-                    if (hexString.contains(errorCode)) {
-                        settings.setWriteErrorCode(index);
-                    }
-                    index++;
-                }
+                String valueString = SerialUtility.byte2HexStr(settings.getReceived());
+                int index = ParseSerialsUtils.getErrorIndex(valueString);
+                settings.setWriteErrorCode(index);
                 ParameterUploadActivity.this.uploadProgressBar.setProgress(receiveCount);
                 int maxProgress = ParameterUploadActivity.this.uploadProgressBar.getMax();
                 int percentage = 100 * receiveCount / maxProgress;

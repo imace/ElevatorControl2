@@ -575,7 +575,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
             super.onMultiTalkEnd(msg);
             if (monitor != null) {
                 String receive = SerialUtility.byte2HexStr(monitor.getReceived());
-                String checkResult = ParseSerialsUtils.isWriteSuccess(receive);
+                String checkResult = ParseSerialsUtils.getErrorString(receive);
                 if (checkResult != null) {
                     Toast.makeText(MoveInsideActivity.this,
                             checkResult,

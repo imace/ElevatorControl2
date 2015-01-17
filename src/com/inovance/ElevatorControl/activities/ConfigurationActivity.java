@@ -13,8 +13,7 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-import butterknife.InjectView;
-import butterknife.Views;
+
 import com.inovance.bluetoothtool.BluetoothHandler;
 import com.inovance.bluetoothtool.BluetoothTalk;
 import com.inovance.bluetoothtool.BluetoothTool;
@@ -35,15 +34,23 @@ import com.inovance.elevatorcontrol.utils.LogUtils;
 import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
 import com.inovance.elevatorcontrol.views.fragments.ConfigurationFragment;
 import com.viewpagerindicator.TabPageIndicator;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
+
+import butterknife.InjectView;
+import butterknife.Views;
 
 /**
  * 标签卡 电梯调试
@@ -1813,13 +1820,11 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
             super.onTalkReceive(msg);
             if (msg.obj != null && msg.obj instanceof RealTimeMonitor) {
                 RealTimeMonitor monitor = (RealTimeMonitor) msg.obj;
-                String result = SerialUtility.byte2HexStr(monitor.getReceived());
+                String valueString = SerialUtility.byte2HexStr(monitor.getReceived());
                 boolean writeSuccessful = true;
-                for (String item : ApplicationConfig.ERROR_CODE_ARRAY) {
-                    if (result.contains(item)) {
-                        writeSuccessful = false;
-                        break;
-                    }
+                String result = ParseSerialsUtils.getErrorString(valueString);
+                if (result != null) {
+                    writeSuccessful = false;
                 }
                 final String tips;
                 if (writeSuccessful) {

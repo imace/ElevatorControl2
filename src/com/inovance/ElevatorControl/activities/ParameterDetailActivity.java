@@ -1076,7 +1076,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                             + (receiveObject.getScale().length() - 2) + "f", finalDoubleValue)
                             + receiveObject.getUnit();
                 }
-                final String result = ParseSerialsUtils.isWriteSuccess(valueString);
+                final String result = ParseSerialsUtils.getErrorString(valueString);
                 if (result != null) {
                     isWriteError = true;
                     onWriteDataError(result);
