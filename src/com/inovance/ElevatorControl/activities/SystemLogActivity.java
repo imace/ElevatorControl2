@@ -4,16 +4,21 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.ListView;
-import butterknife.InjectView;
-import butterknife.Views;
+
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.models.SystemLog;
 import com.inovance.elevatorcontrol.utils.LogUtils;
 import com.mobsandgeeks.adapters.InstantAdapter;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import butterknife.InjectView;
+import butterknife.Views;
 
 /**
  * Created by IntelliJ IDEA.
@@ -26,6 +31,10 @@ public class SystemLogActivity extends Activity {
     @InjectView(R.id.list_view)
     ListView listView;
 
+    private List<SystemLog> systemLogList = new ArrayList<SystemLog>();
+
+    private InstantAdapter instantAdapter;
+
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
@@ -34,18 +43,37 @@ public class SystemLogActivity extends Activity {
         Views.inject(this);
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
+        instantAdapter = new InstantAdapter<SystemLog>(this,
+                R.layout.system_log_item,
+                SystemLog.class,
+                systemLogList);
+        listView.setAdapter(instantAdapter);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        List<SystemLog> systemLogList = LogUtils.getInstance().readLogs();
-        Collections.sort(systemLogList, new SortComparator());
-        InstantAdapter adapter = new InstantAdapter<SystemLog>(this,
-                R.layout.system_log_item,
-                SystemLog.class,
-                systemLogList);
-        listView.setAdapter(adapter);
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        List<SystemLog> logList = LogUtils.getInstance().readLogs();
+                        Collections.sort(logList, new SortComparator());
+                        systemLogList.clear();
+                        systemLogList.addAll(logList);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                instantAdapter.notifyDataSetChanged();
+                            }
+                        });
+                    }
+                }).start();
+            }
+        }, 300);
     }
 
     @Override

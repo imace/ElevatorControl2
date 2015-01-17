@@ -2,7 +2,6 @@ package com.inovance.elevatorcontrol.handlers;
 
 import android.app.Activity;
 import android.os.Message;
-import android.util.Log;
 
 import com.inovance.bluetoothtool.BluetoothHandler;
 import com.inovance.elevatorcontrol.activities.ParameterDetailActivity;
@@ -11,6 +10,8 @@ import com.inovance.elevatorcontrol.models.ParameterSettings;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class ParameterDetailHandler extends BluetoothHandler {
 
@@ -29,17 +30,14 @@ public class ParameterDetailHandler extends BluetoothHandler {
     public void onMultiTalkBegin(Message msg) {
         super.onMultiTalkBegin(msg);
         receiveCount = 0;
-        Log.v(TAG, "Send begin");
         tempList = new ArrayList<ParameterSettings>();
     }
 
     @Override
     public void onMultiTalkEnd(Message msg) {
         super.onMultiTalkEnd(msg);
-        Log.v(TAG, "Send count " + sendCount + "Receive count " + receiveCount);
+        final ParameterDetailActivity parentActivity = ((ParameterDetailActivity) activity);
         if (receiveCount == sendCount) {
-            Log.v(TAG, "Refresh complete");
-            ParameterDetailActivity parentActivity = ((ParameterDetailActivity) activity);
             if (parentActivity.mRefreshActionItem != null) {
                 parentActivity.mRefreshActionItem.showProgress(false);
             }
@@ -48,8 +46,13 @@ public class ParameterDetailHandler extends BluetoothHandler {
             parentActivity.instantAdapter.notifyDataSetChanged();
             parentActivity.syncingParameter = false;
         } else {
-            Log.v(TAG, "Refresh not complete");
-            ((ParameterDetailActivity) activity).startCombinationCommunications();
+            Timer timer = new Timer();
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    parentActivity.startCombinationCommunications();
+                }
+            }, 500);
         }
     }
 

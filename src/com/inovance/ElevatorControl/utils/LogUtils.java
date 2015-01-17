@@ -1,10 +1,12 @@
 package com.inovance.elevatorcontrol.utils;
 
 import android.content.Context;
+
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
 import com.inovance.elevatorcontrol.models.SystemLog;
+
 import net.tsz.afinal.FinalDb;
 
 import java.util.List;
@@ -86,20 +88,24 @@ public class LogUtils {
 
     public String parseCommand(String command) {
         if (command != null) {
-            command = command.replace("0106", "").replace("0103", "").replace("0001", "");
-            String parse = "";
-            int index = 0;
-            for (char item : command.toCharArray()) {
-                if (index % 2 != 0) {
-                    parse += item + " ";
-                } else {
-                    parse += item;
-                }
-                index++;
+            if (command.length() >= 8) {
+                command = command.substring(4, 8);
             }
-            return parse.trim();
+            if (command.length() == 4) {
+                String parse = "";
+                int index = 0;
+                for (char item : command.toCharArray()) {
+                    if (index % 2 != 0) {
+                        parse += item + " ";
+                    } else {
+                        parse += item;
+                    }
+                    index++;
+                }
+                return parse.trim();
+            }
         }
-        return "";
+        return "00 00";
     }
 
     /**

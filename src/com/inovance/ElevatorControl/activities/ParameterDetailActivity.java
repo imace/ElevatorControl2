@@ -2,6 +2,7 @@ package com.inovance.elevatorcontrol.activities;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -58,7 +59,9 @@ import butterknife.Views;
 /**
  * 参数详细
  */
-public class ParameterDetailActivity extends Activity implements RefreshActionItem.RefreshActionListener, Runnable {
+public class ParameterDetailActivity extends Activity implements RefreshActionItem.RefreshActionListener,
+        Runnable,
+        DialogInterface.OnDismissListener {
 
     private static final String TAG = ParameterDetailActivity.class.getSimpleName();
 
@@ -71,6 +74,11 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
      * 参数 Item 详细 Dialog
      */
     private AlertDialog detailDialog;
+
+    /**
+     * 写入参数重试计时器
+     */
+    private CountDownTimer countDownTimer;
 
     /**
      * 取得的所有参数列表
@@ -141,6 +149,11 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
      * 参数是否写入成功
      */
     private boolean isWriteSuccessful;
+
+    /**
+     * 参数是否写入错误
+     */
+    private boolean isWriteError;
 
     /**
      * 动态生成的数值选择器列表
@@ -266,6 +279,10 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 if (!syncingParameter) {
+                    if (countDownTimer != null) {
+                        countDownTimer.cancel();
+                        countDownTimer = null;
+                    }
                     if (BluetoothTool.getInstance().isPrepared()) {
                         final ParameterSettings settings = listViewDataSource.get(position);
                         int mode = Integer.parseInt(settings.getMode());
@@ -324,6 +341,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 .setNeutralButton(R.string.dialog_btn_cancel, null)
                 .setPositiveButton(R.string.dialog_btn_ok, null);
         detailDialog = builder.create();
+        detailDialog.setOnDismissListener(this);
         detailDialog.show();
         detailDialog.setCancelable(false);
         detailDialog.setCanceledOnTouchOutside(false);
@@ -331,7 +349,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         confirmButton = detailDialog.getButton(AlertDialog.BUTTON_POSITIVE);
         detailDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View view) {
                 if (pickerView != null) {
                     List<String> stringList = new ArrayList<String>();
                     for (NumberPicker picker : numberPickerList) {
@@ -371,7 +389,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
             final String[] codeArray = ParameterDetailActivity.this.getCodeStringArray(settings);
             ParameterDetailActivity.this.hasGetValueScope = false;
             BluetoothTool.getInstance().setHandler(null);
-            new CountDownTimer(2400, 800) {
+            countDownTimer = new CountDownTimer(2400, 800) {
 
                 @Override
                 public void onTick(long millisUntilFinished) {
@@ -379,11 +397,13 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                         ParameterDetailActivity.this.createGetValueScopeCommunications(codeArray, index, settings);
                     } else {
                         this.cancel();
+                        countDownTimer = null;
                     }
                 }
 
                 @Override
                 public void onFinish() {
+                    countDownTimer = null;
                     if (!hasGetValueScope) {
                         if (detailDialog != null && detailDialog.isShowing()) {
                             detailDialog.dismiss();
@@ -393,7 +413,8 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                                 Toast.LENGTH_SHORT).show();
                     }
                 }
-            }.start();
+            };
+            countDownTimer.start();
         } else {
             // 不需要获取数值范围的直接生成 Number Picker Dialog
             createNumberPickerAndBindListener(settings);
@@ -506,6 +527,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         builder.setPositiveButton(R.string.dialog_btn_ok, null);
         builder.setNegativeButton(R.string.dialog_btn_cancel, null);
         detailDialog = builder.create();
+        detailDialog.setOnDismissListener(this);
         detailDialog.show();
         int mode = Integer.parseInt(settings.getMode());
         if (mode != ApplicationConfig.modifyType[2]) {
@@ -540,7 +562,6 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                             int writeValue = ParameterFactory.getParameter().getWriteValue(settings, checkedIndex);
                             startSetNewValueCommunications(index, String.format("%04x", writeValue));
                         }
-                        detailDialog.dismiss();
                     }
                     if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[2]) {
                         ListView listView = (ListView) detailDialog.findViewById(R.id.switch_list);
@@ -552,8 +573,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                         for (int i = size - 1; i >= 0; i--) {
                             binaryString += list.get(i).getStatus() ? 1 : 0;
                         }
-                        startSetNewValueCommunications(index,
-                                String.format("%04x", Integer.parseInt(binaryString, 2)));
+                        startSetNewValueCommunications(index, String.format("%04x", Integer.parseInt(binaryString, 2)));
                     }
                 }
             });
@@ -697,9 +717,11 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
-                        this.setSendBuffer(SerialUtility.crc16("0106"
+                        String hexString = "0106"
                                 + ParseSerialsUtils.getCalculatedCode(settings)
-                                + userValue));
+                                + userValue.toUpperCase();
+                        this.setSendBuffer(SerialUtility.crc16(hexString));
+                        Log.v("ForTest+++++++++++++", hexString);
                     }
 
                     @Override
@@ -728,13 +750,14 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 }
         };
         if (BluetoothTool.getInstance().isPrepared()) {
-            ParameterDetailActivity.this.isWriteSuccessful = false;
+            isWriteSuccessful = false;
+            isWriteError = false;
             writeHandler.index = position;
             writeHandler.writeCode = userValue;
             writeHandler.startValue = settings.getUserValue();
-            new CountDownTimer(3200, 800) {
+            countDownTimer = new CountDownTimer(3200, 800) {
                 public void onTick(long millisUntilFinished) {
-                    if (!ParameterDetailActivity.this.isWriteSuccessful) {
+                    if (!isWriteSuccessful) {
                         writeHandler.index = position;
                         writeHandler.writeCode = userValue;
                         writeHandler.startValue = settings.getUserValue();
@@ -744,22 +767,23 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                                 .startTask();
                     } else {
                         this.cancel();
+                        countDownTimer = null;
                     }
                 }
 
                 public void onFinish() {
-                    if (!ParameterDetailActivity.this.isWriteSuccessful) {
-                        if (detailDialog != null && detailDialog.isShowing()) {
-                            detailDialog.dismiss();
-                        }
-                        if (writeErrorString != null) {
-                            Toast.makeText(ParameterDetailActivity.this,
-                                    writeErrorString,
-                                    android.widget.Toast.LENGTH_SHORT).show();
-                        }
+                    countDownTimer = null;
+                    if (detailDialog != null && detailDialog.isShowing()) {
+                        detailDialog.dismiss();
+                    }
+                    if (!isWriteSuccessful) {
+                        Toast.makeText(ParameterDetailActivity.this,
+                                "写入出错",
+                                Toast.LENGTH_SHORT).show();
                     }
                 }
-            }.start();
+            };
+            countDownTimer.start();
         }
     }
 
@@ -803,7 +827,6 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                     public Object onParse() {
                         if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
                             byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
-                            Log.v("ParameterDetailHandler", SerialUtility.byte2HexStr(data));
                             short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
                             if (length * 2 == bytesLength) {
                                 List<ParameterSettings> tempList = new ArrayList<ParameterSettings>();
@@ -833,6 +856,20 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                     .setCommunications(communications)
                     .startTask();
         }
+    }
+
+    /**
+     * 写入数据出错
+     *
+     * @param errorString ErrorString
+     */
+    private void onWriteDataError(String errorString) {
+        if (detailDialog != null && detailDialog.isShowing()) {
+            detailDialog.dismiss();
+        }
+        Toast.makeText(ParameterDetailActivity.this,
+                errorString,
+                Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -942,6 +979,11 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         refreshParameterData();
     }
 
+    @Override
+    public void onDismiss(DialogInterface dialogInterface) {
+        detailDialog = null;
+    }
+
     /**
      * 刷新当前数据
      */
@@ -980,6 +1022,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         }
     };
 
+
     // ===================================== 写入参数 Handler ======================================== //
 
     /**
@@ -1013,48 +1056,53 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
             super.onTalkReceive(msg);
             if (msg.obj != null && msg.obj instanceof ParameterSettings) {
                 ParameterSettings receiveObject = (ParameterSettings) msg.obj;
-                String returnCodeString = SerialUtility.byte2HexStr(receiveObject.getReceived());
-                boolean writeSuccessful = true;
-                int index = 0;
-                for (String item : ApplicationConfig.ERROR_CODE_ARRAY) {
-                    if (returnCodeString.contains(item)) {
-                        writeSuccessful = false;
-                        writeErrorString = ApplicationConfig.ERROR_NAME_ARRAY[index];
-                        break;
+                String valueString = SerialUtility.byte2HexStr(receiveObject.getReceived());
+                String startValueText = "";
+                String finalValueText = "";
+                try {
+                    startValueText = Integer.parseInt(startValue)
+                            * Integer.parseInt(receiveObject.getScale()) + receiveObject.getUnit();
+                    finalValueText = Integer.parseInt(receiveObject.getUserValue())
+                            * Integer.parseInt(receiveObject.getScale()) + receiveObject.getUnit();
+                } catch (Exception e) {
+                    double startDoubleValue = Double.parseDouble(startValue)
+                            * Double.parseDouble(receiveObject.getScale());
+                    double finalDoubleValue = Double.parseDouble(receiveObject.getUserValue())
+                            * Double.parseDouble(receiveObject.getScale());
+                    startValueText = String.format("%."
+                            + (receiveObject.getScale().length() - 2) + "f", startDoubleValue)
+                            + receiveObject.getUnit();
+                    finalValueText = String.format("%."
+                            + (receiveObject.getScale().length() - 2) + "f", finalDoubleValue)
+                            + receiveObject.getUnit();
+                }
+                final String result = ParseSerialsUtils.isWriteSuccess(valueString);
+                if (result != null) {
+                    isWriteError = true;
+                    onWriteDataError(result);
+                    if (countDownTimer != null) {
+                        countDownTimer.cancel();
                     }
-                    index++;
-                }
-                if (!SerialUtility.byte2HexStr(receiveObject.getReceived()).contains(writeCode.toUpperCase())) {
-                    writeSuccessful = false;
-                }
-                if (writeSuccessful) {
-                    ParameterDetailActivity.this.isWriteSuccessful = writeSuccessful;
-                    onWriteDataSuccessful(this.index, receiveObject);
                     // 写入日志
-                    String startValueText = "";
-                    String finalValueText = "";
-                    try {
-                        startValueText = Integer.parseInt(startValue)
-                                * Integer.parseInt(receiveObject.getScale()) + receiveObject.getUnit();
-                        finalValueText = Integer.parseInt(receiveObject.getUserValue())
-                                * Integer.parseInt(receiveObject.getScale()) + receiveObject.getUnit();
-                    } catch (Exception e) {
-                        double startDoubleValue = Double.parseDouble(startValue)
-                                * Double.parseDouble(receiveObject.getScale());
-                        double finalDoubleValue = Double.parseDouble(receiveObject.getUserValue())
-                                * Double.parseDouble(receiveObject.getScale());
-                        startValueText = String.format("%."
-                                + (receiveObject.getScale().length() - 2) + "f", startDoubleValue)
-                                + receiveObject.getUnit();
-                        finalValueText = String.format("%."
-                                + (receiveObject.getScale().length() - 2) + "f", finalDoubleValue)
-                                + receiveObject.getUnit();
-                    }
                     LogUtils.getInstance().write(ApplicationConfig.LogWriteParameter,
                             writeCode,
-                            returnCodeString,
+                            valueString,
                             startValueText,
                             finalValueText);
+                } else {
+                    if (valueString.contains(writeCode.toUpperCase())) {
+                        isWriteSuccessful = true;
+                        onWriteDataSuccessful(this.index, receiveObject);
+                        if (countDownTimer != null) {
+                            countDownTimer.cancel();
+                        }
+                        // 写入日志
+                        LogUtils.getInstance().write(ApplicationConfig.LogWriteParameter,
+                                writeCode,
+                                valueString,
+                                startValueText,
+                                finalValueText);
+                    }
                 }
             }
         }

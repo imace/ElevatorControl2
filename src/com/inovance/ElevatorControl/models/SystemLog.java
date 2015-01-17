@@ -200,7 +200,7 @@ public class SystemLog {
             // 单个参数写入
             case ApplicationConfig.LogWriteParameter:
                 String parameterName = send.replace("D2", "FR");
-                parameterName = parameterName.substring(0, 2) + "-" + parameterName.substring(2, 4);
+                parameterName = parameterName.replace(" ", "-");
                 content = LogUtils.getInstance().LogDeviceLabel + deviceType + "\n"
                         + LogUtils.getInstance().LogNameLabel + logName + " " + parameterName + "\n"
                         + LogUtils.getInstance().LogStartValueLabel + startValue + "\n"
