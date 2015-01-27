@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 import com.google.common.primitives.Bytes;
 
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -159,25 +161,11 @@ public class BluetoothTool implements Runnable {
      * 关闭现有连接
      */
     private void socketClose() {
-        if (null != bluetoothSocket) {
-            if (bluetoothSocket.isConnected()) {
-                try {
-                    bluetoothSocket.getInputStream().close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    bluetoothSocket.getOutputStream().close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    bluetoothSocket.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    bluetoothSocket = null;
-                }
+        if (bluetoothSocket != null && bluetoothSocket.isConnected()) {
+            try {
+                bluetoothSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
             bluetoothSocket = null;
         }
@@ -194,13 +182,13 @@ public class BluetoothTool implements Runnable {
             Message msgError = new Message();
             msgError.what = BluetoothState.onTalkError;
             try {
-                if (null == communication || null == bluetoothSocket || !bluetoothSocket.isConnected()) {
+                if (communication == null || bluetoothSocket == null) {
                     msgError.obj = "Communication failed";
-                    if (null != handler) {
+                    if (handler != null) {
                         handler.sendMessage(msgError);
                     }
                 }
-                if (null != handler) {
+                if (handler != null) {
                     handler.sendEmptyMessage(BluetoothState.onBeforeTalkSend);
                 }
                 communication.beforeSend();
@@ -211,6 +199,8 @@ public class BluetoothTool implements Runnable {
                         handler.sendMessage(msgError);
                 }
                 OutputStream outputStream = bluetoothSocket.getOutputStream();
+                Log.v(TAG, "SendData + " + SerialUtility.byte2HexStr(sendBuffer));
+
                 outputStream.write(sendBuffer);
                 outputStream.flush();
                 if (null != handler) {
@@ -220,8 +210,6 @@ public class BluetoothTool implements Runnable {
                     handler.sendMessage(mg);
                 }
                 communication.afterSend();
-                // 暂停一段时间等待缓冲区接受消息
-                Thread.sleep(100);
                 String valueString = SerialUtility.byte2HexStr(sendBuffer);
                 int expectLength;
                 if (valueString.substring(0, 4).equalsIgnoreCase("0106")) {
@@ -230,21 +218,21 @@ public class BluetoothTool implements Runnable {
                     expectLength = SerialUtility.getIntFromBytes(sendBuffer) * 2 + 6;
                 }
                 int timeout = 0;
-                int length;
-                int available;
                 List<Byte> buffer = new ArrayList<Byte>();
-                byte[] bytes = new byte[1024];
                 InputStream inputStream = bluetoothSocket.getInputStream();
                 while (true) {
-                    available = inputStream.available();
-                    if (available > 0) {
-                        byte[] temp = new byte[available];
-                        inputStream.read(temp);
+                    if (abortTalking) {
+                        break;
+                    }
+                    byte[] data = new byte[64];
+                    int length = inputStream.read(data);
+                    if (length > 0) {
+                        byte[] temp = Arrays.copyOfRange(data, 0, length);
                         buffer.addAll(Bytes.asList(temp));
                     }
-                    byte[] data = Bytes.toArray(buffer);
-                    if (data.length == expectLength) {
-                        communication.setReceivedBuffer(data);
+                    byte[] result = Bytes.toArray(buffer);
+                    if (result.length == expectLength) {
+                        communication.setReceivedBuffer(result);
                         communication.afterReceive();
                         Message mg = new Message();
                         mg.what = BluetoothState.onTalkReceive;
@@ -254,9 +242,9 @@ public class BluetoothTool implements Runnable {
                         }
                         break;
                     }
-                    String value = SerialUtility.byte2HexStr(data);
-                    if (value.contains("8001") && data.length == 8) {
-                        communication.setReceivedBuffer(data);
+                    String value = SerialUtility.byte2HexStr(result);
+                    if (value.contains("8001") && result.length == 8) {
+                        communication.setReceivedBuffer(result);
                         communication.afterReceive();
                         Message mg = new Message();
                         mg.what = BluetoothState.onTalkReceive;
@@ -264,9 +252,6 @@ public class BluetoothTool implements Runnable {
                         if (handler != null) {
                             handler.sendMessage(mg);
                         }
-                        break;
-                    }
-                    if (!abortTalking) {
                         break;
                     }
                     timeout++;
@@ -283,7 +268,6 @@ public class BluetoothTool implements Runnable {
                         }
                         break;
                     }
-                    Thread.sleep(100);
                 }
             } catch (Exception e) {
                 msgError.obj = e.getMessage();
@@ -338,51 +322,31 @@ public class BluetoothTool implements Runnable {
      */
     private void buildConnection(BluetoothDevice device) {
         socketClose();
+        stopDiscovery();
         currentState = BluetoothState.CONNECTING;
-        BluetoothSocket tempSocket;
-        if (bluetoothSocket != null && bluetoothSocket.isConnected()) {
-            try {
-                bluetoothSocket.close();
-                tempSocket = device.createRfcommSocketToServiceRecord(UUID_OTHER_DEVICE);
-                tempSocket.connect();
-                if (tempSocket.isConnected()) {
-                    bluetoothSocket = tempSocket;
-                    connectedDevice = device;
-                    currentState = BluetoothState.CONNECTED;
-                    if (eventHandler != null) {
-                        eventHandler.sendEmptyMessage(BluetoothState.onConnected);
-                    } else {
-                        currentState = BluetoothState.CONNECT_FAILED;
-                        if (eventHandler != null) {
-                            eventHandler.sendEmptyMessage(BluetoothState.onConnectFailed);
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                currentState = BluetoothState.CONNECT_FAILED;
+        try {
+            bluetoothSocket = device.createRfcommSocketToServiceRecord(UUID_OTHER_DEVICE);
+            // Lenovo a850 connect bluetooth device async.
+            bluetoothSocket.connect();
+            if (bluetoothSocket.isConnected()) {
+                connectedDevice = device;
+                currentState = BluetoothState.CONNECTED;
                 if (eventHandler != null) {
-                    eventHandler.sendEmptyMessage(BluetoothState.onConnectFailed);
+                    eventHandler.sendEmptyMessage(BluetoothState.onConnected);
                 }
             }
-        } else {
-            try {
-                tempSocket = device.createRfcommSocketToServiceRecord(UUID_OTHER_DEVICE);
-                tempSocket.connect();
-                if (tempSocket.isConnected()) {
-                    bluetoothSocket = tempSocket;
-                    connectedDevice = device;
-                    currentState = BluetoothState.CONNECTED;
-                    if (eventHandler != null) {
-                        eventHandler.sendEmptyMessage(BluetoothState.onConnected);
-                    } else {
-                        currentState = BluetoothState.CONNECT_FAILED;
-                        if (eventHandler != null) {
-                            eventHandler.sendEmptyMessage(BluetoothState.onConnectFailed);
-                        }
-                    }
+        } catch (IOException e) {
+            if (bluetoothSocket != null && bluetoothSocket.isConnected()) {
+                try {
+                    bluetoothSocket.close();
+                    bluetoothSocket = null;
+                } catch (IOException exception) {
+                    exception.printStackTrace();
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
+            }
+            currentState = BluetoothState.CONNECT_FAILED;
+            if (eventHandler != null) {
+                eventHandler.sendEmptyMessage(BluetoothState.onConnectFailed);
             }
         }
     }
@@ -449,11 +413,8 @@ public class BluetoothTool implements Runnable {
                     }
                 } else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(intent.getAction())) {
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                    switch (device.getBondState()) {
-                        case BluetoothDevice.BOND_BONDED: {
-                            buildConnection(device);
-                        }
-                        break;
+                    if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
+                        buildConnection(device);
                     }
                 } else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(intent.getAction())) {
                     currentState = BluetoothState.DISCONNECTED;
@@ -507,16 +468,17 @@ public class BluetoothTool implements Runnable {
                 restartSearch();
                 break;
             case BluetoothState.CONNECTED: {
-                if (null == communications) {
+                if (communications == null) {
                     return;
                 }
-                if (null != bluetoothAdapter && bluetoothAdapter.isDiscovering()) {
+                if (bluetoothAdapter != null && bluetoothAdapter.isDiscovering()) {
                     return;
                 }
-                if (null != handler) {
+                if (handler != null) {
                     handler.sendEmptyMessage(BluetoothState.onMultiTalkBegin);
                 }
                 if (communications != null) {
+                    // =========================== Lenovo a850 Not work =================== //
                     try {
                         InputStream inputStream = bluetoothSocket.getInputStream();
                         while (true) {
@@ -538,6 +500,7 @@ public class BluetoothTool implements Runnable {
                             handler.sendEmptyMessage(BluetoothState.onBluetoothConnectException);
                         }
                     }
+                    // =========================== Lenovo a850 =================== //
                     for (BluetoothTalk content : communications) {
                         if (abortTalking) {
                             break;

@@ -16,7 +16,7 @@ public class ApplicationConfig {
     /**
      * 是否生产环境
      */
-    public static final boolean IsProductionMode = false;
+    public static final boolean IsProductionMode = true;
 
     public static final String PREFERENCE_FILE_NAME = "ApplicationPreference";
 
