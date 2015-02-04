@@ -2,6 +2,8 @@ package com.inovance.elevatorcontrol.utils;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -11,14 +13,9 @@ import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
 import android.provider.Settings;
-import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.inovance.bluetoothtool.BluetoothTool;
@@ -56,6 +53,12 @@ public class UpdateApplication {
 
     private Activity mActivity;
 
+    private NotificationManager mNotificationManager;
+
+    private Notification.Builder mBuilder;
+
+    int notificationID = 1;
+
     public static interface OnNoUpdateFoundListener {
         void onNoUpdate();
     }
@@ -65,26 +68,6 @@ public class UpdateApplication {
     public void setOnNoUpdateFoundListener(OnNoUpdateFoundListener listener) {
         this.mListener = listener;
     }
-
-    /**
-     * 确认更新提示
-     */
-    private TextView confirmTextView;
-
-    /**
-     * 当前下载的长度
-     */
-    private TextView currentLengthTextView;
-
-    /**
-     * 文件总长度
-     */
-    private TextView totalLengthTextView;
-
-    /**
-     * 下载进度条
-     */
-    private ProgressBar downloadProgressBar;
 
     /**
      * 当前版本号
@@ -99,11 +82,18 @@ public class UpdateApplication {
     private AlertDialog noNetworkDialog;
 
     /**
+     * 更新提示对话框
+     */
+    private AlertDialog updateDialog;
+
+    /**
      * Is no network dialog showing
      */
     private boolean isDialogShowing = false;
 
-    private LinearLayout progressView;
+    private boolean isDownloading = false;
+
+    private int currentProgress;
 
     public static UpdateApplication getInstance() {
         return instance;
@@ -117,9 +107,7 @@ public class UpdateApplication {
         this.mContext = context;
         mContext.registerReceiver(getBroadcastReceiver(), getIntentFilter());
         try {
-            currentVersionName = mContext.getPackageManager()
-                    .getPackageInfo(mContext.getPackageName(), 0)
-                    .versionName;
+            currentVersionName = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0).versionName;
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
@@ -264,39 +252,42 @@ public class UpdateApplication {
      * 弹出确认框确认更新
      */
     public void confirmUpdateApplication() {
-        if (mActivity != null) {
-            View dialogView = mActivity.getLayoutInflater().inflate(R.layout.update_application_dialog, null);
-            confirmTextView = (TextView) dialogView.findViewById(R.id.confirm_text);
-            confirmTextView.setText(mActivity.getResources().getString(R.string.last_version_text) + lastVersionName);
-            progressView = (LinearLayout) dialogView.findViewById(R.id.progress_view);
-            downloadProgressBar = (ProgressBar) dialogView.findViewById(R.id.download_progress);
-            currentLengthTextView = (TextView) dialogView.findViewById(R.id.current_length);
-            totalLengthTextView = (TextView) dialogView.findViewById(R.id.total_length);
-            AlertDialog.Builder builder = new AlertDialog.Builder(mActivity, R.style.CustomDialogStyle)
-                    .setView(dialogView)
+        if (updateDialog == null && !isDownloading) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(mActivity)
                     .setTitle(R.string.confirm_update_title)
-                    .setNegativeButton(R.string.exit_application_text, null)
-                    .setPositiveButton(R.string.update_application_text, null);
-            AlertDialog dialog = builder.create();
-            dialog.show();
-            dialog.setCancelable(false);
-            dialog.setCanceledOnTouchOutside(false);
-            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener(new View.OnClickListener() {
+                    .setMessage(mActivity.getResources().getString(R.string.last_version_text) + lastVersionName)
+                    .setNegativeButton(R.string.exit_application_text, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int id) {
+                            WebApi.getInstance().removeListener();
+                            BluetoothTool.getInstance().kill();
+                            if (mActivity != null) {
+                                mActivity.finish();
+                            }
+                        }
+                    })
+                    .setPositiveButton(R.string.update_application_text, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int id) {
+                            mNotificationManager = (NotificationManager) mContext.getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+                            mBuilder = new Notification.Builder(mContext.getApplicationContext());
+                            mBuilder.setContentTitle(mContext.getResources().getString(R.string.download_application_package_title));
+                            mBuilder.setContentText(mContext.getResources().getString(R.string.download_application_package_message));
+                            mBuilder.setSmallIcon(android.R.drawable.stat_sys_download);
+                            mBuilder.setAutoCancel(true);
+                            isDownloading = true;
+                            currentProgress = 0;
+                            new DownloadTask().execute(ApplicationConfig.APIUri + ApplicationConfig.DownloadApplicationFile);
+                        }
+                    });
+            updateDialog = builder.create();
+            updateDialog.show();
+            updateDialog.setCancelable(false);
+            updateDialog.setCanceledOnTouchOutside(false);
+            updateDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                 @Override
-                public void onClick(View view) {
-                    WebApi.getInstance().removeListener();
-                    BluetoothTool.getInstance().kill();
-                    if (mActivity != null) {
-                        mActivity.finish();
-                    }
-                }
-            });
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    confirmTextView.setVisibility(View.GONE);
-                    progressView.setVisibility(View.VISIBLE);
-                    new DownloadTask().execute(ApplicationConfig.APIUri + ApplicationConfig.DownloadApplicationFile);
+                public void onDismiss(DialogInterface dialogInterface) {
+                    updateDialog = null;
                 }
             });
         }
@@ -304,6 +295,7 @@ public class UpdateApplication {
 
     private static final int GetContentLength = 1;
 
+    /*
     private Handler handler = new Handler() {
 
         @Override
@@ -321,6 +313,16 @@ public class UpdateApplication {
         }
 
     };
+    */
+
+    private void updateProgress(int total, int progress) {
+        mBuilder.setProgress(total, progress, false);
+        if (Build.VERSION.SDK_INT < 16) {
+            mNotificationManager.notify(notificationID, mBuilder.getNotification());
+        } else {
+            mNotificationManager.notify(notificationID, mBuilder.build());
+        }
+    }
 
     /**
      * 下载安装包
@@ -335,14 +337,11 @@ public class UpdateApplication {
                     URL url = new URL(params[0]);
                     URLConnection connection = url.openConnection();
                     connection.connect();
-                    int contentLength = connection.getContentLength();
-                    Message message = new Message();
-                    message.what = GetContentLength;
-                    message.obj = contentLength;
-                    handler.sendMessage(message);
+                    long contentLength = connection.getContentLength();
+                    updateProgress(100, 0);
                     InputStream inputStream = new BufferedInputStream(url.openStream());
                     // Download apk file to external storage to avoid permission problem
-                    File fileName = new File(mActivity.getExternalCacheDir().getPath() + "/update.apk");
+                    File fileName = new File(mActivity.getExternalCacheDir().getPath() + "/package.apk");
                     if (!fileName.exists()) {
                         fileName.createNewFile();
                     }
@@ -353,7 +352,7 @@ public class UpdateApplication {
                         total += count;
                         // publishing the progress....
                         // After this onProgressUpdate will be called
-                        publishProgress(total);
+                        publishProgress(contentLength, total);
                         // writing data to file
                         output.write(data, 0, count);
                     }
@@ -376,20 +375,47 @@ public class UpdateApplication {
 
         @Override
         protected void onProgressUpdate(Long... values) {
-            downloadProgressBar.setProgress(values[0].intValue());
-            currentLengthTextView.setText(ParseSerialsUtils.humanReadableByteCount(values[0]));
+            float progress = values[1].floatValue() / values[0].floatValue();
+            if (progress < 0.2 && progress > 0) {
+                if (currentProgress != 20) {
+                    currentProgress = 20;
+                    updateProgress(100, currentProgress);
+                }
+            }
+            if (progress < 0.4 && progress >= 0.2) {
+                if (currentProgress != 40) {
+                    currentProgress = 40;
+                    updateProgress(100, currentProgress);
+                }
+            }
+            if (progress < 0.8 && progress >= 0.4) {
+                if (currentProgress != 80) {
+                    currentProgress = 80;
+                    updateProgress(100, currentProgress);
+                }
+            }
+            if (progress < 1.0 && progress >= 0.8) {
+                if (currentProgress != 90) {
+                    currentProgress = 90;
+                    updateProgress(100, currentProgress);
+                }
+            }
+            super.onProgressUpdate(values);
         }
 
         @Override
         protected void onPostExecute(Boolean result) {
             if (result) {
+                updateProgress(0, 0);
                 Intent intent = new Intent(Intent.ACTION_VIEW);
-                File file = new File(mActivity.getExternalCacheDir().getPath() + "/update.apk");
+                File file = new File(mActivity.getExternalCacheDir().getPath() + "/package.apk");
                 intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 mActivity.startActivity(intent);
-            }
-            else {
+                isDownloading = false;
+                currentProgress = 0;
+                mNotificationManager.cancel(notificationID);
+            } else {
                 mActivity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

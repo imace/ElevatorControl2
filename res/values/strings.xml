@@ -513,6 +513,7 @@
     <!-- //////////////////////////////////// 标签选项卡 END ////////////////////////////////// -->
 
     <string name="server_error_text">请求服务器出错</string>
-
+    <string name="download_application_package_title">下载安装包</string>
+    <string name="download_application_package_message">正在下载，请稍后。</string>
     <string name="update_application_failed">手机无外部存储，无法更新程序。</string>
 </resources>
