@@ -2,11 +2,16 @@ package com.inovance.elevatorcontrol.utils;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.*;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
@@ -15,13 +20,20 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.inovance.bluetoothtool.BluetoothTool;
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.web.WebApi;
+
 import net.tsz.afinal.core.AsyncTask;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -318,42 +330,48 @@ public class UpdateApplication {
         @Override
         protected Boolean doInBackground(String... params) {
             int count;
-            try {
-                URL url = new URL(params[0]);
-                URLConnection connection = url.openConnection();
-                connection.connect();
-                int contentLength = connection.getContentLength();
-                Message message = new Message();
-                message.what = GetContentLength;
-                message.obj = contentLength;
-                handler.sendMessage(message);
-                InputStream inputStream = new BufferedInputStream(url.openStream());
-                File fileName = new File(mActivity.getFilesDir().getPath() + "/update.apk");
-                if (!fileName.exists()) {
-                    fileName.createNewFile();
+            if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+                try {
+                    URL url = new URL(params[0]);
+                    URLConnection connection = url.openConnection();
+                    connection.connect();
+                    int contentLength = connection.getContentLength();
+                    Message message = new Message();
+                    message.what = GetContentLength;
+                    message.obj = contentLength;
+                    handler.sendMessage(message);
+                    InputStream inputStream = new BufferedInputStream(url.openStream());
+                    // Download apk file to external storage to avoid permission problem
+                    File fileName = new File(mActivity.getExternalCacheDir().getPath() + "/update.apk");
+                    if (!fileName.exists()) {
+                        fileName.createNewFile();
+                    }
+                    OutputStream output = new FileOutputStream(fileName);
+                    byte data[] = new byte[1024];
+                    long total = 0;
+                    while ((count = inputStream.read(data)) != -1) {
+                        total += count;
+                        // publishing the progress....
+                        // After this onProgressUpdate will be called
+                        publishProgress(total);
+                        // writing data to file
+                        output.write(data, 0, count);
+                    }
+                    // flushing output
+                    output.flush();
+                    // closing streams
+                    output.close();
+                    inputStream.close();
+                    return true;
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                    return false;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return false;
                 }
-                OutputStream output = new FileOutputStream(fileName);
-                byte data[] = new byte[1024];
-                long total = 0;
-                while ((count = inputStream.read(data)) != -1) {
-                    total += count;
-                    // publishing the progress....
-                    // After this onProgressUpdate will be called
-                    publishProgress(total);
-                    // writing data to file
-                    output.write(data, 0, count);
-                }
-                // flushing output
-                output.flush();
-                // closing streams
-                output.close();
-                inputStream.close();
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
             }
-            return true;
+            return false;
         }
 
         @Override
@@ -366,10 +384,18 @@ public class UpdateApplication {
         protected void onPostExecute(Boolean result) {
             if (result) {
                 Intent intent = new Intent(Intent.ACTION_VIEW);
-                File file = new File(mActivity.getFilesDir().getPath() + "/update.apk");
+                File file = new File(mActivity.getExternalCacheDir().getPath() + "/update.apk");
                 intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 mActivity.startActivity(intent);
+            }
+            else {
+                mActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(mActivity, R.string.update_application_failed, Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         }
     }

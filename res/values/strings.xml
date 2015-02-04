@@ -513,4 +513,6 @@
     <!-- //////////////////////////////////// 标签选项卡 END ////////////////////////////////// -->
 
     <string name="server_error_text">请求服务器出错</string>
+
+    <string name="update_application_failed">手机无外部存储，无法更新程序。</string>
 </resources>
