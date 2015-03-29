@@ -2,23 +2,34 @@ package com.inovance.elevatorcontrol.activities;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.*;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.MimeTypeMap;
-import android.widget.*;
-import butterknife.InjectView;
-import butterknife.Views;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ListView;
+import android.widget.Toast;
+
 import com.inovance.bluetoothtool.BluetoothTool;
+import com.inovance.elevatorcontrol.BuildConfig;
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.adapters.ChatMessageAdapter;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
@@ -33,16 +44,29 @@ import com.inovance.elevatorcontrol.utils.ProfileDownloadUtils;
 import com.inovance.elevatorcontrol.web.WebApi;
 import com.inovance.elevatorcontrol.web.WebApi.OnGetResultListener;
 import com.inovance.elevatorcontrol.web.WebApi.OnRequestFailureListener;
+
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import butterknife.InjectView;
+import butterknife.Views;
 
 /**
  * Created by IntelliJ IDEA.
@@ -218,7 +242,7 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
         super.onDestroy();
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putLong(LastTimestampTag, lastReadTimestamp);
-        editor.commit();
+        editor.apply();
     }
 
     @Override
@@ -362,7 +386,11 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
      */
     private void sendScenePicture() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(intent, REQUEST_IMAGE_CAPTURE);
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            Uri imageUri = Uri.fromFile(new File(Environment.getExternalStorageDirectory(), "scene_capture.tmp"));
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+            startActivityForResult(intent, REQUEST_IMAGE_CAPTURE);
+        }
     }
 
     /**
@@ -394,13 +422,23 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
         super.onActivityResult(requestCode, resultCode, data);
         // 拍照
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-            InputStream inputStream = new ByteArrayInputStream(stream.toByteArray());
-            // 上传图片
-            showSendChatContentDialog(ChatMessage.TYPE_PICTURE, "jpg", inputStream);
+            if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+                File file = new File(Environment.getExternalStorageDirectory(), "scene_capture.tmp");
+                if (file.exists()){
+                    try {
+                        FileInputStream originalStream = new FileInputStream(file);
+                        Bitmap bitmap = BitmapFactory.decodeStream(originalStream);
+
+                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream);
+
+                        InputStream inputStream = new ByteArrayInputStream(stream.toByteArray());
+                        showSendChatContentDialog(ChatMessage.TYPE_PICTURE, "jpg", inputStream);
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
         // 录制视频
         if (requestCode == REQUEST_VIDEO_CAPTURE && resultCode == RESULT_OK) {
