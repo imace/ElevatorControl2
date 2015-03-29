@@ -18,3 +18,29 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+-keepattributes Signature
+-keepattributes *Annotation*
+
+-dontwarn android.support.**
+
+-keep class butterknife.** { *; }
+-dontwarn butterknife.internal.**
+-keep class **$$ViewInjector { *; }
+-keepclasseswithmembernames class * {
+    @butterknife.* <fields>;
+}
+-keepclasseswithmembernames class * {
+    @butterknife.* <methods>;
+}
+
+-libraryjars libs/com.google.guava_1.6.0.jar
+-keep class com.google.**
+-dontwarn com.google.**
+
+-libraryjars libs/afinal-0.5.1.jar
+-dontwarn net.tsz.afinal.**
+-keep class net.tsz.afinal.** { *; }
+-keep public class * extends net.tsz.afinal.**
+-keep public interface net.tsz.afinal.** {*;}
+-keepclasseswithmembers class com.inovance.elevatorcontrol.models.** {<fields>; <methods>;}
