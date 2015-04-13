@@ -9,6 +9,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.View;
+
 import com.inovance.elevatorcontrol.R;
 
 public class ViewFinderView extends View {

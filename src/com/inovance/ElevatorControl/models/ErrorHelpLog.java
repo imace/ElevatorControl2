@@ -2,6 +2,7 @@ package com.inovance.elevatorcontrol.models;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.daos.ErrorHelpLogDao;
 import com.mobsandgeeks.adapters.InstantText;

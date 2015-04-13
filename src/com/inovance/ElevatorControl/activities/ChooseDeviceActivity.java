@@ -9,16 +9,23 @@ import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.*;
-import butterknife.InjectView;
-import butterknife.OnClick;
-import butterknife.Views;
-import com.inovance.bluetoothtool.BluetoothHandler;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
+import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import com.inovance.bluetoothtool.BluetoothTool;
 import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.handlers.UnlockHandler;
 
 import java.util.Map;
 import java.util.Set;
+
+import butterknife.InjectView;
+import butterknife.OnClick;
+import butterknife.Views;
 
 /**
  * Created by IntelliJ IDEA.
@@ -138,7 +145,7 @@ public class ChooseDeviceActivity extends Activity {
     /**
      * Search Bluetooth SpecialDevice Handler
      */
-    private class SearchHandler extends BluetoothHandler {
+    private class SearchHandler extends UnlockHandler {
 
         public SearchHandler(Activity activity) {
             super(activity);

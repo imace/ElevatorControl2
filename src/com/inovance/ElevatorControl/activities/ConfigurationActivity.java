@@ -14,7 +14,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.inovance.bluetoothtool.BluetoothHandler;
 import com.inovance.bluetoothtool.BluetoothTalk;
 import com.inovance.bluetoothtool.BluetoothTool;
 import com.inovance.bluetoothtool.SerialUtility;
@@ -26,6 +25,7 @@ import com.inovance.elevatorcontrol.daos.ParameterSettingsDao;
 import com.inovance.elevatorcontrol.daos.RealTimeMonitorDao;
 import com.inovance.elevatorcontrol.factory.ParameterFactory;
 import com.inovance.elevatorcontrol.handlers.ConfigurationHandler;
+import com.inovance.elevatorcontrol.handlers.UnlockHandler;
 import com.inovance.elevatorcontrol.models.ObjectListHolder;
 import com.inovance.elevatorcontrol.models.ParameterSettings;
 import com.inovance.elevatorcontrol.models.ParameterStatusItem;
@@ -1304,7 +1304,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
         waitTextView = (TextView) dialogView.findViewById(R.id.wait_text);
         terminalListView = (ListView) dialogView.findViewById(R.id.list_view);
         AlertDialog.Builder builder = new AlertDialog.Builder(ConfigurationActivity.this,
-                R.style.CustomDialogStyle)
+                R.style.GlobalDialogStyle)
                 .setView(dialogView)
                 .setTitle(monitor.getName())
                 .setPositiveButton(R.string.dialog_btn_ok, new DialogInterface.OnClickListener() {
@@ -1383,7 +1383,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
 
     // ================================ 高压输入端子状态 Handler  ===================================== //
 
-    private class GetHVInputTerminalStateHandler extends BluetoothHandler {
+    private class GetHVInputTerminalStateHandler extends UnlockHandler {
 
         /**
          * 发送的指令数
@@ -1480,7 +1480,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
 
     // =============================== Get Input Terminal Status Handler ======================================== //
 
-    private class GetInputTerminalStateHandler extends BluetoothHandler {
+    private class GetInputTerminalStateHandler extends UnlockHandler {
 
         /**
          * 发送的指令数
@@ -1561,7 +1561,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
 
     // ================================= Get Output Terminal Status Handler ======================================= //
 
-    private class GetOutputTerminalStateHandler extends BluetoothHandler {
+    private class GetOutputTerminalStateHandler extends UnlockHandler {
 
         public int sendCount;
 
@@ -1634,7 +1634,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
 
     // ================================= Get HV Input Terminal Value Handler ===================================== //
 
-    private class GetHVInputTerminalValueHandler extends BluetoothHandler {
+    private class GetHVInputTerminalValueHandler extends UnlockHandler {
 
         public int sendCount;
 
@@ -1679,7 +1679,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
 
     // ================================= Get Input Terminal Value Handler ======================================= //
 
-    private class GetInputTerminalValueHandler extends BluetoothHandler {
+    private class GetInputTerminalValueHandler extends UnlockHandler {
 
         public int sendCount;
 
@@ -1728,7 +1728,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
 
     // ================================= Get Output Terminal Value Handler ====================================== //
 
-    private class GetOutputTerminalValueHandler extends BluetoothHandler {
+    private class GetOutputTerminalValueHandler extends UnlockHandler {
 
         public int sendCount;
 
@@ -1777,7 +1777,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
 
     // ============================================ Get elevator state handler =================================== //
 
-    private class ElevatorStatusHandler extends BluetoothHandler {
+    private class ElevatorStatusHandler extends UnlockHandler {
 
         private RealTimeMonitor monitor;
 
@@ -1809,7 +1809,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
 
     // ============================================= Restore factory handler ===================================== //
 
-    private class RestoreFactoryHandler extends BluetoothHandler {
+    private class RestoreFactoryHandler extends UnlockHandler {
 
         public RestoreFactoryHandler(Activity activity) {
             super(activity);
@@ -1846,7 +1846,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
 
     // ====================================== Get system state handler ========================================= //
 
-    private class GetSystemStateHandler extends BluetoothHandler {
+    private class GetSystemStateHandler extends UnlockHandler {
 
         public int sendCount;
 
@@ -1942,7 +1942,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
 
     // =================================== Get ceiling input state handler ===================================== //
 
-    private class GetCeilingInputStateHandler extends BluetoothHandler {
+    private class GetCeilingInputStateHandler extends UnlockHandler {
 
         public int sendCount;
 
@@ -2013,7 +2013,7 @@ public class ConfigurationActivity extends FragmentActivity implements Runnable 
 
     // =================================== Get ceiling output state handler ==================================== //
 
-    private class GetCeilingOutputStateHandler extends BluetoothHandler {
+    private class GetCeilingOutputStateHandler extends UnlockHandler {
 
         public int sendCount;
 

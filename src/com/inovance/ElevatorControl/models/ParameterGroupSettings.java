@@ -2,11 +2,13 @@ package com.inovance.elevatorcontrol.models;
 
 import com.inovance.elevatorcontrol.R;
 import com.mobsandgeeks.adapters.InstantText;
+
 import net.tsz.afinal.annotation.sqlite.Id;
 import net.tsz.afinal.annotation.sqlite.OneToMany;
 import net.tsz.afinal.annotation.sqlite.Table;
 import net.tsz.afinal.annotation.sqlite.Transient;
 import net.tsz.afinal.db.sqlite.OneToManyLazyLoader;
+
 import org.json.JSONObject;
 
 import java.util.Date;

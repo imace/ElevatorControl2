@@ -1,7 +1,10 @@
 package com.inovance.elevatorcontrol.activities;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.ListView;
 
@@ -43,10 +46,7 @@ public class SystemLogActivity extends Activity {
         Views.inject(this);
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
-        instantAdapter = new InstantAdapter<SystemLog>(this,
-                R.layout.system_log_item,
-                SystemLog.class,
-                systemLogList);
+        instantAdapter = new InstantAdapter<SystemLog>(this, R.layout.system_log_item, SystemLog.class, systemLogList);
         listView.setAdapter(instantAdapter);
     }
 
@@ -57,21 +57,7 @@ public class SystemLogActivity extends Activity {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        List<SystemLog> logList = LogUtils.getInstance().readLogs();
-                        Collections.sort(logList, new SortComparator());
-                        systemLogList.clear();
-                        systemLogList.addAll(logList);
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                instantAdapter.notifyDataSetChanged();
-                            }
-                        });
-                    }
-                }).start();
+                reloadSystemLog();
             }
         }, 300);
     }
@@ -83,14 +69,74 @@ public class SystemLogActivity extends Activity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.system_log_menu, menu);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
                 setResult(RESULT_OK);
                 finish();
                 return true;
+            case R.id.action_clear:
+                clearSystemLog();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    /**
+     * 读取日志
+     */
+    private void reloadSystemLog() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                List<SystemLog> logList = LogUtils.getInstance().readLogs();
+                Collections.sort(logList, new SortComparator());
+                systemLogList.clear();
+                systemLogList.addAll(logList);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        instantAdapter.notifyDataSetChanged();
+                    }
+                });
+            }
+        }).start();
+    }
+
+    /**
+     * 清空日志
+     */
+    private void clearSystemLog() {
+        if (systemLogList.size() > 0) {
+            final ProgressDialog dialog = new ProgressDialog(this);
+            dialog.setIndeterminate(false);
+            dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            dialog.show();
+            dialog.setCancelable(false);
+            dialog.setCanceledOnTouchOutside(false);
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    LogUtils.getInstance().deleteAll();
+                    systemLogList.clear();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            dialog.dismiss();
+                            instantAdapter.notifyDataSetChanged();
+                        }
+                    });
+                }
+            }).start();
         }
     }
 

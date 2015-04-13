@@ -9,23 +9,25 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
-import butterknife.InjectView;
-import butterknife.Views;
-import com.inovance.bluetoothtool.BluetoothHandler;
+
 import com.inovance.bluetoothtool.BluetoothTalk;
 import com.inovance.bluetoothtool.BluetoothTool;
 import com.inovance.bluetoothtool.SerialUtility;
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.adapters.TroubleAnalyzeAdapter;
+import com.inovance.elevatorcontrol.cache.ValueCache;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
 import com.inovance.elevatorcontrol.daos.ErrorHelpDao;
 import com.inovance.elevatorcontrol.daos.ParameterSettingsDao;
 import com.inovance.elevatorcontrol.daos.RealTimeMonitorDao;
 import com.inovance.elevatorcontrol.handlers.CurrentErrorHandler;
-import com.inovance.elevatorcontrol.handlers.GlobalHandler;
 import com.inovance.elevatorcontrol.handlers.HistoryErrorHandler;
+import com.inovance.elevatorcontrol.handlers.MessageHandler;
+import com.inovance.elevatorcontrol.handlers.UnlockHandler;
+import com.inovance.elevatorcontrol.models.ErrorHelp;
 import com.inovance.elevatorcontrol.models.ObjectListHolder;
 import com.inovance.elevatorcontrol.models.ParameterSettings;
 import com.inovance.elevatorcontrol.models.RealTimeMonitor;
@@ -33,11 +35,15 @@ import com.inovance.elevatorcontrol.utils.LogUtils;
 import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
 import com.viewpagerindicator.TabPageIndicator;
 
+import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import butterknife.InjectView;
+import butterknife.Views;
 
 /**
  * 故障分析
@@ -74,7 +80,7 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
     /**
      * 同步时间间隔
      */
-    private static final int SYNC_TIME = 2000;
+    private static final int SYNC_TIME = 500;
 
     public boolean isSyncing = false;
 
@@ -93,6 +99,8 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
 
     private static final int RestoreErrorSuccessful = 10;
 
+    private ViewStatusHandler viewStatusHandler;
+
     private ExecutorService pool = Executors.newSingleThreadExecutor();
 
     @Override
@@ -103,6 +111,7 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
         pager.setAdapter(new TroubleAnalyzeAdapter(this));
         pager.setOffscreenPageLimit(3);
         indicator.setViewPager(pager);
+        viewStatusHandler = new ViewStatusHandler(this);
         currentErrorHandler = new CurrentErrorHandler(this);
         historyTroubleHandler = new HistoryErrorHandler(this);
         restoreErrorHandler = new RestoreErrorHandler(this);
@@ -168,6 +177,29 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
     protected void onPause() {
         super.onPause();
         isRunning = false;
+    }
+
+    /**
+     * Read error status cache from HomeActivity
+     */
+    private void readErrorStatusFromCache() {
+        byte[] errorData = ValueCache.getInstance().getErrorData();
+        if (errorData != null) {
+            String errorCode = ParseSerialsUtils.getErrorCode(errorData);
+            final ErrorHelp errorHelp = ErrorHelpDao.findByDisplay(TroubleAnalyzeActivity.this, errorCode);
+            if (errorHelp != null) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        displayErrorInformation(errorHelp);
+                    }
+                });
+            }
+            // Clear cached error data
+            ValueCache.getInstance().setErrorData(null);
+        } else {
+            viewStatusHandler.sendEmptyMessage(3);
+        }
     }
 
     /**
@@ -254,7 +286,7 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
                         }
 
                     } else {
-                        handler.sendEmptyMessage(RestoreErrorSuccessful);
+                        viewStatusHandler.sendEmptyMessage(RestoreErrorSuccessful);
                         this.cancel();
                         this.onFinish();
                     }
@@ -272,9 +304,9 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
      */
     public void loadCurrentTroubleView() {
         if (BluetoothTool.getInstance().isPrepared()) {
-            handler.sendEmptyMessage(3);
+            readErrorStatusFromCache();
         } else {
-            handler.sendEmptyMessage(1);
+            viewStatusHandler.sendEmptyMessage(1);
         }
     }
 
@@ -283,9 +315,9 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
      */
     public void loadHistoryTroubleView() {
         if (BluetoothTool.getInstance().isPrepared()) {
-            handler.sendEmptyMessage(4);
+            viewStatusHandler.sendEmptyMessage(4);
         } else {
-            handler.sendEmptyMessage(2);
+            viewStatusHandler.sendEmptyMessage(2);
         }
     }
 
@@ -334,15 +366,64 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
             }
         }
         if (currentCommunications == null) {
-            GlobalHandler.getInstance(this).sendMessage(GlobalHandler.CODE_DATA_ERROR);
+            MessageHandler.getInstance(this).sendMessage(MessageHandler.CODE_DATA_ERROR);
         } else {
             if (BluetoothTool.getInstance().isPrepared()) {
-                isSyncing = true;
                 currentErrorHandler.sendCount = currentCommunications.length;
+                isSyncing = true;
                 BluetoothTool.getInstance()
                         .setHandler(currentErrorHandler)
                         .setCommunications(currentCommunications)
                         .startTask();
+            }
+        }
+    }
+
+    /**
+     * Display error information
+     *
+     * @param errorHelp ErrorHelp
+     */
+    public void displayErrorInformation(ErrorHelp errorHelp) {
+        View loadView = pager.findViewById(R.id.load_view);
+        View errorView = pager.findViewById(R.id.error_view);
+        View noErrorView = pager.findViewById(R.id.no_error_view);
+        View noDeviceView = pager.findViewById(R.id.no_device_view);
+        View viewSystemStatus = pager.findViewById(R.id.view_system_status);
+        View restoreErrorStatus = pager.findViewById(R.id.restore_error_status);
+        if (loadView != null && errorView != null && noErrorView != null && noDeviceView != null) {
+            if (errorHelp != null) {
+                TextView display = (TextView) pager.findViewById(R.id.current_error_help_display);
+                TextView level = (TextView) pager.findViewById(R.id.current_error_help_level);
+                TextView name = (TextView) pager.findViewById(R.id.current_error_help_name);
+                TextView reason = (TextView) pager.findViewById(R.id.current_error_help_reason);
+                TextView solution = (TextView) pager.findViewById(R.id.current_error_help_solution);
+                name.setText(errorHelp.getName());
+                display.setText(errorHelp.getDisplay());
+                level.setText(errorHelp.getLevel());
+                reason.setText(errorHelp.getReason());
+                solution.setText(errorHelp.getSolution());
+                loadView.setVisibility(View.GONE);
+                noErrorView.setVisibility(View.GONE);
+                noDeviceView.setVisibility(View.GONE);
+                errorView.setVisibility(View.VISIBLE);
+                viewSystemStatus.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        TroubleAnalyzeActivity.this.viewCurrentSystemStatus();
+                    }
+                });
+                restoreErrorStatus.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        TroubleAnalyzeActivity.this.restoreErrorStatus();
+                    }
+                });
+            } else {
+                loadView.setVisibility(View.GONE);
+                noDeviceView.setVisibility(View.GONE);
+                errorView.setVisibility(View.GONE);
+                noErrorView.setVisibility(View.VISIBLE);
             }
         }
     }
@@ -447,7 +528,7 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
             }
         }
         if (historyCommunications == null) {
-            GlobalHandler.getInstance(this).sendMessage(GlobalHandler.CODE_DATA_ERROR);
+            MessageHandler.getInstance(this).sendMessage(MessageHandler.CODE_DATA_ERROR);
         } else {
             if (BluetoothTool.getInstance().isPrepared()) {
                 isSyncing = true;
@@ -460,73 +541,77 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
         }
     }
 
-    private Handler handler = new Handler() {
+    private static class ViewStatusHandler extends Handler {
+
+        private final WeakReference<TroubleAnalyzeActivity> mActivity;
+
+        public ViewStatusHandler(TroubleAnalyzeActivity activity) {
+            mActivity = new WeakReference<TroubleAnalyzeActivity>(activity);
+        }
 
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            switch (msg.what) {
-                case 0: {
-                    Toast.makeText(TroubleAnalyzeActivity.this,
-                            R.string.not_connect_device_error,
-                            android.widget.Toast.LENGTH_SHORT)
-                            .show();
-                }
-                break;
-                case 1: {
-                    View loadView = pager.findViewById(R.id.load_view);
-                    View noDeviceView = pager.findViewById(R.id.no_device_view);
-                    if (loadView != null && noDeviceView != null) {
-                        loadView.setVisibility(View.GONE);
-                        noDeviceView.setVisibility(View.VISIBLE);
+            TroubleAnalyzeActivity activity = mActivity.get();
+            if (activity != null) {
+                switch (msg.what) {
+                    case 0: {
+                        Toast.makeText(activity, R.string.not_connect_device_error, android.widget.Toast.LENGTH_SHORT).show();
                     }
-                }
-                break;
-                case 2: {
-                    View loadView = pager.findViewWithTag("history_load_view");
-                    View noDeviceView = pager.findViewWithTag("history_no_device_view");
-                    if (loadView != null && noDeviceView != null) {
-                        loadView.setVisibility(View.GONE);
-                        noDeviceView.setVisibility(View.VISIBLE);
+                    break;
+                    case 1: {
+                        View loadView = activity.pager.findViewById(R.id.load_view);
+                        View noDeviceView = activity.pager.findViewById(R.id.no_device_view);
+                        if (loadView != null && noDeviceView != null) {
+                            loadView.setVisibility(View.GONE);
+                            noDeviceView.setVisibility(View.VISIBLE);
+                        }
                     }
-                }
-                break;
-                case 3: {
-                    View loadView = pager.findViewWithTag("load_view");
-                    View noDeviceView = pager.findViewWithTag("no_device_view");
-                    View errorView = pager.findViewWithTag("error_view");
-                    View noErrorView = pager.findViewWithTag("no_error_view");
-                    if (loadView != null && errorView != null && noErrorView != null && noDeviceView != null) {
-                        noDeviceView.setVisibility(View.GONE);
-                        errorView.setVisibility(View.GONE);
-                        noErrorView.setVisibility(View.GONE);
-                        loadView.setVisibility(View.VISIBLE);
+                    break;
+                    case 2: {
+                        View loadView = activity.pager.findViewWithTag("history_load_view");
+                        View noDeviceView = activity.pager.findViewWithTag("history_no_device_view");
+                        if (loadView != null && noDeviceView != null) {
+                            loadView.setVisibility(View.GONE);
+                            noDeviceView.setVisibility(View.VISIBLE);
+                        }
                     }
-                }
-                break;
-                case 4: {
-                    View loadView = pager.findViewWithTag("history_load_view");
-                    View noDeviceView = pager.findViewWithTag("history_no_device_view");
-                    View errorView = pager.findViewWithTag("history_error_view");
-                    View noErrorView = pager.findViewWithTag("history_no_error_view");
-                    if (loadView != null && noDeviceView != null && errorView != null && noErrorView != null) {
-                        noErrorView.setVisibility(View.GONE);
-                        noDeviceView.setVisibility(View.GONE);
-                        errorView.setVisibility(View.GONE);
-                        loadView.setVisibility(View.VISIBLE);
+                    break;
+                    case 3: {
+                        View loadView = activity.pager.findViewWithTag("load_view");
+                        View noDeviceView = activity.pager.findViewWithTag("no_device_view");
+                        View errorView = activity.pager.findViewWithTag("error_view");
+                        View noErrorView = activity.pager.findViewWithTag("no_error_view");
+                        if (loadView != null && errorView != null && noErrorView != null && noDeviceView != null) {
+                            noDeviceView.setVisibility(View.GONE);
+                            errorView.setVisibility(View.GONE);
+                            noErrorView.setVisibility(View.GONE);
+                            loadView.setVisibility(View.VISIBLE);
+                        }
                     }
+                    break;
+                    case 4: {
+                        View loadView = activity.pager.findViewWithTag("history_load_view");
+                        View noDeviceView = activity.pager.findViewWithTag("history_no_device_view");
+                        View errorView = activity.pager.findViewWithTag("history_error_view");
+                        View noErrorView = activity.pager.findViewWithTag("history_no_error_view");
+                        if (loadView != null && noDeviceView != null && errorView != null && noErrorView != null) {
+                            noErrorView.setVisibility(View.GONE);
+                            noDeviceView.setVisibility(View.GONE);
+                            errorView.setVisibility(View.GONE);
+                            loadView.setVisibility(View.VISIBLE);
+                        }
+                    }
+                    break;
+                    case RestoreErrorSuccessful: {
+                        Toast.makeText(activity, R.string.restore_error_successful_text, Toast.LENGTH_SHORT).show();
+                    }
+                    break;
                 }
-                break;
-                case RestoreErrorSuccessful: {
-                    Toast.makeText(TroubleAnalyzeActivity.this,
-                            R.string.restore_error_successful_text,
-                            Toast.LENGTH_SHORT)
-                            .show();
-                }
-                break;
             }
         }
-    };
+
+    }
 
     @Override
     public void run() {
@@ -544,7 +629,7 @@ public class TroubleAnalyzeActivity extends FragmentActivity implements Runnable
 
     // ================================== 故障复位 ========================= //
 
-    private class RestoreErrorHandler extends BluetoothHandler {
+    private class RestoreErrorHandler extends UnlockHandler {
 
         public String sendCode;
 

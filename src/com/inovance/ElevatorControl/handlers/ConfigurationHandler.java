@@ -2,7 +2,7 @@ package com.inovance.elevatorcontrol.handlers;
 
 import android.app.Activity;
 import android.os.Message;
-import com.inovance.bluetoothtool.BluetoothHandler;
+
 import com.inovance.elevatorcontrol.activities.ConfigurationActivity;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.models.RealTimeMonitor;
@@ -18,7 +18,7 @@ import java.util.List;
  *
  * @author jch
  */
-public class ConfigurationHandler extends BluetoothHandler {
+public class ConfigurationHandler extends UnlockHandler {
 
     public int sendCount;
 
@@ -121,5 +121,4 @@ public class ConfigurationHandler extends BluetoothHandler {
         }
         return combineBytes;
     }
-
 }

@@ -10,7 +10,7 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.TextView;
-import com.inovance.bluetoothtool.BluetoothHandler;
+
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.activities.TroubleAnalyzeActivity;
 import com.inovance.elevatorcontrol.factory.ParameterFactory;
@@ -27,7 +27,7 @@ import java.util.List;
  * Date: 14-3-21.
  * Time: 11:00.
  */
-public class HistoryErrorHandler extends BluetoothHandler {
+public class HistoryErrorHandler extends UnlockHandler {
 
     private List<ParameterSettings> parameterSettingsList;
 

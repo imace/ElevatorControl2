@@ -1,6 +1,7 @@
 package com.inovance.elevatorcontrol.models;
 
 import android.content.Context;
+
 import com.inovance.elevatorcontrol.R;
 import com.mobsandgeeks.adapters.InstantText;
 
@@ -20,11 +21,11 @@ public class MoveInsideOutside {
 
         MoveInsideOutside moveInsideOutside = null;
         moveInsideOutside = new MoveInsideOutside();
-        moveInsideOutside.setName(context.getResources().getString(R.string.move_inside_text));
+        moveInsideOutside.setName(context.getResources().getString(R.string.call_inside_text));
         moveInsideOutsides.add(moveInsideOutside);
 
         moveInsideOutside = new MoveInsideOutside();
-        moveInsideOutside.setName(context.getResources().getString(R.string.move_outside_text));
+        moveInsideOutside.setName(context.getResources().getString(R.string.call_outside_text));
         moveInsideOutsides.add(moveInsideOutside);
         return moveInsideOutsides;
     }

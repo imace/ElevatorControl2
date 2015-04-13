@@ -7,12 +7,28 @@ import android.os.Handler;
 import android.os.Message;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
+
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
+
 import net.tsz.afinal.core.AsyncTask;
 
-import java.io.*;
-import java.net.*;
+import java.io.BufferedInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.lang.ref.WeakReference;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.SocketTimeoutException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,34 +66,46 @@ public class FileTransport implements Runnable {
 
     private boolean isCanceled = false;
 
-    private Handler transportHandler = new Handler() {
+    private static class TransportHandler extends Handler {
+
+        private final WeakReference<FileTransport> mParentClass;
+
+        public TransportHandler(FileTransport parentClass) {
+            mParentClass = new WeakReference<FileTransport>(parentClass);
+        }
+
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            switch (msg.what) {
-                case UpdateProgressMessage:
-                    transportDialog.setProgress((Integer) msg.obj);
-                    break;
-                case TransportComplete:
-                    if (transportDialog.isShowing()) {
-                        transportDialog.dismiss();
-                    }
-                    break;
-                case ConnectTimeOut:
-                    if (transportDialog.isShowing()) {
-                        transportDialog.dismiss();
-                    }
-                    Toast.makeText(context, R.string.connect_server_timeout_text, Toast.LENGTH_SHORT).show();
-                    break;
-                case TransportFailed:
-                    if (transportDialog.isShowing()) {
-                        transportDialog.dismiss();
-                    }
-                    Toast.makeText(context, R.string.chat_message_send_failed_text, Toast.LENGTH_SHORT).show();
-                    break;
+            FileTransport parentClass = mParentClass.get();
+            if (parentClass != null) {
+                switch (msg.what) {
+                    case UpdateProgressMessage:
+                        parentClass.transportDialog.setProgress((Integer) msg.obj);
+                        break;
+                    case TransportComplete:
+                        if (parentClass.transportDialog.isShowing()) {
+                            parentClass.transportDialog.dismiss();
+                        }
+                        break;
+                    case ConnectTimeOut:
+                        if (parentClass.transportDialog.isShowing()) {
+                            parentClass.transportDialog.dismiss();
+                        }
+                        Toast.makeText(parentClass.context, R.string.connect_server_timeout_text, Toast.LENGTH_SHORT).show();
+                        break;
+                    case TransportFailed:
+                        if (parentClass.transportDialog.isShowing()) {
+                            parentClass.transportDialog.dismiss();
+                        }
+                        Toast.makeText(parentClass.context, R.string.chat_message_send_failed_text, Toast.LENGTH_SHORT).show();
+                        break;
+                }
             }
         }
-    };
+    }
+
+    private TransportHandler transportHandler;
 
     public interface OnFileUploadComplete {
         void onUploadComplete(String fileName);
@@ -100,6 +128,7 @@ public class FileTransport implements Runnable {
     }
 
     public static FileTransport getInstance() {
+        instance.transportHandler = new TransportHandler(instance);
         return instance;
     }
 
@@ -127,7 +156,7 @@ public class FileTransport implements Runnable {
         transportDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         transportDialog.setProgress(0);
         transportDialog.setButton(DialogInterface.BUTTON_NEGATIVE,
-                "取消",
+                context.getString(R.string.dialog_btn_cancel),
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {

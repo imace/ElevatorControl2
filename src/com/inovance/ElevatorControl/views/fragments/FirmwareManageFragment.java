@@ -31,10 +31,7 @@ import com.inovance.elevatorcontrol.models.Firmware;
 import com.inovance.elevatorcontrol.models.NormalDevice;
 import com.inovance.elevatorcontrol.models.SpecialDevice;
 import com.inovance.elevatorcontrol.models.Vendor;
-import com.inovance.elevatorcontrol.views.component.SegmentControl;
-import com.inovance.elevatorcontrol.views.form.NormalApplyForm;
-import com.inovance.elevatorcontrol.views.form.SpecialApplyForm;
-import com.inovance.elevatorcontrol.web.WebApi;
+import com.inovance.elevatorcontrol.web.WebInterface;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -57,8 +54,7 @@ import java.util.UUID;
  * Date: 14-3-5.
  * Time: 15:04.
  */
-public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResultListener,
-        WebApi.OnRequestFailureListener {
+public class FirmwareManageFragment extends Fragment implements WebInterface.OnRequestListener {
 
     private static final String TAG = FirmwareManageFragment.class.getSimpleName();
 
@@ -67,12 +63,6 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
     private int layoutId;
 
     private Context context;
-
-    private SegmentControl segmentControl;
-
-    private NormalApplyForm normalApplyView;
-
-    private SpecialApplyForm specialApplyView;
 
     /**
      * 读取提取固件列表进度
@@ -110,12 +100,9 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
         int layout = R.layout.fragment_not_found;
         switch (tabIndex) {
             case 0:
-                layout = R.layout.firmware_manage_tab_apply;
-                break;
-            case 1:
                 layout = R.layout.firmware_manage_tab_download;
                 break;
-            case 2:
+            case 1:
                 layout = R.layout.firmware_manage_tab_burn;
                 break;
         }
@@ -135,90 +122,8 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
         int currentPage = ((FirmwareManageActivity) getActivity()).pager.getCurrentItem();
         switch (currentPage) {
             case 0:
-                loadFirmwareApplyView();
-                break;
-            case 1:
                 refreshFirmwareBurnView();
                 break;
-        }
-    }
-
-    /**
-     * 切换固件申请视图
-     *
-     * @param container View Container
-     * @param type      申请类型
-     */
-    private void switchApplyView(LinearLayout container, int type) {
-        container.removeAllViews();
-        if (type == ParameterUpdateTool.Normal) {
-            if (normalApplyView == null) {
-                normalApplyView = new NormalApplyForm(getActivity());
-            }
-            container.addView(normalApplyView);
-            WebApi.getInstance().setOnFailureListener(this);
-            WebApi.getInstance().setOnResultListener(this);
-            WebApi.getInstance().getNormalDeviceList(getActivity());
-        }
-        if (type == ParameterUpdateTool.Special) {
-            if (specialApplyView == null) {
-                specialApplyView = new SpecialApplyForm(getActivity());
-            }
-            container.addView(specialApplyView);
-            WebApi.getInstance().setOnFailureListener(this);
-            WebApi.getInstance().setOnResultListener(this);
-            WebApi.getInstance().getVendorList(getActivity());
-            WebApi.getInstance().getSpecialDeviceList(getActivity());
-        }
-    }
-
-    /**
-     * 固件申请
-     */
-    public void loadFirmwareApplyView() {
-        if (segmentControl == null) {
-            final LinearLayout container = (LinearLayout) getActivity().findViewById(R.id.apply_view_container);
-            segmentControl = (SegmentControl) getActivity().findViewById(R.id.segment_control);
-            if (ParameterUpdateTool.getInstance().getPermission() == ParameterUpdateTool.Normal) {
-                segmentControl.setItems(getResources().getStringArray(R.array.permission_array_normal));
-                normalApplyView = new NormalApplyForm(getActivity());
-                segmentControl.setCurrentItem(0);
-                switchApplyView(container, ParameterUpdateTool.Normal);
-            }
-            if (ParameterUpdateTool.getInstance().getPermission() == ParameterUpdateTool.Special) {
-                segmentControl.setItems(getResources().getStringArray(R.array.permission_array_special));
-                normalApplyView = new NormalApplyForm(getActivity());
-                specialApplyView = new SpecialApplyForm(getActivity());
-                switchApplyView(container, ParameterUpdateTool.Normal);
-                segmentControl.setCurrentItem(0);
-                segmentControl.setOnItemClickListener(new SegmentControl.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(View view, int position) {
-                        switch (position) {
-                            case 0:
-                                switchApplyView(container, ParameterUpdateTool.Normal);
-                                break;
-                            case 1:
-                                switchApplyView(container, ParameterUpdateTool.Special);
-                                break;
-                        }
-                    }
-                });
-            }
-        } else {
-            switch (segmentControl.getCurrentItem()) {
-                case 0:
-                    WebApi.getInstance().setOnFailureListener(this);
-                    WebApi.getInstance().setOnResultListener(this);
-                    WebApi.getInstance().getNormalDeviceList(getActivity());
-                    break;
-                case 1:
-                    WebApi.getInstance().setOnFailureListener(this);
-                    WebApi.getInstance().setOnResultListener(this);
-                    WebApi.getInstance().getVendorList(getActivity());
-                    WebApi.getInstance().getSpecialDeviceList(getActivity());
-                    break;
-            }
         }
     }
 
@@ -231,12 +136,11 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
         firmwareDownloadListView = (ListView) getActivity().findViewById(R.id.download_list);
         try {
             String bluetoothAddress = BluetoothAdapter.getDefaultAdapter().getAddress();
-            WebApi.getInstance().setOnResultListener(this);
-            WebApi.getInstance().setOnFailureListener(this);
+            WebInterface.getInstance().setOnRequestListener(this);
             downloadListLoadView.setVisibility(View.VISIBLE);
             emptyFirmwareView.setVisibility(View.GONE);
             firmwareDownloadListView.setVisibility(View.GONE);
-            WebApi.getInstance().getAllFirmwareNotDownload(getActivity(), bluetoothAddress);
+            WebInterface.getInstance().getAllFirmwareNotDownload(getActivity(), bluetoothAddress);
         } catch (Exception e) {
             Toast.makeText(getActivity(), R.string.get_bluetooth_address_error, Toast.LENGTH_SHORT).show();
         }
@@ -251,9 +155,8 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
             burnFirmwareList.addAll(FirmwareDao.findAll(context));
             firmwareBurnAdapter.setFirmwareList(burnFirmwareList);
         }
-        WebApi.getInstance().setOnResultListener(this);
-        WebApi.getInstance().setOnFailureListener(this);
-        WebApi.getInstance().getVendorList(getActivity());
+        WebInterface.getInstance().setOnRequestListener(this);
+        WebInterface.getInstance().getVendorList(getActivity());
         NormalDevice normalDevice = ParameterUpdateTool.getInstance().getNormalDevice();
         SpecialDevice specialDevice = ParameterUpdateTool.getInstance().getSpecialDevice();
         if (normalDevice != null) {
@@ -307,7 +210,7 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
             public boolean onMenuItemClick(MenuItem item) {
                 View dialogView = getActivity().getLayoutInflater().inflate(R.layout.firmware_download_dialog, null);
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(),
-                        R.style.CustomDialogStyle)
+                        R.style.GlobalDialogStyle)
                         .setView(dialogView)
                         .setTitle(R.string.download_firmware_dialog_title)
                         .setNegativeButton(R.string.dialog_btn_cancel, new DialogInterface.OnClickListener() {
@@ -324,9 +227,8 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
                 negativeButton.setEnabled(false);
 
                 FirmwareManageFragment.this.firmware = firmware;
-                WebApi.getInstance().setOnFailureListener(FirmwareManageFragment.this);
-                WebApi.getInstance().setOnResultListener(FirmwareManageFragment.this);
-                WebApi.getInstance().downloadFirmwareFromServer(getActivity(), firmware.getId());
+                WebInterface.getInstance().setOnRequestListener(FirmwareManageFragment.this);
+                WebInterface.getInstance().downloadFirmwareFromServer(getActivity(), firmware.getId());
                 return false;
             }
         });
@@ -347,7 +249,6 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
                         Vendor vendor = new Vendor(object);
                         vendorList.add(vendor);
                     }
-                    specialApplyView.setVendorList(vendorList);
                 } catch (JSONException e) {
                     Toast.makeText(getActivity(), R.string.read_data_error, Toast.LENGTH_SHORT).show();
                 }
@@ -355,59 +256,6 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
         }
         int currentPager = ((FirmwareManageActivity) getActivity()).pager.getCurrentItem();
         if (currentPager == 0) {
-            if (tag.equalsIgnoreCase(ApplicationConfig.GetNormalDeviceList)) {
-                if (responseString != null && responseString.length() > 0) {
-                    try {
-                        List<NormalDevice> deviceList = new ArrayList<NormalDevice>();
-                        JSONArray jsonArray = new JSONArray(responseString);
-                        int size = jsonArray.length();
-                        for (int i = 0; i < size; i++) {
-                            JSONObject object = jsonArray.getJSONObject(i);
-                            NormalDevice device = new NormalDevice(object);
-                            deviceList.add(device);
-                        }
-                        normalApplyView.setSpinnerDataSource(deviceList);
-                    } catch (JSONException e) {
-                        Toast.makeText(getActivity(), R.string.read_data_error, Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-            if (tag.equalsIgnoreCase(ApplicationConfig.GetSpecialDeviceList)) {
-                if (responseString != null && responseString.length() > 0) {
-                    try {
-                        List<SpecialDevice> deviceList = new ArrayList<SpecialDevice>();
-                        JSONArray jsonArray = new JSONArray(responseString);
-                        int size = jsonArray.length();
-                        for (int i = 0; i < size; i++) {
-                            JSONObject object = jsonArray.getJSONObject(i);
-                            SpecialDevice device = new SpecialDevice(object);
-                            deviceList.add(device);
-                        }
-                        specialApplyView.setDeviceList(deviceList);
-                    } catch (JSONException e) {
-                        Toast.makeText(getActivity(), R.string.read_data_error, Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-            if (tag.equalsIgnoreCase(ApplicationConfig.GetDeviceListByVendorID)) {
-                if (responseString != null && responseString.length() > 0) {
-                    try {
-                        List<SpecialDevice> deviceList = new ArrayList<SpecialDevice>();
-                        JSONArray jsonArray = new JSONArray(responseString);
-                        int size = jsonArray.length();
-                        for (int i = 0; i < size; i++) {
-                            JSONObject object = jsonArray.getJSONObject(i);
-                            SpecialDevice device = new SpecialDevice(object);
-                            deviceList.add(device);
-                        }
-                        specialApplyView.setDeviceList(deviceList);
-                    } catch (JSONException e) {
-                        Toast.makeText(getActivity(), R.string.read_data_error, Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-        }
-        if (currentPager == 1) {
             if (tag.equalsIgnoreCase(ApplicationConfig.GetAllFirmwareNotDownload)) {
                 if (responseString != null && responseString.length() > 0) {
                     try {
@@ -465,7 +313,7 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
                         firmware.setFileName(fileName);
                         FirmwareDao.saveItem(getActivity(), firmware);
                         // 从服务器删除已提取的程序
-                        WebApi.getInstance().deleteFileFromServer(getActivity(), firmware.getId());
+                        WebInterface.getInstance().deleteFileFromServer(getActivity(), firmware.getId());
                     }
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
@@ -482,7 +330,7 @@ public class FirmwareManageFragment extends Fragment implements WebApi.OnGetResu
                     downloadListLoadView.setVisibility(View.VISIBLE);
                     firmwareDownloadListView.setVisibility(View.GONE);
                     String bluetoothAddress = BluetoothAdapter.getDefaultAdapter().getAddress();
-                    WebApi.getInstance().getAllFirmwareNotDownload(getActivity(), bluetoothAddress);
+                    WebInterface.getInstance().getAllFirmwareNotDownload(getActivity(), bluetoothAddress);
                 }
             }
         }

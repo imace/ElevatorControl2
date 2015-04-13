@@ -7,10 +7,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import butterknife.InjectView;
-import butterknife.Views;
+
 import com.inovance.bluetoothtool.BluetoothTool;
 import com.inovance.elevatorcontrol.R;
+
+import butterknife.InjectView;
+import butterknife.Views;
 
 /**
  * Created by IntelliJ IDEA.

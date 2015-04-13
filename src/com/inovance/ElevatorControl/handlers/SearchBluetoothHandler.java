@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.os.Message;
 import android.widget.Toast;
+
 import com.inovance.bluetoothtool.BluetoothHandler;
 import com.inovance.bluetoothtool.BluetoothTool;
 import com.inovance.bluetoothtool.DevicesHolder;
@@ -41,6 +42,7 @@ public class SearchBluetoothHandler extends BluetoothHandler {
     @Override
     public void onBeginDiscovering(Message msg) {
         super.onBeginDiscovering(msg);
+        mNavigationTabActivity.updateConnectStatusUI();
         mNavigationTabActivity.showRefreshButtonProgress(true);
         mNavigationTabActivity.updateSpinnerDropdownItem(new ArrayList<BluetoothDevice>());
     }
@@ -50,8 +52,6 @@ public class SearchBluetoothHandler extends BluetoothHandler {
      *
      * @param msg message
      */
-    @Override
-    @SuppressWarnings("unchecked")
     public void onFoundDevice(Message msg) {
         super.onFoundDevice(msg);
         if (mNavigationTabActivity.researchDevicesButton != null) {
@@ -89,6 +89,8 @@ public class SearchBluetoothHandler extends BluetoothHandler {
         mNavigationTabActivity.showRefreshButtonProgress(false);
         // 显示选择操作类型对话框
         mNavigationTabActivity.showSelectOperationDialog();
+        // 更新蓝牙状态标识
+        mNavigationTabActivity.updateConnectStatusUI();
         Toast.makeText(activity, activity.getResources().getString(R.string.success_connect),
                 Toast.LENGTH_SHORT).show();
     }
@@ -139,8 +141,9 @@ public class SearchBluetoothHandler extends BluetoothHandler {
     @Override
     public void onDisconnected(Message message) {
         super.onDisconnected(message);
+        mNavigationTabActivity.updateConnectStatusUI();
         if (!isChangingDevice) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
+            AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.GlobalDialogStyle)
                     .setTitle(R.string.connect_lost_title)
                     .setMessage(R.string.connect_lost_message)
                     .setNegativeButton(R.string.dialog_btn_cancel, new DialogInterface.OnClickListener() {
@@ -177,11 +180,12 @@ public class SearchBluetoothHandler extends BluetoothHandler {
     public void onDeviceChanged(Message message) {
         super.onDeviceChanged(message);
         isChangingDevice = true;
+        mNavigationTabActivity.updateConnectStatusUI();
     }
 
     @Override
     public void onBluetoothConnectException(Message message) {
         super.onBluetoothConnectException(message);
-        Toast.makeText(activity, "蓝牙连接异常", Toast.LENGTH_SHORT).show();
+        Toast.makeText(activity, R.string.bluetooth_connect_exception, Toast.LENGTH_SHORT).show();
     }
 }

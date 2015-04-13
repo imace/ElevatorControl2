@@ -1,6 +1,7 @@
 package com.inovance.elevatorcontrol.models;
 
 import android.content.Context;
+
 import com.inovance.elevatorcontrol.R;
 import com.mobsandgeeks.adapters.InstantText;
 

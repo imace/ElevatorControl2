@@ -3,12 +3,12 @@ package com.inovance.elevatorcontrol.activities;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,7 +22,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import com.inovance.bluetoothtool.BluetoothHandler;
 import com.inovance.bluetoothtool.BluetoothTalk;
 import com.inovance.bluetoothtool.BluetoothTool;
 import com.inovance.bluetoothtool.SerialUtility;
@@ -34,17 +33,20 @@ import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
 import com.inovance.elevatorcontrol.daos.ParameterGroupSettingsDao;
 import com.inovance.elevatorcontrol.factory.ParameterFactory;
 import com.inovance.elevatorcontrol.handlers.ParameterDetailHandler;
+import com.inovance.elevatorcontrol.handlers.UnlockHandler;
 import com.inovance.elevatorcontrol.models.ObjectListHolder;
 import com.inovance.elevatorcontrol.models.ParameterGroupSettings;
 import com.inovance.elevatorcontrol.models.ParameterSettings;
 import com.inovance.elevatorcontrol.models.ParameterStatusItem;
 import com.inovance.elevatorcontrol.utils.LogUtils;
 import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
-import com.inovance.elevatorcontrol.views.dialogs.CustomDialog;
+import com.inovance.elevatorcontrol.views.dialogs.UtilsDialog;
+import com.inovance.elevatorcontrol.window.CallFloorWindow;
 import com.manuelpeinado.refreshactionitem.ProgressIndicatorType;
 import com.manuelpeinado.refreshactionitem.RefreshActionItem;
 import com.mobsandgeeks.adapters.InstantAdapter;
 
+import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -209,6 +211,8 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
 
     private int currentTask;
 
+    private OnGetValueHandler onGetValueHandler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -217,6 +221,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
         Views.inject(this);
+        onGetValueHandler = new OnGetValueHandler(this);
         parameterDetailHandler = new ParameterDetailHandler(this);
         getValueScopeHandler = new GetValueScopeHandler(this);
         writeHandler = new WriteHandler(this);
@@ -299,7 +304,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                             if (settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[0] ||
                                     settings.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[1]) {
                                 new AlertDialog.Builder(ParameterDetailActivity.this,
-                                        R.style.CustomDialogStyle)
+                                        R.style.GlobalDialogStyle)
                                         .setTitle(settings.getCodeText() + " " + settings.getName())
                                         .setMessage(R.string.cannot_modify_message)
                                         .setPositiveButton(R.string.dialog_btn_ok, null)
@@ -335,7 +340,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         pickerContainer = (LinearLayout) dialogView.findViewById(R.id.picker_container);
         pickerView = (LinearLayout) dialogView.findViewById(R.id.picker_view);
         AlertDialog.Builder builder = new AlertDialog.Builder(ParameterDetailActivity.this,
-                R.style.CustomDialogStyle)
+                R.style.GlobalDialogStyle)
                 .setView(dialogView)
                 .setTitle(settings.getCodeText() + " " + settings.getName())
                 .setNeutralButton(R.string.dialog_btn_cancel, null)
@@ -523,7 +528,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
      */
     private void onClickListViewWithIndex(final int index) {
         final ParameterSettings settings = listViewDataSource.get(index);
-        AlertDialog.Builder builder = CustomDialog.parameterDetailDialog(this, settings);
+        AlertDialog.Builder builder = UtilsDialog.parameterDetailDialog(this, settings);
         builder.setPositiveButton(R.string.dialog_btn_ok, null);
         builder.setNegativeButton(R.string.dialog_btn_cancel, null);
         detailDialog = builder.create();
@@ -721,7 +726,6 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                                 + ParseSerialsUtils.getCalculatedCode(settings)
                                 + userValue.toUpperCase();
                         this.setSendBuffer(SerialUtility.crc16(hexString));
-                        Log.v("ForTest+++++++++++++", hexString);
                     }
 
                     @Override
@@ -970,6 +974,12 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
                 setResult(RESULT_OK);
                 finish();
                 return true;
+            case R.id.action_call_floor:
+                if (BluetoothTool.getInstance().isPrepared()) {
+                    Intent intent = new Intent(ParameterDetailActivity.this, CallFloorWindow.class);
+                    startActivity(intent);
+                }
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -1007,28 +1017,35 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
         }
     }
 
-    private Handler onGetValueHandler = new Handler() {
+    private static class OnGetValueHandler extends Handler {
+        private final WeakReference<ParameterDetailActivity> mActivity;
+
+        public OnGetValueHandler(ParameterDetailActivity activity) {
+            mActivity = new WeakReference<ParameterDetailActivity>(activity);
+        }
 
         @Override
         public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case onGetValueScope: {
-                    if (msg.obj != null && msg.obj instanceof ParameterSettings) {
-                        createNumberPickerAndBindListener((ParameterSettings) msg.obj);
+            ParameterDetailActivity activity = mActivity.get();
+            if (activity != null) {
+                switch (msg.what) {
+                    case onGetValueScope: {
+                        if (msg.obj != null && msg.obj instanceof ParameterSettings) {
+                            activity.createNumberPickerAndBindListener((ParameterSettings) msg.obj);
+                        }
                     }
+                    break;
                 }
-                break;
             }
         }
-    };
-
+    }
 
     // ===================================== 写入参数 Handler ======================================== //
 
     /**
      * Update Handler
      */
-    private class WriteHandler extends BluetoothHandler {
+    private class WriteHandler extends UnlockHandler {
 
         public int index;
 
@@ -1109,7 +1126,7 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
     }
 
     // ================================= 取得参数数值设置范围 Handler ============================================== //
-    private class GetValueScopeHandler extends BluetoothHandler {
+    private class GetValueScopeHandler extends UnlockHandler {
 
         private List<String> stringList;
 

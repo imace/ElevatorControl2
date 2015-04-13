@@ -1,11 +1,18 @@
 package com.inovance.elevatorcontrol.daos;
 
 import android.content.Context;
+
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
-import com.inovance.elevatorcontrol.models.*;
+import com.inovance.elevatorcontrol.models.Device;
+import com.inovance.elevatorcontrol.models.ErrorHelp;
+import com.inovance.elevatorcontrol.models.ParameterGroupSettings;
+import com.inovance.elevatorcontrol.models.ParameterSettings;
+import com.inovance.elevatorcontrol.models.RealTimeMonitor;
 import com.inovance.elevatorcontrol.utils.AssetUtils;
+
 import net.tsz.afinal.FinalDb;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

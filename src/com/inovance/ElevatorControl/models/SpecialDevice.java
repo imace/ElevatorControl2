@@ -1,6 +1,7 @@
 package com.inovance.elevatorcontrol.models;
 
 import net.tsz.afinal.annotation.sqlite.Table;
+
 import org.json.JSONObject;
 
 /**

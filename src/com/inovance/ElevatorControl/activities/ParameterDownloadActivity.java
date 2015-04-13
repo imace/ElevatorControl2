@@ -18,7 +18,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.inovance.bluetoothtool.BluetoothHandler;
 import com.inovance.bluetoothtool.BluetoothState;
 import com.inovance.bluetoothtool.BluetoothTalk;
 import com.inovance.bluetoothtool.BluetoothTool;
@@ -28,6 +27,7 @@ import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
 import com.inovance.elevatorcontrol.daos.ParameterGroupSettingsDao;
 import com.inovance.elevatorcontrol.daos.ProfileDao;
+import com.inovance.elevatorcontrol.handlers.UnlockHandler;
 import com.inovance.elevatorcontrol.models.ObjectListHolder;
 import com.inovance.elevatorcontrol.models.ParameterGroupSettings;
 import com.inovance.elevatorcontrol.models.ParameterSettings;
@@ -35,7 +35,7 @@ import com.inovance.elevatorcontrol.models.Profile;
 import com.inovance.elevatorcontrol.utils.GenerateJSON;
 import com.inovance.elevatorcontrol.utils.LogUtils;
 import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
-import com.inovance.elevatorcontrol.views.dialogs.CustomDialog;
+import com.inovance.elevatorcontrol.views.dialogs.UtilsDialog;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -347,7 +347,7 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
 
     // =====================================下载参数配置 Handler======================================
 
-    private class DownloadParameterHandler extends BluetoothHandler {
+    private class DownloadParameterHandler extends UnlockHandler {
 
         private int index = 0;
 
@@ -455,7 +455,7 @@ public class ParameterDownloadActivity extends Activity implements Runnable {
         @Override
         public void onBluetoothConnectException(Message message) {
             super.onBluetoothConnectException(message);
-            CustomDialog.showBluetoothExceptionDialog(ParameterDownloadActivity.this, new CustomDialog.OnRetryListener() {
+            UtilsDialog.showBluetoothExceptionDialog(ParameterDownloadActivity.this, new UtilsDialog.OnRetryListener() {
                 @Override
                 public void onClick() {
                     BluetoothTool.getInstance().currentState = BluetoothState.CONNECTED;

@@ -5,9 +5,11 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.TextView;
+
+import com.inovance.elevatorcontrol.R;
+
 import butterknife.InjectView;
 import butterknife.Views;
-import com.inovance.elevatorcontrol.R;
 
 /**
  * Created by IntelliJ IDEA.

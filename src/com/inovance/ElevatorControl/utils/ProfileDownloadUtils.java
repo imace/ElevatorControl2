@@ -8,12 +8,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import com.inovance.bluetoothtool.BluetoothHandler;
+
 import com.inovance.bluetoothtool.BluetoothTalk;
 import com.inovance.bluetoothtool.BluetoothTool;
 import com.inovance.bluetoothtool.SerialUtility;
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.daos.ParameterGroupSettingsDao;
+import com.inovance.elevatorcontrol.handlers.UnlockHandler;
 import com.inovance.elevatorcontrol.models.ObjectListHolder;
 import com.inovance.elevatorcontrol.models.ParameterGroupSettings;
 import com.inovance.elevatorcontrol.models.ParameterSettings;
@@ -201,7 +202,7 @@ public class ProfileDownloadUtils implements Runnable {
 
     // =====================================下载参数配置 Handler======================================
 
-    private class DownloadHandler extends BluetoothHandler {
+    private class DownloadHandler extends UnlockHandler {
 
         private int index = 0;
 

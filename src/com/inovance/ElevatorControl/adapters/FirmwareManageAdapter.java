@@ -3,6 +3,7 @@ package com.inovance.elevatorcontrol.adapters;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.views.fragments.FirmwareManageFragment;
 

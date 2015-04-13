@@ -10,9 +10,11 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.google.zxing.Result;
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.barcode.ZXingScannerView;
+
 import net.rdrei.android.dirchooser.DirectoryChooserFragment;
 import net.rdrei.android.dirchooser.DirectoryChooserFragment.OnFragmentInteractionListener;
 
@@ -20,6 +22,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * Created by IntelliJ IDEA.
@@ -79,7 +82,7 @@ public class ZxingScannerActivity extends FragmentActivity implements OnFragment
     private void savePicture(String path) {
         if (scannerFragment.getBitmap() != null) {
             saveButton.setEnabled(false);
-            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
             File pictureFile = new File(path + File.separator + "IMG_" + timeStamp + ".jpg");
             if (pictureFile == null) {
                 return;

@@ -2,15 +2,11 @@ package com.inovance.elevatorcontrol.handlers;
 
 import android.app.Activity;
 import android.os.Message;
-import android.support.v4.view.ViewPager;
-import android.view.View;
-import android.widget.TextView;
-import com.inovance.bluetoothtool.BluetoothHandler;
-import com.inovance.elevatorcontrol.R;
+
 import com.inovance.elevatorcontrol.activities.TroubleAnalyzeActivity;
 import com.inovance.elevatorcontrol.models.ErrorHelp;
 
-public class CurrentErrorHandler extends BluetoothHandler {
+public class CurrentErrorHandler extends UnlockHandler {
 
     private ErrorHelp errorHelp;
 
@@ -33,51 +29,11 @@ public class CurrentErrorHandler extends BluetoothHandler {
     @Override
     public void onMultiTalkEnd(Message msg) {
         super.onMultiTalkEnd(msg);
+        TroubleAnalyzeActivity parentActivity = (TroubleAnalyzeActivity) activity;
         if (receiveCount == sendCount) {
-            ViewPager pager = ((TroubleAnalyzeActivity) activity).pager;
-            View loadView = pager.findViewById(R.id.load_view);
-            View errorView = pager.findViewById(R.id.error_view);
-            View noErrorView = pager.findViewById(R.id.no_error_view);
-            View noDeviceView = pager.findViewById(R.id.no_device_view);
-            View viewSystemStatus = pager.findViewById(R.id.view_system_status);
-            View restoreErrorStatus = pager.findViewById(R.id.restore_error_status);
-            if (loadView != null && errorView != null && noErrorView != null && noDeviceView != null) {
-                if (errorHelp != null) {
-                    TextView display = (TextView) pager.findViewById(R.id.current_error_help_display);
-                    TextView level = (TextView) pager.findViewById(R.id.current_error_help_level);
-                    TextView name = (TextView) pager.findViewById(R.id.current_error_help_name);
-                    TextView reason = (TextView) pager.findViewById(R.id.current_error_help_reason);
-                    TextView solution = (TextView) pager.findViewById(R.id.current_error_help_solution);
-                    name.setText(errorHelp.getName());
-                    display.setText(errorHelp.getDisplay());
-                    level.setText(errorHelp.getLevel());
-                    reason.setText(errorHelp.getReason());
-                    solution.setText(errorHelp.getSolution());
-                    loadView.setVisibility(View.GONE);
-                    noErrorView.setVisibility(View.GONE);
-                    noDeviceView.setVisibility(View.GONE);
-                    errorView.setVisibility(View.VISIBLE);
-                    viewSystemStatus.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            ((TroubleAnalyzeActivity) activity).viewCurrentSystemStatus();
-                        }
-                    });
-                    restoreErrorStatus.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            ((TroubleAnalyzeActivity) activity).restoreErrorStatus();
-                        }
-                    });
-                } else {
-                    loadView.setVisibility(View.GONE);
-                    noDeviceView.setVisibility(View.GONE);
-                    errorView.setVisibility(View.GONE);
-                    noErrorView.setVisibility(View.VISIBLE);
-                }
-            }
+            parentActivity.displayErrorInformation(errorHelp);
         }
-        ((TroubleAnalyzeActivity) activity).isSyncing = false;
+        parentActivity.isSyncing = false;
     }
 
     @Override

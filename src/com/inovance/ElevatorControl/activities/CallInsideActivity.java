@@ -4,23 +4,21 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-import butterknife.InjectView;
-import butterknife.Views;
-import com.inovance.bluetoothtool.BluetoothHandler;
+
 import com.inovance.bluetoothtool.BluetoothTalk;
 import com.inovance.bluetoothtool.BluetoothTool;
 import com.inovance.bluetoothtool.SerialUtility;
 import com.inovance.elevatorcontrol.R;
-import com.inovance.elevatorcontrol.adapters.MoveSidePagerAdapter;
+import com.inovance.elevatorcontrol.adapters.CallFloorPagerAdapter;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.daos.ParameterSettingsDao;
 import com.inovance.elevatorcontrol.daos.RealTimeMonitorDao;
+import com.inovance.elevatorcontrol.handlers.UnlockHandler;
 import com.inovance.elevatorcontrol.models.ObjectListHolder;
 import com.inovance.elevatorcontrol.models.ParameterSettings;
 import com.inovance.elevatorcontrol.models.RealTimeMonitor;
@@ -37,6 +35,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import butterknife.InjectView;
+import butterknife.Views;
+
 /**
  * Created by IntelliJ IDEA.
  * 电梯内召
@@ -44,14 +45,14 @@ import java.util.concurrent.Executors;
  * Date: 14-3-6.
  * Time: 11:03.
  */
-public class MoveInsideActivity extends Activity implements Runnable {
+public class CallInsideActivity extends Activity implements Runnable {
 
-    private static final String TAG = MoveInsideActivity.class.getSimpleName();
+    private static final String TAG = CallInsideActivity.class.getSimpleName();
 
     /**
      * 用于召唤楼层的指令列表
      */
-    private List<RealTimeMonitor> moveInsideMonitorList;
+    private List<RealTimeMonitor> callInsideMonitorList;
 
     /**
      * 当前楼层
@@ -91,17 +92,17 @@ public class MoveInsideActivity extends Activity implements Runnable {
     /**
      * 获取电梯最高层、最底层 Handler
      */
-    private MoveInsideHandler mMoveInsideHandler;
+    private GetFloorsHandler getFloorsHandler;
 
     /**
      * 召唤楼层 Handler
      */
-    private CallFloorHandler callFloorHandler;
+    private CallInsideHandler callInsideHandler;
 
     /**
      * 同步电梯召唤状态 Handler
      */
-    private SyncMoveInsideInfoHandler mSyncMoveInsideInfoHandler;
+    private GetCallInsideStatusHandler getCallInsideStatusHandler;
 
     /**
      * 取得电梯最高层、最底层通信内容
@@ -144,7 +145,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
     /**
      * Vertical View Pager Adapter
      */
-    private MoveSidePagerAdapter moveSidePagerAdapter;
+    private CallFloorPagerAdapter callFloorPagerAdapter;
 
     private ExecutorService pool = Executors.newSingleThreadExecutor();
 
@@ -156,18 +157,18 @@ public class MoveInsideActivity extends Activity implements Runnable {
     /**
      * 获取电梯召唤状态的通信内容
      */
-    private BluetoothTalk[] getMoveInsideInfoCommunications;
+    private BluetoothTalk[] getCallInsideStatusCommunications;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
-        setTitle(R.string.move_inside_text);
+        setTitle(R.string.call_inside_text);
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
-        setContentView(R.layout.activity_move_inside);
+        setContentView(R.layout.activity_call_inside);
         Views.inject(this);
-        moveSidePagerAdapter = new MoveSidePagerAdapter(this, ApplicationConfig.DefaultFloors);
-        viewPager.setAdapter(moveSidePagerAdapter);
+        callFloorPagerAdapter = new CallFloorPagerAdapter(this, ApplicationConfig.DefaultFloors);
+        viewPager.setAdapter(callFloorPagerAdapter);
         viewPager.setOnPageChangeListener(new VerticalViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -176,8 +177,8 @@ public class MoveInsideActivity extends Activity implements Runnable {
 
             @Override
             public void onPageSelected(int position) {
-                if (moveSidePagerAdapter != null) {
-                    moveSidePagerAdapter.currentPager = position;
+                if (callFloorPagerAdapter != null) {
+                    callFloorPagerAdapter.currentPager = position;
                 }
             }
 
@@ -186,12 +187,12 @@ public class MoveInsideActivity extends Activity implements Runnable {
 
             }
         });
-        mSyncMoveInsideInfoHandler = new SyncMoveInsideInfoHandler(this);
-        mMoveInsideHandler = new MoveInsideHandler(this);
-        callFloorHandler = new CallFloorHandler(this);
+        getCallInsideStatusHandler = new GetCallInsideStatusHandler(this);
+        getFloorsHandler = new GetFloorsHandler(this);
+        callInsideHandler = new CallInsideHandler(this);
         currentFloorMonitor = RealTimeMonitorDao.findByStateID(this, ApplicationConfig.CurrentFloorType);
-        moveInsideMonitorList = RealTimeMonitorDao.findAllByStateID(this, ApplicationConfig.MoveInsideInformationType);
-        Collections.sort(moveInsideMonitorList, new SortComparator());
+        callInsideMonitorList = RealTimeMonitorDao.findAllByStateID(this, ApplicationConfig.MoveInsideInformationType);
+        Collections.sort(callInsideMonitorList, new SortComparator());
         createGetFloorsCommunication();
         syncTask = new Runnable() {
             @Override
@@ -199,7 +200,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
                 if (running) {
                     if (BluetoothTool.getInstance().isPrepared()) {
                         if (!isSyncing) {
-                            pool.execute(MoveInsideActivity.this);
+                            pool.execute(CallInsideActivity.this);
                         }
                         syncHandler.postDelayed(this, SYNC_TIME);
                     }
@@ -213,16 +214,16 @@ public class MoveInsideActivity extends Activity implements Runnable {
     /**
      * 生成用于读取电梯召唤信息的通信内容
      */
-    private void createGetMoveInsideInfoCommunications() {
-        if (getMoveInsideInfoCommunications == null) {
-            int size = moveInsideMonitorList.size();
+    private void createGetCallInsideStatusCommunications() {
+        if (getCallInsideStatusCommunications == null) {
+            int size = callInsideMonitorList.size();
             final int count = size <= 10 ? 1 : ((size - size % 10) / 10 + (size % 10 == 0 ? 0 : 1));
-            getMoveInsideInfoCommunications = new BluetoothTalk[count + 1];
+            getCallInsideStatusCommunications = new BluetoothTalk[count + 1];
             for (int i = 0; i < count; i++) {
                 final int position = i;
-                final RealTimeMonitor firstItem = moveInsideMonitorList.get(position * 10);
+                final RealTimeMonitor firstItem = callInsideMonitorList.get(position * 10);
                 final int length = size <= 10 ? size : (size % 10 == 0 ? 10 : ((position == count - 1) ? size % 10 : 10));
-                getMoveInsideInfoCommunications[i] = new BluetoothTalk() {
+                getCallInsideStatusCommunications[i] = new BluetoothTalk() {
                     @Override
                     public void beforeSend() {
                         this.setSendBuffer(SerialUtility.crc16("0103"
@@ -253,8 +254,8 @@ public class MoveInsideActivity extends Activity implements Runnable {
                             if (length * 2 == bytesLength) {
                                 List<RealTimeMonitor> tempList = new ArrayList<RealTimeMonitor>();
                                 for (int j = 0; j < length; j++) {
-                                    if (position * 10 + j < moveInsideMonitorList.size()) {
-                                        RealTimeMonitor item = moveInsideMonitorList.get(position * 10 + j);
+                                    if (position * 10 + j < callInsideMonitorList.size()) {
+                                        RealTimeMonitor item = callInsideMonitorList.get(position * 10 + j);
                                         byte[] tempData = SerialUtility.crc16("01030002"
                                                 + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]}));
                                         item.setReceived(tempData);
@@ -270,7 +271,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
                     }
                 };
             }
-            getMoveInsideInfoCommunications[count] = new BluetoothTalk() {
+            getCallInsideStatusCommunications[count] = new BluetoothTalk() {
                 @Override
                 public void beforeSend() {
                     this.setSendBuffer(SerialUtility.crc16("0103"
@@ -312,13 +313,13 @@ public class MoveInsideActivity extends Activity implements Runnable {
     /**
      * 同步当前电梯召唤信息
      */
-    private void syncMoveInsideInfoStatus() {
+    private void startGetCallInsideStatusCommunication() {
         if (BluetoothTool.getInstance().isPrepared()) {
             isSyncing = true;
-            mSyncMoveInsideInfoHandler.sendCount = getMoveInsideInfoCommunications.length;
+            getCallInsideStatusHandler.sendCount = getCallInsideStatusCommunications.length;
             BluetoothTool.getInstance()
-                    .setHandler(mSyncMoveInsideInfoHandler)
-                    .setCommunications(getMoveInsideInfoCommunications)
+                    .setHandler(getCallInsideStatusHandler)
+                    .setCommunications(getCallInsideStatusCommunications)
                     .startTask();
         }
     }
@@ -400,9 +401,9 @@ public class MoveInsideActivity extends Activity implements Runnable {
     /**
      * 召唤楼层
      */
-    private void moveInsideCallFloor() {
+    private void startCallInsideCommunication() {
         int index = 0;
-        for (final RealTimeMonitor monitor : moveInsideMonitorList) {
+        for (final RealTimeMonitor monitor : callInsideMonitorList) {
             if (currentCallFloor >= (index * 8 + 1) && currentCallFloor <= (index + 1) * 8) {
                 int callIndex = currentCallFloor - (index * 8 + 1);
                 final String callCode = monitor.getCode() + ApplicationConfig.MoveSideCallCode[callIndex];
@@ -440,12 +441,12 @@ public class MoveInsideActivity extends Activity implements Runnable {
                         }
                 };
                 if (BluetoothTool.getInstance().isPrepared()) {
-                    MoveInsideActivity.this.isSyncing = true;
-                    MoveInsideActivity.this.currentTask = CALL_FLOOR;
-                    MoveInsideActivity.this.callFloorHandler.writeCode = callCode;
-                    MoveInsideActivity.this.callFloorHandler.floor = currentCallFloor;
+                    CallInsideActivity.this.isSyncing = true;
+                    CallInsideActivity.this.currentTask = CALL_FLOOR;
+                    CallInsideActivity.this.callInsideHandler.writeCode = callCode;
+                    CallInsideActivity.this.callInsideHandler.floor = currentCallFloor;
                     BluetoothTool.getInstance()
-                            .setHandler(callFloorHandler)
+                            .setHandler(callInsideHandler)
                             .setCommunications(communications)
                             .startTask();
                 }
@@ -458,12 +459,12 @@ public class MoveInsideActivity extends Activity implements Runnable {
     /**
      * 取得电梯层数
      */
-    private void loadDataAndRenderView() {
+    private void startGetFloorsCommunication() {
         isSyncing = true;
         if (BluetoothTool.getInstance().isPrepared()) {
-            mMoveInsideHandler.sendCount = getFloorsCommunications.length;
+            getFloorsHandler.sendCount = getFloorsCommunications.length;
             BluetoothTool.getInstance()
-                    .setHandler(mMoveInsideHandler)
+                    .setHandler(getFloorsHandler)
                     .setCommunications(getFloorsCommunications)
                     .startTask();
         }
@@ -473,20 +474,20 @@ public class MoveInsideActivity extends Activity implements Runnable {
     public void run() {
         switch (currentTask) {
             case GET_FLOOR:
-                loadDataAndRenderView();
+                startGetFloorsCommunication();
                 break;
             case GET_CALL_STATUS:
-                syncMoveInsideInfoStatus();
+                startGetCallInsideStatusCommunication();
                 break;
             case CALL_FLOOR:
-                moveInsideCallFloor();
+                startCallInsideCommunication();
                 break;
         }
     }
 
     // ================================= 获取电梯最高层和最底层 ========================================== //
 
-    private class MoveInsideHandler extends BluetoothHandler {
+    private class GetFloorsHandler extends UnlockHandler {
 
         public int sendCount;
 
@@ -494,9 +495,9 @@ public class MoveInsideActivity extends Activity implements Runnable {
 
         private List<ParameterSettings> settingsList;
 
-        public MoveInsideHandler(Activity activity) {
+        public GetFloorsHandler(Activity activity) {
             super(activity);
-            TAG = MoveInsideHandler.class.getSimpleName();
+            TAG = GetFloorsHandler.class.getSimpleName();
         }
 
         @Override
@@ -514,25 +515,25 @@ public class MoveInsideActivity extends Activity implements Runnable {
                 byte[] data2 = settingsList.get(1).getReceived();
                 int top = ByteBuffer.wrap(new byte[]{data1[4], data1[5]}).getShort();
                 int bottom = ByteBuffer.wrap(new byte[]{data2[4], data2[5]}).getShort();
-                moveSidePagerAdapter = new MoveSidePagerAdapter(MoveInsideActivity.this,
+                callFloorPagerAdapter = new CallFloorPagerAdapter(CallInsideActivity.this,
                         new int[]{bottom, top});
-                moveSidePagerAdapter.setOnSelectFloorListener(new MoveSidePagerAdapter.OnSelectFloorListener() {
+                callFloorPagerAdapter.setOnSelectFloorListener(new CallFloorPagerAdapter.OnSelectFloorListener() {
                     @Override
                     public void onSelect(int floor) {
                         BluetoothTool.getInstance().setHandler(null);
-                        MoveInsideActivity.this.currentCallFloor = floor;
-                        MoveInsideActivity.this.isSyncing = false;
-                        MoveInsideActivity.this.currentTask = CALL_FLOOR;
+                        CallInsideActivity.this.currentCallFloor = floor;
+                        CallInsideActivity.this.isSyncing = false;
+                        CallInsideActivity.this.currentTask = CALL_FLOOR;
                     }
                 });
-                MoveInsideActivity.this.viewPager.setAdapter(moveSidePagerAdapter);
-                MoveInsideActivity.this.createGetMoveInsideInfoCommunications();
-                MoveInsideActivity.this.loadView.setVisibility(View.GONE);
-                MoveInsideActivity.this.viewPager.setVisibility(View.VISIBLE);
-                MoveInsideActivity.this.isSyncing = false;
-                MoveInsideActivity.this.currentTask = GET_CALL_STATUS;
+                CallInsideActivity.this.viewPager.setAdapter(callFloorPagerAdapter);
+                CallInsideActivity.this.createGetCallInsideStatusCommunications();
+                CallInsideActivity.this.loadView.setVisibility(View.GONE);
+                CallInsideActivity.this.viewPager.setVisibility(View.VISIBLE);
+                CallInsideActivity.this.isSyncing = false;
+                CallInsideActivity.this.currentTask = GET_CALL_STATUS;
             }
-            MoveInsideActivity.this.isSyncing = false;
+            CallInsideActivity.this.isSyncing = false;
         }
 
         @Override
@@ -551,7 +552,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
     /**
      * 召唤楼层
      */
-    private class CallFloorHandler extends BluetoothHandler {
+    private class CallInsideHandler extends UnlockHandler {
 
         private RealTimeMonitor monitor;
 
@@ -559,9 +560,9 @@ public class MoveInsideActivity extends Activity implements Runnable {
 
         public int floor;
 
-        public CallFloorHandler(Activity activity) {
+        public CallInsideHandler(Activity activity) {
             super(activity);
-            TAG = CallFloorHandler.class.getSimpleName();
+            TAG = CallInsideHandler.class.getSimpleName();
         }
 
         @Override
@@ -577,7 +578,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
                 String receive = SerialUtility.byte2HexStr(monitor.getReceived());
                 String checkResult = ParseSerialsUtils.getErrorString(receive);
                 if (checkResult != null) {
-                    Toast.makeText(MoveInsideActivity.this,
+                    Toast.makeText(CallInsideActivity.this,
                             checkResult,
                             Toast.LENGTH_SHORT)
                             .show();
@@ -586,16 +587,16 @@ public class MoveInsideActivity extends Activity implements Runnable {
                         // 写入内召日志
                         LogUtils.getInstance().write(ApplicationConfig.LogMoveInside, writeCode, receive, floor);
                     } else {
-                        Toast.makeText(MoveInsideActivity.this,
-                                R.string.move_inside_failed_text,
+                        Toast.makeText(CallInsideActivity.this,
+                                R.string.call_inside_failed_text,
                                 Toast.LENGTH_SHORT)
                                 .show();
                     }
                 }
-                moveSidePagerAdapter.clearSelectIndex();
-                MoveInsideActivity.this.currentTask = GET_CALL_STATUS;
+                callFloorPagerAdapter.clearSelectIndex();
+                CallInsideActivity.this.currentTask = GET_CALL_STATUS;
             }
-            MoveInsideActivity.this.isSyncing = false;
+            CallInsideActivity.this.isSyncing = false;
         }
 
         @Override
@@ -610,7 +611,7 @@ public class MoveInsideActivity extends Activity implements Runnable {
 
     // ============================== 同步内召信息 ================================================ //
 
-    private class SyncMoveInsideInfoHandler extends BluetoothHandler {
+    private class GetCallInsideStatusHandler extends UnlockHandler {
 
         public int sendCount;
 
@@ -618,9 +619,9 @@ public class MoveInsideActivity extends Activity implements Runnable {
 
         private List<RealTimeMonitor> monitorList;
 
-        public SyncMoveInsideInfoHandler(Activity activity) {
+        public GetCallInsideStatusHandler(Activity activity) {
             super(activity);
-            TAG = SyncMoveInsideInfoHandler.class.getSimpleName();
+            TAG = GetCallInsideStatusHandler.class.getSimpleName();
         }
 
         @Override
@@ -637,10 +638,9 @@ public class MoveInsideActivity extends Activity implements Runnable {
                 List<Integer> calledFloorList = new ArrayList<Integer>();
                 for (RealTimeMonitor monitor : monitorList) {
                     if (monitor.getStateID() == ApplicationConfig.CurrentFloorType) {
-                        MoveInsideActivity.this.currentFloorTextView
+                        CallInsideActivity.this.currentFloorTextView
                                 .setText(String.valueOf(ParseSerialsUtils.getIntFromBytes(monitor.getReceived())));
                     } else {
-                        Log.v("SyncCallStatus", monitor.getName() + SerialUtility.byte2HexStr(monitor.getReceived()));
                         boolean[] booleanArray = ParseSerialsUtils.getBooleanValueArray(new byte[]{
                                 monitor.getReceived()[5]
                         });
@@ -653,10 +653,10 @@ public class MoveInsideActivity extends Activity implements Runnable {
                         }
                     }
                 }
-                moveSidePagerAdapter.updateCurrentCalledFloor(calledFloorList);
+                callFloorPagerAdapter.updateCurrentCalledFloor(calledFloorList);
             }
-            MoveInsideActivity.this.currentTask = GET_CALL_STATUS;
-            MoveInsideActivity.this.isSyncing = false;
+            CallInsideActivity.this.currentTask = GET_CALL_STATUS;
+            CallInsideActivity.this.isSyncing = false;
         }
 
         @Override

@@ -10,14 +10,22 @@ import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.*;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.EditText;
+import android.widget.Filter;
+import android.widget.Filterable;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.models.SpecialDevice;
 import com.inovance.elevatorcontrol.models.Vendor;
-import com.inovance.elevatorcontrol.web.WebApi;
-import com.inovance.elevatorcontrol.web.WebApi.OnGetResultListener;
-import com.inovance.elevatorcontrol.web.WebApi.OnRequestFailureListener;
+import com.inovance.elevatorcontrol.web.WebInterface;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +36,7 @@ import java.util.List;
  * Date 14-6-7
  * Time 下午9:59
  */
-public class SpecialApplyForm extends LinearLayout implements OnGetResultListener, OnRequestFailureListener {
+public class SpecialApplyForm extends LinearLayout implements WebInterface.OnRequestListener {
 
     private static final int CountDownFinished = 1000;
 
@@ -212,9 +220,8 @@ public class SpecialApplyForm extends LinearLayout implements OnGetResultListene
     private void submitApply() {
         String bluetoothAddress = BluetoothAdapter.getDefaultAdapter().getAddress();
         int deviceID = mCurrentDeviceList.get(deviceListSpinner.getSelectedItemPosition()).getId();
-        WebApi.getInstance().setOnResultListener(this);
-        WebApi.getInstance().setOnFailureListener(this);
-        WebApi.getInstance().applySpecialFirmware(getContext(), bluetoothAddress, deviceID, remark.getText().toString());
+        WebInterface.getInstance().setOnRequestListener(this);
+        WebInterface.getInstance().applySpecialFirmware(getContext(), bluetoothAddress, deviceID, remark.getText().toString());
     }
 
     @Override

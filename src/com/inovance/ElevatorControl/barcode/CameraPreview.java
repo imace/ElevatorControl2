@@ -6,7 +6,11 @@ import android.hardware.Camera;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.*;
+import android.view.Display;
+import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.view.WindowManager;
 
 import java.util.List;
 
@@ -187,10 +191,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             }
             mAutoFocus = state;
             if (mAutoFocus) {
-                Log.v(TAG, "Starting autofocus");
                 mCamera.autoFocus(autoFocusCB);
             } else {
-                Log.v(TAG, "Cancelling autofocus");
                 mCamera.cancelAutoFocus();
             }
         }

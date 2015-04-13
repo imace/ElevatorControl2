@@ -1,15 +1,18 @@
 package com.inovance.elevatorcontrol.models;
 
 import android.annotation.SuppressLint;
+
 import com.inovance.bluetoothtool.SerialUtility;
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
 import com.mobsandgeeks.adapters.InstantText;
+
 import net.tsz.afinal.annotation.sqlite.Id;
 import net.tsz.afinal.annotation.sqlite.ManyToOne;
 import net.tsz.afinal.annotation.sqlite.Table;
 import net.tsz.afinal.annotation.sqlite.Transient;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONStringer;

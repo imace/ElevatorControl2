@@ -3,7 +3,6 @@ package com.inovance.elevatorcontrol.handlers;
 import android.app.Activity;
 import android.os.Message;
 
-import com.inovance.bluetoothtool.BluetoothHandler;
 import com.inovance.elevatorcontrol.activities.ParameterDetailActivity;
 import com.inovance.elevatorcontrol.models.ObjectListHolder;
 import com.inovance.elevatorcontrol.models.ParameterSettings;
@@ -13,7 +12,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class ParameterDetailHandler extends BluetoothHandler {
+public class ParameterDetailHandler extends UnlockHandler {
 
     public int sendCount = 0;
 

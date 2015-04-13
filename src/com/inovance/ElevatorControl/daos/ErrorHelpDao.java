@@ -1,9 +1,11 @@
 package com.inovance.elevatorcontrol.daos;
 
 import android.content.Context;
+
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
 import com.inovance.elevatorcontrol.models.ErrorHelp;
+
 import net.tsz.afinal.FinalDb;
 
 import java.util.List;

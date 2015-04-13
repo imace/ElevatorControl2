@@ -20,6 +20,7 @@ import android.content.res.TypedArray;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.widget.TextView;
+
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.R.styleable;
 

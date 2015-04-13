@@ -8,18 +8,21 @@ import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import butterknife.InjectView;
-import butterknife.Views;
+
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.models.SpecialDevice;
-import com.inovance.elevatorcontrol.web.WebApi;
+import com.inovance.elevatorcontrol.web.WebInterface;
 import com.mobsandgeeks.adapters.InstantAdapter;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import butterknife.InjectView;
+import butterknife.Views;
 
 /**
  * Created by IntelliJ IDEA.
@@ -67,7 +70,7 @@ public class SelectDeviceTypeActivity extends Activity {
      * 取得设备列表
      */
     private void getDeviceList() {
-        WebApi.getInstance().setOnResultListener(new WebApi.OnGetResultListener() {
+        WebInterface.getInstance().setOnRequestListener(new WebInterface.OnRequestListener() {
             @Override
             public void onResult(String tag, String responseString) {
                 try {
@@ -89,14 +92,13 @@ public class SelectDeviceTypeActivity extends Activity {
                     e.printStackTrace();
                 }
             }
-        });
-        WebApi.getInstance().setOnFailureListener(new WebApi.OnRequestFailureListener() {
+
             @Override
             public void onFailure(int statusCode, Throwable throwable) {
 
             }
         });
-        WebApi.getInstance().getNormalDeviceList(this);
+        WebInterface.getInstance().getNormalDeviceList(this);
     }
 
     @Override

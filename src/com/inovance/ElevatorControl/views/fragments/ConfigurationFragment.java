@@ -12,9 +12,15 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
+
 import com.inovance.bluetoothtool.BluetoothTool;
 import com.inovance.elevatorcontrol.R;
-import com.inovance.elevatorcontrol.activities.*;
+import com.inovance.elevatorcontrol.activities.CallInsideActivity;
+import com.inovance.elevatorcontrol.activities.CallOutsideActivity;
+import com.inovance.elevatorcontrol.activities.ConfigurationActivity;
+import com.inovance.elevatorcontrol.activities.ParameterDetailActivity;
+import com.inovance.elevatorcontrol.activities.ParameterDownloadActivity;
+import com.inovance.elevatorcontrol.activities.ParameterUploadActivity;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.daos.ParameterGroupSettingsDao;
 import com.inovance.elevatorcontrol.models.MoveInsideOutside;
@@ -129,7 +135,7 @@ public class ConfigurationFragment extends Fragment {
                     /*
                     if (monitor.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[2] ||
                             monitor.getDescriptionType() == ApplicationConfig.DESCRIPTION_TYPE[3]) {
-                        AlertDialog dialog = CustomDialog.terminalDetailDialog(getActivity(), monitor).create();
+                        AlertDialog dialog = UtilsDialog.terminalDetailDialog(getActivity(), monitor).create();
                         dialog.show();
                     }
                     */
@@ -199,13 +205,13 @@ public class ConfigurationFragment extends Fragment {
                         case 0: {
                             ConfigurationFragment.this.getActivity().startActivity(
                                     new Intent(ConfigurationFragment.this.getActivity(),
-                                            MoveInsideActivity.class));
+                                            CallInsideActivity.class));
                         }
                         break;
                         case 1: {
                             ConfigurationFragment.this.getActivity().startActivity(
                                     new Intent(ConfigurationFragment.this.getActivity(),
-                                            MoveOutsideActivity.class));
+                                            CallOutsideActivity.class));
                         }
                         break;
                     }
@@ -244,7 +250,7 @@ public class ConfigurationFragment extends Fragment {
                             final ConfigurationActivity activity = (ConfigurationActivity)
                                     ConfigurationFragment.this.getActivity();
                             AlertDialog.Builder builder = new AlertDialog.Builder(activity,
-                                    R.style.CustomDialogStyle)
+                                    R.style.GlobalDialogStyle)
                                     .setTitle(R.string.confirm_restore_title)
                                     .setMessage(R.string.confirm_restore_message)
                                     .setNegativeButton(R.string.dialog_btn_cancel, null)

@@ -7,11 +7,22 @@ import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.util.AttributeSet;
-import com.google.zxing.*;
+
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.DecodeHintType;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.PlanarYUVLuminanceSource;
+import com.google.zxing.ReaderException;
+import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
 
 import java.io.ByteArrayOutputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 
 public class ZXingScannerView extends BarcodeScannerView {
 
@@ -111,7 +122,7 @@ public class ZXingScannerView extends BarcodeScannerView {
             } catch (NullPointerException npe) {
                 // This is terrible
             } catch (ArrayIndexOutOfBoundsException aoe) {
-
+                aoe.printStackTrace();
             } finally {
                 mMultiFormatReader.reset();
             }
@@ -143,6 +154,7 @@ public class ZXingScannerView extends BarcodeScannerView {
             source = new PlanarYUVLuminanceSource(data, width, height, rect.left, rect.top,
                     rect.width(), rect.height(), false);
         } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return source;

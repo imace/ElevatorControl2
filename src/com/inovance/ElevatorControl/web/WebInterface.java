@@ -7,6 +7,7 @@ import android.util.Log;
 import android.util.Xml;
 import android.widget.Toast;
 
+import com.inovance.bluetoothtool.BuildConfig;
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.cache.LruCacheTool;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
@@ -33,57 +34,42 @@ import java.net.URLEncoder;
  * Date: 14-4-10.
  * Time: 9:20.
  */
-public class WebApi {
+public class WebInterface {
 
-    private static final String TAG = WebApi.class.getSimpleName();
+    private static final String TAG = WebInterface.class.getSimpleName();
 
     private static final String STRING_TAG = "string";
 
     private static final String BASE64_TAG = "base64Binary";
 
-    private static final int RequestTimeout = 4000;
+    private static final int RequestTimeout = 3000;
 
-    /**
-     * 请求失败
-     */
-    public static interface OnRequestFailureListener {
+    public static interface OnRequestListener {
+        void onResult(String tag, String responseString);
+
         void onFailure(int statusCode, Throwable throwable);
     }
 
-    /**
-     * 请求成功
-     */
-    public static interface OnGetResultListener {
-        void onResult(String tag, String responseString);
-    }
-
-    private static WebApi instance = new WebApi();
+    private static WebInterface instance = new WebInterface();
 
     private AsyncHttpClient client = new AsyncHttpClient();
 
-    private OnRequestFailureListener onFailureListener;
+    private OnRequestListener onRequestListener;
 
-    private OnGetResultListener onResultListener;
-
-    public void setOnResultListener(OnGetResultListener onResultListener) {
-        this.onResultListener = onResultListener;
-    }
-
-    public void setOnFailureListener(OnRequestFailureListener onFailureListener) {
-        this.onFailureListener = onFailureListener;
+    public void setOnRequestListener(OnRequestListener listener) {
+        onRequestListener = listener;
     }
 
     public void removeListener() {
-        this.onResultListener = null;
-        this.onFailureListener = null;
+        onRequestListener = null;
     }
 
-    public static WebApi getInstance() {
+    public static WebInterface getInstance() {
         instance.client.setTimeout(RequestTimeout);
         return instance;
     }
 
-    private WebApi() {
+    private WebInterface() {
 
     }
 
@@ -112,8 +98,8 @@ public class WebApi {
                         new ResponseHandler() {
                             @Override
                             public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-                                if (onResultListener != null) {
-                                    onResultListener.onResult(ApplicationConfig.RegisterUser,
+                                if (onRequestListener != null) {
+                                    onRequestListener.onResult(ApplicationConfig.RegisterUser,
                                             getResponseString(response, STRING_TAG));
                                 }
                             }
@@ -153,7 +139,6 @@ public class WebApi {
                 params = params.replace("{param4}", email);
                 params = params.replace("{param5}", URLEncoder.encode(remark, "UTF-8"));
                 params = params.replace("{param6}", bluetoothAddress);
-                Log.v("registerInternalUser", params);
                 HttpEntity entity = new StringEntity(params);
                 client.post(context,
                         postURL,
@@ -162,8 +147,8 @@ public class WebApi {
                         new ResponseHandler() {
                             @Override
                             public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-                                if (onResultListener != null) {
-                                    onResultListener.onResult(ApplicationConfig.RegisterInternalUser,
+                                if (onRequestListener != null) {
+                                    onRequestListener.onResult(ApplicationConfig.RegisterInternalUser,
                                             getResponseString(response, STRING_TAG));
                                 }
                             }
@@ -184,10 +169,10 @@ public class WebApi {
     public void verifyUser(Context context, String bluetoothAddress) {
         if (ApplicationConfig.IsInternalVersion) {
             String requestURL = ApplicationConfig.APIUri + ApplicationConfig.VerifyInternalUser + bluetoothAddress;
-            startGetRequest(context, requestURL, ApplicationConfig.VerifyInternalUser, false);
+            startGetRequest(context, requestURL, ApplicationConfig.VerifyInternalUser, true);
         } else {
             String requestURL = ApplicationConfig.APIUri + ApplicationConfig.VerifyUser + bluetoothAddress;
-            startGetRequest(context, requestURL, ApplicationConfig.VerifyUser, false);
+            startGetRequest(context, requestURL, ApplicationConfig.VerifyUser, true);
         }
     }
 
@@ -278,12 +263,11 @@ public class WebApi {
      */
     public void getSpecialDeviceCodeList(Context context, String bluetoothAddress) {
         String requestURL = ApplicationConfig.APIUri + ApplicationConfig.GetSpecialDeviceCodeList + bluetoothAddress;
-        Log.v(TAG, requestURL);
         startGetRequest(context, requestURL, ApplicationConfig.GetSpecialDeviceCodeList, true);
     }
 
     /**
-     * 取得所有设备列表
+     * 取得所有标准设备列表
      */
     public void getNormalDeviceList(Context context) {
         String requestURL = ApplicationConfig.APIUri + ApplicationConfig.GetNormalDeviceList;
@@ -296,18 +280,6 @@ public class WebApi {
     public void getVendorList(Context context) {
         String requestURL = ApplicationConfig.APIUri + ApplicationConfig.GetVendorList;
         startGetRequest(context, requestURL, ApplicationConfig.GetVendorList, true);
-    }
-
-    /**
-     * 根据厂商ID获得该厂商的所有设备
-     *
-     * @param vendorID 厂商ID
-     */
-    public void getDeviceListByVendorID(Context context, String vendorID) {
-        String requestURL = ApplicationConfig.APIUri
-                + ApplicationConfig.GetDeviceListByVendorID
-                + vendorID;
-        startGetRequest(context, requestURL, ApplicationConfig.GetDeviceListByVendorID, true);
     }
 
     /**
@@ -343,8 +315,8 @@ public class WebApi {
                         new ResponseHandler() {
                             @Override
                             public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-                                if (onResultListener != null) {
-                                    onResultListener.onResult(ApplicationConfig.ApplyFirmwareApplication,
+                                if (onRequestListener != null) {
+                                    onRequestListener.onResult(ApplicationConfig.ApplyFirmwareApplication,
                                             getResponseString(response, STRING_TAG));
                                 }
                             }
@@ -391,8 +363,8 @@ public class WebApi {
                         new ResponseHandler() {
                             @Override
                             public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-                                if (onResultListener != null) {
-                                    onResultListener.onResult(ApplicationConfig.ApplySpecialDevicePermission,
+                                if (onRequestListener != null) {
+                                    onRequestListener.onResult(ApplicationConfig.ApplySpecialDevicePermission,
                                             getResponseString(response, STRING_TAG));
                                 }
                             }
@@ -429,8 +401,8 @@ public class WebApi {
                         new ResponseHandler() {
                             @Override
                             public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-                                if (onResultListener != null) {
-                                    onResultListener.onResult(ApplicationConfig.ApplySpecialFirmwareApplication,
+                                if (onRequestListener != null) {
+                                    onRequestListener.onResult(ApplicationConfig.ApplySpecialFirmwareApplication,
                                             getResponseString(response, STRING_TAG));
                                 }
                             }
@@ -491,88 +463,14 @@ public class WebApi {
             client.get(requestURL, new ResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-                    if (onResultListener != null) {
-                        onResultListener.onResult(ApplicationConfig.DownloadFirmware,
-                                getResponseString(response, BASE64_TAG));
+                    if (onRequestListener != null) {
+                        onRequestListener.onResult(ApplicationConfig.DownloadFirmware, getResponseString(response, BASE64_TAG));
                     }
                 }
             });
         } else {
             alertUserNetworkNotAvailable(context);
         }
-    }
-
-    /**
-     * 发送远程协助文件
-     * 返回值：成功返回True，失败返回False
-     *
-     * @param context    Context
-     * @param from       发送者电话号码
-     * @param to         接受者电话号码
-     * @param fileStream 发送的文件流
-     * @param fileName   发送的完整文件名
-     * @param type       发送的文件类型(0文本,1参数,2照片,3视频,4音频)
-     * @param title      标题
-     */
-    public void sendChatMessage(Context context, String from, String to, String fileStream, String fileName, int type, String title) {
-        if (isNetworkAvailable(context)) {
-            String postURL = ApplicationConfig.APIUri + ApplicationConfig.SendChatMessage;
-            String params = "FromNum={param0}&ToNum={param1}&fs={param2}&FileName={param3}&Type={param4}&title={param5}";
-            params = params.replace("{param0}", from);
-            params = params.replace("{param1}", to);
-            params = params.replace("{param2}", fileStream);
-            try {
-                params = params.replace("{param3}", URLEncoder.encode(fileName, "UTF-8"));
-                params = params.replace("{param4}", String.valueOf(type));
-                params = params.replace("{param5}", URLEncoder.encode(title, "UTF-8"));
-                HttpEntity entity = new StringEntity(params);
-                client.post(context,
-                        postURL,
-                        entity,
-                        "application/x-www-form-urlencoded",
-                        new ResponseHandler() {
-                            @Override
-                            public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-                                if (onResultListener != null) {
-                                    onResultListener.onResult(ApplicationConfig.SendChatMessage,
-                                            getResponseString(response, STRING_TAG));
-                                }
-                            }
-                        });
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-        } else {
-            alertUserNetworkNotAvailable(context);
-        }
-    }
-
-    /**
-     * 获得该号码所有发送的信息列表
-     * 返回值：返回文件列表
-     *
-     * @param context     Context
-     * @param phoneNumber 手机号码
-     */
-    public void getSendChatMessage(Context context, String phoneNumber) {
-        String requestURL = ApplicationConfig.APIUri
-                + ApplicationConfig.GetSendChatMessage
-                + phoneNumber;
-        startGetRequest(context, requestURL, ApplicationConfig.GetSendChatMessage, false);
-    }
-
-    /**
-     * 获得该号码所有收到的信息列表
-     * 返回值：返回文件列表
-     *
-     * @param context     Context
-     * @param phoneNumber 手机号码
-     */
-    public void getReceiveChatMessage(Context context, String phoneNumber) {
-        String requestURL = ApplicationConfig.APIUri
-                + ApplicationConfig.GetReceiveChatMessage
-                + phoneNumber;
-        startGetRequest(context, requestURL, ApplicationConfig.GetReceiveChatMessage, false);
     }
 
     /**
@@ -587,7 +485,6 @@ public class WebApi {
         String requestURL = ApplicationConfig.APIUri + ApplicationConfig.GetChatMessage;
         requestURL = requestURL.replace("{param0}", phoneNumber);
         requestURL = requestURL.replace("{param1}", String.valueOf(timestamp));
-        Log.v(TAG, requestURL);
         startGetRequest(context, requestURL, ApplicationConfig.GetChatMessage, false);
     }
 
@@ -605,14 +502,16 @@ public class WebApi {
      * @param cached Cached
      */
     private void startGetRequest(Context context, final String url, final String tag, final boolean cached) {
-        Log.v(TAG, url);
+        if (BuildConfig.DEBUG) {
+            Log.v(TAG, "GET: " + url);
+        }
         boolean needFetchRemote;
         if (cached) {
             String cacheString = LruCacheTool.getInstance().getCache(url);
             if (cacheString != null) {
                 needFetchRemote = false;
-                if (onResultListener != null) {
-                    onResultListener.onResult(tag, cacheString);
+                if (onRequestListener != null) {
+                    onRequestListener.onResult(tag, cacheString);
                 }
             } else {
                 needFetchRemote = true;
@@ -629,8 +528,8 @@ public class WebApi {
                         if (cached) {
                             LruCacheTool.getInstance().putCache(url, responseString);
                         }
-                        if (onResultListener != null) {
-                            onResultListener.onResult(tag, responseString);
+                        if (onRequestListener != null) {
+                            onRequestListener.onResult(tag, responseString);
                         }
                     }
                 });
@@ -713,8 +612,11 @@ public class WebApi {
 
         @Override
         public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable error) {
-            if (onFailureListener != null) {
-                onFailureListener.onFailure(statusCode, error);
+            if (BuildConfig.DEBUG) {
+                Log.v(TAG, statusCode + "-" + error.getLocalizedMessage());
+            }
+            if (onRequestListener != null) {
+                onRequestListener.onFailure(statusCode, error);
             }
         }
 

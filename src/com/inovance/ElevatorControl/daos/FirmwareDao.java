@@ -1,8 +1,10 @@
 package com.inovance.elevatorcontrol.daos;
 
 import android.content.Context;
+
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.models.Firmware;
+
 import net.tsz.afinal.FinalDb;
 
 import java.util.List;

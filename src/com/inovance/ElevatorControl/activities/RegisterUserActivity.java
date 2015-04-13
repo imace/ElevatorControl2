@@ -8,16 +8,23 @@ import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.*;
-import butterknife.InjectView;
-import butterknife.Views;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.models.User;
 import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
-import com.inovance.elevatorcontrol.web.WebApi;
+import com.inovance.elevatorcontrol.web.WebInterface;
+
 import org.json.JSONArray;
 import org.json.JSONException;
+
+import butterknife.InjectView;
+import butterknife.Views;
 
 /**
  * Created by IntelliJ IDEA.
@@ -94,14 +101,14 @@ public class RegisterUserActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        WebApi.getInstance().removeListener();
+        WebInterface.getInstance().removeListener();
         overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        WebApi.getInstance().removeListener();
+        WebInterface.getInstance().removeListener();
     }
 
     /**
@@ -119,7 +126,7 @@ public class RegisterUserActivity extends Activity {
             user.setEmail(email.getText().toString());
             BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
             user.setBluetoothAddress(bluetoothAdapter.getAddress());
-            WebApi.getInstance().setOnResultListener(new WebApi.OnGetResultListener() {
+            WebInterface.getInstance().setOnRequestListener(new WebInterface.OnRequestListener() {
                 @Override
                 public void onResult(String tag, String responseString) {
                     if (tag.equalsIgnoreCase(ApplicationConfig.RegisterUser)) {
@@ -138,8 +145,7 @@ public class RegisterUserActivity extends Activity {
                         }
                     }
                 }
-            });
-            WebApi.getInstance().setOnFailureListener(new WebApi.OnRequestFailureListener() {
+
                 @Override
                 public void onFailure(int statusCode, Throwable throwable) {
                     Toast.makeText(RegisterUserActivity.this, R.string.register_failed_text, Toast.LENGTH_SHORT)
@@ -148,7 +154,7 @@ public class RegisterUserActivity extends Activity {
                     submitTextView.setVisibility(View.VISIBLE);
                 }
             });
-            WebApi.getInstance().registerUser(this, user);
+            WebInterface.getInstance().registerUser(this, user);
         }
     }
 

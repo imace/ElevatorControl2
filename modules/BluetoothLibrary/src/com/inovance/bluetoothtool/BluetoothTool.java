@@ -33,6 +33,9 @@ public class BluetoothTool implements Runnable {
      */
     private BluetoothHandler handler;
 
+    /**
+     * CRC 校验值
+     */
     public int crcValue = CRCValueNone;
 
     public static final int CRCValueNone = -1;
@@ -103,6 +106,29 @@ public class BluetoothTool implements Runnable {
      */
     private static final int ReadTimeout = 50;
 
+    public boolean isLocked() {
+        return isLocked;
+    }
+
+    /**
+     * 设备是否被锁定
+     */
+    private boolean isLocked;
+
+    public void setUnlocking(boolean unlocking) {
+        this.unlocking = unlocking;
+    }
+
+    public void setUnlocked(){
+        this.unlocking = false;
+        this.isLocked = false;
+    }
+
+    /**
+     * 保持解锁状态
+     */
+    private boolean unlocking;
+
     /**
      * Init with ApplicationContext
      *
@@ -111,6 +137,8 @@ public class BluetoothTool implements Runnable {
     public void init(Context Context) {
         instance.context = Context;
         instance.hasSelectDeviceType = false;
+        instance.isLocked = false;
+        instance.unlocking = false;
     }
 
     public static BluetoothTool getInstance() {
@@ -198,8 +226,10 @@ public class BluetoothTool implements Runnable {
                     if (null != handler)
                         handler.sendMessage(msgError);
                 }
+                if (BuildConfig.DEBUG) {
+                    Log.v(TAG, "SEND: " + SerialUtility.byte2HexStr(sendBuffer));
+                }
                 OutputStream outputStream = bluetoothSocket.getOutputStream();
-                Log.v(TAG, "SendData + " + SerialUtility.byte2HexStr(sendBuffer));
 
                 outputStream.write(sendBuffer);
                 outputStream.flush();
@@ -231,6 +261,35 @@ public class BluetoothTool implements Runnable {
                         buffer.addAll(Bytes.asList(temp));
                     }
                     byte[] result = Bytes.toArray(buffer);
+                    String value = SerialUtility.byte2HexStr(result);
+                    if (value.contains("8001") && result.length == 8) {
+                        communication.setReceivedBuffer(result);
+                        communication.afterReceive();
+                        // 设备锁定
+                        if (value.contains("80010007")) {
+                            isLocked = true;
+                            Message message = new Message();
+                            message.what = BluetoothState.onDeviceLocked;
+                            message.obj = communication.onParse();
+                            if (handler != null) {
+                                handler.sendMessage(message);
+                                if (BuildConfig.DEBUG) {
+                                    Log.v(TAG, "RECEIVE: " + SerialUtility.byte2HexStr(result));
+                                }
+                            }
+                        } else {
+                            Message message = new Message();
+                            message.what = BluetoothState.onTalkReceive;
+                            message.obj = communication.onParse();
+                            if (handler != null) {
+                                handler.sendMessage(message);
+                                if (BuildConfig.DEBUG) {
+                                    Log.v(TAG, "RECEIVE: " + SerialUtility.byte2HexStr(result));
+                                }
+                            }
+                        }
+                        break;
+                    }
                     if (result.length == expectLength) {
                         communication.setReceivedBuffer(result);
                         communication.afterReceive();
@@ -239,18 +298,9 @@ public class BluetoothTool implements Runnable {
                         mg.obj = communication.onParse();
                         if (handler != null) {
                             handler.sendMessage(mg);
-                        }
-                        break;
-                    }
-                    String value = SerialUtility.byte2HexStr(result);
-                    if (value.contains("8001") && result.length == 8) {
-                        communication.setReceivedBuffer(result);
-                        communication.afterReceive();
-                        Message mg = new Message();
-                        mg.what = BluetoothState.onTalkReceive;
-                        mg.obj = communication.onParse();
-                        if (handler != null) {
-                            handler.sendMessage(mg);
+                            if (BuildConfig.DEBUG) {
+                                Log.v(TAG, "RECEIVE: " + SerialUtility.byte2HexStr(result));
+                            }
                         }
                         break;
                     }
@@ -451,12 +501,86 @@ public class BluetoothTool implements Runnable {
     }
 
     /**
+     * 蓝牙搜索 Handler
+     *
+     * @param handler BluetoothHandler
+     * @return bluetoothtool
+     */
+    public BluetoothTool setEventHandler(BluetoothHandler handler) {
+        this.abortTalking = true;
+        this.eventHandler = handler;
+        interrupt();
+        return this;
+    }
+
+    /**
+     * 当转换handler的时候应该终止串口通信
+     *
+     * @param handler BluetoothHandler
+     * @return bluetoothtool
+     */
+    public BluetoothTool setHandler(BluetoothHandler handler) {
+        if (!unlocking && !isLocked) {
+            if (BuildConfig.DEBUG){
+                Log.v(TAG, "Set handler");
+            }
+            Message msg = new Message();
+            msg.what = BluetoothState.onHandlerChanged;
+            msg.obj = this.handler;
+            if (null != this.handler) {
+                this.handler.sendMessage(msg);
+            }
+            this.abortTalking = true;
+            this.handler = handler;
+            interrupt();
+        }
+        return this;
+    }
+
+    /**
+     * 当设置communication的时候应该允许串口通信
+     *
+     * @param talk BluetoothTalk[]
+     * @return BluetoothTool
+     */
+    public BluetoothTool setCommunications(final BluetoothTalk[] talk) {
+        if (!unlocking && !isLocked) {
+            this.abortTalking = false;
+            this.communications = talk;
+        }
+        return this;
+    }
+
+    /**
      * 发送蓝牙指令
      *
-     * @return bluetoothtool Instance
+     * @return BluetoothTool Instance
      */
     public BluetoothTool startTask() {
-        abortTalking = false;
+        if (!unlocking && !isLocked) {
+            abortTalking = false;
+            pool.execute(this);
+        }
+        return this;
+    }
+
+    /**
+     * 解锁设备
+     *
+     * @param handler BluetoothHandler
+     * @param talk    BluetoothTalk[]
+     * @return BluetoothTool
+     */
+    public BluetoothTool unlock(BluetoothHandler handler, BluetoothTalk[] talk) {
+        this.unlocking = true;
+
+        this.abortTalking = true;
+        this.handler = handler;
+        interrupt();
+
+        this.abortTalking = false;
+        this.communications = talk;
+
         pool.execute(this);
         return this;
     }
@@ -478,7 +602,7 @@ public class BluetoothTool implements Runnable {
                     handler.sendEmptyMessage(BluetoothState.onMultiTalkBegin);
                 }
                 if (communications != null) {
-                    // =========================== Lenovo a850 Not work =================== //
+                    // =========================== Lenovo a850 not work =================== //
                     try {
                         InputStream inputStream = bluetoothSocket.getInputStream();
                         while (true) {
@@ -500,7 +624,7 @@ public class BluetoothTool implements Runnable {
                             handler.sendEmptyMessage(BluetoothState.onBluetoothConnectException);
                         }
                     }
-                    // =========================== Lenovo a850 =================== //
+                    // =========================== Lenovo a850 not work =================== //
                     for (BluetoothTalk content : communications) {
                         if (abortTalking) {
                             break;
@@ -542,50 +666,6 @@ public class BluetoothTool implements Runnable {
 
     public Handler getHandler() {
         return handler;
-    }
-
-    /**
-     * 当转换handler的时候应该终止串口通信
-     *
-     * @param handler BluetoothHandler
-     * @return bluetoothtool
-     */
-    public BluetoothTool setHandler(BluetoothHandler handler) {
-        Message msg = new Message();
-        msg.what = BluetoothState.onHandlerChanged;
-        msg.obj = this.handler;
-        if (null != this.handler) {
-            this.handler.sendMessage(msg);
-        }
-        this.abortTalking = true;
-        this.handler = handler;
-        interrupt();
-        return this;
-    }
-
-    /**
-     * 蓝牙搜索 Handler
-     *
-     * @param handler BluetoothHandler
-     * @return bluetoothtool
-     */
-    public BluetoothTool setEventHandler(BluetoothHandler handler) {
-        this.abortTalking = true;
-        this.eventHandler = handler;
-        interrupt();
-        return this;
-    }
-
-    /**
-     * 当设置communication的时候应该允许串口通信
-     *
-     * @param talk BluetoothTalk[]
-     * @return bluetoothtool
-     */
-    public BluetoothTool setCommunications(final BluetoothTalk[] talk) {
-        this.abortTalking = false;
-        this.communications = talk;
-        return this;
     }
 
     /**

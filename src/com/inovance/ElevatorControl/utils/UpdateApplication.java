@@ -10,8 +10,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -21,7 +19,7 @@ import android.widget.Toast;
 import com.inovance.bluetoothtool.BluetoothTool;
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
-import com.inovance.elevatorcontrol.web.WebApi;
+import com.inovance.elevatorcontrol.web.WebInterface;
 
 import net.tsz.afinal.core.AsyncTask;
 
@@ -117,36 +115,13 @@ public class UpdateApplication {
         this.mActivity = activity;
     }
 
-    /**
-     * 检查网络连接是否可用
-     *
-     * @param context Context
-     * @return Available Status
-     */
-    public boolean isNetworkAvailable() {
-        ConnectivityManager connectivity = (ConnectivityManager) mContext
-                .getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (connectivity == null) {
-            return false;
-        } else {
-            NetworkInfo[] info = connectivity.getAllNetworkInfo();
-            if (info != null) {
-                for (NetworkInfo anInfo : info) {
-                    if (anInfo.getState() == NetworkInfo.State.CONNECTED) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
 
     /**
      * 检查是否有新版本
      */
     public void checkUpdate() {
         if (mActivity != null) {
-            if (isNetworkAvailable()) {
+            if (WebInterface.isNetworkAvailable(mContext)) {
                 startCheckRemoteLastVersion();
             } else {
                 showNoNetworkDialog();
@@ -155,7 +130,7 @@ public class UpdateApplication {
     }
 
     private void startCheckRemoteLastVersion() {
-        WebApi.getInstance().setOnResultListener(new WebApi.OnGetResultListener() {
+        WebInterface.getInstance().setOnRequestListener(new WebInterface.OnRequestListener() {
             @Override
             public void onResult(String tag, String responseString) {
                 boolean needUpdate = false;
@@ -191,25 +166,24 @@ public class UpdateApplication {
                     }
                 }
             }
-        });
-        WebApi.getInstance().setOnFailureListener(new WebApi.OnRequestFailureListener() {
+
             @Override
             public void onFailure(int statusCode, Throwable throwable) {
                 Toast.makeText(mActivity, R.string.server_error_text, Toast.LENGTH_SHORT).show();
             }
         });
-        WebApi.getInstance().getLastSoftwareVersion(mActivity);
+        WebInterface.getInstance().getLastSoftwareVersion(mActivity);
     }
 
     private void showNoNetworkDialog() {
         if (noNetworkDialog == null) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(mActivity, R.style.CustomDialogStyle)
+            AlertDialog.Builder builder = new AlertDialog.Builder(mActivity, R.style.GlobalDialogStyle)
                     .setTitle(R.string.no_network_title)
                     .setMessage(R.string.setting_network_message)
                     .setNegativeButton(R.string.exit_application_text, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            WebApi.getInstance().removeListener();
+                            WebInterface.getInstance().removeListener();
                             BluetoothTool.getInstance().kill();
                             if (mActivity != null) {
                                 mActivity.finish();
@@ -259,7 +233,7 @@ public class UpdateApplication {
                     .setNegativeButton(R.string.exit_application_text, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int id) {
-                            WebApi.getInstance().removeListener();
+                            WebInterface.getInstance().removeListener();
                             BluetoothTool.getInstance().kill();
                             if (mActivity != null) {
                                 mActivity.finish();
@@ -292,28 +266,6 @@ public class UpdateApplication {
             });
         }
     }
-
-    private static final int GetContentLength = 1;
-
-    /*
-    private Handler handler = new Handler() {
-
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case GetContentLength: {
-                    if (msg.obj instanceof Integer) {
-                        int length = (Integer) msg.obj;
-                        downloadProgressBar.setMax(length);
-                        totalLengthTextView.setText(ParseSerialsUtils.humanReadableByteCount(length));
-                    }
-                }
-                break;
-            }
-        }
-
-    };
-    */
 
     private void updateProgress(int total, int progress) {
         mBuilder.setProgress(total, progress, false);
@@ -435,7 +387,7 @@ public class UpdateApplication {
         return new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if (isNetworkAvailable()) {
+                if (WebInterface.isNetworkAvailable(context)) {
                     if (noNetworkDialog != null && isDialogShowing) {
                         noNetworkDialog.dismiss();
                         checkUpdate();

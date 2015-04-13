@@ -14,8 +14,7 @@ import android.widget.Button;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import butterknife.InjectView;
-import butterknife.Views;
+
 import com.inovance.bluetoothtool.BluetoothTool;
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.adapters.FirmwareManageAdapter;
@@ -24,7 +23,7 @@ import com.inovance.elevatorcontrol.daos.FirmwareDao;
 import com.inovance.elevatorcontrol.models.Firmware;
 import com.inovance.elevatorcontrol.utils.LogUtils;
 import com.inovance.elevatorcontrol.views.fragments.FirmwareManageFragment;
-import com.inovance.elevatorcontrol.web.WebApi;
+import com.inovance.elevatorcontrol.web.WebInterface;
 import com.inovance.elevatorprogram.IProgram;
 import com.inovance.elevatorprogram.MsgHandler;
 import com.viewpagerindicator.TabPageIndicator;
@@ -32,6 +31,9 @@ import com.viewpagerindicator.TabPageIndicator;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+
+import butterknife.InjectView;
+import butterknife.Views;
 
 /**
  * 固件管理
@@ -113,7 +115,7 @@ public class FirmwareManageActivity extends FragmentActivity {
         Views.inject(this);
         mFirmwareManageAdapter = new FirmwareManageAdapter(this);
         pager.setAdapter(mFirmwareManageAdapter);
-        pager.setOffscreenPageLimit(3);
+        pager.setOffscreenPageLimit(2);
         indicator.setViewPager(pager);
         burnHandler = new BurnHandler();
         indicator.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -129,12 +131,9 @@ public class FirmwareManageActivity extends FragmentActivity {
                 if (fragment != null) {
                     switch (pageIndex) {
                         case 0:
-                            fragment.loadFirmwareApplyView();
-                            break;
-                        case 1:
                             fragment.loadFirmwareDownloadView();
                             break;
-                        case 2:
+                        case 1:
                             fragment.loadFirmwareBurnView();
                             break;
                     }
@@ -156,7 +155,7 @@ public class FirmwareManageActivity extends FragmentActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        WebApi.getInstance().removeListener();
+        WebInterface.getInstance().removeListener();
     }
 
     /**

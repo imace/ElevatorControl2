@@ -9,7 +9,9 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import com.inovance.elevatorcontrol.R;
+
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;

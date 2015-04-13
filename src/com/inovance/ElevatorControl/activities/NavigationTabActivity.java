@@ -10,12 +10,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -23,32 +23,31 @@ import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.inovance.bluetoothtool.BluetoothHandler;
 import com.inovance.bluetoothtool.BluetoothTalk;
 import com.inovance.bluetoothtool.BluetoothTool;
-import com.inovance.bluetoothtool.BuildConfig;
 import com.inovance.bluetoothtool.SerialUtility;
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
 import com.inovance.elevatorcontrol.daos.DeviceDao;
-import com.inovance.elevatorcontrol.handlers.GlobalHandler;
+import com.inovance.elevatorcontrol.handlers.MessageHandler;
 import com.inovance.elevatorcontrol.handlers.SearchBluetoothHandler;
+import com.inovance.elevatorcontrol.handlers.UnlockHandler;
 import com.inovance.elevatorcontrol.models.CommunicationCode;
 import com.inovance.elevatorcontrol.models.Device;
 import com.inovance.elevatorcontrol.models.NormalDevice;
 import com.inovance.elevatorcontrol.models.SpecialDevice;
 import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
 import com.inovance.elevatorcontrol.views.customspinner.NoDefaultSpinner;
-import com.inovance.elevatorcontrol.views.dialogs.CustomDialog;
-import com.inovance.elevatorcontrol.web.WebApi;
-import com.inovance.elevatorcontrol.web.WebApi.OnGetResultListener;
-import com.inovance.elevatorcontrol.web.WebApi.OnRequestFailureListener;
+import com.inovance.elevatorcontrol.views.dialogs.UtilsDialog;
+import com.inovance.elevatorcontrol.web.WebInterface;
+import com.inovance.elevatorcontrol.window.CallFloorWindow;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.ref.WeakReference;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -64,7 +63,7 @@ import butterknife.Views;
  * TabActivity 导航
  */
 
-public class NavigationTabActivity extends TabActivity implements Runnable, OnGetResultListener, OnRequestFailureListener {
+public class NavigationTabActivity extends TabActivity implements Runnable, WebInterface.OnRequestListener, ParameterUpdateTool.OnCheckResultListener {
 
     private static final String TAG = NavigationTabActivity.class.getSimpleName();
 
@@ -142,6 +141,18 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
      */
     @InjectView(R.id.refresh_button_progress)
     ProgressBar refreshButtonProgress;
+
+    /**
+     * 连接状态指示
+     */
+    @InjectView(R.id.connect_status_view)
+    ImageButton connectStatusView;
+
+    /**
+     * 下拉菜单
+     */
+    @InjectView(R.id.call_floor_button)
+    ImageButton callFloorButton;
 
     /**
      * 故障分析 Tab Icon ImageView
@@ -229,26 +240,36 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
      */
     public boolean failedToConnectDevice = false;
 
-    private Handler messageHandler = new Handler() {
+    private int selectedOperationType = -1;
+
+    private static class RecogniseHandler extends Handler {
+
+        private final WeakReference<NavigationTabActivity> mActivity;
+
+        public RecogniseHandler(NavigationTabActivity activity) {
+            mActivity = new WeakReference<NavigationTabActivity>(activity);
+        }
+
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            if (isRunning) {
-                switch (msg.what) {
-                    case StartRecogniseDevice:
-                        Toast.makeText(NavigationTabActivity.this,
-                                R.string.recognise_device_wait_text,
-                                Toast.LENGTH_SHORT).show();
-                        break;
-                    case FailedRecogniseDevice:
-                        Toast.makeText(NavigationTabActivity.this,
-                                R.string.recognise_device_failed_text,
-                                Toast.LENGTH_SHORT).show();
-                        break;
+            NavigationTabActivity activity = mActivity.get();
+            if (activity != null) {
+                if (activity.isRunning) {
+                    switch (msg.what) {
+                        case StartRecogniseDevice:
+                            Toast.makeText(activity, R.string.recognise_device_wait_text, Toast.LENGTH_SHORT).show();
+                            break;
+                        case FailedRecogniseDevice:
+                            Toast.makeText(activity, R.string.recognise_device_failed_text, Toast.LENGTH_SHORT).show();
+                            break;
+                    }
                 }
             }
         }
-    };
+    }
+
+    private RecogniseHandler recogniseHandler;
 
     private ExecutorService pool = Executors.newSingleThreadExecutor();
 
@@ -258,8 +279,40 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
         setContentView(R.layout.activity_navigation_tab);
         Views.inject(this);
         initTabs();
+
+        recogniseHandler = new RecogniseHandler(this);
+
         deviceListSpinner.setBackgroundResource(R.drawable.custom_spinner_background);
         deviceListSpinner.setSpinnerItemLayout(R.layout.custom_white_spinner_item);
+        callFloorButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (BluetoothTool.getInstance().isPrepared()) {
+                    startActivity(new Intent(NavigationTabActivity.this, CallFloorWindow.class));
+                }
+            }
+        });
+
+        connectStatusView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (BluetoothTool.getInstance().isConnected()) {
+                    BluetoothDevice device = BluetoothTool.getInstance().connectedDevice;
+                    String message = device.getName() + "\n" + device.getAddress();
+                    AlertDialog.Builder builder = new AlertDialog.Builder(NavigationTabActivity.this, R.style.GlobalDialogStyle)
+                            .setTitle(R.string.bluetooth_address_text)
+                            .setMessage(message)
+                            .setPositiveButton(R.string.dialog_btn_ok, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                }
+                            });
+                    builder.create().show();
+                }
+            }
+        });
+
         searchBluetoothHandler = new SearchBluetoothHandler(this);
         getNormalDeviceTypeHandler = new GetNormalDeviceTypeHandler(this);
         getSpecialDeviceTypeHandler = new GetSpecialDeviceTypeHandler(this);
@@ -268,6 +321,9 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
             public void run() {
                 if (isRunning) {
                     if (!hasGetDeviceType) {
+                        if (BluetoothTool.getInstance().isLocked()) {
+                            return;
+                        }
                         if (currentTask == GET_NORMAL_DEVICE_TYPE) {
                             if (talkTime >= MaxRetryTime) {
                                 // 内部用户版本
@@ -339,18 +395,46 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
                 pool.execute(NavigationTabActivity.this);
             }
         });
-        GlobalHandler.getInstance(NavigationTabActivity.this);
+        MessageHandler.getInstance(NavigationTabActivity.this);
         overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
+    }
+
+    /**
+     * 更新蓝牙状态标识
+     */
+    public void updateConnectStatusUI() {
+        if (BluetoothTool.getInstance().isConnected()) {
+            connectStatusView.setImageResource(R.drawable.ic_bluetooth_connected);
+        } else {
+            connectStatusView.setImageResource(R.drawable.ic_bluetooth);
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        WebApi.getInstance().setOnResultListener(this);
-        WebApi.getInstance().setOnFailureListener(this);
-        WebApi.getInstance().getNormalDeviceList(this);
-        WebApi.getInstance().getSpecialDeviceList(this);
-        WebApi.getInstance().getSpecialDeviceCodeList(this, BluetoothAdapter.getDefaultAdapter().getAddress());
+
+        WebInterface.getInstance().setOnRequestListener(this);
+        WebInterface.getInstance().getNormalDeviceList(this);
+        WebInterface.getInstance().getSpecialDeviceList(this);
+        WebInterface.getInstance().getSpecialDeviceCodeList(this, BluetoothAdapter.getDefaultAdapter().getAddress());
+
+        ParameterUpdateTool.getInstance().setOnCheckResultListener(this);
+
+        retryConnectDevice();
+    }
+
+    /**
+     * 尝试重新连接设备
+     */
+    private void retryConnectDevice() {
+        if (BluetoothTool.getInstance().isConnected()
+                && !BluetoothTool.getInstance().isPrepared()
+                && !BluetoothTool.getInstance().isLocked()) {
+            currentTask = CONNECT_DEVICE;
+            failedToConnectDevice = false;
+            pool.execute(NavigationTabActivity.this);
+        }
     }
 
     /**
@@ -359,28 +443,35 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
      * 烧录 DSP
      */
     public void showSelectOperationDialog() {
-        String[] operationArray = getResources().getStringArray(R.array.device_operation_array);
-        AlertDialog.Builder builder = new AlertDialog.Builder(NavigationTabActivity.this);
-        builder.setTitle(R.string.choice_operation_title);
-        builder.setItems(operationArray, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                    case 0:
-                        // 识别设备
-                        startGetNormalDeviceTypeTask();
-                        break;
-                    case 1:
-                        // 跳转到程序烧录界面
-                        switchTab(3, 2);
-                        break;
+        if (selectedOperationType == 0) {
+            startGetNormalDeviceTypeTask();
+        } else {
+            String[] operationArray = getResources().getStringArray(R.array.device_operation_array);
+            AlertDialog.Builder builder = new AlertDialog.Builder(NavigationTabActivity.this);
+            builder.setTitle(R.string.choice_operation_title);
+            builder.setItems(operationArray, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    switch (which) {
+                        case 0:
+                            // 识别设备
+                            selectedOperationType = 0;
+                            startGetNormalDeviceTypeTask();
+                            break;
+                        case 1:
+                            // 跳转到程序烧录界面
+                            selectedOperationType = 1;
+                            // TODO Switch tab
+                            switchTab(3, 2);
+                            break;
+                    }
                 }
-            }
-        });
-        AlertDialog dialog = builder.create();
-        dialog.show();
-        dialog.setCancelable(false);
-        dialog.setCanceledOnTouchOutside(false);
+            });
+            AlertDialog dialog = builder.create();
+            dialog.show();
+            dialog.setCancelable(false);
+            dialog.setCanceledOnTouchOutside(false);
+        }
     }
 
     /**
@@ -392,7 +483,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
             talkTime = 0;
             currentTask = GET_NORMAL_DEVICE_TYPE;
             delayHandler.postDelayed(getDeviceTypeTask, LOOP_TIME);
-            messageHandler.sendEmptyMessage(StartRecogniseDevice);
+            recogniseHandler.sendEmptyMessage(StartRecogniseDevice);
         }
     }
 
@@ -414,7 +505,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
     @Override
     protected void onPause() {
         super.onPause();
-        WebApi.getInstance().removeListener();
+        WebInterface.getInstance().removeListener();
     }
 
     /**
@@ -532,7 +623,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
             if (getTabHost().getCurrentTab() != 2) {
                 getTabHost().setCurrentTab(2);
             } else {
-                CustomDialog.exitDialog(this).show();
+                UtilsDialog.exitDialog(this).show();
             }
             return false;
         }
@@ -731,8 +822,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
      *
      * @param type 1000/3000
      */
-    private void showNormalDeviceSelect(int type) {
-        Log.v(TAG, "Show select normal device dialog");
+    private void onGetNormalDeviceType(int type) {
         // 3000/3000+ 返回3000
         // 1000/1000+ 返回1000
         // ErrorCode && Other
@@ -763,12 +853,9 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
                 ParameterUpdateTool.getInstance().setNormalDevice(device);
                 String deviceName = ParameterUpdateTool.getInstance().getDeviceName();
                 // NICE 1000 / NICE 3000 设备提示用户选择同步异步
-                Log.v(TAG, deviceName);
                 if (deviceName.equals(ApplicationConfig.NormalDeviceType[0]) ||
                         deviceName.equals(ApplicationConfig.NormalDeviceType[2])) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(NavigationTabActivity.this);
-                    builder.setTitle(R.string.choice_device_sync_or_async_title);
-                    builder.setItems(R.array.choice_device_sync_or_async_option_array, new DialogInterface.OnClickListener() {
+                    showChooseSyncOrAsyncDialog(new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int position) {
                             // position == 0 同步状态
@@ -777,73 +864,69 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
                             ParameterUpdateTool.getInstance().selectDevice(NavigationTabActivity.this,
                                     device.getID(),
                                     device.getName(),
-                                    Device.NormalDevice,
-                                    new ParameterUpdateTool.OnCheckResultListener() {
-                                        @Override
-                                        public void onComplete() {
-                                            NavigationTabActivity.this.startHomeActivityStatusSyncTask();
-                                        }
-
-                                        @Override
-                                        public void onFailed(Throwable throwable) {
-                                            Device temp = DeviceDao.findByName(NavigationTabActivity.this,
-                                                    device.getName(),
-                                                    Device.NormalDevice);
-                                            if (temp != null) {
-                                                // 本地存在当前连接设备的参数
-                                                Toast.makeText(NavigationTabActivity.this,
-                                                        R.string.check_parameter_failed_use_local_parameter_message,
-                                                        Toast.LENGTH_SHORT).show();
-                                                // 使用本地保存的参数
-                                                NavigationTabActivity.this.startHomeActivityStatusSyncTask();
-                                            } else {
-                                                // 本地不存在当前连接设备的参数
-                                                Toast.makeText(NavigationTabActivity.this,
-                                                        R.string.check_parameter_failed_message,
-                                                        Toast.LENGTH_SHORT).show();
-                                            }
-                                        }
-                                    });
+                                    Device.NormalDevice);
                         }
                     });
-                    AlertDialog selectDialog = builder.create();
-                    selectDialog.show();
-                    selectDialog.setCancelable(false);
-                    selectDialog.setCanceledOnTouchOutside(false);
                 } else {
                     ParameterUpdateTool.getInstance().selectDevice(NavigationTabActivity.this,
                             device.getID(),
                             device.getName(),
-                            Device.NormalDevice,
-                            new ParameterUpdateTool.OnCheckResultListener() {
-                                @Override
-                                public void onComplete() {
-                                    NavigationTabActivity.this.startHomeActivityStatusSyncTask();
-                                }
-
-                                @Override
-                                public void onFailed(Throwable throwable) {
-                                    Device temp = DeviceDao.findByName(NavigationTabActivity.this,
-                                            device.getName(),
-                                            Device.NormalDevice);
-                                    if (temp != null) {
-                                        // 本地存在当前连接设备的参数
-                                        Toast.makeText(NavigationTabActivity.this,
-                                                R.string.check_parameter_failed_use_local_parameter_message,
-                                                Toast.LENGTH_SHORT).show();
-                                        // 使用本地保存的参数
-                                        NavigationTabActivity.this.startHomeActivityStatusSyncTask();
-                                    } else {
-                                        // 本地不存在当前连接设备的参数
-                                        Toast.makeText(NavigationTabActivity.this,
-                                                R.string.check_parameter_failed_message,
-                                                Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-                            });
+                            Device.NormalDevice);
                 }
             }
         });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);
+    }
+
+    /**
+     * 解析读取的非标设备类型
+     *
+     * @param code 通信码
+     */
+    private void onGetSpecialDeviceType(CommunicationCode code) {
+        for (final SpecialDevice device : specialDeviceList) {
+            if (code.getCode().equalsIgnoreCase(device.getCode())) {
+                BluetoothTool.getInstance().setHasSelectDeviceType(true);
+                // 检查专有设备功能码、状态码、故障帮助更新状态
+                ParameterUpdateTool.getInstance().setSpecialDevice(device);
+                // NICE 1000 / NICE 3000 设备提示用户选择同步异步
+                String deviceName = ParameterUpdateTool.getInstance().getDeviceName();
+                if (deviceName.equals(ApplicationConfig.NormalDeviceType[0]) ||
+                        deviceName.equals(ApplicationConfig.NormalDeviceType[2])) {
+                    showChooseSyncOrAsyncDialog(new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int position) {
+                            // position == 0 同步状态
+                            // position == 1 异步状态
+                            ParameterUpdateTool.getInstance().setSync(position == 0);
+                            ParameterUpdateTool.getInstance().selectDevice(NavigationTabActivity.this,
+                                    device.getId(),
+                                    device.getName(),
+                                    Device.SpecialDevice);
+                        }
+                    });
+                } else {
+                    ParameterUpdateTool.getInstance().selectDevice(NavigationTabActivity.this,
+                            device.getId(),
+                            device.getName(),
+                            Device.SpecialDevice);
+                }
+            }
+        }
+    }
+
+    /**
+     * 显示选择同步或者异步对话框
+     *
+     * @param listener DialogInterface.OnClickListener
+     */
+    private void showChooseSyncOrAsyncDialog(DialogInterface.OnClickListener listener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(NavigationTabActivity.this);
+        builder.setTitle(R.string.choice_device_sync_or_async_title);
+        builder.setItems(R.array.choice_device_sync_or_async_option_array, listener);
         AlertDialog dialog = builder.create();
         dialog.show();
         dialog.setCancelable(false);
@@ -854,9 +937,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
     public void run() {
         switch (currentTask) {
             case SEARCH_DEVICE:
-                BluetoothTool.getInstance()
-                        .setEventHandler(searchBluetoothHandler)
-                        .search();
+                BluetoothTool.getInstance().setEventHandler(searchBluetoothHandler).search();
                 break;
             case CONNECT_DEVICE:
                 if (tempDevice != null && !failedToConnectDevice) {
@@ -866,10 +947,14 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
                 }
                 break;
             case GET_NORMAL_DEVICE_TYPE:
-                getNormalDeviceType();
+                if (!BluetoothTool.getInstance().isLocked()) {
+                    getNormalDeviceType();
+                }
                 break;
             case GET_SPECIAL_DEVICE_TYPE:
-                getSpecialDeviceType();
+                if (!BluetoothTool.getInstance().isLocked()) {
+                    getSpecialDeviceType();
+                }
                 break;
         }
     }
@@ -928,7 +1013,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
     }
 
     /**
-     * 开启HomeActivity Sync Task
+     * 开启 HomeActivity Sync Task
      */
     private void startHomeActivityStatusSyncTask() {
         if (hasGetDeviceType) {
@@ -958,9 +1043,42 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
         }
     }
 
+    /**
+     * 检查参数更新成功
+     */
+    @Override
+    public void onComplete() {
+        startHomeActivityStatusSyncTask();
+    }
+
+    /**
+     * 检查参数更新失败
+     *
+     * @param throwable Throwable
+     * @param name      Device name
+     * @param type      Device type
+     */
+    @Override
+    public void onFailed(Throwable throwable, String name, int type) {
+        Device temp = DeviceDao.findByName(NavigationTabActivity.this, name, type);
+        if (temp != null) {
+            // 本地存在当前连接设备的参数
+            Toast.makeText(NavigationTabActivity.this,
+                    R.string.check_parameter_failed_use_local_parameter_message,
+                    Toast.LENGTH_SHORT).show();
+            // 使用本地保存的参数
+            NavigationTabActivity.this.startHomeActivityStatusSyncTask();
+        } else {
+            // 本地不存在当前连接设备的参数
+            Toast.makeText(NavigationTabActivity.this,
+                    R.string.check_parameter_failed_message,
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
     // ============================== Get Normal DeviceType Handler ================================================ //
 
-    private class GetNormalDeviceTypeHandler extends BluetoothHandler {
+    private class GetNormalDeviceTypeHandler extends UnlockHandler {
 
         public GetNormalDeviceTypeHandler(Activity activity) {
             super(activity);
@@ -980,24 +1098,18 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
         @Override
         public void onTalkReceive(Message msg) {
             super.onTalkReceive(msg);
-            if (BuildConfig.DEBUG) {
-                Log.v(TAG, "Receive command");
-            }
             if (msg.obj != null && msg.obj instanceof Integer) {
                 isRunning = false;
                 hasGetDeviceType = true;
                 BluetoothTool.getInstance().crcValue = BluetoothTool.CRCValueNone;
-                if (BuildConfig.DEBUG) {
-                    Log.v(TAG, "Start select device");
-                }
-                showNormalDeviceSelect((Integer) msg.obj);
+                onGetNormalDeviceType((Integer) msg.obj);
             }
         }
     }
 
     // ============================== Get Special DeviceType Handler =============================================== //
 
-    private class GetSpecialDeviceTypeHandler extends BluetoothHandler {
+    private class GetSpecialDeviceTypeHandler extends UnlockHandler {
 
         public GetSpecialDeviceTypeHandler(Activity activity) {
             super(activity);
@@ -1020,94 +1132,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, OnGe
             if (msg.obj != null && msg.obj instanceof String) {
                 isRunning = false;
                 hasGetDeviceType = true;
-                CommunicationCode code = communicationCodeList.get(specialDeviceCodeIndex);
-                for (final SpecialDevice device : specialDeviceList) {
-                    if (code.getCode().equalsIgnoreCase(device.getCode())) {
-                        BluetoothTool.getInstance().setHasSelectDeviceType(true);
-                        // 检查专有设备功能码、状态码、故障帮助更新状态
-                        ParameterUpdateTool.getInstance().setSpecialDevice(device);
-                        // NICE 1000 / NICE 3000 设备提示用户选择同步异步
-                        String deviceName = ParameterUpdateTool.getInstance().getDeviceName();
-                        if (deviceName.equals(ApplicationConfig.NormalDeviceType[0]) ||
-                                deviceName.equals(ApplicationConfig.NormalDeviceType[2])) {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(NavigationTabActivity.this);
-                            builder.setTitle(R.string.choice_device_sync_or_async_title);
-                            builder.setItems(R.array.choice_device_sync_or_async_option_array, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int position) {
-                                    // position == 0 同步状态
-                                    // position == 1 异步状态
-                                    ParameterUpdateTool.getInstance().setSync(position == 0);
-                                    ParameterUpdateTool.getInstance().selectDevice(NavigationTabActivity.this,
-                                            device.getId(),
-                                            device.getName(),
-                                            Device.SpecialDevice,
-                                            new ParameterUpdateTool.OnCheckResultListener() {
-                                                @Override
-                                                public void onComplete() {
-                                                    NavigationTabActivity.this.startHomeActivityStatusSyncTask();
-                                                }
-
-                                                @Override
-                                                public void onFailed(Throwable throwable) {
-                                                    Device temp = DeviceDao.findByName(NavigationTabActivity.this,
-                                                            device.getName(),
-                                                            Device.SpecialDevice);
-                                                    if (temp != null) {
-                                                        // 本地存在当前连接设备的参数
-                                                        Toast.makeText(NavigationTabActivity.this,
-                                                                R.string.check_parameter_failed_use_local_parameter_message,
-                                                                Toast.LENGTH_SHORT).show();
-                                                        // 使用本地保存的参数
-                                                        NavigationTabActivity.this.startHomeActivityStatusSyncTask();
-                                                    } else {
-                                                        // 本地不存在当前连接设备的参数
-                                                        Toast.makeText(NavigationTabActivity.this,
-                                                                R.string.check_parameter_failed_message,
-                                                                Toast.LENGTH_SHORT).show();
-                                                    }
-                                                }
-                                            });
-                                }
-                            });
-                            AlertDialog dialog = builder.create();
-                            dialog.show();
-                            dialog.setCancelable(false);
-                            dialog.setCanceledOnTouchOutside(false);
-                        } else {
-                            ParameterUpdateTool.getInstance().selectDevice(NavigationTabActivity.this,
-                                    device.getId(),
-                                    device.getName(),
-                                    Device.SpecialDevice,
-                                    new ParameterUpdateTool.OnCheckResultListener() {
-                                        @Override
-                                        public void onComplete() {
-                                            NavigationTabActivity.this.startHomeActivityStatusSyncTask();
-                                        }
-
-                                        @Override
-                                        public void onFailed(Throwable throwable) {
-                                            Device temp = DeviceDao.findByName(NavigationTabActivity.this,
-                                                    device.getName(),
-                                                    Device.SpecialDevice);
-                                            if (temp != null) {
-                                                // 本地存在当前连接设备的参数
-                                                Toast.makeText(NavigationTabActivity.this,
-                                                        R.string.check_parameter_failed_use_local_parameter_message,
-                                                        Toast.LENGTH_SHORT).show();
-                                                // 使用本地保存的参数
-                                                NavigationTabActivity.this.startHomeActivityStatusSyncTask();
-                                            } else {
-                                                // 本地不存在当前连接设备的参数
-                                                Toast.makeText(NavigationTabActivity.this,
-                                                        R.string.check_parameter_failed_message,
-                                                        Toast.LENGTH_SHORT).show();
-                                            }
-                                        }
-                                    });
-                        }
-                    }
-                }
+                onGetSpecialDeviceType(communicationCodeList.get(specialDeviceCodeIndex));
             }
         }
     }

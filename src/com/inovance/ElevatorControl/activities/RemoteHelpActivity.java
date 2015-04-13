@@ -17,7 +17,6 @@ import android.os.Message;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -29,7 +28,6 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.inovance.bluetoothtool.BluetoothTool;
-import com.inovance.elevatorcontrol.BuildConfig;
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.adapters.ChatMessageAdapter;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
@@ -41,9 +39,7 @@ import com.inovance.elevatorcontrol.utils.FileTransport;
 import com.inovance.elevatorcontrol.utils.FileTransport.OnFileDownloadComplete;
 import com.inovance.elevatorcontrol.utils.FileTransport.OnFileUploadComplete;
 import com.inovance.elevatorcontrol.utils.ProfileDownloadUtils;
-import com.inovance.elevatorcontrol.web.WebApi;
-import com.inovance.elevatorcontrol.web.WebApi.OnGetResultListener;
-import com.inovance.elevatorcontrol.web.WebApi.OnRequestFailureListener;
+import com.inovance.elevatorcontrol.web.WebInterface;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -60,6 +56,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -75,8 +72,8 @@ import butterknife.Views;
  * Time: 10:29.
  */
 
-public class RemoteHelpActivity extends Activity implements OnGetResultListener,
-        OnRequestFailureListener, OnFileUploadComplete, OnFileDownloadComplete, Runnable {
+public class RemoteHelpActivity extends Activity implements WebInterface.OnRequestListener
+        , OnFileUploadComplete, OnFileDownloadComplete, Runnable {
 
     private static final String TAG = RemoteHelpActivity.class.getSimpleName();
 
@@ -120,15 +117,25 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
 
     private ExecutorService pool = Executors.newSingleThreadExecutor();
 
-    private Handler refreshHandler = new Handler() {
+    private static class RefreshHandler extends Handler {
+
+        private final WeakReference<RemoteHelpActivity> mActivity;
+
+        public RefreshHandler(RemoteHelpActivity activity) {
+            mActivity = new WeakReference<RemoteHelpActivity>(activity);
+        }
 
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            chatMessageAdapter.updateChatMessageList(ChatMessageDao.findAll(RemoteHelpActivity.this));
+            RemoteHelpActivity activity = mActivity.get();
+            if (activity != null) {
+                activity.refreshChatMessageList();
+            }
         }
+    }
 
-    };
+    private Handler refreshHandler;
 
     /**
      * 所有已注册用户列表
@@ -143,6 +150,9 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
         Views.inject(this);
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
+
+        refreshHandler = new RefreshHandler(this);
+
         sharedPreferences = getSharedPreferences(ApplicationConfig.PREFERENCE_FILE_NAME, 0);
         pickContactButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -217,12 +227,15 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
         lastReadTimestamp = sharedPreferences.getLong(LastTimestampTag, 0);
     }
 
+    public void refreshChatMessageList() {
+        chatMessageAdapter.updateChatMessageList(ChatMessageDao.findAll(this));
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
-        WebApi.getInstance().setOnResultListener(this);
-        WebApi.getInstance().setOnFailureListener(this);
-        WebApi.getInstance().getRegistUserList(this);
+        WebInterface.getInstance().setOnRequestListener(this);
+        WebInterface.getInstance().getRegistUserList(this);
         FileTransport.getInstance().setOnFileDownloadComplete(this);
         FileTransport.getInstance().setOnFileUploadComplete(this);
         running = true;
@@ -232,7 +245,8 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
     @Override
     protected void onPause() {
         super.onPause();
-        WebApi.getInstance().removeListener();
+        running = false;
+        WebInterface.getInstance().removeListener();
         FileTransport.getInstance().removeListener();
         overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
     }
@@ -424,7 +438,7 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
                 File file = new File(Environment.getExternalStorageDirectory(), "scene_capture.tmp");
-                if (file.exists()){
+                if (file.exists()) {
                     try {
                         FileInputStream originalStream = new FileInputStream(file);
                         Bitmap bitmap = BitmapFactory.decodeStream(originalStream);
@@ -803,6 +817,6 @@ public class RemoteHelpActivity extends Activity implements OnGetResultListener,
 
     @Override
     public void run() {
-        WebApi.getInstance().getChatMessage(this, getPhoneNumber(), lastReadTimestamp);
+        WebInterface.getInstance().getChatMessage(this, getPhoneNumber(), lastReadTimestamp);
     }
 }

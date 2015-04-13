@@ -63,7 +63,7 @@
     <string name="current_network_not_available">当前网络连接不可用</string>
     <string name="search_device_tips_text">点击按钮搜索设备</string>
     <string name="searching_device_text">正在搜索蓝牙设备</string>
-    <string name="found_none_device_text">未搜索到蓝牙设备，请重新搜索</string>
+    <string name="found_none_device_text">未搜索到设备，请重新搜索</string>
     <string name="always_open_text">常开</string>
     <string name="always_close_text">常闭</string>
 
@@ -76,8 +76,8 @@
     <string name="restore_factory_successful">恢复出厂参数成功</string>
     <string name="restore_factory_failed">恢复出厂参数失败</string>
 
-    <string name="move_inside_failed_text">内召楼层失败</string>
-    <string name="move_outside_failed_text">外召楼层失败</string>
+    <string name="call_inside_failed_text">内召楼层失败</string>
+    <string name="call_outside_failed_text">外召楼层失败</string>
 
     <string name="company_name_text">汇川技术股份有限公司</string>
     <string name="company_description_text">高效产业 · 清洁能源 · 美好生活</string>
@@ -199,26 +199,9 @@
         <item>软件更新</item>
 
         <item>工具</item>
-        <item>专用设备权限申请</item>
         <item>扫描条形码</item>
         <item>远程协助</item>
-        <item>蓝牙地址</item>
-
-        <item>其他</item>
-        <item>日志</item>
-        <item>关于</item>
-    </string-array>
-
-    <!-- 帮助内部用户 -->
-    <string-array name="preference_internal_array">
-        <item>程序设置</item>
-        <item>快捷菜单设置</item>
-        <item>软件更新</item>
-
-        <item>工具</item>
-        <item>扫描条形码</item>
-        <item>远程协助</item>
-        <item>蓝牙地址</item>
+        <item>解锁设备</item>
 
         <item>其他</item>
         <item>日志</item>
@@ -251,8 +234,8 @@
     <string name="about_text">关于</string>
 
     <!-- 电梯内召、外召 -->
-    <string name="move_inside_text">内召</string>
-    <string name="move_outside_text">外召</string>
+    <string name="call_inside_text">内召</string>
+    <string name="call_outside_text">外召</string>
     <string name="open_door_text">开门</string>
     <string name="close_door_text">关门</string>
     <string name="get_floor_text">正在获取楼层信息</string>
@@ -364,6 +347,9 @@
     <string name="elevator_running_message">电梯处于运行状态，不能修改参数。</string>
     <string name="get_elevator_status_failed">读取电梯运行状态失败，请重试。</string>
     <string name="get_value_scope_failed_text">读取数值范围失败请重试。</string>
+
+    <!-- 离线参数 -->
+    <string name="offline_parameter_title">离线参数</string>
 
     <!-- 系统当前状态 -->
     <string name="error_status_title">故障详细信息</string>
@@ -506,7 +492,6 @@
 
     <!-- 程序管理标签选项卡 -->
     <string-array name="firmware_manage_tab_text">
-        <item>程序申请</item>
         <item>程序提取</item>
         <item>程序烧录</item>
     </string-array>
@@ -516,4 +501,28 @@
     <string name="download_application_package_title">下载安装包</string>
     <string name="download_application_package_message">正在下载，请稍后。</string>
     <string name="update_application_failed">手机无外部存储，无法更新程序。</string>
+
+    <string name="unlock_device_dialog_title">输入密码解锁</string>
+    <string name="unlock_device_password_hint">设备密码</string>
+    <string name="connect_device_to_unlock">请先连接设备再解锁</string>
+
+    <string name="unlock_device_successful">设备解锁成功</string>
+    <string name="unlock_device_failed">设备解锁失败</string>
+
+    <string-array name="call_floor_tab_array">
+        <item>内召</item>
+        <item>外召</item>
+    </string-array>
+
+    <string name="current_floor_text">当前楼层: </string>
+    <string name="bluetooth_connect_exception">蓝牙连接异常</string>
+    <string name="unlock_failed_message">解锁失败</string>
+    <string name="password_value_error">密码范围 0~65535</string>
+
+    <string-array name="shortcut_default">
+        <item>当前故障</item>
+        <item>故障查询</item>
+        <item>参数设置</item>
+        <item>程序申请</item>
+    </string-array>
 </resources>

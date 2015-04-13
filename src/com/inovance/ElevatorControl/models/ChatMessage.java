@@ -3,6 +3,7 @@ package com.inovance.elevatorcontrol.models;
 import net.tsz.afinal.annotation.sqlite.Id;
 import net.tsz.afinal.annotation.sqlite.Table;
 import net.tsz.afinal.annotation.sqlite.Transient;
+
 import org.json.JSONObject;
 
 /**

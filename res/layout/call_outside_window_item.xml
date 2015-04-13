@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.inovance.elevatorcontrol.views.SquareLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:kio="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:background="@drawable/elevator_button_background"
+    android:gravity="center"
+    android:orientation="horizontal">
+
+    <com.inovance.elevatorcontrol.views.TypefaceTextView
+        android:id="@+id/floor_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:textColor="@color/elevator_button_color"
+        android:textSize="42sp"
+        android:textStyle="bold"
+        kio:customTypeface="fonts/helvetica_light.otf" />
+    <LinearLayout
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_marginLeft="5dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <ImageButton
+            android:id="@+id/call_up"
+            android:contentDescription="@null"
+            android:background="@android:color/transparent"
+            android:src="@drawable/call_up_button"
+            android:layout_marginBottom="12dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <ImageButton
+            android:id="@+id/call_down"
+            android:contentDescription="@null"
+            android:background="@android:color/transparent"
+            android:src="@drawable/call_down_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+</com.inovance.elevatorcontrol.views.SquareLayout>

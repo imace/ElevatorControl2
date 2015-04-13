@@ -4,7 +4,10 @@ import android.app.Activity;
 import android.os.Handler;
 import android.os.Message;
 import android.widget.Toast;
+
 import com.inovance.elevatorcontrol.R;
+
+import java.lang.ref.WeakReference;
 
 /**
  * Created by IntelliJ IDEA.
@@ -12,11 +15,11 @@ import com.inovance.elevatorcontrol.R;
  * Date: 14-5-8.
  * Time: 15:05.
  */
-public class GlobalHandler {
+public class MessageHandler {
 
-    private static GlobalHandler instance = new GlobalHandler();
+    private static MessageHandler instance = new MessageHandler();
 
-    private Handler handler;
+    private DealHandler handler;
 
     private Activity activity;
 
@@ -30,37 +33,45 @@ public class GlobalHandler {
 
     public static final int CODE_DATA_ERROR = 5;
 
-    public static GlobalHandler getInstance(Activity activity) {
-        if (null == instance.activity) {
+    public static MessageHandler getInstance(Activity activity) {
+        if (instance.activity == null) {
             instance.activity = activity;
         }
+        instance.handler = new DealHandler(instance);
         return instance;
     }
 
-    private GlobalHandler() {
-        if (handler == null) {
-            handler = new Handler() {
-                @Override
-                public void handleMessage(Message msg) {
-                    switch (msg.what) {
-                        case NOT_CONNECTED:
-                            onNotConnect();
-                            break;
-                        case WRITE_DATA_FAILED:
-                            onWriteDataFailed();
-                            break;
-                        case WRITE_DATA_SUCCESSFUL:
-                            onWriteDataSuccessful();
-                            break;
-                        case NO_DATA_RECEIVE:
-                            onNoDataReceived();
-                            break;
-                        case CODE_DATA_ERROR:
-                            onParseCodeError();
-                            break;
-                    }
+    private static class DealHandler extends Handler {
+
+        private final WeakReference<MessageHandler> mHandler;
+
+        public DealHandler(MessageHandler handler) {
+            mHandler = new WeakReference<MessageHandler>(handler);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            MessageHandler handler = mHandler.get();
+            if (handler != null) {
+                switch (msg.what) {
+                    case NOT_CONNECTED:
+                        handler.onNotConnect();
+                        break;
+                    case WRITE_DATA_FAILED:
+                        handler.onWriteDataFailed();
+                        break;
+                    case WRITE_DATA_SUCCESSFUL:
+                        handler.onWriteDataSuccessful();
+                        break;
+                    case NO_DATA_RECEIVE:
+                        handler.onNoDataReceived();
+                        break;
+                    case CODE_DATA_ERROR:
+                        handler.onParseCodeError();
+                        break;
                 }
-            };
+            }
         }
     }
 

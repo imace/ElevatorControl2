@@ -16,11 +16,16 @@ public class ApplicationConfig {
     /**
      * 是否生产环境
      */
-    public static final boolean IsProductionMode = true;
+    public static final boolean IsProductionMode = false;
 
     public static final String PREFERENCE_FILE_NAME = "ApplicationPreference";
 
     public static final String DefaultDeviceName = "NICE 3000+";
+
+    /**
+     * 写密码解锁设备参数
+     */
+    public static final String UnlockDeviceCode = "4000";
 
     /**
      * 有返回: 支持该设备 (NICE 5000+, NICE 7000+)
@@ -168,8 +173,6 @@ public class ApplicationConfig {
     public static final String SYSTEM_STATUS_NAME = "系统状态";
 
     public static final String ELEVATOR_BOX_STATUS_NAME = "轿厢状态";
-
-    public static final String STATUS_WORD_NAME = "状态字功能";
 
     public static final String RETAIN_NAME = "保留";
 

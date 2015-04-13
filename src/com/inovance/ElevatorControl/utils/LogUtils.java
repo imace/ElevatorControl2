@@ -262,6 +262,11 @@ public class LogUtils {
         db.delete(systemLog);
     }
 
+    public void deleteAll() {
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
+        db.deleteAll(SystemLog.class);
+    }
+
     public void update(SystemLog systemLog) {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         db.update(systemLog);

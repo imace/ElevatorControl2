@@ -1,11 +1,13 @@
 package com.inovance.elevatorcontrol.factory;
 
 import android.content.Context;
+
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.models.ParameterSettings;
 import com.inovance.elevatorcontrol.models.ParameterStatusItem;
 import com.inovance.elevatorcontrol.models.TroubleGroup;
 import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

@@ -1,6 +1,7 @@
 package com.inovance.elevatorcontrol.factory;
 
 import android.content.Context;
+
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
 import com.inovance.elevatorcontrol.models.ParameterSettings;

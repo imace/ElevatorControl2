@@ -21,7 +21,6 @@ import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.inovance.bluetoothtool.BluetoothHandler;
 import com.inovance.bluetoothtool.BluetoothState;
 import com.inovance.bluetoothtool.BluetoothTalk;
 import com.inovance.bluetoothtool.BluetoothTool;
@@ -30,13 +29,14 @@ import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.daos.ProfileDao;
 import com.inovance.elevatorcontrol.daos.RealTimeMonitorDao;
+import com.inovance.elevatorcontrol.handlers.UnlockHandler;
 import com.inovance.elevatorcontrol.models.ParameterSettings;
 import com.inovance.elevatorcontrol.models.Profile;
 import com.inovance.elevatorcontrol.models.RealTimeMonitor;
 import com.inovance.elevatorcontrol.utils.LogUtils;
 import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
 import com.inovance.elevatorcontrol.utils.TextLocalize;
-import com.inovance.elevatorcontrol.views.dialogs.CustomDialog;
+import com.inovance.elevatorcontrol.views.dialogs.UtilsDialog;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -486,7 +486,7 @@ public class ParameterUploadActivity extends Activity {
                     case R.id.action_upload: {
                         if (BluetoothTool.getInstance().isPrepared()) {
                             AlertDialog.Builder builder = new AlertDialog.Builder(ParameterUploadActivity.this,
-                                    R.style.CustomDialogStyle)
+                                    R.style.GlobalDialogStyle)
                                     .setTitle(R.string.upload_dialog_title)
                                     .setMessage(R.string.upload_dialog_message)
                                     .setNegativeButton(R.string.dialog_btn_cancel, null)
@@ -520,7 +520,7 @@ public class ParameterUploadActivity extends Activity {
      * @param fileName 配置文件名称
      */
     private void deleteProfile(final String fileName, final int index) {
-        AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this, R.style.CustomDialogStyle)
+        AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this, R.style.GlobalDialogStyle)
                 .setTitle(R.string.upload_dialog_title)
                 .setMessage(R.string.upload_dialog_message)
                 .setNegativeButton(R.string.dialog_btn_cancel, null)
@@ -623,7 +623,7 @@ public class ParameterUploadActivity extends Activity {
     /**
      * 上传参数 Handler
      */
-    private class UploadParameterHandler extends BluetoothHandler {
+    private class UploadParameterHandler extends UnlockHandler {
 
         public int index = 0;
 
@@ -682,8 +682,8 @@ public class ParameterUploadActivity extends Activity {
         @Override
         public void onBluetoothConnectException(Message message) {
             super.onBluetoothConnectException(message);
-            CustomDialog.showBluetoothExceptionDialog(ParameterUploadActivity.this,
-                    new CustomDialog.OnRetryListener() {
+            UtilsDialog.showBluetoothExceptionDialog(ParameterUploadActivity.this,
+                    new UtilsDialog.OnRetryListener() {
                         @Override
                         public void onClick() {
                             BluetoothTool.getInstance().currentState = BluetoothState.CONNECTED;
@@ -703,7 +703,7 @@ public class ParameterUploadActivity extends Activity {
     /**
      * 读取电梯运行状态 Handler
      */
-    private class ElevatorStatusHandler extends BluetoothHandler {
+    private class ElevatorStatusHandler extends UnlockHandler {
 
         public int index;
 

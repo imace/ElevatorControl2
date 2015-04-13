@@ -1,8 +1,10 @@
 package com.inovance.elevatorcontrol.daos;
 
 import android.content.Context;
+
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.models.Device;
+
 import net.tsz.afinal.FinalDb;
 
 import java.util.List;
@@ -25,6 +27,11 @@ public class DeviceDao {
     public static void update(Context context, Device device) {
         FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
         db.update(device);
+    }
+
+    public static List<Device> findAll(Context context) {
+        FinalDb db = FinalDb.create(context, ApplicationConfig.DATABASE_NAME, DEBUG);
+        return db.findAll(Device.class);
     }
 
     /**

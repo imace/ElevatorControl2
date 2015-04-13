@@ -8,22 +8,23 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
-import butterknife.InjectView;
-import butterknife.Views;
-import com.inovance.bluetoothtool.BluetoothHandler;
+
 import com.inovance.bluetoothtool.BluetoothTalk;
 import com.inovance.bluetoothtool.BluetoothTool;
 import com.inovance.bluetoothtool.SerialUtility;
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.adapters.ShortcutListViewAdapter;
+import com.inovance.elevatorcontrol.cache.ValueCache;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.daos.RealTimeMonitorDao;
 import com.inovance.elevatorcontrol.daos.ShortcutDao;
+import com.inovance.elevatorcontrol.handlers.UnlockHandler;
 import com.inovance.elevatorcontrol.models.RealTimeMonitor;
 import com.inovance.elevatorcontrol.models.Shortcut;
 import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
 import com.inovance.elevatorcontrol.views.BlinkTextView;
 import com.inovance.elevatorcontrol.views.DoorAnimationView;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,6 +35,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
+
+import butterknife.InjectView;
+import butterknife.Views;
 
 public class HomeActivity extends Activity implements Runnable {
 
@@ -103,7 +107,7 @@ public class HomeActivity extends Activity implements Runnable {
     /**
      * 用于 Loop Task 的 Handler
      */
-    private Handler handler = new Handler();
+    private static Handler handler = new Handler();
 
     /**
      * 同步 Task
@@ -200,8 +204,7 @@ public class HomeActivity extends Activity implements Runnable {
      */
     private void syncElevatorStatus() {
         if (communications == null) {
-            final List<RealTimeMonitor> monitorLists = RealTimeMonitorDao.findAllByStateIDs(this,
-                    ApplicationConfig.HomeStateCode);
+            final List<RealTimeMonitor> monitorLists = RealTimeMonitorDao.findAllByStateIDs(this, ApplicationConfig.HomeStateCode);
             int size = monitorLists.size();
             communications = new BluetoothTalk[size];
             for (int index = 0; index < size; index++) {
@@ -269,6 +272,113 @@ public class HomeActivity extends Activity implements Runnable {
         }
     }
 
+    /**
+     * 解析读取到的电梯状态参数
+     *
+     * @param monitorList RealTimeMonitor List
+     */
+    private void onGetStatus(List<RealTimeMonitor> monitorList) {
+        for (RealTimeMonitor monitor : monitorList) {
+            // 电梯运行速度
+            if (monitor.getStateID() == ApplicationConfig.HomeStateCode[0]) {
+                HomeActivity.this.runningSpeedTextView
+                        .setText(ParseSerialsUtils.getValueTextFromRealTimeMonitor(monitor)
+                                + monitor.getUnit());
+            }
+            // 系统状态
+            if (monitor.getStateID() == ApplicationConfig.HomeStateCode[1]) {
+                int elevatorBoxStatusCode = ParseSerialsUtils.getElevatorBoxStatusCode(monitor);
+                // 如果为运行状态则改为关门维持状态,门机状态而非轿厢状态
+                elevatorBoxStatusCode = elevatorBoxStatusCode == 5 ? 4 : elevatorBoxStatusCode;
+                int systemStatusCode = ParseSerialsUtils.getSystemStatusCode(monitor);
+                if (HomeActivity.this.elevatorBoxStatus == null || HomeActivity.this.systemStatus == null) {
+                    try {
+                        JSONArray jsonArray = new JSONArray(monitor.getJSONDescription());
+                        Pattern pattern = Pattern.compile("^\\d*\\-\\d*:.*", Pattern.CASE_INSENSITIVE);
+                        int size = jsonArray.length();
+                        for (int i = 0; i < size; i++) {
+                            JSONObject jsonObject = jsonArray.getJSONObject(i);
+                            for (Iterator iterator = jsonObject.keys(); iterator.hasNext(); ) {
+                                String name = (String) iterator.next();
+                                if (pattern.matcher(name).matches()) {
+                                    if (name.replaceAll("\\d*\\-\\d*:", "")
+                                            .equalsIgnoreCase(ApplicationConfig.ELEVATOR_BOX_STATUS_NAME)) {
+                                        JSONArray subArray = jsonObject.optJSONArray(name);
+                                        int subArraySize = subArray.length();
+                                        HomeActivity.this.elevatorBoxStatus = new String[subArraySize];
+                                        for (int m = 0; m < subArraySize; m++) {
+                                            HomeActivity.this.elevatorBoxStatus[m] = subArray
+                                                    .getJSONObject(m)
+                                                    .optString("value");
+                                        }
+                                    }
+                                    if (name.replaceAll("\\d*\\-\\d*:", "")
+                                            .equalsIgnoreCase(ApplicationConfig.SYSTEM_STATUS_NAME)) {
+                                        JSONArray subArray = jsonObject.optJSONArray(name);
+                                        int subArraySize = subArray.length();
+                                        HomeActivity.this.systemStatus = new String[subArraySize];
+                                        for (int n = 0; n < subArraySize; n++) {
+                                            HomeActivity.this.systemStatus[n] = subArray
+                                                    .getJSONObject(n)
+                                                    .optString("value");
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (elevatorBoxStatusCode < HomeActivity.this.elevatorBoxStatus.length) {
+                    HomeActivity.this.lockStatusTextView
+                            .setText(HomeActivity.this.elevatorBoxStatus[elevatorBoxStatusCode]);
+                    if (elevatorBoxStatusCode == 1 || elevatorBoxStatusCode == 2) {
+                        HomeActivity.this.doorAnimationView.openDoor();
+                    } else {
+                        HomeActivity.this.doorAnimationView.closeDoor();
+                    }
+                }
+                if (systemStatusCode < HomeActivity.this.systemStatus.length) {
+                    HomeActivity.this.systemStatusTextView
+                            .setText(HomeActivity.this.systemStatus[systemStatusCode]);
+                }
+            }
+            // 故障信息
+            if (monitor.getStateID() == ApplicationConfig.HomeStateCode[2]) {
+                // Write value cache
+                ValueCache.getInstance().setErrorData(monitor.getReceived());
+
+                String errorCode = ParseSerialsUtils.getErrorCode(monitor.getReceived());
+                NavigationTabActivity tabActivity = (NavigationTabActivity) HomeActivity.this.getParent();
+                if (errorCode.equalsIgnoreCase("E00")) {
+                    HomeActivity.this.errorStatusTextView.setTextColor(0xff989898);
+                    HomeActivity.this.errorStatusTextView.setText(R.string.home_no_error_text);
+                    errorStatusTextView.setEnabled(false);
+                    if (tabActivity != null && tabActivity.troubleAnalyzeIcon != null) {
+                        tabActivity.troubleAnalyzeIcon.setImageResource(R.drawable.tab_trouble_analyze);
+                    }
+                } else {
+                    HomeActivity.this.errorStatusTextView.setTextColor(0xffff594b);
+                    HomeActivity.this.errorStatusTextView.setText(errorCode);
+                    errorStatusTextView.setEnabled(true);
+                    if (tabActivity != null && tabActivity.troubleAnalyzeIcon != null) {
+                        tabActivity.troubleAnalyzeIcon.setImageResource(R.drawable.tab_trouble_analyze_error);
+                    }
+                }
+            }
+            // 当前楼层
+            if (monitor.getStateID() == ApplicationConfig.HomeStateCode[3]) {
+                doorAnimationView.setCurrentFloor(ParseSerialsUtils.getIntFromBytes(monitor.getReceived()));
+            }
+            // 状态字功能(电梯开关门)
+            if (monitor.getStateID() == ApplicationConfig.HomeStateCode[4]) {
+                int controllerStatus = ParseSerialsUtils.getElevatorStatus(monitor);
+                doorAnimationView.setCurrentDirection(controllerStatus);
+            }
+        }
+    }
+
     @Override
     public void run() {
         HomeActivity.this.syncElevatorStatus();
@@ -279,7 +389,7 @@ public class HomeActivity extends Activity implements Runnable {
     /**
      * 首页电梯实时状态
      */
-    private class SyncStatusHandler extends BluetoothHandler {
+    private class SyncStatusHandler extends UnlockHandler {
 
         public int sendCount;
 
@@ -303,108 +413,14 @@ public class HomeActivity extends Activity implements Runnable {
         public void onMultiTalkEnd(Message msg) {
             super.onMultiTalkEnd(msg);
             if (sendCount == receiveCount) {
-                for (RealTimeMonitor monitor : receivedMonitorList) {
-                    // 电梯运行速度
-                    if (monitor.getStateID() == ApplicationConfig.HomeStateCode[0]) {
-                        HomeActivity.this.runningSpeedTextView
-                                .setText(ParseSerialsUtils.getValueTextFromRealTimeMonitor(monitor)
-                                        + monitor.getUnit());
-                    }
-                    // 系统状态
-                    if (monitor.getStateID() == ApplicationConfig.HomeStateCode[1]) {
-                        int elevatorBoxStatusCode = ParseSerialsUtils.getElevatorBoxStatusCode(monitor);
-                        // 如果为运行状态则改为关门维持状态,门机状态而非轿厢状态
-                        elevatorBoxStatusCode = elevatorBoxStatusCode == 5 ? 4 : elevatorBoxStatusCode;
-                        int systemStatusCode = ParseSerialsUtils.getSystemStatusCode(monitor);
-                        if (HomeActivity.this.elevatorBoxStatus == null || HomeActivity.this.systemStatus == null) {
-                            try {
-                                JSONArray jsonArray = new JSONArray(monitor.getJSONDescription());
-                                Pattern pattern = Pattern.compile("^\\d*\\-\\d*:.*", Pattern.CASE_INSENSITIVE);
-                                int size = jsonArray.length();
-                                for (int i = 0; i < size; i++) {
-                                    JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                    for (Iterator iterator = jsonObject.keys(); iterator.hasNext(); ) {
-                                        String name = (String) iterator.next();
-                                        if (pattern.matcher(name).matches()) {
-                                            if (name.replaceAll("\\d*\\-\\d*:", "")
-                                                    .equalsIgnoreCase(ApplicationConfig.ELEVATOR_BOX_STATUS_NAME)) {
-                                                JSONArray subArray = jsonObject.optJSONArray(name);
-                                                int subArraySize = subArray.length();
-                                                HomeActivity.this.elevatorBoxStatus = new String[subArraySize];
-                                                for (int m = 0; m < subArraySize; m++) {
-                                                    HomeActivity.this.elevatorBoxStatus[m] = subArray
-                                                            .getJSONObject(m)
-                                                            .optString("value");
-                                                }
-                                            }
-                                            if (name.replaceAll("\\d*\\-\\d*:", "")
-                                                    .equalsIgnoreCase(ApplicationConfig.SYSTEM_STATUS_NAME)) {
-                                                JSONArray subArray = jsonObject.optJSONArray(name);
-                                                int subArraySize = subArray.length();
-                                                HomeActivity.this.systemStatus = new String[subArraySize];
-                                                for (int n = 0; n < subArraySize; n++) {
-                                                    HomeActivity.this.systemStatus[n] = subArray
-                                                            .getJSONObject(n)
-                                                            .optString("value");
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        if (elevatorBoxStatusCode < HomeActivity.this.elevatorBoxStatus.length) {
-                            HomeActivity.this.lockStatusTextView
-                                    .setText(HomeActivity.this.elevatorBoxStatus[elevatorBoxStatusCode]);
-                            if (elevatorBoxStatusCode == 1 || elevatorBoxStatusCode == 2) {
-                                HomeActivity.this.doorAnimationView.openDoor();
-                            } else {
-                                HomeActivity.this.doorAnimationView.closeDoor();
-                            }
-                        }
-                        if (systemStatusCode < HomeActivity.this.systemStatus.length) {
-                            HomeActivity.this.systemStatusTextView
-                                    .setText(HomeActivity.this.systemStatus[systemStatusCode]);
-                        }
-                    }
-                    // 故障信息
-                    if (monitor.getStateID() == ApplicationConfig.HomeStateCode[2]) {
-                        String errorCode = ParseSerialsUtils.getErrorCode(monitor.getReceived());
-                        NavigationTabActivity tabActivity = (NavigationTabActivity) HomeActivity.this.getParent();
-                        if (errorCode.equalsIgnoreCase("E00")) {
-                            HomeActivity.this.errorStatusTextView.setTextColor(0xff989898);
-                            HomeActivity.this.errorStatusTextView.setText(R.string.home_no_error_text);
-                            errorStatusTextView.setEnabled(false);
-                            if (tabActivity != null && tabActivity.troubleAnalyzeIcon != null) {
-                                tabActivity.troubleAnalyzeIcon.setImageResource(R.drawable.tab_trouble_analyze);
-                            }
-                        } else {
-                            HomeActivity.this.errorStatusTextView.setTextColor(0xffff594b);
-                            HomeActivity.this.errorStatusTextView.setText(errorCode);
-                            errorStatusTextView.setEnabled(true);
-                            if (tabActivity != null && tabActivity.troubleAnalyzeIcon != null) {
-                                tabActivity.troubleAnalyzeIcon.setImageResource(R.drawable.tab_trouble_analyze_error);
-                            }
-                        }
-                    }
-                    // 当前楼层
-                    if (monitor.getStateID() == ApplicationConfig.HomeStateCode[3]) {
-                        doorAnimationView.setCurrentFloor(ParseSerialsUtils.getIntFromBytes(monitor.getReceived()));
-                    }
-                    // 状态字功能(电梯开关门)
-                    if (monitor.getStateID() == ApplicationConfig.HomeStateCode[4]) {
-                        int controllerStatus = ParseSerialsUtils.getElevatorStatus(monitor);
-                        doorAnimationView.setCurrentDirection(controllerStatus);
-                    }
-                }
+                HomeActivity.this.onGetStatus(receivedMonitorList);
             }
             isReading = false;
         }
 
         @Override
         public void onTalkReceive(Message msg) {
+            super.onTalkReceive(msg);
             if (msg.obj != null && (msg.obj instanceof RealTimeMonitor)) {
                 RealTimeMonitor monitor = (RealTimeMonitor) msg.obj;
                 receivedMonitorList.add(monitor);

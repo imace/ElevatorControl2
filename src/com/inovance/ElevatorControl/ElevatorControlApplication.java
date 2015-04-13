@@ -2,6 +2,7 @@ package com.inovance.elevatorcontrol;
 
 import android.app.Application;
 import android.content.SharedPreferences;
+
 import com.inovance.bluetoothtool.BluetoothTool;
 import com.inovance.elevatorcontrol.cache.LruCacheTool;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
@@ -11,6 +12,8 @@ import com.inovance.elevatorcontrol.models.Shortcut;
 import com.inovance.elevatorcontrol.utils.LogUtils;
 import com.inovance.elevatorcontrol.utils.TextLocalize;
 import com.inovance.elevatorcontrol.utils.UpdateApplication;
+import com.inovance.elevatorcontrol.utils.UserSession;
+
 import org.acra.annotation.ReportsCrashes;
 
 /**
@@ -25,11 +28,20 @@ import org.acra.annotation.ReportsCrashes;
         formUri = ApplicationConfig.ReportsCrashesAPI
 )
 
+// TODO Some Handler class should be static to avoid Handler leak.
+// TODO Some Class should reduce or refactoring.
+
 public class ElevatorControlApplication extends Application {
+
+    private static final String WRITE_DEFAULT_DATA = "hasWriteDefaultData";
 
     @Override
     public void onCreate() {
         super.onCreate();
+        UserSession.getInstance().init(getApplicationContext());
+        if (!UserSession.getInstance().isSessionAvailable()) {
+            UserSession.getInstance().destroySession();
+        }
         BluetoothTool.getInstance().init(getApplicationContext());
         UpdateApplication.getInstance().init(getApplicationContext());
         LruCacheTool.getInstance().initCache(getApplicationContext());
@@ -46,32 +58,34 @@ public class ElevatorControlApplication extends Application {
     private void writeDefaultShortcutData() {
         SharedPreferences settings = getSharedPreferences(ApplicationConfig.PREFERENCE_FILE_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
-        boolean hasWriteDefaultData = settings.getBoolean("hasWriteDefaultData", false);
+        boolean hasWriteDefaultData = settings.getBoolean(WRITE_DEFAULT_DATA, false);
         if (!hasWriteDefaultData) {
+            String[] shortcutName = getResources().getStringArray(R.array.shortcut_default);
+
             Shortcut shortcut;
 
             shortcut = new Shortcut();
-            shortcut.setName("当前故障");
+            shortcut.setName(shortcutName[0]);
             shortcut.setCommand("0:0:0");
             ShortcutDao.saveItem(getApplicationContext(), shortcut);
 
             shortcut = new Shortcut();
-            shortcut.setName("故障查询");
+            shortcut.setName(shortcutName[1]);
             shortcut.setCommand("0:2:0");
             ShortcutDao.saveItem(getApplicationContext(), shortcut);
 
             shortcut = new Shortcut();
-            shortcut.setName("参数设置");
+            shortcut.setName(shortcutName[2]);
             shortcut.setCommand("1:1:0");
             ShortcutDao.saveItem(getApplicationContext(), shortcut);
 
             shortcut = new Shortcut();
-            shortcut.setName("程序申请");
+            shortcut.setName(shortcutName[3]);
             shortcut.setCommand("3:0:0");
             ShortcutDao.saveItem(getApplicationContext(), shortcut);
 
-            editor.putBoolean("hasWriteDefaultData", true);
-            editor.commit();
+            editor.putBoolean(WRITE_DEFAULT_DATA, true);
+            editor.apply();
         }
     }
 }

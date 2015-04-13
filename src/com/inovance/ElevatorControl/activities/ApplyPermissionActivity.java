@@ -6,9 +6,15 @@ import android.content.Context;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.*;
-import butterknife.InjectView;
-import butterknife.Views;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.EditText;
+import android.widget.Filter;
+import android.widget.Filterable;
+import android.widget.Spinner;
+import android.widget.Toast;
+
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
@@ -16,9 +22,8 @@ import com.inovance.elevatorcontrol.models.SpecialDevice;
 import com.inovance.elevatorcontrol.models.User;
 import com.inovance.elevatorcontrol.models.Vendor;
 import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
-import com.inovance.elevatorcontrol.web.WebApi;
-import com.inovance.elevatorcontrol.web.WebApi.OnGetResultListener;
-import com.inovance.elevatorcontrol.web.WebApi.OnRequestFailureListener;
+import com.inovance.elevatorcontrol.web.WebInterface;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,13 +31,16 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.InjectView;
+import butterknife.Views;
+
 /**
  * Created by keith on 14-6-7.
  * User keith
  * Date 14-6-7
  * Time 上午1:15
  */
-public class ApplyPermissionActivity extends Activity implements OnGetResultListener, OnRequestFailureListener {
+public class ApplyPermissionActivity extends Activity implements WebInterface.OnRequestListener {
 
     private static final String TAG = ApplyPermissionActivity.class.getSimpleName();
 
@@ -92,16 +100,15 @@ public class ApplyPermissionActivity extends Activity implements OnGetResultList
     @Override
     protected void onResume() {
         super.onResume();
-        WebApi.getInstance().setOnResultListener(this);
-        WebApi.getInstance().setOnFailureListener(this);
-        WebApi.getInstance().getVendorList(this);
-        WebApi.getInstance().getSpecialDeviceList(this);
+        WebInterface.getInstance().setOnRequestListener(this);
+        WebInterface.getInstance().getVendorList(this);
+        WebInterface.getInstance().getSpecialDeviceList(this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        WebApi.getInstance().removeListener();
+        WebInterface.getInstance().removeListener();
         overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
     }
 
@@ -173,7 +180,7 @@ public class ApplyPermissionActivity extends Activity implements OnGetResultList
             int deviceID = mCurrentDeviceList.get(deviceSpinner.getSelectedItemPosition()).getId();
             BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
             String bluetoothAddress = bluetoothAdapter.getAddress();
-            WebApi.getInstance().applySpecialDevicePermission(this, deviceID,
+            WebInterface.getInstance().applySpecialDevicePermission(this, deviceID,
                     bluetoothAddress,
                     userName.getText().toString(),
                     companyName.getText().toString(),

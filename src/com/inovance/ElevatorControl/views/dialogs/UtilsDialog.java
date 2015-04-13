@@ -5,21 +5,25 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.view.View;
-import android.widget.*;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.ToggleButton;
+
 import com.inovance.bluetoothtool.BluetoothTool;
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.activities.CheckAuthorizationActivity;
 import com.inovance.elevatorcontrol.adapters.CheckedListViewAdapter;
 import com.inovance.elevatorcontrol.adapters.DialogSwitchListViewAdapter;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
-import com.inovance.elevatorcontrol.daos.ErrorHelpDao;
 import com.inovance.elevatorcontrol.factory.ParameterFactory;
-import com.inovance.elevatorcontrol.models.ErrorHelp;
-import com.inovance.elevatorcontrol.models.HistoryError;
 import com.inovance.elevatorcontrol.models.ParameterSettings;
 import com.inovance.elevatorcontrol.models.ParameterStatusItem;
 import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
-import com.inovance.elevatorcontrol.web.WebApi;
+import com.inovance.elevatorcontrol.web.WebInterface;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,7 +31,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CustomDialog {
+public class UtilsDialog {
 
     // ================================== Parameter Detail Dialog =========================================== //
 
@@ -81,7 +85,7 @@ public class CustomDialog {
                             adapter.setCheckedIndex(position);
                         }
                     });
-                    return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
+                    return new AlertDialog.Builder(activity, R.style.GlobalDialogStyle)
                             .setView(dialogView)
                             .setTitle(settings.getCodeText() + " " + settings.getName());
                 } else if (Integer.parseInt(settings.getType()) == ApplicationConfig.FloorShowType) {
@@ -102,11 +106,11 @@ public class CustomDialog {
                         modSpinner.setSelection(modValue);
                         remSpinner.setSelection(remValue);
                     }
-                    return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
+                    return new AlertDialog.Builder(activity, R.style.GlobalDialogStyle)
                             .setView(dialogView)
                             .setTitle(settings.getCodeText() + " " + settings.getName());
                 } else {
-                    return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
+                    return new AlertDialog.Builder(activity, R.style.GlobalDialogStyle)
                             .setSingleChoiceItems(statusList,
                                     ParameterFactory.getParameter().getSelectedIndex(settings),
                                     null)
@@ -148,14 +152,14 @@ public class CustomDialog {
                 }
                 DialogSwitchListViewAdapter adapter = new DialogSwitchListViewAdapter(itemList, activity);
                 listView.setAdapter(adapter);
-                return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
+                return new AlertDialog.Builder(activity, R.style.GlobalDialogStyle)
                         .setView(dialogView)
                         .setTitle(settings.getCodeText() + " " + settings.getName());
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
-        return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
+        return new AlertDialog.Builder(activity, R.style.GlobalDialogStyle)
                 .setTitle(settings.getCodeText() + " " + settings.getName())
                 .setNeutralButton(R.string.dialog_btn_cancel, null);
     }
@@ -163,7 +167,7 @@ public class CustomDialog {
     // =========================================== Exit dialog =============================================== //
 
     public static AlertDialog.Builder exitDialog(final Activity activity) {
-        return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
+        return new AlertDialog.Builder(activity, R.style.GlobalDialogStyle)
                 .setMessage(activity.getResources().getString(R.string.are_you_sure_exit))
                 .setTitle(activity.getResources().getString(R.string.are_you_sure_message))
                 .setNegativeButton(activity.getResources().getString(R.string.dialog_btn_cancel),
@@ -176,7 +180,7 @@ public class CustomDialog {
                 .setPositiveButton(activity.getResources().getString(R.string.dialog_btn_ok)
                         , new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        WebApi.getInstance().removeListener();
+                        WebInterface.getInstance().removeListener();
                         BluetoothTool.getInstance().setHandler(null);
                         BluetoothTool.getInstance().kill();
                         Intent intent = new Intent(activity, CheckAuthorizationActivity.class);
@@ -186,29 +190,6 @@ public class CustomDialog {
                         activity.finish();
                     }
                 });
-    }
-
-    // ============================================ History Error Dialog ===================================== //
-
-    public static AlertDialog.Builder historyErrorDialog(final HistoryError historyError, final Activity activity) {
-        final View dialogView = activity.getLayoutInflater().inflate(R.layout.error_detail_dialog, null);
-        assert dialogView != null;
-        TextView errorCode = ((TextView) dialogView.findViewById(R.id.current_error_help_display));
-        TextView level = ((TextView) dialogView.findViewById(R.id.current_error_help_level));
-        TextView name = ((TextView) dialogView.findViewById(R.id.current_error_help_name));
-        TextView reason = ((TextView) dialogView.findViewById(R.id.current_error_help_reason));
-        TextView solution = ((TextView) dialogView.findViewById(R.id.current_error_help_solution));
-        ErrorHelp errorHelp = ErrorHelpDao.findByDisplay(activity, historyError.getErrorCode());
-        if (errorHelp != null) {
-            errorCode.setText(errorHelp.getDisplay());
-            level.setText(errorHelp.getLevel());
-            name.setText(errorHelp.getName());
-            reason.setText(errorHelp.getReason());
-            solution.setText(errorHelp.getSolution());
-        }
-        return new AlertDialog.Builder(activity, R.style.CustomDialogStyle)
-                .setView(dialogView)
-                .setNeutralButton(R.string.dialog_btn_ok, null);
     }
 
     // ======================================== Handler bluetooth exception dialog ================================ //
@@ -224,7 +205,7 @@ public class CustomDialog {
                 .setNegativeButton(R.string.exit_whole_application, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        WebApi.getInstance().removeListener();
+                        WebInterface.getInstance().removeListener();
                         BluetoothTool.getInstance().setHandler(null);
                         BluetoothTool.getInstance().kill();
                         Intent intent = new Intent(activity, CheckAuthorizationActivity.class);

@@ -1,7 +1,9 @@
 package com.inovance.elevatorcontrol.models;
 
 import android.content.Context;
+
 import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
+
 import net.tsz.afinal.annotation.sqlite.Id;
 import net.tsz.afinal.annotation.sqlite.Property;
 import net.tsz.afinal.annotation.sqlite.Table;

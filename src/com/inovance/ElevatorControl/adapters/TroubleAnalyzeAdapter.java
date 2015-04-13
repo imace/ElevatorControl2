@@ -2,8 +2,8 @@ package com.inovance.elevatorcontrol.adapters;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.views.fragments.TroubleAnalyzeFragment;
 
@@ -17,11 +17,6 @@ public class TroubleAnalyzeAdapter extends FragmentPagerAdapter {
     private List<TroubleAnalyzeFragment> mFragments;
 
     private String[] titleArray;
-
-    public TroubleAnalyzeAdapter(FragmentManager fragmentManager) {
-        super(fragmentManager);
-        mFragments = new ArrayList<TroubleAnalyzeFragment>();
-    }
 
     public TroubleAnalyzeAdapter(FragmentActivity fa) {
         super(fa.getSupportFragmentManager());

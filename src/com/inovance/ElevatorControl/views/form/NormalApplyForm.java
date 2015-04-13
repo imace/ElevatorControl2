@@ -8,13 +8,17 @@ import android.os.Message;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.*;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.models.NormalDevice;
-import com.inovance.elevatorcontrol.web.WebApi;
-import com.inovance.elevatorcontrol.web.WebApi.OnGetResultListener;
-import com.inovance.elevatorcontrol.web.WebApi.OnRequestFailureListener;
+import com.inovance.elevatorcontrol.web.WebInterface;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +29,7 @@ import java.util.List;
  * Date 14-6-7
  * Time 下午9:59
  */
-public class NormalApplyForm extends LinearLayout implements OnGetResultListener, OnRequestFailureListener {
+public class NormalApplyForm extends LinearLayout implements WebInterface.OnRequestListener {
 
     private static final int CountDownFinished = 1000;
 
@@ -146,9 +150,8 @@ public class NormalApplyForm extends LinearLayout implements OnGetResultListener
     private void submitApply() {
         String bluetoothAddress = BluetoothAdapter.getDefaultAdapter().getAddress();
         int deviceID = deviceList.get(deviceListSpinner.getSelectedItemPosition()).getID();
-        WebApi.getInstance().setOnResultListener(this);
-        WebApi.getInstance().setOnFailureListener(this);
-        WebApi.getInstance().applyFirmware(getContext(), bluetoothAddress, deviceID, remark.getText().toString());
+        WebInterface.getInstance().setOnRequestListener(this);
+        WebInterface.getInstance().applyFirmware(getContext(), bluetoothAddress, deviceID, remark.getText().toString());
     }
 
     @Override

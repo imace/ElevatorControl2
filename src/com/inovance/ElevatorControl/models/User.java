@@ -2,8 +2,10 @@ package com.inovance.elevatorcontrol.models;
 
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
+
 import net.tsz.afinal.annotation.sqlite.Id;
 import net.tsz.afinal.annotation.sqlite.Table;
+
 import org.json.JSONObject;
 
 /**

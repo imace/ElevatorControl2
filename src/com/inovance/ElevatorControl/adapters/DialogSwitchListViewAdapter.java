@@ -8,6 +8,7 @@ import android.widget.BaseAdapter;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
+
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.models.ParameterStatusItem;
 

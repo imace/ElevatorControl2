@@ -80,6 +80,9 @@ public class BluetoothHandler extends Handler {
             case BluetoothState.onBluetoothConnectException:
                 onBluetoothConnectException(msg);
                 break;
+            case BluetoothState.onDeviceLocked:
+                onDeviceLocked(msg);
+                break;
         }
     }
 
@@ -210,7 +213,7 @@ public class BluetoothHandler extends Handler {
      *
      * @param msg message
      */
-    public void onHandlerChanged(Message msg) { //the origin handler
+    public void onHandlerChanged(Message msg) {
         if (BuildConfig.DEBUG) {
             Log.v(TAG, "onHandlerChanged");
         }
@@ -291,6 +294,17 @@ public class BluetoothHandler extends Handler {
     public void onBluetoothConnectException(Message message) {
         if (BuildConfig.DEBUG) {
             Log.v(TAG, "onBluetoothConnectException");
+        }
+    }
+
+    /**
+     * 设备被锁定
+     *
+     * @param message message
+     */
+    public void onDeviceLocked(Message message) {
+        if (BuildConfig.DEBUG) {
+            Log.v(TAG, "onDeviceLocked");
         }
     }
 }

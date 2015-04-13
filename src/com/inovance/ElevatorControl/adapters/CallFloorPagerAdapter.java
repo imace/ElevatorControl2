@@ -4,12 +4,17 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
 import android.util.TypedValue;
-import android.view.*;
+import android.view.Display;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+
 import com.inovance.elevatorcontrol.R;
-import com.inovance.elevatorcontrol.activities.MoveInsideActivity;
-import com.inovance.elevatorcontrol.activities.MoveOutsideActivity;
+import com.inovance.elevatorcontrol.activities.CallInsideActivity;
+import com.inovance.elevatorcontrol.activities.CallOutsideActivity;
 import com.inovance.elevatorcontrol.views.TypefaceTextView;
 import com.inovance.elevatorcontrol.views.component.ExpandGridView;
 import com.inovance.elevatorcontrol.views.viewpager.PagerAdapter;
@@ -23,9 +28,9 @@ import java.util.List;
  * Date: 14-4-2.
  * Time: 16:02.
  */
-public class MoveSidePagerAdapter extends PagerAdapter {
+public class CallFloorPagerAdapter extends PagerAdapter {
 
-    private static final String TAG = MoveSidePagerAdapter.class.getSimpleName();
+    private static final String TAG = CallFloorPagerAdapter.class.getSimpleName();
 
     private int pagerSize = 9;
 
@@ -54,12 +59,12 @@ public class MoveSidePagerAdapter extends PagerAdapter {
     }
 
     /**
-     * MoveInsideActivity Construct
+     * CallInsideActivity Construct
      *
-     * @param activity MoveInsideActivity
+     * @param activity CallInsideActivity
      * @param floors   floors array
      */
-    public MoveSidePagerAdapter(MoveInsideActivity activity, int[] floors) {
+    public CallFloorPagerAdapter(CallInsideActivity activity, int[] floors) {
         this.baseActivity = activity;
         this.floorsArray = floors;
         gridViewAdapterList = new ArrayList<MoveSideGridViewAdapter>();
@@ -67,12 +72,12 @@ public class MoveSidePagerAdapter extends PagerAdapter {
     }
 
     /**
-     * MoveOutsideActivity Construct
+     * CallOutsideActivity Construct
      *
-     * @param activity MoveOutsideActivity
+     * @param activity CallOutsideActivity
      * @param floors   floors array
      */
-    public MoveSidePagerAdapter(MoveOutsideActivity activity, int[] floors) {
+    public CallFloorPagerAdapter(CallOutsideActivity activity, int[] floors) {
         this.baseActivity = activity;
         this.floorsArray = floors;
         gridViewAdapterList = new ArrayList<MoveSideGridViewAdapter>();
@@ -119,7 +124,7 @@ public class MoveSidePagerAdapter extends PagerAdapter {
     @Override
     public Object instantiateItem(ViewGroup container, int position) {
         LayoutInflater mInflater = LayoutInflater.from(baseActivity);
-        View contentView = mInflater.inflate(R.layout.move_side_view, null);
+        View contentView = mInflater.inflate(R.layout.call_floor_view, null);
         firstRender = true;
         ExpandGridView gridView = (ExpandGridView) contentView.findViewById(R.id.grid_view);
         gridView.setVerticalSpacing(verticalSpacing);
@@ -241,9 +246,9 @@ public class MoveSidePagerAdapter extends PagerAdapter {
         @Override
         public View getView(int position, View convertView, ViewGroup viewGroup) {
             ViewHolder holder;
-            LayoutInflater mInflater = LayoutInflater.from(MoveSidePagerAdapter.this.baseActivity);
+            LayoutInflater mInflater = LayoutInflater.from(CallFloorPagerAdapter.this.baseActivity);
             if (convertView == null) {
-                convertView = mInflater.inflate(R.layout.move_side_item, null);
+                convertView = mInflater.inflate(R.layout.call_floor_item, null);
                 holder = new ViewHolder();
                 holder.floorTextView = (TypefaceTextView) convertView.findViewById(R.id.floor_text);
                 convertView.setTag(holder);

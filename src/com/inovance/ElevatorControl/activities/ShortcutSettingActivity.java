@@ -7,9 +7,12 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.*;
-import butterknife.InjectView;
-import butterknife.Views;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.Spinner;
+
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.adapters.ShortcutListViewAdapter;
 import com.inovance.elevatorcontrol.daos.ShortcutDao;
@@ -18,6 +21,9 @@ import com.inovance.elevatorcontrol.models.Shortcut;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import butterknife.InjectView;
+import butterknife.Views;
 
 /**
  * Created by IntelliJ IDEA.
@@ -64,7 +70,7 @@ public class ShortcutSettingActivity extends Activity {
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 final int index = position;
                 AlertDialog.Builder builder = new AlertDialog.Builder(ShortcutSettingActivity.this,
-                        R.style.CustomDialogStyle)
+                        R.style.GlobalDialogStyle)
                         .setTitle(R.string.shortcut_item_operation_title_text)
                         .setItems(R.array.operation_item, new DialogInterface.OnClickListener() {
                             @Override
@@ -125,7 +131,7 @@ public class ShortcutSettingActivity extends Activity {
      * @param index index
      */
     private void showDeleteItemConfirmDialog(final int index) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.CustomDialogStyle)
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.GlobalDialogStyle)
                 .setTitle(R.string.confirm_delete_title_text)
                 .setMessage(R.string.confirm_delete_message_text);
         builder.setNegativeButton(R.string.dialog_btn_cancel, null);
@@ -177,11 +183,11 @@ public class ShortcutSettingActivity extends Activity {
         }
         AlertDialog.Builder builder;
         if (edit) {
-            builder = new AlertDialog.Builder(this, R.style.CustomDialogStyle)
+            builder = new AlertDialog.Builder(this, R.style.GlobalDialogStyle)
                     .setView(dialogView)
                     .setTitle(R.string.edit_shortcut_dialog_title_text);
         } else {
-            builder = new AlertDialog.Builder(this, R.style.CustomDialogStyle)
+            builder = new AlertDialog.Builder(this, R.style.GlobalDialogStyle)
                     .setView(dialogView)
                     .setTitle(R.string.add_shortcut_dialog_title_text);
         }

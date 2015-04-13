@@ -148,4 +148,9 @@ public class BluetoothState {
      */
     public static final int onBluetoothConnectException = 18;
 
+    /**
+     * 设备锁定
+     */
+    public static final int onDeviceLocked = 19;
+
 }

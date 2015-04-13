@@ -1,6 +1,7 @@
 package com.inovance.elevatorcontrol.models;
 
 import net.tsz.afinal.annotation.sqlite.Table;
+
 import org.json.JSONObject;
 
 /**
@@ -39,7 +40,7 @@ public class CommunicationCode {
         this.code = code;
     }
 
-    public void setExpirationTime(long time){
+    public void setExpirationTime(long time) {
         this.expirationTime = time;
     }
 

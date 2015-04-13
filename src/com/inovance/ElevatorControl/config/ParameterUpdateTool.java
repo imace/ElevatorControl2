@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.inovance.elevatorcontrol.R;
@@ -16,9 +15,7 @@ import com.inovance.elevatorcontrol.models.Device;
 import com.inovance.elevatorcontrol.models.NormalDevice;
 import com.inovance.elevatorcontrol.models.SpecialDevice;
 import com.inovance.elevatorcontrol.models.User;
-import com.inovance.elevatorcontrol.web.WebApi;
-import com.inovance.elevatorcontrol.web.WebApi.OnGetResultListener;
-import com.inovance.elevatorcontrol.web.WebApi.OnRequestFailureListener;
+import com.inovance.elevatorcontrol.web.WebInterface;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,7 +27,7 @@ import org.json.JSONObject;
  * Date: 14-5-29.
  * Time: 11:51.
  */
-public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailureListener {
+public class ParameterUpdateTool implements WebInterface.OnRequestListener {
 
     private static final String TAG = ParameterUpdateTool.class.getSimpleName();
 
@@ -48,7 +45,7 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
         void onComplete();
 
         // 参数更新失败
-        void onFailed(Throwable throwable);
+        void onFailed(Throwable throwable, String name, int type);
     }
 
     private OnCheckResultListener mListener;
@@ -87,10 +84,19 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
 
     private boolean broadcastRegistered;
 
+    /**
+     * 功能码更新时间戳
+     */
     private String functionCodeUpdateTimeString;
 
+    /**
+     * 状态码更新时间戳
+     */
     private String stateCodeUpdateTimeString;
 
+    /**
+     * 故障帮助更新时间戳
+     */
     private String errorHelpUpdateTimeString;
 
     /**
@@ -115,14 +121,14 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
             public void onReceive(Context context, Intent intent) {
                 boolean noConnectivity = intent.getBooleanExtra(ConnectivityManager.EXTRA_NO_CONNECTIVITY, false);
                 if (noConnectivity && mListener != null) {
-                    mListener.onFailed(null);
+                    mListener.onFailed(null, getDeviceName(), getDeviceType());
                     // Unregister network state change broadcast receiver
                     if (broadcastRegistered) {
                         try {
                             context.unregisterReceiver(broadcastReceiver());
                             broadcastRegistered = false;
                         } catch (Exception e) {
-                            Log.v(TAG, "Unregister broadcast failed");
+                            e.printStackTrace();
                         }
                     }
                 }
@@ -152,7 +158,7 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
                 context.registerReceiver(broadcastReceiver(), intentFilter());
                 broadcastRegistered = true;
             } catch (Exception e) {
-                Log.v(TAG, "Register broadcast failed");
+                e.printStackTrace();
             }
         }
     }
@@ -184,6 +190,13 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
             return currentDevice.getDeviceName();
         }
         return "0xFFFFFFFF";
+    }
+
+    public int getDeviceType() {
+        if (currentDevice != null) {
+            return currentDevice.getDeviceType();
+        }
+        return -1;
     }
 
     public String getSupplierCode() {
@@ -221,38 +234,49 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
     }
 
     /**
+     * 检查结果接口
+     *
+     * @param listener OnCheckResultListener
+     */
+    public void setOnCheckResultListener(OnCheckResultListener listener) {
+        mListener = listener;
+    }
+
+    /**
      * 根据设备名称查找数据库中是否存在相应的条目
      *
      * @param remoteID   API 设备ID
      * @param deviceName 设备名称
      * @param deviceType 设备类型 标准、专有
-     * @param listener   OnCheckResultListener
      */
-    public void selectDevice(Context context,
-                             int remoteID, String deviceName,
-                             int deviceType, OnCheckResultListener listener) {
-        this.context = context;
-        mListener = listener;
-        Device device = DeviceDao.findByName(context, deviceName, deviceType);
-        if (device != null) {
-            device.setRemoteID(remoteID);
-            this.currentDevice = device;
+    public void selectDevice(Context context, int remoteID, String deviceName, int deviceType) {
+        if (WebInterface.isNetworkAvailable(context)) {
+            this.context = context;
+            Device device = DeviceDao.findByName(context, deviceName, deviceType);
+            if (device != null) {
+                device.setRemoteID(remoteID);
+                this.currentDevice = device;
+            } else {
+                device = new Device();
+                device.setDeviceType(deviceType);
+                device.setDeviceName(deviceName);
+                DeviceDao.save(context, device);
+                device.setRemoteID(remoteID);
+                this.currentDevice = device;
+            }
+            Toast.makeText(context, R.string.check_parameter_data_update_text, Toast.LENGTH_SHORT).show();
+            // 检查并更新参数功能码
+            updateFunctionCodeComplete = false;
+            updateStateCodeComplete = false;
+            updateErrorHelpComplete = false;
+            WebInterface.getInstance().setOnRequestListener(this);
+            WebInterface.getInstance().getDeviceCodeUpdateTime(context, remoteID, deviceType);
         } else {
-            device = new Device();
-            device.setDeviceType(deviceType);
-            device.setDeviceName(deviceName);
-            DeviceDao.save(context, device);
-            device.setRemoteID(remoteID);
-            this.currentDevice = device;
+            // 网络不可用
+            if (mListener != null) {
+                mListener.onFailed(null, getDeviceName(), getDeviceType());
+            }
         }
-        Toast.makeText(context, R.string.check_parameter_data_update_text, Toast.LENGTH_SHORT).show();
-        // 检查并更新参数功能码
-        updateFunctionCodeComplete = false;
-        updateStateCodeComplete = false;
-        updateErrorHelpComplete = false;
-        WebApi.getInstance().setOnFailureListener(this);
-        WebApi.getInstance().setOnResultListener(this);
-        WebApi.getInstance().getDeviceCodeUpdateTime(context, remoteID, deviceType);
     }
 
     private void showUpdateDialog() {
@@ -310,7 +334,7 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
                                         ApplicationConfig.FunctionCodeType);
                                 updateFunctionCodeComplete = false;
                                 showUpdateDialog();
-                                WebApi.getInstance().getFunctionCode(context,
+                                WebInterface.getInstance().getFunctionCode(context,
                                         currentDevice.getRemoteID(),
                                         currentDevice.getDeviceType());
                             } else {
@@ -326,7 +350,7 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
                                         ApplicationConfig.StateCodeType);
                                 updateStateCodeComplete = false;
                                 showUpdateDialog();
-                                WebApi.getInstance().getStateCode(context,
+                                WebInterface.getInstance().getStateCode(context,
                                         currentDevice.getRemoteID(),
                                         currentDevice.getDeviceType());
                             } else {
@@ -339,7 +363,7 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
                                 errorHelpUpdateTimeString = updateTimeString;
                                 updateErrorHelpComplete = false;
                                 showUpdateDialog();
-                                WebApi.getInstance().getErrorHelpList(context,
+                                WebInterface.getInstance().getErrorHelpList(context,
                                         currentDevice.getRemoteID(),
                                         currentDevice.getDeviceType());
                             } else {
@@ -412,7 +436,7 @@ public class ParameterUpdateTool implements OnGetResultListener, OnRequestFailur
             updateDialog.dismiss();
         }
         if (mListener != null) {
-            mListener.onFailed(throwable);
+            mListener.onFailed(throwable, getDeviceName(), getDeviceType());
         }
     }
 }

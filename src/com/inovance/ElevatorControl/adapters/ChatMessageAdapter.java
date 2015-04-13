@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.models.ChatMessage;
 import com.inovance.elevatorcontrol.views.SquareLayout;

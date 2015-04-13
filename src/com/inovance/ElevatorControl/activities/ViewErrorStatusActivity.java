@@ -2,12 +2,11 @@ package com.inovance.elevatorcontrol.activities;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Message;
 import android.view.MenuItem;
 import android.widget.ListView;
-import butterknife.InjectView;
-import butterknife.Views;
-import com.inovance.bluetoothtool.BluetoothHandler;
+
 import com.inovance.bluetoothtool.BluetoothTalk;
 import com.inovance.bluetoothtool.BluetoothTool;
 import com.inovance.bluetoothtool.SerialUtility;
@@ -15,6 +14,7 @@ import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
 import com.inovance.elevatorcontrol.daos.ParameterSettingsDao;
+import com.inovance.elevatorcontrol.handlers.UnlockHandler;
 import com.inovance.elevatorcontrol.models.ObjectListHolder;
 import com.inovance.elevatorcontrol.models.ParameterSettings;
 import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
@@ -23,6 +23,11 @@ import com.mobsandgeeks.adapters.InstantAdapter;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import butterknife.InjectView;
+import butterknife.Views;
 
 /**
  * Created by IntelliJ IDEA.
@@ -30,7 +35,7 @@ import java.util.List;
  * Date: 14-4-17.
  * Time: 10:48.
  */
-public class ViewErrorStatusActivity extends Activity {
+public class ViewErrorStatusActivity extends Activity implements Runnable {
 
     @InjectView(R.id.list_view)
     ListView listView;
@@ -45,6 +50,30 @@ public class ViewErrorStatusActivity extends Activity {
 
     private List<ParameterSettings> settingsList;
 
+    /**
+     * 同步 Handler 用于不断循环读取
+     */
+    private Handler syncHandler = new Handler();
+
+    /**
+     * 同步时间间隔
+     */
+    private static final int SYNC_TIME = 800;
+
+    /**
+     * 当前 Loop 是否运行
+     */
+    private boolean isRunning;
+
+    public boolean isSyncing = false;
+
+    /**
+     * 同步实时状态 Task
+     */
+    private Runnable syncTask;
+
+    private ExecutorService pool = Executors.newSingleThreadExecutor();
+
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
@@ -57,6 +86,21 @@ public class ViewErrorStatusActivity extends Activity {
         errorStatusHandler = new ErrorStatusHandler(this);
         createCommunication();
         startCommunication();
+
+        // 同步实时状态
+        syncTask = new Runnable() {
+            @Override
+            public void run() {
+                if (isRunning) {
+                    if (BluetoothTool.getInstance().isPrepared()) {
+                        if (!isSyncing) {
+                            pool.execute(ViewErrorStatusActivity.this);
+                        }
+                        syncHandler.postDelayed(syncTask, SYNC_TIME);
+                    }
+                }
+            }
+        };
     }
 
     private void generateErrorStatusFilters() {
@@ -95,8 +139,17 @@ public class ViewErrorStatusActivity extends Activity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        isRunning = true;
+        isSyncing = false;
+        syncHandler.postDelayed(syncTask, SYNC_TIME);
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
+        isRunning = false;
         overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
     }
 
@@ -169,6 +222,7 @@ public class ViewErrorStatusActivity extends Activity {
     public void startCommunication() {
         if (communications != null) {
             if (BluetoothTool.getInstance().isPrepared()) {
+                isSyncing = true;
                 errorStatusHandler.sendCount = communications.length;
                 BluetoothTool.getInstance()
                         .setHandler(errorStatusHandler)
@@ -178,8 +232,34 @@ public class ViewErrorStatusActivity extends Activity {
         }
     }
 
+    /**
+     * 解析读取到的故障信息
+     *
+     * @param settingsList ParameterSettings List
+     */
+    private void onGetErrorStatus(List<ParameterSettings> settingsList) {
+        for (ParameterSettings item : settingsList) {
+            if (item.getName().equalsIgnoreCase(filters[2])) {
+                int intValue = ParseSerialsUtils.getIntFromBytes(item.getReceived());
+                item.setFinalValue(intValue / 100 + "月" + intValue % 100 + "日");
+            }
+            if (item.getName().equalsIgnoreCase(filters[3])) {
+                int intValue = ParseSerialsUtils.getIntFromBytes(item.getReceived());
+                item.setFinalValue(intValue / 100 + ":" + intValue % 100);
+            }
+        }
+        settingsList.clear();
+        settingsList.addAll(settingsList);
+        instantAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void run() {
+        startCommunication();
+    }
+
     // ================================================== Handler =========================================== //
-    public class ErrorStatusHandler extends BluetoothHandler {
+    public class ErrorStatusHandler extends UnlockHandler {
 
         public int sendCount = 0;
 
@@ -203,22 +283,9 @@ public class ViewErrorStatusActivity extends Activity {
         public void onMultiTalkEnd(Message msg) {
             super.onMultiTalkEnd(msg);
             if (receiveCount == sendCount) {
-                for (ParameterSettings item : tempList) {
-                    if (item.getName().equalsIgnoreCase(filters[2])) {
-                        int intValue = ParseSerialsUtils.getIntFromBytes(item.getReceived());
-                        item.setFinalValue(intValue / 100 + "月" + intValue % 100 + "日");
-                    }
-                    if (item.getName().equalsIgnoreCase(filters[3])) {
-                        int intValue = ParseSerialsUtils.getIntFromBytes(item.getReceived());
-                        item.setFinalValue(intValue / 100 + ":" + intValue % 100);
-                    }
-                }
-                ((ViewErrorStatusActivity) activity).settingsList.clear();
-                ((ViewErrorStatusActivity) activity).settingsList.addAll(tempList);
-                ((ViewErrorStatusActivity) activity).instantAdapter.notifyDataSetChanged();
-            } else {
-                ((ViewErrorStatusActivity) activity).startCommunication();
+                onGetErrorStatus(tempList);
             }
+            isSyncing = false;
         }
 
         @Override
@@ -232,11 +299,6 @@ public class ViewErrorStatusActivity extends Activity {
                 }
                 receiveCount++;
             }
-        }
-
-        @Override
-        public void onTalkError(Message msg) {
-            ((ViewErrorStatusActivity) activity).startCommunication();
         }
 
     }

@@ -1,8 +1,9 @@
 package com.inovance.elevatorcontrol.cache;
 
 import android.content.Context;
-import android.os.Environment;
+
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
+import com.inovance.elevatorcontrol.utils.UserSession;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,9 +42,9 @@ public class LruCacheTool {
      * @param context context
      */
     public void initCache(Context context) {
-        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            if (context.getFilesDir() != null) {
-                File path = new File(context.getFilesDir().getPath() + "/" + ApplicationConfig.CacheFolder);
+        if (context.getFilesDir() != null) {
+            File path = new File(context.getFilesDir().getPath() + "/" + ApplicationConfig.CacheFolder);
+            if (!UserSession.getInstance().isSessionAvailable()) {
                 if (path.exists()) {
                     if (path.isDirectory()) {
                         String[] children = path.list();
@@ -52,14 +53,14 @@ public class LruCacheTool {
                         }
                     }
                 }
-                if (!path.exists()) {
-                    path.mkdir();
-                }
-                try {
-                    diskCache = SimpleDiskCache.open(path, versionCode, cacheMaxSize);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            }
+            if (!path.exists()) {
+                path.mkdir();
+            }
+            try {
+                diskCache = SimpleDiskCache.open(path, versionCode, cacheMaxSize);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }

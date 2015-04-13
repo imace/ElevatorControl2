@@ -8,17 +8,22 @@ import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.*;
-import butterknife.InjectView;
-import butterknife.Views;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
-import com.inovance.elevatorcontrol.web.WebApi;
-import com.inovance.elevatorcontrol.web.WebApi.OnGetResultListener;
-import com.inovance.elevatorcontrol.web.WebApi.OnRequestFailureListener;
+import com.inovance.elevatorcontrol.web.WebInterface;
+
 import org.json.JSONArray;
 import org.json.JSONException;
+
+import butterknife.InjectView;
+import butterknife.Views;
 
 /**
  * Created by IntelliJ IDEA.
@@ -26,7 +31,7 @@ import org.json.JSONException;
  * Date: 14-6-26.
  * Time: 17:17.
  */
-public class InternalRegisterActivity extends Activity implements OnGetResultListener, OnRequestFailureListener {
+public class InternalRegisterActivity extends Activity implements WebInterface.OnRequestListener {
 
     @InjectView(R.id.internal_username)
     EditText internalUsername;
@@ -87,8 +92,7 @@ public class InternalRegisterActivity extends Activity implements OnGetResultLis
     @Override
     protected void onResume() {
         super.onResume();
-        WebApi.getInstance().setOnResultListener(this);
-        WebApi.getInstance().setOnFailureListener(this);
+        WebInterface.getInstance().setOnRequestListener(this);
         if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(intent, REQUEST_BLUETOOTH_ENABLE);
@@ -98,14 +102,14 @@ public class InternalRegisterActivity extends Activity implements OnGetResultLis
     @Override
     protected void onPause() {
         super.onPause();
-        WebApi.getInstance().removeListener();
+        WebInterface.getInstance().removeListener();
         overridePendingTransition(R.anim.activity_open_animation, R.anim.activity_close_animation);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        WebApi.getInstance().removeListener();
+        WebInterface.getInstance().removeListener();
     }
 
     /**
@@ -116,7 +120,7 @@ public class InternalRegisterActivity extends Activity implements OnGetResultLis
             submitProgress.setVisibility(View.VISIBLE);
             submitTextView.setVisibility(View.GONE);
             BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-            WebApi.getInstance().registerInternalUser(this, internalUsername.getText().toString(),
+            WebInterface.getInstance().registerInternalUser(this, internalUsername.getText().toString(),
                     internalNumber.getText().toString(),
                     internalCellphone.getText().toString(),
                     internalDepartment.getText().toString(),

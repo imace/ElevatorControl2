@@ -6,15 +6,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import butterknife.InjectView;
-import butterknife.OnClick;
-import butterknife.Views;
+
 import com.inovance.bluetoothtool.BluetoothTool;
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
@@ -23,16 +20,20 @@ import com.inovance.elevatorcontrol.daos.ParameterFactoryDao;
 import com.inovance.elevatorcontrol.models.User;
 import com.inovance.elevatorcontrol.utils.UpdateApplication;
 import com.inovance.elevatorcontrol.utils.UpdateApplication.OnNoUpdateFoundListener;
-import com.inovance.elevatorcontrol.web.WebApi;
-import com.inovance.elevatorcontrol.web.WebApi.OnGetResultListener;
-import com.inovance.elevatorcontrol.web.WebApi.OnRequestFailureListener;
+import com.inovance.elevatorcontrol.utils.UserSession;
+import com.inovance.elevatorcontrol.web.WebInterface;
+
 import org.json.JSONArray;
 import org.json.JSONException;
+
+import butterknife.InjectView;
+import butterknife.OnClick;
+import butterknife.Views;
 
 /**
  * 检查当前用户是否被授权
  */
-public class CheckAuthorizationActivity extends Activity implements OnGetResultListener, OnRequestFailureListener {
+public class CheckAuthorizationActivity extends Activity implements WebInterface.OnRequestListener, OnNoUpdateFoundListener {
 
     private static final int WRITE_FINISH = 0;
 
@@ -60,6 +61,10 @@ public class CheckAuthorizationActivity extends Activity implements OnGetResultL
     @InjectView(R.id.wait_text)
     TextView waitTextView;
 
+    private int checkTimes;
+
+    private static final int MAX_RETRY_TIMES = 3;
+
     private boolean hasGetNormalDeviceList = false;
 
     private boolean hasGetSpecialDeviceList = false;
@@ -80,36 +85,35 @@ public class CheckAuthorizationActivity extends Activity implements OnGetResultL
         Views.inject(this);
         btnSignUp.setEnabled(false);
         btnLogin.setEnabled(false);
-        UpdateApplication.getInstance().setOnNoUpdateFoundListener(new OnNoUpdateFoundListener() {
-            @Override
-            public void onNoUpdate() {
-                initializeData();
-                UpdateApplication.getInstance().setOnNoUpdateFoundListener(null);
-            }
-        });
-
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        WebApi.getInstance().setOnResultListener(this);
-        WebApi.getInstance().setOnFailureListener(this);
+        WebInterface.getInstance().setOnRequestListener(this);
         UpdateApplication.getInstance().setCurrentActivity(this);
+        UpdateApplication.getInstance().setOnNoUpdateFoundListener(this);
         if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
             btnSignUp.setEnabled(false);
             btnLogin.setEnabled(false);
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(intent, REQUEST_BLUETOOTH_ENABLE);
         } else {
-            UpdateApplication.getInstance().checkUpdate();
+            if (WebInterface.isNetworkAvailable(this)) {
+                checkTimes++;
+                UpdateApplication.getInstance().checkUpdate();
+            } else {
+                if (UserSession.getInstance().isSessionAvailable()) {
+                    verifyCurrentUser();
+                }
+            }
         }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        WebApi.getInstance().removeListener();
+        WebInterface.getInstance().removeListener();
     }
 
     @Override
@@ -139,8 +143,6 @@ public class CheckAuthorizationActivity extends Activity implements OnGetResultL
 
     @OnClick(R.id.btn_login)
     public void btnLoginClick(View v) {
-        WebApi.getInstance().setOnResultListener(this);
-        WebApi.getInstance().setOnFailureListener(this);
         verifyCurrentUser();
     }
 
@@ -153,7 +155,8 @@ public class CheckAuthorizationActivity extends Activity implements OnGetResultL
         btnLogin.setEnabled(false);
         btnSignUp.setEnabled(false);
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        WebApi.getInstance().verifyUser(this, bluetoothAdapter.getAddress());
+        WebInterface.getInstance().setOnRequestListener(this);
+        WebInterface.getInstance().verifyUser(this, bluetoothAdapter.getAddress());
     }
 
     /**
@@ -168,6 +171,9 @@ public class CheckAuthorizationActivity extends Activity implements OnGetResultL
         } else {
             btnLogin.setEnabled(true);
             btnSignUp.setEnabled(true);
+            if (UserSession.getInstance().isSessionAvailable()) {
+                verifyCurrentUser();
+            }
         }
     }
 
@@ -213,9 +219,7 @@ public class CheckAuthorizationActivity extends Activity implements OnGetResultL
                 progressView.setVisibility(View.INVISIBLE);
                 btnSignUp.setEnabled(true);
                 btnLogin.setEnabled(true);
-                Toast.makeText(CheckAuthorizationActivity.this,
-                        R.string.unauthorized_message,
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(CheckAuthorizationActivity.this, R.string.unauthorized_message, Toast.LENGTH_SHORT).show();
             } else {
                 try {
                     JSONArray jsonArray = new JSONArray(responseString);
@@ -223,13 +227,13 @@ public class CheckAuthorizationActivity extends Activity implements OnGetResultL
                     if (size > 0) {
                         User user = new User(jsonArray.getJSONObject(0));
                         ParameterUpdateTool.getInstance().setCurrentUser(user);
-                        WebApi.getInstance().setOnResultListener(this);
-                        WebApi.getInstance().setOnFailureListener(this);
-                        WebApi.getInstance().getNormalDeviceList(this);
-                        WebApi.getInstance().getSpecialDeviceList(this);
+                        WebInterface.getInstance().setOnRequestListener(this);
+                        WebInterface.getInstance().getNormalDeviceList(this);
+                        WebInterface.getInstance().getSpecialDeviceList(this);
                         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-                        WebApi.getInstance().getSpecialDeviceCodeList(this, bluetoothAdapter.getAddress());
+                        WebInterface.getInstance().getSpecialDeviceCodeList(this, bluetoothAdapter.getAddress());
                     }
+                    UserSession.getInstance().recordSession();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -243,7 +247,7 @@ public class CheckAuthorizationActivity extends Activity implements OnGetResultL
             hasGetSpecialDeviceList = true;
             checkGetDeviceListComplete();
         }
-        if (tag.equalsIgnoreCase(ApplicationConfig.GetSpecialDeviceList)) {
+        if (tag.equalsIgnoreCase(ApplicationConfig.GetSpecialDeviceCodeList)) {
             hasGetSpecialDeviceCodeList = true;
             checkGetDeviceListComplete();
         }
@@ -251,9 +255,20 @@ public class CheckAuthorizationActivity extends Activity implements OnGetResultL
 
     @Override
     public void onFailure(int statusCode, Throwable throwable) {
-        Toast.makeText(this, R.string.server_error_text, Toast.LENGTH_SHORT).show();
-        CheckAuthorizationActivity.this.progressView.setVisibility(View.INVISIBLE);
-        CheckAuthorizationActivity.this.btnSignUp.setEnabled(true);
-        CheckAuthorizationActivity.this.btnLogin.setEnabled(true);
+        if (checkTimes < MAX_RETRY_TIMES) {
+            checkTimes++;
+            UpdateApplication.getInstance().checkUpdate();
+        } else {
+            Toast.makeText(this, R.string.server_error_text, Toast.LENGTH_SHORT).show();
+            CheckAuthorizationActivity.this.progressView.setVisibility(View.INVISIBLE);
+            CheckAuthorizationActivity.this.btnSignUp.setEnabled(true);
+            CheckAuthorizationActivity.this.btnLogin.setEnabled(true);
+        }
+    }
+
+    @Override
+    public void onNoUpdate() {
+        initializeData();
+        UpdateApplication.getInstance().setOnNoUpdateFoundListener(null);
     }
 }
