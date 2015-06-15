@@ -199,11 +199,6 @@ public class ApplyPermissionActivity extends Activity implements WebInterface.On
         for (int index = 0; index < vendorListSize; index++) {
             vendorNames[index] = vendorList.get(index).getName();
         }
-        /*
-        ArrayAdapter<String> vendorAdapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_dropdown_item_1line,
-                vendorNames);
-                */
         FullSuggestAdapter vendorAdapter = new FullSuggestAdapter(this,
                 android.R.layout.simple_dropdown_item_1line,
                 vendorNames);

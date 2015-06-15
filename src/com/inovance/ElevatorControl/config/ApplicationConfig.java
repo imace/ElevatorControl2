@@ -23,6 +23,14 @@ public class ApplicationConfig {
     public static final String DefaultDeviceName = "NICE 3000+";
 
     /**
+     * 识别厂商的SN
+     *  1 标准设备-内部用户 999999
+        2. 标准设备-普通用户 000000
+        3. 非标设备的SN 定义  打包时再定义
+     */
+    public static final String SN = "000000";
+
+    /**
      * 写密码解锁设备参数
      */
     public static final String UnlockDeviceCode = "4000";
@@ -384,6 +392,43 @@ public class ApplicationConfig {
     // 返回值：返回JSON格式的所有通用设备信息列表
     public static final String GetNormalDeviceList = "GetDeviceList";
 
+    //************************************//
+    // <editor-fold desc="软件更新">
+
+    // 获取软件最新版本 -- 20150514讨论接口
+    // 参数：厂商SN
+    // 返回值：返回软件版本信息的字符串
+    public static final String GetAppLatestVersionBySN = "GetAppLatestVersionBySN";
+
+    // 下载VersionID对应的软件安装包 -- 20150514讨论接口
+    // 参数：VersionID（版本ID）
+    // 返回值：更新包文件流
+    public static final String DownloadSoftwareByVersion = "getAppVersionByID";
+
+
+    // 取得软件最新版本
+    // 参数：无
+    // 返回值：返回JSON格式的软件版本信息
+    public static final String GetLastSoftwareVersion = IsInternalVersion
+            ? "GetSoftwareVersionInside"
+            : "GetSoftwareVersion";
+
+    // 下载最新软件安装包
+    // 参数：无
+    // 返回值：APK 安装包
+    public static final String DownloadApplicationFile = IsInternalVersion
+            ? "DownloadSoftwareFileInside"
+            : "UploadSoftwareFile";
+    // </editor-fold>
+
+    //************************************//
+    // <editor-fold desc="固件下载新API">
+
+
+    // </editor-fold>
+
+    // <editor-fold desc="固件下载旧接口">
+
     // 申请通用设备固件
     // 参数：blue 手机蓝牙地址
     // deviceID 设备ID
@@ -405,15 +450,18 @@ public class ApplicationConfig {
             ? "ApplicationRemind_Internal?blue="
             : "ApplicationRemind?blue=";
 
-    // 记录用户提取文件的日期，并删除服务器上的文件
-    // 参数：approveID 审批记录的ID(从上面的方法中获得的ID)
-    // 返回值：执行成功返回"success",否则返回错误信息
-    public static final String DeleteFile = "DeleteFile?approveID=";
-
     // 从服务器下载固件文件
     // 参数：approveID 审批记录的ID
     // 返回值：固件文件的Byte流
     public static final String DownloadFirmware = "getFirmwareFile?approveID=";
+
+    // 记录用户提取文件的日期，并删除服务器上的文件
+    // 参数：approveID 审批记录的ID(从上面的方法中获得的ID)
+    // 返回值：执行成功返回"success"，否则返回错误信息
+    public static final String DeleteFile = "DeleteFile?approveID=";
+
+    // </editor-fold>
+
 
     // 获取所有厂商的列表
     // 参数：无
@@ -435,20 +483,6 @@ public class ApplicationConfig {
     // Blue：申请用户蓝牙地址
     // 返回值：成功返回True，否则返回False或者错误信息
     public static final String ApplySpecialDevicePermission = "ApplySpecialDevicePermission";
-
-    // 取得软件最新版本
-    // 参数：无
-    // 返回值：返回JSON格式的软件版本信息
-    public static final String GetLastSoftwareVersion = IsInternalVersion
-            ? "GetSoftwareVersionInside"
-            : "GetSoftwareVersion";
-
-    // 下载最新软件安装包
-    // 参数：无
-    // 返回值：APK 安装包
-    public static final String DownloadApplicationFile = IsInternalVersion
-            ? "DownloadSoftwareFileInside"
-            : "UploadSoftwareFile";
 
     // 发送远程协助文件
     // 参数：FromNum：发送者电话号码

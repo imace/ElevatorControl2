@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -33,10 +34,18 @@ public class BluetoothTool implements Runnable {
      */
     private BluetoothHandler handler;
 
+    public void setCRCValue(int value) {
+        this.CRCValue = value;
+    }
+
+    public int getCRCValue() {
+        return CRCValue;
+    }
+
     /**
      * CRC 校验值
      */
-    public int crcValue = CRCValueNone;
+    private int CRCValue = CRCValueNone;
 
     public static final int CRCValueNone = -1;
 
@@ -57,7 +66,7 @@ public class BluetoothTool implements Runnable {
      */
     private BroadcastReceiver broadcastReceiver;
 
-    private ExecutorService pool = Executors.newFixedThreadPool(4);
+    private ExecutorService pool = Executors.newFixedThreadPool(2);
 
     /**
      * 已搜索到的蓝牙设备列表
@@ -85,6 +94,11 @@ public class BluetoothTool implements Runnable {
      * 已连接的蓝牙设备
      */
     public BluetoothDevice connectedDevice;
+
+    /**
+     * 问题设备
+     */
+    private static final String[] specialDevices = new String[]{"Lenovo a850", "HUAWEI G610-U00"};
 
     /**
      * RfcommSocket UUID
@@ -119,7 +133,7 @@ public class BluetoothTool implements Runnable {
         this.unlocking = unlocking;
     }
 
-    public void setUnlocked(){
+    public void setUnlocked() {
         this.unlocking = false;
         this.isLocked = false;
     }
@@ -240,6 +254,12 @@ public class BluetoothTool implements Runnable {
                     handler.sendMessage(mg);
                 }
                 communication.afterSend();
+
+                // 针对问题设备
+                if (Arrays.asList(specialDevices).contains(Build.MODEL)) {
+                    Thread.sleep(150);
+                }
+
                 String valueString = SerialUtility.byte2HexStr(sendBuffer);
                 int expectLength;
                 if (valueString.substring(0, 4).equalsIgnoreCase("0106")) {
@@ -521,9 +541,6 @@ public class BluetoothTool implements Runnable {
      */
     public BluetoothTool setHandler(BluetoothHandler handler) {
         if (!unlocking && !isLocked) {
-            if (BuildConfig.DEBUG){
-                Log.v(TAG, "Set handler");
-            }
             Message msg = new Message();
             msg.what = BluetoothState.onHandlerChanged;
             msg.obj = this.handler;
@@ -602,29 +619,30 @@ public class BluetoothTool implements Runnable {
                     handler.sendEmptyMessage(BluetoothState.onMultiTalkBegin);
                 }
                 if (communications != null) {
-                    // =========================== Lenovo a850 not work =================== //
-                    try {
-                        InputStream inputStream = bluetoothSocket.getInputStream();
-                        while (true) {
-                            int available = inputStream.available();
-                            if (available > 0) {
-                                byte[] temp = new byte[1024];
-                                inputStream.read(temp);
-                            } else {
-                                break;
+                    // 特殊设备
+                    if (!Arrays.asList(specialDevices).contains(Build.MODEL)) {
+                        try {
+                            byte[] temp = new byte[1024];
+                            InputStream inputStream = bluetoothSocket.getInputStream();
+                            while (true) {
+                                int available = inputStream.available();
+                                if (available > 0) {
+                                    inputStream.read(temp);
+                                } else {
+                                    break;
+                                }
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            abortTalking = true;
+                            if (eventHandler != null) {
+                                eventHandler.sendEmptyMessage(BluetoothState.onBluetoothConnectException);
+                            }
+                            if (handler != null) {
+                                handler.sendEmptyMessage(BluetoothState.onBluetoothConnectException);
                             }
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        abortTalking = true;
-                        if (eventHandler != null) {
-                            eventHandler.sendEmptyMessage(BluetoothState.onBluetoothConnectException);
-                        }
-                        if (handler != null) {
-                            handler.sendEmptyMessage(BluetoothState.onBluetoothConnectException);
-                        }
                     }
-                    // =========================== Lenovo a850 not work =================== //
                     for (BluetoothTalk content : communications) {
                         if (abortTalking) {
                             break;

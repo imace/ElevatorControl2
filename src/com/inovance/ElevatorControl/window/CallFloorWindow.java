@@ -7,6 +7,7 @@ import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
@@ -32,6 +33,7 @@ import com.viewpagerindicator.TabPageIndicator;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -118,7 +120,7 @@ public class CallFloorWindow extends FragmentActivity implements CallInsideFragm
     /**
      * 同步间隔
      */
-    private static final int SYNC_TIME = 800;
+    private static final int SYNC_TIME = 600;
 
     /**
      * 最高层和最低层
@@ -454,23 +456,67 @@ public class CallFloorWindow extends FragmentActivity implements CallInsideFragm
      * 生成用于读取电梯外召信息的通信内容
      */
     private void createGetCallOutsideStatusCommunications() {
-        List<RealTimeMonitor> monitorList = new ArrayList<RealTimeMonitor>();
-        int index = 0;
-        for (final RealTimeMonitor monitor : callOutsideMonitorList) {
-            if (selectedFloor >= (index * 4 + 1) && selectedFloor <= (index + 1) * 4) {
-                monitorList.add(monitor);
+        if (getCallOutsideStatusCommunications == null) {
+            int size = callOutsideMonitorList.size();
+            final int count = size <= 10 ? 1 : ((size - size % 10) / 10 + (size % 10 == 0 ? 0 : 1));
+            getCallOutsideStatusCommunications = new BluetoothTalk[count + 1];
+            for (int i = 0; i < count; i++) {
+                final int position = i;
+                final RealTimeMonitor firstItem = callOutsideMonitorList.get(position * 10);
+                final int length = size <= 10 ? size : (size % 10 == 0 ? 10 : ((position == count - 1) ? size % 10 : 10));
+                getCallOutsideStatusCommunications[i] = new BluetoothTalk() {
+                    @Override
+                    public void beforeSend() {
+                        this.setSendBuffer(SerialUtility.crc16("0103"
+                                + firstItem.getCode()
+                                + String.format("%04x", length)));
+                    }
+
+                    @Override
+                    public void afterSend() {
+
+                    }
+
+                    @Override
+                    public void beforeReceive() {
+
+                    }
+
+                    @Override
+                    public void afterReceive() {
+
+                    }
+
+                    @Override
+                    public Object onParse() {
+                        if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
+                            byte[] data = SerialUtility.trimEnd(getReceivedBuffer());
+                            short bytesLength = ByteBuffer.wrap(new byte[]{data[2], data[3]}).getShort();
+                            if (length * 2 == bytesLength) {
+                                List<RealTimeMonitor> tempList = new ArrayList<RealTimeMonitor>();
+                                for (int j = 0; j < length; j++) {
+                                    if (position * 10 + j < callOutsideMonitorList.size()) {
+                                        RealTimeMonitor item = callOutsideMonitorList.get(position * 10 + j);
+                                        byte[] tempData = SerialUtility.crc16("01030002"
+                                                + SerialUtility.byte2HexStr(new byte[]{data[4 + j * 2], data[5 + j * 2]}));
+                                        item.setReceived(tempData);
+                                        tempList.add(item);
+                                    }
+                                }
+                                ObjectListHolder holder = new ObjectListHolder();
+                                holder.setRealTimeMonitorList(tempList);
+                                return holder;
+                            }
+                        }
+                        return null;
+                    }
+                };
             }
-            index++;
-        }
-        monitorList.add(RealTimeMonitorDao.findByStateID(this, ApplicationConfig.CurrentFloorType));
-        getCallOutsideStatusCommunications = new BluetoothTalk[monitorList.size()];
-        index = 0;
-        for (final RealTimeMonitor monitor : monitorList) {
-            getCallOutsideStatusCommunications[index] = new BluetoothTalk() {
+            getCallOutsideStatusCommunications[count] = new BluetoothTalk() {
                 @Override
                 public void beforeSend() {
                     this.setSendBuffer(SerialUtility.crc16("0103"
-                            + monitor.getCode()
+                            + currentFloorMonitor.getCode()
                             + "0001"));
                 }
 
@@ -492,13 +538,16 @@ public class CallFloorWindow extends FragmentActivity implements CallInsideFragm
                 @Override
                 public Object onParse() {
                     if (SerialUtility.isCRC16Valid(getReceivedBuffer())) {
-                        monitor.setReceived(getReceivedBuffer());
-                        return monitor;
+                        ObjectListHolder holder = new ObjectListHolder();
+                        currentFloorMonitor.setReceived(getReceivedBuffer());
+                        List<RealTimeMonitor> tempList = new ArrayList<RealTimeMonitor>();
+                        tempList.add(currentFloorMonitor);
+                        holder.setRealTimeMonitorList(tempList);
+                        return holder;
                     }
                     return null;
                 }
             };
-            index++;
         }
     }
 
@@ -693,12 +742,12 @@ public class CallFloorWindow extends FragmentActivity implements CallInsideFragm
      * @param currentFloor    当前楼层
      * @param floorCallStatus 楼层召唤信息
      */
-    private void handlerCallOutsideStatus(int currentFloor, int[][] floorCallStatus) {
+    private void handlerCallOutsideStatus(int currentFloor, List<Integer[]> statusList) {
         currentFloorTextView.setText(getString(R.string.current_floor_text) + String.valueOf(currentFloor));
         Fragment fragment = callFloorAdapter.getItem(mViewPager.getCurrentItem());
         if (fragment != null && fragment instanceof CallOutsideFragment) {
             CallOutsideFragment callOutsideFragment = (CallOutsideFragment) fragment;
-            callOutsideFragment.updateFloorCallStatus(floorCallStatus);
+            callOutsideFragment.updateFloorCallStatus(statusList);
         }
     }
 
@@ -1035,8 +1084,8 @@ public class CallFloorWindow extends FragmentActivity implements CallInsideFragm
         @Override
         public void onTalkReceive(Message msg) {
             super.onTalkReceive(msg);
-            if (msg.obj != null && msg.obj instanceof RealTimeMonitor) {
-                monitorList.add((RealTimeMonitor) msg.obj);
+            if (msg.obj != null && msg.obj instanceof ObjectListHolder) {
+                monitorList.addAll(((ObjectListHolder) msg.obj).getRealTimeMonitorList());
                 receiveCount++;
             }
         }
@@ -1047,39 +1096,35 @@ public class CallFloorWindow extends FragmentActivity implements CallInsideFragm
             if (sendCount == receiveCount) {
                 int currentFloor = Math.min(floors[0], floors[1]);
                 int size = monitorList.size();
-                int[][] floorCallStatus = new int[size][3];
+                List<Integer[]> statusList = new ArrayList<Integer[]>();
                 for (int m = 0; m < size; m++) {
                     RealTimeMonitor monitor = monitorList.get(m);
                     if (monitor.getStateID() == ApplicationConfig.CurrentFloorType) {
                         currentFloor = ParseSerialsUtils.getIntFromBytes(monitor.getReceived());
-                    }
-                    if (monitor.getStateID() == ApplicationConfig.MoveOutsideInformationType) {
+                    } else {
                         boolean[] result = ParseSerialsUtils.getBooleanValueArray(new byte[]{
                                 monitor.getReceived()[5]
                         });
                         if (result.length == 8) {
-                            boolean[][] states = new boolean[][]{
-                                    new boolean[]{result[0], result[1]},
-                                    new boolean[]{result[2], result[3]},
-                                    new boolean[]{result[4], result[5]},
-                                    new boolean[]{result[6], result[7]}
-                            };
                             String[] scopes = monitor.getScope().split("~");
                             int min = Integer.parseInt(scopes[0]);
-                            for (int n = 0; n < states.length; n++) {
-                                int isUp = !states[n][0] ? 0 : 1;
-                                int isDown = !states[n][1] ? 0 : 1;
-                                floorCallStatus[m] = new int[]{min + n, isUp, isDown};
+                            for (int n = 0; n < 4; n++) {
+                                int isUp = result[n * 2] ? 1 : 0;
+                                int isDown = result[n * 2 + 1] ? 1 : 0;
+                                // 被上召或者下召
+                                if (isUp == 1 || isDown == 1) {
+                                    Integer[] status = new Integer[]{min + n, isUp, isDown};
+                                    statusList.add(status);
+                                }
                             }
                         }
                     }
                 }
-                handlerCallOutsideStatus(currentFloor, floorCallStatus);
+                handlerCallOutsideStatus(currentFloor, statusList);
             }
             currentTask = GET_CALL_OUTSIDE_STATUS;
             isSyncing = false;
         }
-
     }
 
     private class SortComparator implements Comparator<RealTimeMonitor> {

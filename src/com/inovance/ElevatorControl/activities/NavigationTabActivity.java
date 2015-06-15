@@ -27,6 +27,7 @@ import com.inovance.bluetoothtool.BluetoothTalk;
 import com.inovance.bluetoothtool.BluetoothTool;
 import com.inovance.bluetoothtool.SerialUtility;
 import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.cache.ValueCache;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.config.ParameterUpdateTool;
 import com.inovance.elevatorcontrol.daos.DeviceDao;
@@ -290,6 +291,8 @@ public class NavigationTabActivity extends TabActivity implements Runnable, WebI
                 if (BluetoothTool.getInstance().isPrepared()) {
                     startActivity(new Intent(NavigationTabActivity.this, CallFloorWindow.class));
                 }
+                else
+                    startActivity(new Intent(NavigationTabActivity.this, WizardStartActivity.class));
             }
         });
 
@@ -711,7 +714,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, WebI
      */
     private void getNormalDeviceType() {
         if (getNormalDeviceTypeTalk == null) {
-            BluetoothTool.getInstance().crcValue = BluetoothTool.CRCValueNone;
+            BluetoothTool.getInstance().setCRCValue(BluetoothTool.CRCValueNone);
             getNormalDeviceTypeTalk = new BluetoothTalk[]{
                     new BluetoothTalk() {
                         @Override
@@ -766,7 +769,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, WebI
     private void getSpecialDeviceType() {
         if (specialDeviceCodeIndex < communicationCodeList.size()) {
             final CommunicationCode code = communicationCodeList.get(specialDeviceCodeIndex);
-            BluetoothTool.getInstance().crcValue = code.getCrcValue();
+            BluetoothTool.getInstance().setCRCValue(code.getCrcValue());
             // 通信码是否过期
             if (!code.isExpire()) {
                 BluetoothTalk[] talks = new BluetoothTalk[1];
@@ -1000,6 +1003,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, WebI
                         CommunicationCode code = new CommunicationCode(object);
                         communicationCodeList.add(code);
                     }
+                    ValueCache.getInstance().setCodeList(communicationCodeList);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -1101,7 +1105,7 @@ public class NavigationTabActivity extends TabActivity implements Runnable, WebI
             if (msg.obj != null && msg.obj instanceof Integer) {
                 isRunning = false;
                 hasGetDeviceType = true;
-                BluetoothTool.getInstance().crcValue = BluetoothTool.CRCValueNone;
+                BluetoothTool.getInstance().setCRCValue(BluetoothTool.CRCValueNone);
                 onGetNormalDeviceType((Integer) msg.obj);
             }
         }

@@ -178,13 +178,10 @@ public class ConfigurationFragment extends Fragment {
         groupListView.setAdapter(groupAdapter);
         groupListView.setOnItemClickListener(new OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view,
-                                    int position, long id) {
-                if (BluetoothTool.getInstance().isPrepared()) {
-                    Intent intent = new Intent(getActivity(), ParameterDetailActivity.class);
-                    intent.putExtra("SelectedId", groupSettingsList.get(position).getId());
-                    getActivity().startActivity(intent);
-                }
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(getActivity(), ParameterDetailActivity.class);
+                intent.putExtra("SelectedId", groupSettingsList.get(position).getId());
+                getActivity().startActivity(intent);
             }
         });
     }

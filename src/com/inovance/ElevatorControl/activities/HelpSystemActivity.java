@@ -42,24 +42,31 @@ public class HelpSystemActivity extends Activity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 switch (position) {
                     case 1:
+                        // 快捷菜单
                         startActivity(new Intent(HelpSystemActivity.this, ShortcutSettingActivity.class));
                         break;
                     case 2:
+                        // 检查程序更新
                         checkApplicationUpdate();
                         break;
                     case 4:
+                        // 条形码扫描
                         startActivity(new Intent(HelpSystemActivity.this, ZxingScannerActivity.class));
                         break;
                     case 5:
+                        // 远程协助
                         startActivity(new Intent(HelpSystemActivity.this, RemoteHelpActivity.class));
                         break;
                     case 6:
+                        // 解锁设备
                         unlockDevice();
                         break;
                     case 8:
+                        // 系统日志
                         startActivity(new Intent(HelpSystemActivity.this, SystemLogActivity.class));
                         break;
                     case 9:
+                        // 关于
                         startActivity(new Intent(HelpSystemActivity.this, AboutActivity.class));
                         break;
                 }

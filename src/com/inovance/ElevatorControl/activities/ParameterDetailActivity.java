@@ -266,8 +266,13 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
             }
         }
         listViewDataSource = new ArrayList<ParameterSettings>();
-        for (ParameterSettings item : settingsList) {
-            listViewDataSource.add(item);
+        if (BluetoothTool.getInstance().isPrepared()) {
+            listViewDataSource.addAll(settingsList);
+        } else {
+            for (ParameterSettings item : settingsList) {
+                item.setFinalValue(item.getDefaultValue());
+                listViewDataSource.add(item);
+            }
         }
         instantAdapter = new InstantAdapter<ParameterSettings>(this,
                 R.layout.list_parameter_group_item,
@@ -986,7 +991,9 @@ public class ParameterDetailActivity extends Activity implements RefreshActionIt
 
     @Override
     public void onRefreshButtonClick(RefreshActionItem sender) {
-        refreshParameterData();
+        if (BluetoothTool.getInstance().isPrepared()) {
+            refreshParameterData();
+        }
     }
 
     @Override

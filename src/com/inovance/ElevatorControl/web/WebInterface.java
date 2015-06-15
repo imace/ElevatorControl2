@@ -42,6 +42,9 @@ public class WebInterface {
 
     private static final String BASE64_TAG = "base64Binary";
 
+    /**
+     * 请求超时时间
+     */
     private static final int RequestTimeout = 3000;
 
     public static interface OnRequestListener {
@@ -448,6 +451,12 @@ public class WebInterface {
         String requestURL = ApplicationConfig.APIUri
                 + ApplicationConfig.GetLastSoftwareVersion;
         startGetRequest(context, requestURL, ApplicationConfig.GetLastSoftwareVersion, false);
+    }
+
+    public void getLastSoftwareVersionNew(Context context) {
+        String requestURL = ApplicationConfig.APIUri
+                + ApplicationConfig.GetAppLatestVersionBySN;
+        startGetRequest(context, requestURL, ApplicationConfig.GetAppLatestVersionBySN, false);
     }
 
     /**

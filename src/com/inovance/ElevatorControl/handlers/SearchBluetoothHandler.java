@@ -42,6 +42,7 @@ public class SearchBluetoothHandler extends BluetoothHandler {
     @Override
     public void onBeginDiscovering(Message msg) {
         super.onBeginDiscovering(msg);
+        BluetoothTool.getInstance().setUnlocked();
         mNavigationTabActivity.updateConnectStatusUI();
         mNavigationTabActivity.showRefreshButtonProgress(true);
         mNavigationTabActivity.updateSpinnerDropdownItem(new ArrayList<BluetoothDevice>());

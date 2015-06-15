@@ -525,4 +525,6 @@
         <item>参数设置</item>
         <item>程序申请</item>
     </string-array>
+
+    <string name="start_tips_text">调试前，请设好下列功能</string>
 </resources>

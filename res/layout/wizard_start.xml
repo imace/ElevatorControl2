@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:gravity="center"
+        android:padding="20dp"
+        android:minHeight="50dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:gravity="center"
+            style="@android:style/TextAppearance"
+            android:background="#80000000"
+            android:textColor="#ffffffff"
+            android:padding="10dp"
+            android:id="@+id/wizard_start_info"
+            android:text="@string/start_tips_text"
+            android:layout_height="match_parent"
+            android:layout_width="wrap_content"/>
+    </LinearLayout>
+
+    <TableLayout android:id="@+id/table1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        android:gravity="center"
+        >
+        <TextView
+            android:gravity="left"
+            style="@android:style/TextAppearance"
+            android:id="@+id/lbl_f7_04"
+            android:text="F7-04 外招使能"
+            android:layout_marginLeft="10dp"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"/>
+
+        <TableRow android:padding="20dp">
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0.外招有效"
+                android:id="@+id/rdoEnableCall"
+            />
+            <RadioButton
+                android:layout_marginLeft="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1.禁止外招"
+                android:id="@+id/rdoDisableCall" />
+        </TableRow>
+
+        <TextView
+            android:gravity="left"
+            style="@android:style/TextAppearance"
+            android:id="@+id/lbl_f7_05"
+            android:text="F7-05 开门使能"
+            android:layout_marginLeft="10dp"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"/>
+        <TableRow android:padding="20dp">
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0.允许开门"
+                android:id="@+id/rdoEnableOpen"
+                />
+            <RadioButton
+                android:layout_marginLeft="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1.禁止开门"
+                android:id="@+id/rdoDisableOpen" />
+        </TableRow>
+
+        <TextView
+            android:gravity="left"
+            style="@android:style/TextAppearance"
+            android:id="@+id/lbl_f7_06"
+            android:text="F7-06 超载使能"
+            android:layout_marginLeft="10dp"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"/>
+        <TableRow android:padding="20dp">
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0.禁止超载运行"
+                android:id="@+id/radioButton4"
+                />
+            <RadioButton
+                android:layout_marginLeft="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1.允许超载运行"
+                android:id="@+id/radioButton5" />
+        </TableRow>
+
+
+    </TableLayout>
+
+    <Button
+        android:id="@+id/btn_start_debug"
+        android:layout_gravity="center_horizontal"
+        android:text="进入调试"
+        android:minWidth="180dp"
+        android:textSize="12pt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+</LinearLayout>

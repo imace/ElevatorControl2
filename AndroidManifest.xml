@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.inovance.elevatorcontrol"
     android:versionCode="1"
-    android:versionName="1.0.5">
+    android:versionName="1.0.5051">
 
     <uses-sdk
         android:minSdkVersion="14"
@@ -119,12 +119,12 @@
         <!-- 抓取条形码 -->
         <!-- 内召 -->
         <activity
-            android:name=".activities.CallInsideActivity"
+            android:name="com.inovance.elevatorcontrol.activities.CallInsideActivity"
             android:icon="@drawable/ic_elevator_actionbar_white"
             android:screenOrientation="portrait" />
         <!-- 外召 -->
         <activity
-            android:name=".activities.CallOutsideActivity"
+            android:name="com.inovance.elevatorcontrol.activities.CallOutsideActivity"
             android:icon="@drawable/ic_elevator_actionbar_white"
             android:screenOrientation="portrait" />
         <!-- 参数写入 -->
@@ -185,7 +185,7 @@
             android:screenOrientation="portrait" />
         <!-- 离线参数数据 -->
         <activity
-            android:name=".activities.OfflineParameterActivity"
+            android:name="com.inovance.elevatorcontrol.activities.OfflineParameterActivity"
             android:icon="@drawable/ic_elevator_actionbar_white"
             android:screenOrientation="portrait" />
         <!-- Zxing barcode scanner -->
@@ -197,12 +197,19 @@
             android:windowSoftInputMode="stateAlwaysHidden" />
         <!-- 内召外召快捷窗口 -->
         <activity
-            android:name=".window.CallFloorWindow"
+            android:name="com.inovance.elevatorcontrol.window.CallFloorWindow"
+            android:screenOrientation="portrait"
             android:theme="@style/FullSizeDialog" />
         <!-- 解锁设备窗口 -->
         <activity
-            android:name=".window.UnlockWindow"
+            android:name="com.inovance.elevatorcontrol.window.UnlockWindow"
             android:launchMode="singleInstance"
-            android:theme="@android:style/Theme.Holo.Light.Dialog" />
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.Dialog"
+            android:windowSoftInputMode="stateAlwaysVisible" />
+        <activity android:name=".activities.WizardTuneActivity" />
+        <activity android:name=".activities.WizardStartActivity">
+
+        </activity>
     </application>
 </manifest>

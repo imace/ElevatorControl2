@@ -307,13 +307,15 @@ public class RemoteHelpActivity extends Activity implements WebInterface.OnReque
      * @return boolean
      */
     private boolean openLocalCachedFile(ChatMessage message) {
-        File filePath;
-        switch (message.getChatType()) {
-            case ChatMessage.RECEIVE:
-                filePath = new File(getFilesDir().getPath()
-                        + "/" + ApplicationConfig.ReceiveFileFolder + "/"
-                        + message.getLocalFileName());
-                return openFileWithDefaultIntent(filePath);
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            File filePath;
+            switch (message.getChatType()) {
+                case ChatMessage.RECEIVE:
+                    filePath = new File(getExternalCacheDir().getPath()
+                            + "/" + ApplicationConfig.ReceiveFileFolder + "/"
+                            + message.getLocalFileName());
+                    return openFileWithDefaultIntent(filePath);
+            }
         }
         return false;
     }
@@ -324,20 +326,22 @@ public class RemoteHelpActivity extends Activity implements WebInterface.OnReque
      * @param message Message
      */
     private void openLocalSendFile(ChatMessage message) {
-        String fileName = message.getFromNumber()
-                + "-" + message.getToNumber()
-                + "-" + message.getContentType()
-                + "-" + message.getTitle();
-        File directory = new File(getApplicationContext().getFilesDir().getPath()
-                + "/"
-                + ApplicationConfig.SentFolder);
-        if (directory.exists()) {
-            File[] files = directory.listFiles();
-            for (File file : files) {
-                int index = file.getName().lastIndexOf('.');
-                String name = file.getName().substring(0, index);
-                if (name.equalsIgnoreCase(fileName)) {
-                    openFileWithDefaultIntent(file);
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            String fileName = message.getFromNumber()
+                    + "-" + message.getToNumber()
+                    + "-" + message.getContentType()
+                    + "-" + message.getTitle();
+            File directory = new File(getExternalCacheDir().getPath()
+                    + "/"
+                    + ApplicationConfig.SentFolder);
+            if (directory.exists()) {
+                File[] files = directory.listFiles();
+                for (File file : files) {
+                    int index = file.getName().lastIndexOf('.');
+                    String name = file.getName().substring(0, index);
+                    if (name.equalsIgnoreCase(fileName)) {
+                        openFileWithDefaultIntent(file);
+                    }
                 }
             }
         }
@@ -401,7 +405,7 @@ public class RemoteHelpActivity extends Activity implements WebInterface.OnReque
     private void sendScenePicture() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            Uri imageUri = Uri.fromFile(new File(Environment.getExternalStorageDirectory(), "scene_capture.tmp"));
+            Uri imageUri = Uri.fromFile(new File(getExternalCacheDir().getPath() + "/scene_capture.tmp"));
             intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
             startActivityForResult(intent, REQUEST_IMAGE_CAPTURE);
         }
@@ -437,7 +441,7 @@ public class RemoteHelpActivity extends Activity implements WebInterface.OnReque
         // 拍照
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-                File file = new File(Environment.getExternalStorageDirectory(), "scene_capture.tmp");
+                File file = new File(getExternalCacheDir().getPath() + "/scene_capture.tmp");
                 if (file.exists()) {
                     try {
                         FileInputStream originalStream = new FileInputStream(file);
@@ -581,7 +585,7 @@ public class RemoteHelpActivity extends Activity implements WebInterface.OnReque
      * @param inputStream InputStream
      */
     private void showSendChatContentDialog(final int type, final String extension, final InputStream inputStream) {
-        View dialogView = getLayoutInflater().inflate(R.layout.send_caht_dialog, null);
+        View dialogView = getLayoutInflater().inflate(R.layout.send_chat_dialog, null);
         final EditText fileNameInput = (EditText) dialogView.findViewById(R.id.message_title);
         AlertDialog.Builder builder = new AlertDialog.Builder(this)
                 .setTitle(R.string.input_message_title_text_title_text)
@@ -776,42 +780,47 @@ public class RemoteHelpActivity extends Activity implements WebInterface.OnReque
 
     @Override
     public void onUploadComplete(String fileName) {
-        File directory = new File(getApplicationContext().getFilesDir().getPath()
-                + "/"
-                + ApplicationConfig.SentFolder);
-        if (!directory.exists()) {
-            directory.mkdir();
-        }
-        File filePath = new File(getApplicationContext().getFilesDir().getPath()
-                + "/"
-                + ApplicationConfig.SentFolder
-                + "/"
-                + fileName);
-        if (!filePath.exists()) {
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            File directory = new File(getExternalCacheDir().getPath()
+                    + "/"
+                    + ApplicationConfig.SentFolder);
+            if (!directory.exists()) {
+                directory.mkdir();
+            }
+
+            File filePath = new File(getExternalCacheDir().getPath()
+                    + "/"
+                    + ApplicationConfig.SentFolder
+                    + "/"
+                    + fileName);
+
+            if (!filePath.exists()) {
+                try {
+                    filePath.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
             try {
-                filePath.createNewFile();
+                FileOutputStream outputStream = new FileOutputStream(filePath);
+                if (tempInputStream != null) {
+                    int bufferSize = 1024;
+                    byte[] buffer = new byte[bufferSize];
+                    int length = -1;
+                    while ((length = tempInputStream.read(buffer)) != -1) {
+                        outputStream.write(buffer, 0, length);
+                    }
+                    if (tempInputStream != null) {
+                        tempInputStream.close();
+                        tempInputStream = null;
+                    }
+                }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-        try {
-            FileOutputStream outputStream = new FileOutputStream(filePath);
-            if (tempInputStream != null) {
-                int bufferSize = 1024;
-                byte[] buffer = new byte[bufferSize];
-                int length = -1;
-                while ((length = tempInputStream.read(buffer)) != -1) {
-                    outputStream.write(buffer, 0, length);
-                }
-                if (tempInputStream != null) {
-                    tempInputStream.close();
-                    tempInputStream = null;
-                }
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 

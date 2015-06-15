@@ -188,7 +188,7 @@ public class SerialUtility {
      */
     public static byte[] crc16(String hexString) {
         byte[] data = hexStringToByteArray(hexString);
-        int crcValue = BluetoothTool.getInstance().crcValue;
+        int crcValue = BluetoothTool.getInstance().getCRCValue();
         int checkedValue;
         if (crcValue == BluetoothTool.CRCValueNone) {
             checkedValue = getNormalDeviceCRCCheck(data);
@@ -258,7 +258,7 @@ public class SerialUtility {
         byte[] trimBytes = new byte[length - 2];
         System.arraycopy(data, 0, trimBytes, 0, length - 2);
         int receivedCRCValue;
-        int crcValue = BluetoothTool.getInstance().crcValue;
+        int crcValue = BluetoothTool.getInstance().getCRCValue();
         int value = ((((data[length - 1] & 0xFF) << 8) | (data[length - 2] & 0xFF)));
         if (crcValue == BluetoothTool.CRCValueNone) {
             receivedCRCValue = getNormalDeviceCRCCheck(trimBytes);

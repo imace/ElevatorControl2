@@ -2,24 +2,33 @@ package com.inovance.elevatorcontrol.window;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.os.CountDownTimer;
+import android.os.Handler;
 import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.inovance.bluetoothtool.BluetoothTalk;
 import com.inovance.bluetoothtool.BluetoothTool;
 import com.inovance.bluetoothtool.SerialUtility;
 import com.inovance.elevatorcontrol.R;
+import com.inovance.elevatorcontrol.cache.ValueCache;
 import com.inovance.elevatorcontrol.config.ApplicationConfig;
 import com.inovance.elevatorcontrol.handlers.UnlockHandler;
+import com.inovance.elevatorcontrol.models.CommunicationCode;
 import com.inovance.elevatorcontrol.utils.ParseSerialsUtils;
 
-public class UnlockWindow extends Activity {
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+public class UnlockWindow extends Activity implements Runnable {
 
     private static final String TAG = UnlockWindow.class.getSimpleName();
 
@@ -31,6 +40,13 @@ public class UnlockWindow extends Activity {
 
     private BluetoothTalk[] talk;
 
+    private static Handler syncHandler = new Handler();
+
+    /**
+     * 是否暂停 Task
+     */
+    private boolean running = false;
+
     /**
      * 是否正在写入密码
      */
@@ -39,7 +55,21 @@ public class UnlockWindow extends Activity {
     /**
      * 设备是否已经返回解锁结果
      */
-    private boolean responsive;
+    private boolean resulted;
+
+    private Runnable syncTask;
+
+    /**
+     * 同步间隔
+     */
+    private static final int SYNC_TIME = 500;
+
+    /**
+     * 通信码索引位置
+     */
+    private int codeIndex;
+
+    private ExecutorService pool = Executors.newSingleThreadExecutor();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -76,6 +106,17 @@ public class UnlockWindow extends Activity {
             }
         });
 
+        passwordEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView view, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    startTask();
+                    return true;
+                }
+                return false;
+            }
+        });
+
         negativeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -87,16 +128,78 @@ public class UnlockWindow extends Activity {
         positiveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String password = passwordEditText.getText().toString();
-                int value = UnlockWindow.covertToInteger(password);
-                if (value >= 0 && value < 65536) {
-                    createUnlockCommunication(value);
-                    startUnlockCommunication();
-                } else {
-                    Toast.makeText(UnlockWindow.this, R.string.password_value_error, Toast.LENGTH_SHORT).show();
-                }
+                startTask();
             }
         });
+
+        syncTask = new Runnable() {
+            @Override
+            public void run() {
+                if (running && !isSyncing && !resulted) {
+                    pool.execute(UnlockWindow.this);
+                    syncHandler.postDelayed(this, SYNC_TIME);
+                }
+            }
+        };
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        codeIndex = 0;
+        running = true;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        running = false;
+    }
+
+    private void startTask() {
+        BluetoothTool.getInstance().setCRCValue(BluetoothTool.CRCValueNone);
+        String password = passwordEditText.getText().toString();
+        int value = UnlockWindow.covertToInteger(password);
+        if (value >= 0 && value < 65536) {
+            createUnlockCommunication(value);
+            // 开始解锁
+            positiveButton.setEnabled(false);
+            passwordEditText.setEnabled(false);
+
+            isSyncing = false;
+            resulted = false;
+
+            syncHandler.postDelayed(syncTask, SYNC_TIME);
+        } else {
+            Toast.makeText(UnlockWindow.this, R.string.password_value_error, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * 设备解锁成功
+     */
+    private void onUnlocked() {
+        resulted = true;
+        BluetoothTool.getInstance().setUnlocked();
+        Toast.makeText(UnlockWindow.this, R.string.unlock_device_successful, Toast.LENGTH_SHORT).show();
+        setResult(RESULT_OK);
+        finish();
+    }
+
+    /**
+     * 解锁失败
+     *
+     * @param message 失败信息
+     */
+    private void onFailedUnlock(String message) {
+        resulted = true;
+
+        positiveButton.setEnabled(true);
+        passwordEditText.setEnabled(true);
+        // 释放状态
+        BluetoothTool.getInstance().setUnlocking(false);
+
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
     private void createUnlockCommunication(final int value) {
@@ -134,40 +237,6 @@ public class UnlockWindow extends Activity {
         };
     }
 
-    private void startUnlockCommunication() {
-        isSyncing = false;
-        responsive = false;
-        if (BluetoothTool.getInstance().isConnected()) {
-            if (handler != null && talk != null) {
-                positiveButton.setEnabled(false);
-                passwordEditText.setEnabled(false);
-                new CountDownTimer(1800, 600) {
-
-                    @Override
-                    public void onTick(long millisUntilFinished) {
-                        if (responsive) {
-                            cancel();
-                        }
-                        if (!isSyncing && !responsive) {
-                            BluetoothTool.getInstance().unlock(handler, talk);
-                        }
-                    }
-
-                    @Override
-                    public void onFinish() {
-                        if (!responsive) {
-                            positiveButton.setEnabled(true);
-                            passwordEditText.setEnabled(true);
-                            // 释放状态
-                            BluetoothTool.getInstance().setUnlocking(false);
-                            Toast.makeText(UnlockWindow.this, R.string.unlock_failed_message, Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                }.start();
-            }
-        }
-    }
-
     public static int covertToInteger(String string) {
         int intValue;
         try {
@@ -178,6 +247,15 @@ public class UnlockWindow extends Activity {
             intValue = -1;
         }
         return intValue;
+    }
+
+    @Override
+    public void run() {
+        if (BluetoothTool.getInstance().isConnected()) {
+            if (handler != null && talk != null) {
+                BluetoothTool.getInstance().unlock(handler, talk);
+            }
+        }
     }
 
     private class WritePasswordHandler extends UnlockHandler {
@@ -196,23 +274,26 @@ public class UnlockWindow extends Activity {
         public void onTalkReceive(Message msg) {
             super.onTalkReceive(msg);
             if (msg.obj != null && msg.obj instanceof byte[]) {
-                responsive = true;
                 byte[] data = (byte[]) msg.obj;
                 String response = SerialUtility.byte2HexStr(data);
                 int errorIndex = ParseSerialsUtils.getErrorIndex(response);
                 if (errorIndex == -1) {
                     // 设备已解锁
-                    BluetoothTool.getInstance().setUnlocked();
-                    Toast.makeText(UnlockWindow.this, R.string.unlock_device_successful, Toast.LENGTH_SHORT).show();
-                    setResult(RESULT_OK);
-                    finish();
+                    onUnlocked();
+                } else if (errorIndex == 3) {
+                    // CRC 校验错误
+                    List<CommunicationCode> codeList = ValueCache.getInstance().getCodeList();
+                    if (codeIndex < codeList.size()) {
+                        CommunicationCode code = codeList.get(codeIndex);
+                        BluetoothTool.getInstance().setCRCValue(code.getCrcValue());
+                        codeIndex++;
+                    } else {
+                        onFailedUnlock(getString(R.string.unlock_device_failed));
+                    }
                 } else {
-                    positiveButton.setEnabled(true);
-                    passwordEditText.setEnabled(true);
-                    // 释放状态
-                    BluetoothTool.getInstance().setUnlocking(false);
+                    // 其他错误
                     String message = ApplicationConfig.ERROR_NAME_ARRAY[errorIndex];
-                    Toast.makeText(UnlockWindow.this, message, Toast.LENGTH_SHORT).show();
+                    onFailedUnlock(message);
                 }
             }
         }

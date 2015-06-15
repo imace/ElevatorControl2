@@ -13,6 +13,8 @@ import android.widget.ImageButton;
 import com.inovance.elevatorcontrol.R;
 import com.inovance.elevatorcontrol.views.TypefaceTextView;
 
+import java.util.List;
+
 public class CallOutsideFragment extends Fragment {
 
     private GridViewAdapter mGridViewAdapter;
@@ -34,7 +36,7 @@ public class CallOutsideFragment extends Fragment {
 
     private OnCallDownListener mOnCallDownListener;
 
-    private int[][] mFloorCallStatus;
+    private List<Integer[]> mFloorCallStatus;
 
     public void setOnCallUpListener(OnCallUpListener listener) {
         mOnCallUpListener = listener;
@@ -70,8 +72,8 @@ public class CallOutsideFragment extends Fragment {
         mGridViewAdapter.notifyDataSetChanged();
     }
 
-    public void updateFloorCallStatus(int[][] floorCallStatus) {
-        mFloorCallStatus = floorCallStatus;
+    public void updateFloorCallStatus(List<Integer[]> statusList) {
+        mFloorCallStatus = statusList;
         mGridViewAdapter.notifyDataSetChanged();
     }
 
@@ -127,6 +129,41 @@ public class CallOutsideFragment extends Fragment {
                     }
                 }
             });
+
+            holder.callUpButton.setEnabled(true);
+            holder.callUpButton.setImageResource(R.drawable.call_up_button);
+
+            holder.callDownButton.setEnabled(true);
+            holder.callDownButton.setImageResource(R.drawable.call_down_button);
+
+            if (mFloorCallStatus != null) {
+                for (Integer[] status : mFloorCallStatus) {
+                    if (status.length == 3) {
+                        if (status[0] == floor) {
+                            if (status[1] == 0) {
+                                // 未上召
+                                holder.callUpButton.setEnabled(true);
+                                holder.callUpButton.setImageResource(R.drawable.icon_call_up);
+                            } else {
+                                // 已上召
+                                holder.callUpButton.setEnabled(false);
+                                holder.callUpButton.setImageResource(R.drawable.icon_call_up_highlighted);
+                            }
+                            if (status[2] == 0) {
+                                // 未下召
+                                holder.callDownButton.setEnabled(true);
+                                holder.callDownButton.setImageResource(R.drawable.icon_call_down);
+                            } else {
+                                // 已下召
+                                holder.callDownButton.setEnabled(false);
+                                holder.callDownButton.setImageResource(R.drawable.icon_call_down_highlighted);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+
             if (position == 0) {
                 holder.callUpButton.setVisibility(View.VISIBLE);
                 holder.callDownButton.setVisibility(View.GONE);
@@ -137,14 +174,7 @@ public class CallOutsideFragment extends Fragment {
                 holder.callUpButton.setVisibility(View.VISIBLE);
                 holder.callDownButton.setVisibility(View.VISIBLE);
             }
-            if (mFloorCallStatus != null) {
-                for (int[] item : mFloorCallStatus) {
-                    if (floor == item[0]) {
-                        // TODO Update cell status view
-                        break;
-                    }
-                }
-            }
+
             return convertView;
         }
 
